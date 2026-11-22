@@ -1,0 +1,14 @@
+{
+  "scenario": "A Juno-106 sound plays its note in tune and stops when released",
+  "name": "hello, ST-71b: PRESETS to Juno Flutes (FM-106's engine, the owner's pick 3); C4 sounds C4, and stops after its release",
+  "app": "hello",
+  "ms": 5200,
+  "keys": "900:e6:+112,2400:C4@100,3200:C4^",
+  "note": "hello starts on Basic: Piano (sound 1); the Juno's sounds come after FMini's 66 (engine 9), Flutes is sound 113. The 112 clicks take about 800 ms on the FM-1 (each one chooses a sound), so the key waits for them.",
+  "checks": [
+    {"type": "silence", "from": 800, "to": 2350},
+    {"type": "sound", "from": 2500, "to": 3150},
+    {"type": "pitch", "from": 2600, "to": 3150, "note": "C4", "cents": 15},
+    {"type": "silence", "from": 4400, "to": 5100}
+  ]
+}

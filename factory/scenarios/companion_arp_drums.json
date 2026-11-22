@@ -1,0 +1,43 @@
+{
+  "scenario": "ARP on the drums repeats a hat at the rate",
+  "name": "companion, ST-78: DRUMS, ARP on, K2 RATE 1/32, K1 RAMP crescendo; hat1 (F4) held 2 s repeats in 32nds (83 ms at 90 BPM), louder as it is held",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:e1:+3,1100:ARP,1150:ARP^,1300:e3:+2,1400:e2:+1,1600:F4@100,3600:F4^",
+  "note": "RAMP crescendo: a quarter of the velocity at first, three quarters more over 1.9 s held; the 0.2 s window plays at about a third, the 1.75 s window at about 95 %: about 2.9 times as loud if the hat's level follows the velocity. A hat is quiet and short (one at full velocity: rms about 250 over 40 ms, companion_drums_pads), so over the whole hold the check asks for rms 50, where silence is 0.",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 1450,
+      "to": 1590
+    },
+    {
+      "type": "sound",
+      "from": 1700,
+      "to": 3500,
+      "rms": 50
+    },
+    {
+      "type": "level_ratio",
+      "a": [
+        1650,
+        1950
+      ],
+      "b": [
+        3200,
+        3500
+      ],
+      "ratio": 2.9,
+      "tol": 0.25
+    },
+    {
+      "type": "silence",
+      "from": 3900,
+      "to": 4150
+    },
+    {
+      "type": "screen",
+      "at": 2000
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "scenario": "Every template opens on PLAY",
+  "name": "companion: the melody track opens on PLAY the first time ALGORITHM moves to it",
+  "app": "companion",
+  "ms": 1800,
+  "keys": "900:e1:+2",
+  "checks": [
+    {"type": "screen", "at": 1300}
+  ]
+}

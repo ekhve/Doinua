@@ -1,0 +1,18 @@
+{
+  "scenario": "PLAY plays the scale up at the tempo",
+  "name": "hello: PLAY plays C major up from C4 at 90 BPM (a note every 667 ms), lighting the key that sounds",
+  "app": "hello",
+  "ms": 3700,
+  "keys": "1000:PLAY,1100:PLAY^",
+  "note": "Notes start at 1000, 1667, 2333 and 3000 ms and last 92% of the step (613 ms).",
+  "checks": [
+    {"type": "silence", "from": 600, "to": 950},
+    {"type": "pitch", "from": 1100, "to": 1550, "note": "C4", "cents": 15},
+    {"type": "pitch", "from": 1770, "to": 2220, "note": "D4", "cents": 15},
+    {"type": "pitch", "from": 2430, "to": 2880, "note": "E4", "cents": 15},
+    {"type": "pitch", "from": 3100, "to": 3550, "note": "F4", "cents": 15},
+    {"type": "lights", "from": 1150, "to": 1500, "keys": {"C4": "on", "D4": "dim", "C#4": "off"}},
+    {"type": "lights", "from": 1800, "to": 2200, "keys": {"D4": "on", "E4": "dim"}},
+    {"type": "screen", "at": 1500}
+  ]
+}

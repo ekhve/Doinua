@@ -1,0 +1,26 @@
+{
+  "scenario": "The help hears every track's notes, whatever its template",
+  "name": "companion: a 1-bar song; Am (A3 C4 E4) recorded on track 3, a MELODY track; on the bass, HELP Key+root: when the Am comes round, A lights full over the dim scale",
+  "app": "companion",
+  "ms": 8200,
+  "note": "Before D-046 the bass read only the chords track: with the chord on a melody track, nothing lit full.",
+  "keys": "900:GLO,1000:GLO^,1050:e4:-1,1070:e4:-1,1090:e4:-1,1200:GLO,1300:GLO^,1340:e1:+1,1370:e1:+1,1400:REC,1450:REC^,1500:PLAY,1550:PLAY^,1700:A3@100,1710:C4@100,1720:E4@100,2700:A3^,2700:C4^,2700:E4^,2900:REC,2950:REC^,3100:e1:-1,3300:e2:+1",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 7250,
+      "to": 7750,
+      "keys": {
+        "A3": "on",
+        "A4": "on",
+        "C4": "dim",
+        "C#4": "off",
+        "G4": "dim"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 7500
+    }
+  ]
+}

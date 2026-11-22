@@ -1,0 +1,46 @@
+{
+  "scenario": "A key plays its note in tune and the screen names it",
+  "name": "hello: a key plays its note, in tune, and the screen names it",
+  "app": "hello",
+  "ms": 3000,
+  "keys": "1000:C4@100,1800:C4^,2200:E4@100,2700:E4^",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 600,
+      "to": 950
+    },
+    {
+      "type": "pitch",
+      "from": 1100,
+      "to": 1700,
+      "note": "C4",
+      "cents": 15
+    },
+    {
+      "type": "silence",
+      "from": 2000,
+      "to": 2150
+    },
+    {
+      "type": "pitch",
+      "from": 2300,
+      "to": 2650,
+      "note": "E4",
+      "cents": 15
+    },
+    {
+      "type": "silence",
+      "from": 2850,
+      "to": 2990
+    },
+    {
+      "type": "screen",
+      "at": 1500
+    },
+    {
+      "type": "screen",
+      "at": 2500
+    }
+  ]
+}

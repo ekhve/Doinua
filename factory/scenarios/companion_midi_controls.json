@@ -1,0 +1,47 @@
+{
+  "scenario": "A MIDI keyboard's sustain pedal, pitch bend and all notes off play on its track",
+  "name": "companion: on MIDI channel 2 (the bass): the sustain pedal holds C4 after its release until the pedal lifts; pitch bend up turns A3 into B3 (two semitones) and back; all notes off (CC123) silences it; on channel 1 (the chords' piano) bend turns A3 into B3 too",
+  "app": "companion",
+  "ms": 6300,
+  "keys": "1000:m913c64,1100:mb1407f,1300:m813c40,2000:mb14000,3000:m913964,3200:me17f7f,3900:me10040,4500:mb17b00,5600:m903964,5700:me07f7f",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1400,
+      "to": 1900,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "silence",
+      "from": 2400,
+      "to": 2900
+    },
+    {
+      "type": "pitch",
+      "from": 3400,
+      "to": 3800,
+      "note": "B3",
+      "cents": 20
+    },
+    {
+      "type": "pitch",
+      "from": 4050,
+      "to": 4400,
+      "note": "A3",
+      "cents": 20
+    },
+    {
+      "type": "silence",
+      "from": 4900,
+      "to": 5500
+    },
+    {
+      "type": "pitch",
+      "from": 5800,
+      "to": 6100,
+      "note": "B3",
+      "cents": 20
+    }
+  ]
+}

@@ -1,0 +1,1425 @@
+{
+ "_about": "Vague and problematic terms that factory/reqlint.py flags in requirements, by rule (R7 vague, R34 subjective, R8 escape clauses, R9 open-ended, R10 superfluous infinitives, R16 negatives, R26 indefinite pronouns, R35 temporal). Each entry is [term, conditional]: conditional terms are reported for review (POSSIBLE), the others fail the gate (VIOLATION); R16 is always POSSIBLE. Taken from the owner's requirements method; the project's own copy, to be edited here.",
+ "terms": {
+  "R10": [
+   [
+    "shall be able to",
+    false
+   ],
+   [
+    "shall be capable of",
+    false
+   ],
+   [
+    "shall have the ability to",
+    false
+   ],
+   [
+    "shall have the capability to",
+    false
+   ],
+   [
+    "shall be capable to",
+    false
+   ],
+   [
+    "shall be designed to",
+    false
+   ],
+   [
+    "shall be designed to be able to",
+    false
+   ],
+   [
+    "shall be designed to be capable of",
+    false
+   ],
+   [
+    "shall be designed to support",
+    false
+   ],
+   [
+    "shall be designed to allow",
+    false
+   ],
+   [
+    "shall be designed to enable",
+    false
+   ],
+   [
+    "shall be designed to provide",
+    false
+   ],
+   [
+    "shall be able to support",
+    false
+   ],
+   [
+    "shall be able to handle",
+    false
+   ],
+   [
+    "shall be able to process",
+    false
+   ],
+   [
+    "shall be able to manage",
+    false
+   ],
+   [
+    "shall support",
+    true
+   ],
+   [
+    "shall allow",
+    true
+   ],
+   [
+    "shall enable",
+    true
+   ],
+   [
+    "shall provide the capability to",
+    false
+   ],
+   [
+    "shall provide the ability to",
+    false
+   ],
+   [
+    "shall have the potential to",
+    false
+   ],
+   [
+    "shall be positioned to",
+    false
+   ]
+  ],
+  "R16": [
+   [
+    "shall not must not",
+    true
+   ],
+   [
+    "will not",
+    false
+   ],
+   [
+    "should not",
+    false
+   ],
+   [
+    "shall never",
+    false
+   ],
+   [
+    "shall not ever",
+    false
+   ],
+   [
+    "is not allowed to",
+    false
+   ],
+   [
+    "is not permitted to",
+    false
+   ],
+   [
+    "is not authorised to",
+    false
+   ],
+   [
+    "shall be free from",
+    false
+   ],
+   [
+    "shall be free of",
+    false
+   ],
+   [
+    "shall prevent",
+    true
+   ],
+   [
+    "shall avoid",
+    false
+   ],
+   [
+    "shall preclude",
+    false
+   ],
+   [
+    "shall prohibit",
+    false
+   ]
+  ],
+  "R26": [
+   [
+    "100%",
+    false
+   ],
+   [
+    "0%",
+    true
+   ],
+   [
+    "zero",
+    true
+   ],
+   [
+    "always",
+    false
+   ],
+   [
+    "never",
+    false
+   ],
+   [
+    "at all times",
+    false
+   ],
+   [
+    "under all conditions",
+    false
+   ],
+   [
+    "in all cases",
+    false
+   ],
+   [
+    "in every case",
+    false
+   ],
+   [
+    "without exception",
+    false
+   ],
+   [
+    "all",
+    false
+   ],
+   [
+    "every",
+    false
+   ],
+   [
+    "each and every",
+    false
+   ],
+   [
+    "any and all",
+    false
+   ],
+   [
+    "infinite",
+    false
+   ],
+   [
+    "unlimited",
+    false
+   ],
+   [
+    "unbounded",
+    false
+   ],
+   [
+    "instantaneous",
+    false
+   ],
+   [
+    "immediate",
+    true
+   ],
+   [
+    "continuously",
+    true
+   ],
+   [
+    "permanently",
+    false
+   ],
+   [
+    "perpetually",
+    false
+   ],
+   [
+    "indefinitely",
+    false
+   ],
+   [
+    "perfect",
+    false
+   ],
+   [
+    "flawless",
+    false
+   ],
+   [
+    "error-free",
+    false
+   ],
+   [
+    "fault-free",
+    false
+   ],
+   [
+    "failure-free",
+    false
+   ],
+   [
+    "lossless",
+    true
+   ],
+   [
+    "lossless operation",
+    false
+   ]
+  ],
+  "R34": [
+   [
+    "minimum",
+    true
+   ],
+   [
+    "maximum",
+    true
+   ],
+   [
+    "optimum",
+    false
+   ],
+   [
+    "optimal",
+    false
+   ],
+   [
+    "nominal",
+    false
+   ],
+   [
+    "typical",
+    false
+   ],
+   [
+    "best practices",
+    false
+   ],
+   [
+    "best effort",
+    false
+   ],
+   [
+    "best available",
+    false
+   ],
+   [
+    "state of the art",
+    false
+   ],
+   [
+    "leading edge",
+    false
+   ],
+   [
+    "cutting edge",
+    false
+   ],
+   [
+    "industry standard",
+    true
+   ],
+   [
+    "de facto standard",
+    false
+   ],
+   [
+    "high speed",
+    false
+   ],
+   [
+    "low latency",
+    false
+   ],
+   [
+    "high throughput",
+    false
+   ],
+   [
+    "high bandwidth",
+    false
+   ],
+   [
+    "high resolution",
+    false
+   ],
+   [
+    "high fidelity",
+    false
+   ],
+   [
+    "high quality",
+    false
+   ],
+   [
+    "high accuracy",
+    false
+   ],
+   [
+    "low power",
+    false
+   ],
+   [
+    "low noise",
+    false
+   ],
+   [
+    "low cost",
+    false
+   ],
+   [
+    "real-time",
+    true
+   ],
+   [
+    "near real-time",
+    false
+   ],
+   [
+    "quasi-real-time",
+    false
+   ],
+   [
+    "as fast as possible",
+    false
+   ],
+   [
+    "as soon as possible",
+    false
+   ],
+   [
+    "within a reasonable time",
+    false
+   ],
+   [
+    "in a timely manner",
+    false
+   ],
+   [
+    "without delay",
+    false
+   ],
+   [
+    "adequate performance",
+    false
+   ],
+   [
+    "sufficient performance",
+    false
+   ],
+   [
+    "acceptable performance",
+    false
+   ]
+  ],
+  "R35": [
+   [
+    "eventually",
+    false
+   ],
+   [
+    "in due course",
+    false
+   ],
+   [
+    "at some point",
+    false
+   ],
+   [
+    "before",
+    true
+   ],
+   [
+    "after",
+    true
+   ],
+   [
+    "as soon as",
+    false
+   ],
+   [
+    "as quickly as",
+    false
+   ],
+   [
+    "at the earliest",
+    false
+   ],
+   [
+    "at the latest",
+    false
+   ],
+   [
+    "no later than",
+    true
+   ],
+   [
+    "simultaneously",
+    false
+   ],
+   [
+    "at the same time",
+    false
+   ],
+   [
+    "concurrently",
+    true
+   ],
+   [
+    "instantaneously",
+    false
+   ],
+   [
+    "immediately",
+    true
+   ],
+   [
+    "in real time",
+    true
+   ],
+   [
+    "during",
+    true
+   ],
+   [
+    "while",
+    true
+   ],
+   [
+    "once",
+    true
+   ],
+   [
+    "until",
+    true
+   ],
+   [
+    "at last",
+    false
+   ],
+   [
+    "finally",
+    false
+   ],
+   [
+    "ultimately",
+    false
+   ],
+   [
+    "soon",
+    false
+   ],
+   [
+    "shortly",
+    false
+   ],
+   [
+    "promptly",
+    false
+   ],
+   [
+    "quickly",
+    true
+   ]
+  ],
+  "R7": [
+   [
+    "some",
+    false
+   ],
+   [
+    "any",
+    false
+   ],
+   [
+    "allowable",
+    false
+   ],
+   [
+    "several",
+    false
+   ],
+   [
+    "many",
+    false
+   ],
+   [
+    "a lot of",
+    false
+   ],
+   [
+    "a few",
+    false
+   ],
+   [
+    "a number of",
+    false
+   ],
+   [
+    "almost always",
+    false
+   ],
+   [
+    "very nearly",
+    false
+   ],
+   [
+    "nearly",
+    false
+   ],
+   [
+    "about",
+    false
+   ],
+   [
+    "close to",
+    false
+   ],
+   [
+    "approximately",
+    false
+   ],
+   [
+    "around",
+    false
+   ],
+   [
+    "roughly",
+    false
+   ],
+   [
+    "in the order of",
+    false
+   ],
+   [
+    "on the order of",
+    false
+   ],
+   [
+    "adequate number",
+    false
+   ],
+   [
+    "sufficient number",
+    false
+   ],
+   [
+    "reasonable number",
+    false
+   ],
+   [
+    "minimal",
+    false
+   ],
+   [
+    "minimal number",
+    false
+   ],
+   [
+    "adequate",
+    false
+   ],
+   [
+    "sufficient",
+    false
+   ],
+   [
+    "appropriate",
+    false
+   ],
+   [
+    "suitable",
+    false
+   ],
+   [
+    "acceptable",
+    false
+   ],
+   [
+    "satisfactory",
+    false
+   ],
+   [
+    "flexible",
+    false
+   ],
+   [
+    "expandable",
+    false
+   ],
+   [
+    "scalable",
+    false
+   ],
+   [
+    "extensible",
+    false
+   ],
+   [
+    "modular",
+    false
+   ],
+   [
+    "typical",
+    false
+   ],
+   [
+    "standard",
+    false
+   ],
+   [
+    "normal",
+    false
+   ],
+   [
+    "common",
+    false
+   ],
+   [
+    "conventional",
+    false
+   ],
+   [
+    "customary",
+    false
+   ],
+   [
+    "usual",
+    false
+   ],
+   [
+    "significant",
+    false
+   ],
+   [
+    "substantial",
+    false
+   ],
+   [
+    "considerable",
+    false
+   ],
+   [
+    "notable",
+    false
+   ],
+   [
+    "major",
+    false
+   ],
+   [
+    "minor",
+    false
+   ],
+   [
+    "reasonable",
+    false
+   ],
+   [
+    "sensible",
+    false
+   ],
+   [
+    "practical",
+    false
+   ],
+   [
+    "workable",
+    false
+   ],
+   [
+    "efficient",
+    false
+   ],
+   [
+    "effective",
+    false
+   ],
+   [
+    "proficient",
+    false
+   ],
+   [
+    "capable",
+    false
+   ],
+   [
+    "competent",
+    false
+   ],
+   [
+    "reliable",
+    false
+   ],
+   [
+    "robust",
+    false
+   ],
+   [
+    "rugged",
+    false
+   ],
+   [
+    "durable",
+    false
+   ],
+   [
+    "stable",
+    false
+   ],
+   [
+    "resilient",
+    false
+   ],
+   [
+    "lightweight",
+    false
+   ],
+   [
+    "compact",
+    false
+   ],
+   [
+    "small",
+    false
+   ],
+   [
+    "large",
+    false
+   ],
+   [
+    "heavy",
+    false
+   ],
+   [
+    "portable",
+    false
+   ],
+   [
+    "weather-resistant",
+    false
+   ],
+   [
+    "waterproof",
+    false
+   ],
+   [
+    "ruggedised",
+    false
+   ],
+   [
+    "industrial-grade",
+    false
+   ],
+   [
+    "user-friendly",
+    false
+   ],
+   [
+    "intuitive",
+    false
+   ],
+   [
+    "easy to use",
+    false
+   ],
+   [
+    "simple",
+    false
+   ],
+   [
+    "straightforward",
+    false
+   ],
+   [
+    "fast",
+    false
+   ],
+   [
+    "slow",
+    false
+   ],
+   [
+    "quick",
+    false
+   ],
+   [
+    "rapid",
+    false
+   ],
+   [
+    "prompt",
+    false
+   ],
+   [
+    "responsive",
+    false
+   ],
+   [
+    "real-time",
+    false
+   ],
+   [
+    "accurate",
+    false
+   ],
+   [
+    "precise",
+    false
+   ],
+   [
+    "correct",
+    false
+   ],
+   [
+    "exact",
+    false
+   ],
+   [
+    "optimal",
+    false
+   ],
+   [
+    "optimised",
+    false
+   ],
+   [
+    "secure",
+    false
+   ],
+   [
+    "safe",
+    false
+   ],
+   [
+    "protected",
+    false
+   ],
+   [
+    "hardened",
+    false
+   ],
+   [
+    "modern",
+    false
+   ],
+   [
+    "state-of-the-art",
+    false
+   ],
+   [
+    "cutting-edge",
+    false
+   ],
+   [
+    "latest",
+    false
+   ],
+   [
+    "current",
+    false
+   ],
+   [
+    "best-in-class",
+    false
+   ],
+   [
+    "industry-standard",
+    false
+   ],
+   [
+    "world-class",
+    false
+   ],
+   [
+    "ancillary",
+    false
+   ],
+   [
+    "relevant",
+    false
+   ],
+   [
+    "routine",
+    false
+   ],
+   [
+    "generic",
+    false
+   ],
+   [
+    "representative",
+    false
+   ],
+   [
+    "usually",
+    false
+   ],
+   [
+    "typically",
+    false
+   ],
+   [
+    "normally",
+    false
+   ],
+   [
+    "generally",
+    false
+   ],
+   [
+    "commonly",
+    false
+   ],
+   [
+    "ordinarily",
+    false
+   ],
+   [
+    "often",
+    false
+   ],
+   [
+    "frequently",
+    false
+   ],
+   [
+    "occasionally",
+    false
+   ],
+   [
+    "rarely",
+    false
+   ],
+   [
+    "seldom",
+    false
+   ],
+   [
+    "approximately",
+    false
+   ],
+   [
+    "roughly",
+    false
+   ],
+   [
+    "about",
+    false
+   ],
+   [
+    "nearly",
+    false
+   ],
+   [
+    "almost",
+    false
+   ],
+   [
+    "sufficiently",
+    false
+   ],
+   [
+    "adequately",
+    false
+   ],
+   [
+    "appropriately",
+    false
+   ],
+   [
+    "suitably",
+    false
+   ],
+   [
+    "reasonably",
+    false
+   ],
+   [
+    "efficiently",
+    false
+   ],
+   [
+    "effectively",
+    false
+   ],
+   [
+    "reliably",
+    false
+   ],
+   [
+    "accurately",
+    false
+   ],
+   [
+    "precisely",
+    false
+   ],
+   [
+    "quickly",
+    false
+   ],
+   [
+    "rapidly",
+    false
+   ],
+   [
+    "promptly",
+    false
+   ],
+   [
+    "swiftly",
+    false
+   ],
+   [
+    "slowly",
+    false
+   ],
+   [
+    "easily",
+    false
+   ],
+   [
+    "simply",
+    false
+   ],
+   [
+    "conveniently",
+    false
+   ],
+   [
+    "smoothly",
+    false
+   ],
+   [
+    "safely",
+    false
+   ],
+   [
+    "securely",
+    false
+   ],
+   [
+    "robustly",
+    false
+   ],
+   [
+    "stably",
+    false
+   ],
+   [
+    "properly",
+    false
+   ],
+   [
+    "correctly",
+    false
+   ],
+   [
+    "appropriately",
+    false
+   ],
+   [
+    "suitably",
+    false
+   ],
+   [
+    "significantly",
+    false
+   ],
+   [
+    "substantially",
+    false
+   ],
+   [
+    "considerably",
+    false
+   ],
+   [
+    "notably",
+    false
+   ],
+   [
+    "minimally",
+    false
+   ],
+   [
+    "maximally",
+    false
+   ],
+   [
+    "optimally",
+    false
+   ],
+   [
+    "continuously",
+    false
+   ],
+   [
+    "constantly",
+    false
+   ],
+   [
+    "consistently",
+    false
+   ],
+   [
+    "regularly",
+    false
+   ],
+   [
+    "simultaneously",
+    false
+   ],
+   [
+    "concurrently",
+    false
+   ],
+   [
+    "instantaneously",
+    false
+   ]
+  ],
+  "R8": [
+   [
+    "where possible",
+    false
+   ],
+   [
+    "where practicable",
+    false
+   ],
+   [
+    "where applicable",
+    false
+   ],
+   [
+    "as appropriate",
+    false
+   ],
+   [
+    "as required",
+    false
+   ],
+   [
+    "as needed",
+    false
+   ],
+   [
+    "as necessary",
+    false
+   ],
+   [
+    "if applicable",
+    false
+   ],
+   [
+    "if necessary",
+    false
+   ],
+   [
+    "if required",
+    false
+   ],
+   [
+    "if needed",
+    false
+   ],
+   [
+    "if practicable",
+    false
+   ],
+   [
+    "to the extent possible",
+    false
+   ],
+   [
+    "to the extent practicable",
+    false
+   ],
+   [
+    "to the extent necessary",
+    false
+   ],
+   [
+    "to the extent practical",
+    false
+   ],
+   [
+    "to the maximum extent possible",
+    false
+   ],
+   [
+    "as much as possible",
+    false
+   ],
+   [
+    "as little as possible",
+    false
+   ],
+   [
+    "as far as possible",
+    false
+   ],
+   [
+    "so far as is possible",
+    false
+   ],
+   [
+    "as far as practicable",
+    false
+   ],
+   [
+    "where feasible",
+    false
+   ],
+   [
+    "where technically feasible",
+    false
+   ],
+   [
+    "where cost-effective",
+    false
+   ],
+   [
+    "subject to availability",
+    false
+   ],
+   [
+    "subject to constraints",
+    false
+   ],
+   [
+    "in general",
+    false
+   ],
+   [
+    "in most cases",
+    false
+   ],
+   [
+    "in typical cases",
+    false
+   ],
+   [
+    "under normal circumstances",
+    false
+   ],
+   [
+    "under normal conditions",
+    false
+   ],
+   [
+    "when appropriate",
+    false
+   ],
+   [
+    "when necessary",
+    false
+   ],
+   [
+    "when required",
+    false
+   ],
+   [
+    "at the discretion of",
+    false
+   ],
+   [
+    "at the option of",
+    false
+   ],
+   [
+    "as deemed appropriate",
+    false
+   ]
+  ],
+  "R9": [
+   [
+    "including but not limited to",
+    false
+   ],
+   [
+    "but not limited to",
+    false
+   ],
+   [
+    "etc.",
+    false
+   ],
+   [
+    "et cetera",
+    false
+   ],
+   [
+    "and so on",
+    false
+   ],
+   [
+    "and so forth",
+    false
+   ],
+   [
+    "among others",
+    false
+   ],
+   [
+    "and others",
+    false
+   ],
+   [
+    "and similar",
+    false
+   ],
+   [
+    "and the like",
+    false
+   ],
+   [
+    "or similar",
+    false
+   ],
+   [
+    "or equivalent",
+    false
+   ],
+   [
+    "or other",
+    false
+   ],
+   [
+    "or any other",
+    false
+   ],
+   [
+    "and/or similar",
+    false
+   ],
+   [
+    "and/or equivalent",
+    false
+   ],
+   [
+    "such as",
+    true
+   ],
+   [
+    "for example",
+    true
+   ],
+   [
+    "inter alia",
+    false
+   ]
+  ]
+ }
+}

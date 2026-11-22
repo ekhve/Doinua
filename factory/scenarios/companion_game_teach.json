@@ -1,0 +1,70 @@
+{
+  "scenario": "A parent teaches the unicorn a song, and it keeps it",
+  "name": "companion, GAME, K4 music off, K3 back one (MY SONG 4, empty: TEACH ME): REC, the unicorn listens and dances; C4 E4 G4 A4 played, K1 back takes A4 back, C5, then C6 over MIDI (moved down to C5); SAVE: LEARNED!; after a power-off the song is there and its fences sing C4 E4 G4",
+  "app": "companion",
+  "ms": 14000,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2100:e5:-1,2200:e4:-1,3000:REC,3050:REC^,3500:C4@100,3600:C4^,3900:E4@100,4000:E4^,4300:G4@100,4400:G4^,4700:A4@100,4800:A4^,5100:e2:-1,5500:C5@100,5600:C5^,5900:m905464,6000:m805440,6500:SAVE,6550:SAVE^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2525
+    },
+    {
+      "type": "screen",
+      "at": 3725
+    },
+    {
+      "type": "pitch",
+      "from": 5520,
+      "to": 5800,
+      "note": "C5",
+      "cents": 25
+    },
+    {
+      "type": "pitch",
+      "from": 5920,
+      "to": 6200,
+      "note": "C5",
+      "cents": 25
+    },
+    {
+      "type": "screen",
+      "at": 6325
+    },
+    {
+      "type": "screen",
+      "at": 7025
+    }
+  ],
+  "reboot": {
+    "ms": 9000,
+    "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2100:e5:-1,2200:e4:-1,3600:C4@100,3700:C4^,5500:F3@100,5600:F3^,6500:F3@100,6600:F3^,7500:F3@100,7600:F3^",
+    "checks": [
+      {
+        "type": "screen",
+        "at": 2525
+      },
+      {
+        "type": "pitch",
+        "from": 5520,
+        "to": 5800,
+        "note": "C4",
+        "cents": 25
+      },
+      {
+        "type": "pitch",
+        "from": 6520,
+        "to": 6800,
+        "note": "E4",
+        "cents": 25
+      },
+      {
+        "type": "pitch",
+        "from": 7520,
+        "to": 7800,
+        "note": "G4",
+        "cents": 25
+      }
+    ]
+  }
+}

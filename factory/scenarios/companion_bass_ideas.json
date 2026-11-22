@@ -1,0 +1,33 @@
+{
+  "scenario": "IDEAS plays a style's line, then leaves the next time round to you",
+  "name": "companion: a 1-bar song, no chords (so the key's I: C); BASS IDEAS, G-funk slide line, HEAR listen/play: the line's C3 sounds the first time round, silence the second, then again",
+  "app": "companion",
+  "ms": 7600,
+  "keys": "900:GLO,1000:GLO^,1050:e4:-1,1070:e4:-1,1090:e4:-1,1200:GLO,1300:GLO^,1400:e1:+1,1500:SCL,1550:SCL^,1700:PLAY,1750:PLAY^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1770,
+      "to": 2150,
+      "note": "C3",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 5300,
+      "to": 5660
+    },
+    {
+      "type": "pitch",
+      "from": 7100,
+      "to": 7450,
+      "note": "C3",
+      "cents": 25
+    },
+    {
+      "type": "screen",
+      "at": 2000
+    }
+  ],
+  "note": "The loop starts at about 1700 ms; 1 bar is 2664 ms, so the second time round (silent: your turn) starts at about 4364 ms and the third at about 7028 ms. The silence is checked from 5300 ms, still the second time round: the first time's last note rings on in its own echo and reverb until then (D-094)."
+}

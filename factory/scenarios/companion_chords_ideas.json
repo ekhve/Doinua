@@ -1,0 +1,16 @@
+{
+  "scenario": "A chord idea lights its next chord a bar ahead and fills 4 bars",
+  "name": "companion, CHORDS IDEAS, Neo soul idea 1 (ii-V-I, push) at 90 BPM: Dm9 full and G13 half; Cmaj7 alone for most of bars 3 and 4, Dm9 half in the last bar; the idea starts again after 4 bars",
+  "app": "companion",
+  "ms": 13000,
+  "keys": "820:SCL,840:SCL^,1000:PLAY,1050:PLAY^",
+  "checks": [
+    {"type": "sound", "from": 1200, "to": 2200},
+    {"type": "lights", "from": 1300, "to": 2200, "keys": {"D4": "on", "F4": "on", "A4": "on", "G3": "half", "B3": "half", "C#4": "off"}},
+    {"type": "lights", "from": 7200, "to": 8800, "keys": {"C4": "on", "E4": "on", "G4": "on", "B4": "on", "D4": "off"}},
+    {"type": "lights", "from": 9300, "to": 11400, "keys": {"C4": "on", "D4": "half", "F4": "half"}},
+    {"type": "lights", "from": 12000, "to": 12800, "keys": {"D4": "on", "F4": "on", "C5": "on", "B4": "off"}},
+    {"type": "screen", "at": 2000},
+    {"type": "screen", "at": 8000}
+  ]
+}

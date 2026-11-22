@@ -1,0 +1,34 @@
+{
+  "scenario": "MIDI IN sends every channel to the track on screen, or follows the track played",
+  "name": "companion: MIDI IN This track: a note on channel 7 plays the track on screen; MIDI IN Follow: a note on channel 2 takes the screen to BASS, so the keys then play the bass (A3 sounds A2)",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:GLO,950:GLO^,1000:SCL,1050:SCL^,1065:SCL,1080:SCL^,1100:SCL,1150:SCL^,1200:e4:+1,1300:GLO,1350:GLO^,1500:m963c64,1800:m863c40,2000:GLO,2050:GLO^,2100:SCL,2150:SCL^,2165:SCL,2180:SCL^,2200:SCL,2250:SCL^,2300:e4:+1,2400:GLO,2450:GLO^,2600:m913c64,2800:m813c40,3300:A3@100,3700:A3^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1550,
+      "to": 1780,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "pitch",
+      "from": 2620,
+      "to": 2780,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "screen",
+      "at": 3100
+    },
+    {
+      "type": "pitch",
+      "from": 3400,
+      "to": 3650,
+      "note": "A2",
+      "cents": 20
+    }
+  ]
+}

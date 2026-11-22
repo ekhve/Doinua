@@ -1,0 +1,14 @@
+{
+  "scenario": "The bass and the drums follow the tracks' pattern",
+  "name": "companion, ST-84: BASS PLAY with K4 PLUS octave (A3 sounds A2 with its octave), BASS IDEAS K3 SPEED 80 %, DRUMS AUTO K3 FEEL and K4 GHOSTS",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:e1:+1,1100:A3@100,1500:A3^,1700:e5:+1,1900:A3@100,2400:A3^,2600:SCL,2650:SCL^,2800:e4:-2,3200:e1:+2,3400:SCL,3450:SCL^,3500:SCL,3550:SCL^,3700:e4:+1",
+  "checks": [
+    {"type": "pitch", "from": 1160, "to": 1450, "note": "A2", "cents": 25},
+    {"type": "pitch", "from": 1960, "to": 2350, "note": "A2", "cents": 25},
+    {"type": "screen", "at": 2300},
+    {"type": "screen", "at": 3000},
+    {"type": "screen", "at": 3900}
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "scenario": "The guided mode opens on the lesson and step it was on, over power-off",
+  "name": "companion: Guided, SELECT to step 5; switched off and on, Guided again: step 5 of 14",
+  "app": "companion",
+  "ms": 3600,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2400:e0:+1,2500:e0:+1,2600:e0:+1,2700:e0:+1",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 3200
+    }
+  ],
+  "reboot": {
+    "ms": 3000,
+    "keys": "900:HOME,1600:HOME^,1700:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^",
+    "checks": [
+      {
+        "type": "screen",
+        "at": 2600
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "R-081": [
+    {
+      "rule": "R7",
+      "reason": "The owner's approved wording (CP-R10, 2026-11-07). 'The current screen' is the page shown when GLO goes down (the chord pad, or the keyboard page); the scenario checks both."
+    }
+  ]
+}

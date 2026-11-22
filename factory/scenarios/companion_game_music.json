@@ -1,0 +1,35 @@
+{
+  "scenario": "With the music on, a pad and a bass play under the bells, and K4 turns them off",
+  "name": "companion, GAME: C4 starts the run with the music on (K4): the pad (C3 E3 G3) and the bass (C2) sound on, with reverb, while the unicorn waits at the first fence; K4 down: quiet while it waits; K4 up: the music again; nothing clips",
+  "app": "companion",
+  "ms": 11500,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,3600:C4@100,3700:C4^,7000:e5:-1,9500:e5:+1",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 2500,
+      "to": 3500
+    },
+    {
+      "type": "sound",
+      "from": 5500,
+      "to": 6900
+    },
+    {
+      "type": "silence",
+      "from": 8500,
+      "to": 9400
+    },
+    {
+      "type": "sound",
+      "from": 10500,
+      "to": 11400
+    },
+    {
+      "type": "peak",
+      "from": 3500,
+      "to": 11400,
+      "max_dbfs": -6.0
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "scenario": "A key let go while the modes show stops its note",
+  "name": "companion: Organ on CHORDS; C4 held, HOME held opens the modes, C4 let go while they show: the organ stops; PLAY closes the picker",
+  "app": "companion",
+  "ms": 3800,
+  "keys": "800:e6:+1,1000:C4@100,1100:HOME,1800:HOME^,2000:C4^,3500:PLAY,3550:PLAY^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1300,
+      "to": 1500,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 2700,
+      "to": 3300
+    }
+  ]
+}

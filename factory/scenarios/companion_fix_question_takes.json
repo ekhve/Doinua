@@ -1,0 +1,21 @@
+{
+  "scenario": "A question takes the knobs and new keys until it is answered",
+  "name": "companion: REC held opens the layer, OCT+ asks to clear; a key pressed then makes no sound; PLAY answers no and the key plays again",
+  "app": "companion",
+  "ms": 3800,
+  "keys": "900:REC,1500:REC^,1700:OCTUP,1750:OCTUP^,2000:C4@100,2600:C4^,2800:PLAY,2850:PLAY^,2900:PLAY,2950:PLAY^,3100:C4@100,3700:C4^",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 2100,
+      "to": 2550
+    },
+    {
+      "type": "pitch",
+      "from": 3250,
+      "to": 3450,
+      "note": "C4",
+      "cents": 25
+    }
+  ]
+}

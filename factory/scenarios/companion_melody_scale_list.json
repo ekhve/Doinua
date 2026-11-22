@@ -1,0 +1,10 @@
+{
+  "scenario": "The scale list says which scales fit the chords and what the others lack",
+  "name": "companion, MELODY SCALE with Am recorded: the pop-up lists the scales for the chords, best first, each saying fits or what it lacks",
+  "app": "companion",
+  "ms": 4000,
+  "keys": "900:REC,950:REC^,1000:PLAY,1050:PLAY^,1200:A3@100,1210:C4@100,1220:E4@100,2200:A3^,2200:C4^,2200:E4^,2400:REC,2450:REC^,2600:e1:+2,3000:e3:+1",
+  "checks": [
+    {"type": "screen", "at": 3300}
+  ]
+}

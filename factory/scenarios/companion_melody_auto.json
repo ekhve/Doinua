@@ -1,0 +1,12 @@
+{
+  "scenario": "Holding a pad plays a phrase in a style, call and answer",
+  "name": "companion, MELODY AUTO, Pop hook in C major: holding the I pad starts the song and plays the hook over C; letting go stops it",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:e1:+2,1000:SCL,1050:SCL^,1100:SCL,1150:SCL^,1300:F3@100,3200:F3^",
+  "checks": [
+    {"type": "silence", "from": 900, "to": 1280},
+    {"type": "sound", "from": 1350, "to": 3100},
+    {"type": "screen", "at": 2000}
+  ]
+}

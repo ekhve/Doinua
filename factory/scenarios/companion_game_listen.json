@@ -1,0 +1,32 @@
+{
+  "scenario": "In Unicorn Jump PLAY runs the song by itself, each fence's key lit as its note sounds",
+  "name": "companion, GAME, Unicorn Jump, Twinkle Twinkle, PLAY: the unicorn runs the song by itself; C4 lights as the first fence's bell sounds, C4 again for the second, then G4; the other keys dark",
+  "app": "companion",
+  "ms": 6400,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,3000:PLAY,3100:PLAY^",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 4550,
+      "to": 4700,
+      "keys": {
+        "C4": "on",
+        "D4": "off",
+        "G4": "off"
+      }
+    },
+    {
+      "type": "lights",
+      "from": 5950,
+      "to": 6100,
+      "keys": {
+        "G4": "on",
+        "C4": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 6025
+    }
+  ]
+}

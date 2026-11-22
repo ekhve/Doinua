@@ -1,0 +1,57 @@
+{
+  "scenario": "Held notes are named as a chord, and a note added names the new chord",
+  "name": "companion: CHORDS PLAY names what you hold: Am (vi), then Am9 when G and B are added",
+  "app": "companion",
+  "ms": 4000,
+  "keys": "1000:A3@100,1000:C4@100,1000:E4@100,2600:G4@100,2600:B4@100,3600:A3^,3600:C4^,3600:E4^,3600:G4^,3600:B4^",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 850,
+      "to": 950,
+      "keys": {
+        "D4": "dim",
+        "A3": "dim",
+        "C#4": "off"
+      }
+    },
+    {
+      "type": "sound",
+      "from": 1100,
+      "to": 2500
+    },
+    {
+      "type": "lights",
+      "from": 1100,
+      "to": 2500,
+      "keys": {
+        "A3": "on",
+        "C4": "on",
+        "E4": "on",
+        "D4": "dim",
+        "C5": "half",
+        "G4": "dim"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 1500
+    },
+    {
+      "type": "lights",
+      "from": 2700,
+      "to": 3500,
+      "keys": {
+        "A3": "on",
+        "E4": "on",
+        "G4": "on",
+        "D4": "dim"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 3200
+    }
+  ],
+  "note": "Lights: with C4 and B4 both held, the emulator reads both lights as dim (lit by the firmware alone, as Cmaj7 on IDEAS, they read full), so the windows where both are held leave them out; the screen shows them. To check on a real FM-1."
+}

@@ -1,0 +1,34 @@
+{
+  "scenario": "The three drum keys play the kick, the snare and the hat on their own",
+  "name": "companion: Guided, SELECT to step 7 (just the drums): C4, D4, E4 lit; C4 plays the kick, and the sequencer shows the kick alone",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2400:e0:+1,2500:e0:+1,2600:e0:+1,2700:e0:+1,2800:e0:+1,2900:e0:+1,3500:C4@100,3550:C4^",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 3200,
+      "to": 3450,
+      "keys": {
+        "C4": "on",
+        "D4": "on",
+        "E4": "on",
+        "F4": "off"
+      }
+    },
+    {
+      "type": "silence",
+      "from": 3200,
+      "to": 3480
+    },
+    {
+      "type": "sound",
+      "from": 3510,
+      "to": 3700
+    },
+    {
+      "type": "screen",
+      "at": 3900
+    }
+  ]
+}

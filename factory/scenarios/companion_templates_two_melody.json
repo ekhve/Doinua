@@ -1,0 +1,28 @@
+{
+  "scenario": "Two tracks can share a template",
+  "name": "companion: GLO, TRACKS, K1 to MELODY (no notes: at once); track 1 is MELODY 1, track 3 MELODY 2; track 1's keys play notes",
+  "app": "companion",
+  "ms": 2600,
+  "keys": "900:GLO,950:GLO^,1000:SCL,1050:SCL^,1100:e2:+1,1120:e2:+1,1250:GLO,1300:GLO^,1500:C4@100,1800:C4^,2100:e1:+1,2120:e1:+1",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 1200
+    },
+    {
+      "type": "pitch",
+      "from": 1550,
+      "to": 1750,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "screen",
+      "at": 1650
+    },
+    {
+      "type": "screen",
+      "at": 2400
+    }
+  ]
+}

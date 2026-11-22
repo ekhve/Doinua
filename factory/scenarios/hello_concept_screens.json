@@ -1,0 +1,11 @@
+{
+  "scenario": "The firmware draws the concept's game and study screens",
+  "name": "hello: HOME shows the kids' game screen (pixel-art images, clipped at the edge), HOME again the study screen",
+  "app": "hello",
+  "ms": 2500,
+  "keys": "1000:HOME,1100:HOME^,1800:HOME,1900:HOME^",
+  "checks": [
+    {"type": "screen", "at": 1500},
+    {"type": "screen", "at": 2300}
+  ]
+}

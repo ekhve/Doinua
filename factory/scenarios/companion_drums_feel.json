@@ -1,0 +1,17 @@
+{
+  "scenario": "The screen draws where the feel puts each hit",
+  "name": "companion, DRUMS: a Boom bap bar recorded from AUTO; REC layer GRID 1/16, FEEL Dilla; PLAY draws each hit where it plays, a line from its grid place (the kick swung, the snare late)",
+  "app": "companion",
+  "ms": 7600,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+3,1250:SCL,1270:SCL^,1290:SCL,1310:SCL^,1350:REC,1380:REC^,1500:F3@100,4000:F3^,4100:REC,4150:REC^,4300:SCL,4350:SCL^,4500:REC,5100:REC^,5200:e2:+1,5300:e3:+4,5500:REC,5550:REC^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 4400
+    },
+    {
+      "type": "screen",
+      "at": 7400
+    }
+  ]
+}

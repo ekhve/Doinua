@@ -1,0 +1,48 @@
+{
+  "scenario": "AUTO: holding a pad plays a pattern on its root, starting and stopping the song",
+  "name": "companion: BASS AUTO (Latin, tresillo) in C major: holding the I pad (F3) starts the song and plays C3; letting go stops it; the ii pad (G3) plays D3",
+  "app": "companion",
+  "ms": 5400,
+  "keys": "900:e1:+1,1000:SCL,1050:SCL^,1100:SCL,1150:SCL^,1300:F3@100,2600:F3^,4300:G3@100,5200:G3^",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 900,
+      "to": 1280
+    },
+    {
+      "type": "pitch",
+      "from": 1360,
+      "to": 1700,
+      "note": "C3",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 3800,
+      "to": 4250
+    },
+    {
+      "type": "pitch",
+      "from": 4360,
+      "to": 4700,
+      "note": "D3",
+      "cents": 25
+    },
+    {
+      "type": "lights",
+      "from": 1400,
+      "to": 2500,
+      "keys": {
+        "F3": "on",
+        "F4": "on",
+        "G3": "dim"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 2000
+    }
+  ],
+  "note": "With every sound's own effects (D-094) a note's echo and reverb ring on after it ends: what follows waits for them (0.8 s)."
+}

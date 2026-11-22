@@ -1,0 +1,36 @@
+{
+  "scenario": "On Whites the white keys play the scale and the black keys rest",
+  "name": "companion, BASS PLAY, HELP Whites in C major: the first white key (F3) plays C3; a black key is silent",
+  "app": "companion",
+  "ms": 4000,
+  "keys": "900:e1:+1,1000:e2:+2,1200:F3@100,1700:F3^,2800:F#3@100,3300:F#3^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1260,
+      "to": 1600,
+      "note": "C3",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 2850,
+      "to": 3250
+    },
+    {
+      "type": "lights",
+      "from": 1100,
+      "to": 3500,
+      "keys": {
+        "F3": "breath",
+        "G3": "dim",
+        "F#3": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 1400
+    }
+  ],
+  "note": "With every sound's own effects (D-094) a note's echo and reverb ring on after it ends: what follows waits for them (0.8 s)."
+}

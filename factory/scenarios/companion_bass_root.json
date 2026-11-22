@@ -1,0 +1,26 @@
+{
+  "scenario": "Key and root light the root of the chord recorded at that moment over the dim scale",
+  "name": "companion: a 1-bar song; Am (A3 C4 E4) recorded on the chords; on BASS, HELP Key+root: when the chord comes round, A lights full, the scale dim",
+  "app": "companion",
+  "ms": 8200,
+  "keys": "900:GLO,1000:GLO^,1050:e4:-1,1070:e4:-1,1090:e4:-1,1200:GLO,1300:GLO^,1400:REC,1450:REC^,1500:PLAY,1550:PLAY^,1700:A3@100,1710:C4@100,1720:E4@100,2700:A3^,2700:C4^,2700:E4^,2900:REC,2950:REC^,3100:e1:+1,3300:e2:+1",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 7250,
+      "to": 7750,
+      "keys": {
+        "A3": "on",
+        "A4": "on",
+        "C4": "dim",
+        "C#4": "off",
+        "G4": "dim"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 7500
+    }
+  ],
+  "note": "1 bar at 90 BPM is 2664 ms; the loop starts at about 1500 ms, so the Am recorded 200 to 1200 ms into it sounds again from about 7028 to 8028 ms."
+}

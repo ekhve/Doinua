@@ -1,0 +1,48 @@
+{
+  "scenario": "With a count-in, REC counts a bar of clicks before recording",
+  "name": "companion: a 1-bar song, COUNT-IN 1 bar; REC (stopped): four clicks (the count on screen), then the song; C4 played on its first beat is recorded there and comes round a bar later",
+  "app": "companion",
+  "ms": 7200,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:SCL,1150:SCL^,1165:SCL,1180:SCL^,1200:e4:+1,1300:GLO,1350:GLO^,1450:REC,1480:REC^,4180:C4@100,4400:C4^,4500:REC,4550:REC^",
+  "note": "The click is Off: the sounds before 4167 are the count-in's. The count-in's timing (the song on the fifth beat) is checked exactly in the seq unit test. Since D-051 (R-148) REC alone, while stopped, starts the count-in; it acts as REC is let go (1480).",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 1482,
+      "to": 1505
+    },
+    {
+      "type": "silence",
+      "from": 1700,
+      "to": 2100
+    },
+    {
+      "type": "sound",
+      "from": 2149,
+      "to": 2172
+    },
+    {
+      "type": "screen",
+      "at": 2000
+    },
+    {
+      "type": "pitch",
+      "from": 4220,
+      "to": 4380,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "silence",
+      "from": 5000,
+      "to": 6800
+    },
+    {
+      "type": "pitch",
+      "from": 6900,
+      "to": 7050,
+      "note": "C4",
+      "cents": 20
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "scenario": "STEPS writes only with REC on and removes with EDIT",
+  "name": "companion, DRUMS, SEQ to STEPS (the cursor on beat 1): REC off, the kick key (F3) sounds and nothing is written (its key back to dim after, as every drum key); REC on, the kick is written there and its key lights; EDIT + F3 removes it",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "820:e1:+3,900:SEQ,950:SEQ^,1000:SEQ,1050:SEQ^,1100:SEQ,1150:SEQ^,1200:F3@100,1400:F3^,1900:REC,1950:REC^,2100:F3@100,2300:F3^,3000:EDIT,3100:F3@100,3200:F3^,3300:EDIT^",
+  "checks": [
+    {"type": "sound", "from": 1220, "to": 1400},
+    {"type": "lights", "from": 1500, "to": 1800, "keys": {"F3": "dim"}},
+    {"type": "lights", "from": 2400, "to": 2900, "keys": {"F3": "on", "G3": "dim"}},
+    {"type": "lights", "from": 3400, "to": 4000, "keys": {"F3": "dim"}},
+    {"type": "screen", "at": 2800},
+    {"type": "screen", "at": 3800}
+  ]
+}

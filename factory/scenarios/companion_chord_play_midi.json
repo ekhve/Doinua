@@ -1,0 +1,39 @@
+{
+  "scenario": "Notes from a MIDI keyboard on channel 1 are named as a chord",
+  "name": "companion: CHORDS PLAY names notes held on MIDI channel 1 (A3 C4 E4: Am) and lights their keys",
+  "app": "companion",
+  "ms": 4000,
+  "keys": "1000:m903964,1000:m903c64,1000:m904064,2400:m803940,2400:m803c40,2400:m804040",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 1100,
+      "to": 2300
+    },
+    {
+      "type": "lights",
+      "from": 1200,
+      "to": 2300,
+      "keys": {
+        "A3": "on",
+        "C4": "on",
+        "E4": "on",
+        "D4": "dim"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 1800
+    },
+    {
+      "type": "lights",
+      "from": 2600,
+      "to": 3900,
+      "keys": {
+        "A3": "dim",
+        "C4": "half",
+        "E4": "dim"
+      }
+    }
+  ]
+}

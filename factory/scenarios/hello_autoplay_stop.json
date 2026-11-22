@@ -1,0 +1,13 @@
+{
+  "scenario": "PLAY again stops the playing",
+  "name": "hello: PLAY again at 2000 ms silences the note that sounds and plays no more",
+  "app": "hello",
+  "ms": 4000,
+  "keys": "1000:PLAY,1100:PLAY^,2000:PLAY,2100:PLAY^",
+  "checks": [
+    {"type": "pitch", "from": 1770, "to": 1980, "note": "D4", "cents": 15},
+    {"type": "silence", "from": 2200, "to": 3950},
+    {"type": "lights", "from": 2300, "to": 2600, "keys": {"D4": "dim", "E4": "dim"}},
+    {"type": "screen", "at": 2500}
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "scenario": "Velocity comes from how hard a key is pressed",
+  "name": "kit: a key's velocity comes from how hard it is pressed (rows F3..C5), and scales the note",
+  "app": "hello",
+  "ms": 4200,
+  "keys": "900:e6:-1,1200:C4@32,1800:C4^,2200:C4@127,2800:C4^,3200:F3@64,3800:F3^",
+  "note": "Sine (Basic) sustains, so its level is velocity / 127. The device reads the key's carbon pill; the emulator lands it at the scripted velocity's force (CS-1's measurements). The top row (C#5..G5) is not calibrated yet and plays at 100 on the device (D-017), so it is not in this scenario.",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1400,
+      "to": 1700,
+      "note": "C4",
+      "cents": 15
+    },
+    {
+      "type": "level_ratio",
+      "a": [
+        1400,
+        1700
+      ],
+      "b": [
+        2400,
+        2700
+      ],
+      "ratio": 3.97,
+      "tol": 0.1
+    },
+    {
+      "type": "level_ratio",
+      "a": [
+        1400,
+        1700
+      ],
+      "b": [
+        3400,
+        3700
+      ],
+      "ratio": 2.0,
+      "tol": 0.1
+    }
+  ]
+}

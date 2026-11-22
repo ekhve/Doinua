@@ -1,0 +1,1487 @@
+{
+ "_about": "The Sound Browser's list (ST-68, the Sound Browser Lab the owner approved on 2026-11-21): the owner's 208 picks in the lab's order, by group. name: as the browser shows it; engine and preset: where the firmware finds it (kit_engine_name, kit_preset_name); a sound whose engine is not built yet is left out until it is. tools/gen_browser.py makes apps/companion/sb_data.h.",
+ "groups": [
+  "Bass",
+  "Lead",
+  "Keys",
+  "Organ",
+  "Pad",
+  "Strings & voices",
+  "Brass & winds",
+  "Pluck, bell & arp",
+  "Chip",
+  "Effects & drones",
+  "Drums"
+ ],
+ "short": [
+  "BASS",
+  "LEAD",
+  "KEYS",
+  "ORGAN",
+  "PAD",
+  "STRINGS",
+  "BRASS",
+  "PLUCK",
+  "CHIP",
+  "FX",
+  "DRUMS"
+ ],
+ "sounds": [
+  {
+   "group": "Bass",
+   "name": "PUNCH BASS",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA (bass)",
+   "preset": "PUNCH BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "DIRTY BASS",
+   "from": "Melodee",
+   "engine": "Melodee: SID",
+   "preset": "DIRTY BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "BASS",
+   "from": "ChoralRoot",
+   "engine": "ChoralRoot: FM TONE",
+   "preset": "BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "ARP BASS",
+   "from": "Melodee",
+   "engine": "Melodee: SID",
+   "preset": "ARP BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "Bassment",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Bassment"
+  },
+  {
+   "group": "Bass",
+   "name": "SEQ BASS",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SEQ BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "MINI BASS",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MINI BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "TUBE BASS",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "TUBE BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "Grit Bass",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Grit Bass"
+  },
+  {
+   "group": "Bass",
+   "name": "ACID 303",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "ACID 303"
+  },
+  {
+   "group": "Bass",
+   "name": "MONO BASS",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "MONO BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "RUBBER SUB",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "RUBBER SUB"
+  },
+  {
+   "group": "Bass",
+   "name": "WOBBLE",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "WOBBLE"
+  },
+  {
+   "group": "Bass",
+   "name": "WOBBLE 2",
+   "from": "ChoralRoot",
+   "engine": "ChoralRoot: FM TONE",
+   "preset": "WOBBLE"
+  },
+  {
+   "group": "Bass",
+   "name": "SUB BASS",
+   "from": "GHOULBOX",
+   "engine": "GHOULBOX: Its own list",
+   "preset": "SUB BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "SUB BASS 2",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "SUB BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "BASS IN FIFTHS",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "BASS IN FIFTHS"
+  },
+  {
+   "group": "Bass",
+   "name": "Dub Plate",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Dub Plate"
+  },
+  {
+   "group": "Bass",
+   "name": "Bass Clarin",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Bass Clarin"
+  },
+  {
+   "group": "Bass",
+   "name": "Bass Face",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Bass Face"
+  },
+  {
+   "group": "Bass",
+   "name": "808 SLIDE",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "808 SLIDE"
+  },
+  {
+   "group": "Bass",
+   "name": "Station Bass",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Station Bass"
+  },
+  {
+   "group": "Bass",
+   "name": "WOBBLE 3",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "WOBBLE"
+  },
+  {
+   "group": "Bass",
+   "name": "808 BOOM",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "808 BOOM"
+  },
+  {
+   "group": "Bass",
+   "name": "Acid Slide",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Acid Slide"
+  },
+  {
+   "group": "Bass",
+   "name": "CZ BASS",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "CZ BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "FM BASS",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "FM BASS"
+  },
+  {
+   "group": "Bass",
+   "name": "Fm Growl",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Fm Growl"
+  },
+  {
+   "group": "Bass",
+   "name": "GROWL",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "GROWL"
+  },
+  {
+   "group": "Bass",
+   "name": "Meow Bass",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Meow Bass"
+  },
+  {
+   "group": "Bass",
+   "name": "OCTAVE PUMP",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "OCTAVE PUMP"
+  },
+  {
+   "group": "Bass",
+   "name": "Wobble Dub",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Wobble Dub"
+  },
+  {
+   "group": "Lead",
+   "name": "SYNC LEAD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "SYNC LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "UNISON LD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "UNISON LD"
+  },
+  {
+   "group": "Lead",
+   "name": "SOLO LEAD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "SOLO LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "SYNC LEAD 2",
+   "from": "Melodee",
+   "engine": "Melodee: FM6",
+   "preset": "SYNC LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "FUZZ LEAD",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "FUZZ LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "NUMAN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "NUMAN"
+  },
+  {
+   "group": "Lead",
+   "name": "BIG HOOK",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "BIG HOOK"
+  },
+  {
+   "group": "Lead",
+   "name": "SCREAM LD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "SCREAM LD"
+  },
+  {
+   "group": "Lead",
+   "name": "MONO SYNC",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MONO SYNC"
+  },
+  {
+   "group": "Lead",
+   "name": "Sync Screamer",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Sync Screamer"
+  },
+  {
+   "group": "Lead",
+   "name": "PULSE HERO",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "PULSE HERO"
+  },
+  {
+   "group": "Lead",
+   "name": "OVERDRIVE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "OVERDRIVE"
+  },
+  {
+   "group": "Lead",
+   "name": "EMERSON",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "EMERSON"
+  },
+  {
+   "group": "Lead",
+   "name": "HONEY LEAD",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "HONEY LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "G-FUNK LD",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "G-FUNK LD"
+  },
+  {
+   "group": "Lead",
+   "name": "Sync Swellpad",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Sync Swellpad"
+  },
+  {
+   "group": "Lead",
+   "name": "ACID LEAD",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "ACID LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "TITAN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "TITAN"
+  },
+  {
+   "group": "Lead",
+   "name": "Clarinet",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Clarinet"
+  },
+  {
+   "group": "Lead",
+   "name": "G-FUNK",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "G-FUNK"
+  },
+  {
+   "group": "Lead",
+   "name": "HOOVER",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "HOOVER"
+  },
+  {
+   "group": "Lead",
+   "name": "Lead II",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Lead II"
+  },
+  {
+   "group": "Lead",
+   "name": "MELLOW MAN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MELLOW MAN"
+  },
+  {
+   "group": "Lead",
+   "name": "No Whining",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "No Whining"
+  },
+  {
+   "group": "Lead",
+   "name": "Recorder",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Recorder"
+  },
+  {
+   "group": "Lead",
+   "name": "S&H Computer",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "S&H Computer"
+  },
+  {
+   "group": "Lead",
+   "name": "SINE SOLO",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SINE SOLO"
+  },
+  {
+   "group": "Lead",
+   "name": "SQUARE LEAD",
+   "from": "ChoralRoot",
+   "engine": "ChoralRoot: FM TONE",
+   "preset": "SQUARE LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "SYNC II",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "SYNC II"
+  },
+  {
+   "group": "Lead",
+   "name": "SYNC LEAD 3",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "SYNC LEAD"
+  },
+  {
+   "group": "Lead",
+   "name": "Square Solo",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Square Solo"
+  },
+  {
+   "group": "Lead",
+   "name": "Sync Punch",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Sync Punch"
+  },
+  {
+   "group": "Lead",
+   "name": "TALKBOX",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "TALKBOX"
+  },
+  {
+   "group": "Lead",
+   "name": "UNISON GLIDE W RES",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "UNISON GLIDE W RES"
+  },
+  {
+   "group": "Lead",
+   "name": "Velocipeed",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Velocipeed"
+  },
+  {
+   "group": "Keys",
+   "name": "CLAV SOFT",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "CLAV SOFT"
+  },
+  {
+   "group": "Keys",
+   "name": "E.PIANO",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "E.PIANO"
+  },
+  {
+   "group": "Keys",
+   "name": "HARPSICHORD",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "HARPSICHORD"
+  },
+  {
+   "group": "Keys",
+   "name": "Forever Keys",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Forever Keys"
+  },
+  {
+   "group": "Keys",
+   "name": "E Piano Tre",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "E Piano Tre"
+  },
+  {
+   "group": "Keys",
+   "name": "EP",
+   "from": "ChoralRoot",
+   "engine": "ChoralRoot: FM TONE",
+   "preset": "EP"
+  },
+  {
+   "group": "Keys",
+   "name": "KEYS",
+   "from": "Tessera",
+   "engine": "Tessera: ORACLE",
+   "preset": "KEYS"
+  },
+  {
+   "group": "Keys",
+   "name": "MALLET KEY",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MALLET KEY"
+  },
+  {
+   "group": "Organ",
+   "name": "Combo Organ",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Combo Organ"
+  },
+  {
+   "group": "Organ",
+   "name": "FULL ORGAN",
+   "from": "Ours",
+   "engine": "Organ wheel",
+   "preset": "FULL ORGAN"
+  },
+  {
+   "group": "Organ",
+   "name": "Organ I",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Organ I"
+  },
+  {
+   "group": "Organ",
+   "name": "Organ II",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Organ II"
+  },
+  {
+   "group": "Organ",
+   "name": "HAMMOND",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "HAMMOND"
+  },
+  {
+   "group": "Pad",
+   "name": "MIDNIGHT ST",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MIDNIGHT ST"
+  },
+  {
+   "group": "Pad",
+   "name": "NIGHT SWIM",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "NIGHT SWIM"
+  },
+  {
+   "group": "Pad",
+   "name": "WARM PAD",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "WARM PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "LUSH PAD",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "LUSH PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "SLOW STRINGS",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "SLOW STRINGS"
+  },
+  {
+   "group": "Pad",
+   "name": "HEAVEN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "HEAVEN"
+  },
+  {
+   "group": "Pad",
+   "name": "CLOUD PAD",
+   "from": "ChoralRoot",
+   "engine": "ChoralRoot: GRAIN",
+   "preset": "CLOUD PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "It's a Prophet 5",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "It's a Prophet"
+  },
+  {
+   "group": "Pad",
+   "name": "Moving Stri",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Moving Stri"
+  },
+  {
+   "group": "Pad",
+   "name": "SOLINA",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SOLINA"
+  },
+  {
+   "group": "Pad",
+   "name": "SAW WALL",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SAW WALL"
+  },
+  {
+   "group": "Pad",
+   "name": "ChorusLayer",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "ChorusLayer"
+  },
+  {
+   "group": "Pad",
+   "name": "Poly McFat",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Poly McFat"
+  },
+  {
+   "group": "Pad",
+   "name": "SHIMMER",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "SHIMMER"
+  },
+  {
+   "group": "Pad",
+   "name": "SUNRISE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SUNRISE"
+  },
+  {
+   "group": "Pad",
+   "name": "Midnight PWM",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Midnight PWM"
+  },
+  {
+   "group": "Pad",
+   "name": "CLOUD PAD 2",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "CLOUD PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "MOONLIGHT",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MOONLIGHT"
+  },
+  {
+   "group": "Pad",
+   "name": "WARM PAD 2",
+   "from": "Tessera",
+   "engine": "Tessera: ORACLE",
+   "preset": "WARM PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "PIZZICATO",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "PIZZICATO"
+  },
+  {
+   "group": "Pad",
+   "name": "MELLOW PULSE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MELLOW PULSE"
+  },
+  {
+   "group": "Pad",
+   "name": "SOUL OOH",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "SOUL OOH"
+  },
+  {
+   "group": "Pad",
+   "name": "NEON PAD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "NEON PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "VINTAGE PD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "VINTAGE PD"
+  },
+  {
+   "group": "Pad",
+   "name": "Ripples",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Ripples"
+  },
+  {
+   "group": "Pad",
+   "name": "SOFT PAD",
+   "from": "Tessera",
+   "engine": "Tessera: FM6",
+   "preset": "SOFT PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "House Mover",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "House Mover"
+  },
+  {
+   "group": "Pad",
+   "name": "ECLIPSE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "ECLIPSE"
+  },
+  {
+   "group": "Pad",
+   "name": "Fantastic Five",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Fantastic Five"
+  },
+  {
+   "group": "Pad",
+   "name": "Frontier Or",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Frontier Or"
+  },
+  {
+   "group": "Pad",
+   "name": "PULSE PAD",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "PULSE PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "DREAMER",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "DREAMER"
+  },
+  {
+   "group": "Pad",
+   "name": "STRINGS",
+   "from": "Ours",
+   "engine": "Analog",
+   "preset": "STRINGS"
+  },
+  {
+   "group": "Pad",
+   "name": "Sustainer",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Sustainer"
+  },
+  {
+   "group": "Pad",
+   "name": "Born in the 80's",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Born in the 80's"
+  },
+  {
+   "group": "Pad",
+   "name": "CZ STRING",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "CZ STRING"
+  },
+  {
+   "group": "Pad",
+   "name": "Celtic Moon",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Celtic Moon"
+  },
+  {
+   "group": "Pad",
+   "name": "DARK PAD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "DARK PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "Duotone",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Duotone"
+  },
+  {
+   "group": "Pad",
+   "name": "Funky II",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Funky II"
+  },
+  {
+   "group": "Pad",
+   "name": "GLASS PAD",
+   "from": "Tessera",
+   "engine": "Tessera: ORACLE",
+   "preset": "GLASS PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "HAZE",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "HAZE"
+  },
+  {
+   "group": "Pad",
+   "name": "NIGHTDRIVE",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "NIGHTDRIVE"
+  },
+  {
+   "group": "Pad",
+   "name": "NORTHERN SKY",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "NORTHERN SKY"
+  },
+  {
+   "group": "Pad",
+   "name": "Nice n Smooth",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Nice n Smooth"
+  },
+  {
+   "group": "Pad",
+   "name": "OCTAVE SAWTEETH",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "OCTAVE SAWTEETH"
+  },
+  {
+   "group": "Pad",
+   "name": "Orchestral",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Orchestral"
+  },
+  {
+   "group": "Pad",
+   "name": "Rolling Wah",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Rolling Wah"
+  },
+  {
+   "group": "Pad",
+   "name": "Strings III",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Strings III"
+  },
+  {
+   "group": "Pad",
+   "name": "Synth Pad",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Synth Pad"
+  },
+  {
+   "group": "Pad",
+   "name": "VOX PAD",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "VOX PAD"
+  },
+  {
+   "group": "Pad",
+   "name": "Xylophone",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Xylophone"
+  },
+  {
+   "group": "Strings & voices",
+   "name": "LUSH STRINGS",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "LUSH STRINGS"
+  },
+  {
+   "group": "Strings & voices",
+   "name": "MELLOTRON",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MELLOTRON"
+  },
+  {
+   "group": "Strings & voices",
+   "name": "ALIEN CHOIR",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "ALIEN CHOIR"
+  },
+  {
+   "group": "Strings & voices",
+   "name": "Choir",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Choir"
+  },
+  {
+   "group": "Strings & voices",
+   "name": "ENSEMBLE STR",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "ENSEMBLE STR"
+  },
+  {
+   "group": "Strings & voices",
+   "name": "SOLO VIOLIN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SOLO VIOLIN"
+  },
+  {
+   "group": "Strings & voices",
+   "name": "STR CLOUD",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "STR CLOUD"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "POLY BRASS",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "POLY BRASS"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "BANKS",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "BANKS"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "Regal Movement",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Regal Movement"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "ANALOG BRASS",
+   "from": "Tessera",
+   "engine": "Tessera: TRIO",
+   "preset": "ANALOG BRASS"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "BRASS 2",
+   "from": "Melodee",
+   "engine": "Melodee: CZ-1",
+   "preset": "BRASS"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "FRENCH HORN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "FRENCH HORN"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "SAX LEAD",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SAX LEAD"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "Brass",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Brass"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "Brass Swell",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Brass Swell"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "DREAM FLUTE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "DREAM FLUTE"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "Flutes",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Flutes"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "SAX BRASS",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SAX BRASS"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "SYNTH BRASS",
+   "from": "CoralFlower",
+   "engine": "CoralFlower: VA",
+   "preset": "SYNTH BRASS"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "TIN WHISTLE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "TIN WHISTLE"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "TROMBONE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "TROMBONE"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "TRUMPET",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "TRUMPET"
+  },
+  {
+   "group": "Brass & winds",
+   "name": "WHISTLE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "WHISTLE"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "MARIMBA",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "MARIMBA"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "HARP",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "HARP"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "PLUCK ARP",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "PLUCK ARP"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "SHADOW ARP",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "SHADOW ARP"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "GLASS ARP",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "GLASS ARP"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "DREAM ARP",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "DREAM ARP"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "ARP CHORD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "ARP CHORD"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "RANDOM ARPEGGIATOR",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "RANDOM ARPEGGIATOR"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "BELL LEAD",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "BELL LEAD"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "CHIME BOX",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "CHIME BOX"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "DARK ARP",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "DARK ARP"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "I FEEL ARP",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "I FEEL ARP"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "Punchy Bells",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Punchy Bells"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "RIN",
+   "from": "Tessera",
+   "engine": "Tessera: FM6",
+   "preset": "RIN"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "Sparkle Ponies",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Sparkle Ponies"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "TICK PLK",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "TICK PLK"
+  },
+  {
+   "group": "Pluck, bell & arp",
+   "name": "TRAP PLUCK",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "TRAP PLUCK"
+  },
+  {
+   "group": "Chip",
+   "name": "8-BIT ARP",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "8-BIT ARP"
+  },
+  {
+   "group": "Chip",
+   "name": "8BIT ARP",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "8BIT ARP"
+  },
+  {
+   "group": "Chip",
+   "name": "ARP 8BIT",
+   "from": "Ours",
+   "engine": "Lo-fi",
+   "preset": "ARP 8BIT"
+  },
+  {
+   "group": "Chip",
+   "name": "GAME LEAD",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "GAME LEAD"
+  },
+  {
+   "group": "Chip",
+   "name": "NES BASS",
+   "from": "Synthesthetic",
+   "engine": "Synthesthetic: Its own list",
+   "preset": "NES BASS"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "SPACE DRONE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SPACE DRONE"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "RISER",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "RISER"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "RUMBLE",
+   "from": "Tessera",
+   "engine": "Tessera: ORACLE",
+   "preset": "RUMBLE"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "DRONE",
+   "from": "Tessera",
+   "engine": "Tessera: ORACLE",
+   "preset": "DRONE"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "RAYGUN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "RAYGUN"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "Sweep I",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Sweep I"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "DRONE UNI",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "DRONE UNI"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "FX Sweep",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "FX Sweep"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "Helicopter",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Helicopter"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "JET SWEEP",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "JET SWEEP"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "LOW DRONE",
+   "from": "GHOULBOX",
+   "engine": "GHOULBOX: Its own list",
+   "preset": "LOW DRONE"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "WIND",
+   "from": "GHOULBOX",
+   "engine": "GHOULBOX: Its own list",
+   "preset": "WIND"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "SLOW SWEEP",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "SLOW SWEEP"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "Pluck Sweep",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "Pluck Sweep"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "80s Sci Fi Drop",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "80s Sci Fi Drop"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "FIFTH DRONE",
+   "from": "Tessera",
+   "engine": "Tessera: TRIO",
+   "preset": "FIFTH DRONE"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "FX Rise 2",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "FX Rise 2"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "FX Sweep 1",
+   "from": "FM-106",
+   "engine": "FM-106: Juno-106",
+   "preset": "FX Sweep"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "Riser Chord",
+   "from": "Melodee",
+   "engine": "Melodee: Prophet",
+   "preset": "Riser Chord"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "SIREN",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SIREN"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "SUB DROP",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "SUB DROP"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "SWEEP PAD",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "SWEEP PAD"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "Slow Sweep Pad",
+   "from": "Bass Something 2",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Slow Sweep Pad"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "TELEPHONE",
+   "from": "fmini-1",
+   "engine": "FMini",
+   "preset": "TELEPHONE"
+  },
+  {
+   "group": "Effects & drones",
+   "name": "WIND RISE",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "WIND RISE"
+  },
+  {
+   "group": "Drums",
+   "name": "USER",
+   "from": "Ours",
+   "engine": "Drums",
+   "preset": "USER"
+  },
+  {
+   "group": "Drums",
+   "name": "Dusty",
+   "from": "Ours",
+   "engine": "Drums",
+   "preset": "Dusty"
+  },
+  {
+   "group": "Drums",
+   "name": "KIT 80",
+   "from": "Felucca",
+   "engine": "Felucca: Drums",
+   "preset": "KIT 80"
+  },
+  {
+   "group": "Drums",
+   "name": "808 KIT",
+   "from": "Melodee",
+   "engine": "Melodee: Drums",
+   "preset": "808 KIT"
+  },
+  {
+   "group": "Drums",
+   "name": "HIHAT",
+   "from": "OberVave",
+   "engine": "OberVave: OberVave",
+   "preset": "HIHAT"
+  }
+ ]
+}

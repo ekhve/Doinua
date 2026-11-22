@@ -1,0 +1,13 @@
+{
+  "scenario": "One note held on Key lights a chord of the key around it",
+  "name": "companion, CHORDS PLAY, HELP Key in C major: A3 held lights C4 and E4 (Am); SELECT lights F4 and C4 (F)",
+  "app": "companion",
+  "ms": 3000,
+  "keys": "900:A3@100,1700:e0:+1,2600:A3^",
+  "checks": [
+    {"type": "lights", "from": 1100, "to": 1600, "keys": {"A3": "on", "C4": "on", "E4": "on", "D4": "dim", "F4": "dim"}},
+    {"type": "lights", "from": 1900, "to": 2500, "keys": {"A3": "on", "C4": "on", "F4": "on", "E4": "dim"}},
+    {"type": "screen", "at": 1500},
+    {"type": "screen", "at": 2400}
+  ]
+}

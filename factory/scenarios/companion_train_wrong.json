@@ -1,0 +1,34 @@
+{
+  "scenario": "In the train game a wrong key is a cough, and two in a row are a sneeze",
+  "name": "companion, GAME, the Night Train, K1 Key, K4 music off: C4 (the first note is G4): the engine coughs black smoke; C4 again: ah... ah... CHOO, its front rearing up, the driver's cap flying off; the puppy barks, the driver goes red and shakes his fist; the sooty cloud blows back over them",
+  "app": "companion",
+  "ms": 8800,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2200:e0:+1,2250:e0:+1,2300:e0:+1,2400:e5:-1,2500:e2:+1,3000:C4@100,3100:C4^,5000:C4@100,5100:C4^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 3325
+    },
+    {
+      "type": "sound",
+      "from": 5100,
+      "to": 5450
+    },
+    {
+      "type": "screen",
+      "at": 5725
+    },
+    {
+      "type": "screen",
+      "at": 6075
+    },
+    {
+      "type": "screen",
+      "at": 6575
+    },
+    {
+      "type": "screen",
+      "at": 8025
+    }
+  ]
+}

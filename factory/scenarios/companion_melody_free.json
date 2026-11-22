@@ -1,0 +1,38 @@
+{
+  "scenario": "With HELP Free, the scale's settings are greyed",
+  "name": "companion, MELODY PLAY with HELP Free: SCALE and OUTSIDE greyed, PLUS not; only the key played lights; turning SCALE says HELP is Free, so the scale does nothing now",
+  "app": "companion",
+  "ms": 3200,
+  "keys": "900:e1:+2,1000:e2:-1,1500:D4@100,2300:D4^,2500:e3:+1",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 1100,
+      "to": 1400,
+      "keys": {
+        "C4": "off",
+        "D4": "off",
+        "E4": "off",
+        "G4": "off"
+      }
+    },
+    {
+      "type": "lights",
+      "from": 1600,
+      "to": 2200,
+      "keys": {
+        "D4": "on",
+        "C4": "off",
+        "E4": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 1300
+    },
+    {
+      "type": "screen",
+      "at": 2800
+    }
+  ]
+}

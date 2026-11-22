@@ -1,0 +1,43 @@
+{
+  "scenario": "The bass plays an octave down and lights the key; notes outside it play softly or not at all",
+  "name": "companion, BASS PLAY: A3 sounds A2; the key (C major) lights dim, C breathes; OUTSIDE mute silences C#4",
+  "app": "companion",
+  "ms": 3200,
+  "keys": "900:e1:+1,1100:A3@100,1600:A3^,1800:e4:+1,2000:C#4@100,2500:C#4^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1160,
+      "to": 1500,
+      "note": "A2",
+      "cents": 25
+    },
+    {
+      "type": "lights",
+      "from": 950,
+      "to": 1050,
+      "keys": {
+        "D4": "dim",
+        "C#4": "off",
+        "E4": "dim"
+      }
+    },
+    {
+      "type": "lights",
+      "from": 950,
+      "to": 2700,
+      "keys": {
+        "C4": "breath"
+      }
+    },
+    {
+      "type": "silence",
+      "from": 2050,
+      "to": 2450
+    },
+    {
+      "type": "screen",
+      "at": 1300
+    }
+  ]
+}

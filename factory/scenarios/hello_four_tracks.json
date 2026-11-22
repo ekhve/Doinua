@@ -1,0 +1,44 @@
+{
+  "scenario": "Four tracks sound at once with their own sounds",
+  "name": "hello: MIDI channels 2, 3 and 10 play the bass (Analog SQR BASS), the melody (Phase BELL) and the drums, each in tune, then all four tracks together",
+  "app": "hello",
+  "ms": 5400,
+  "keys": "1000:m912D64,1500:m812D00,1700:m924C64,2200:m824C00,2400:m992464,2800:m892400,3000:m903C64,3000:m912D64,3000:m924C64,3000:m992A64,3600:m803C00,3600:m812D00,3600:m824C00,3600:m892A00",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 600,
+      "to": 950
+    },
+    {
+      "type": "pitch",
+      "from": 1100,
+      "to": 1450,
+      "note": "A2",
+      "cents": 25
+    },
+    {
+      "type": "pitch",
+      "from": 1800,
+      "to": 2150,
+      "note": "E5",
+      "cents": 25
+    },
+    {
+      "type": "sound",
+      "from": 2420,
+      "to": 2650
+    },
+    {
+      "type": "sound",
+      "from": 3050,
+      "to": 3550
+    },
+    {
+      "type": "silence",
+      "from": 5100,
+      "to": 5390
+    }
+  ],
+  "note": "With every sound's own effects (D-094) a note's echo and reverb ring on after it ends: what follows waits for them (0.8 s)."
+}

@@ -1,0 +1,47 @@
+diff --git a/crates/fm1-live/src/main.rs b/crates/fm1-live/src/main.rs
+index 0a9ec7e..314ddd1 100644
+--- a/crates/fm1-live/src/main.rs
++++ b/crates/fm1-live/src/main.rs
+@@ -347,10 +347,21 @@ fn bench(o: &Opts, ms: u64) {
+             while m.soc.periph.ms() >= next_frame {
+                 let leds = m.soc.periph.led_take();
+                 let down = m.soc.periph.keys_down;
+-                if let Err(e) = write_panel(&mut m, &down, &leds, &format!("{dir}/{nframes:06}.ppm")) {
++                // (FM1_FACTORY: no panel picture, just the data below; a picture a frame costs 3 MB)
++                if std::env::var_os("FM1_FACTORY").is_some() {
++                } else if let Err(e) = write_panel(&mut m, &down, &leds, &format!("{dir}/{nframes:06}.ppm")) {
+                     eprintln!("{dir}: {e}");
+                     std::process::exit(1);
+                 }
++                // fm1-scales factory: the LEDs' on-fractions and the raw LCD at each frame, for checks
++                if std::env::var_os("FM1_FACTORY").is_some() {
++                    use std::io::Write;
++                    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(format!("{dir}/leds.jsonl")) {
++                        let v: Vec<String> = leds.iter().map(|x| format!("{x:.3}")).collect();
++                        let _ = writeln!(f, "{{\"ms\": {}, \"leds\": [{}]}}", next_frame, v.join(","));
++                    }
++                    let _ = fm1_soc::write_bmp(&format!("{dir}/lcd_{next_frame}.bmp"), &m.soc.lcd.fb, m.soc.lcd.inverted);
++                }
+                 nframes += 1;
+                 next_frame += step;
+             }
+diff --git a/crates/fm1-soc/src/lib.rs b/crates/fm1-soc/src/lib.rs
+index 9c4cc00..ec6bdf4 100644
+--- a/crates/fm1-soc/src/lib.rs
++++ b/crates/fm1-soc/src/lib.rs
+@@ -896,7 +896,14 @@ impl Soc {
+ 
+     fn sfr_get(&mut self, addr: u32) -> u32 {
+         if addr < SFR_LO_END && addr & 3 == 0 {
+-            return self.sfr_lo[(addr >> 2) as usize];
++            let v = self.sfr_lo[(addr >> 2) as usize];
++            // the audio PLL (PLL0) as M-VAVE's bootloader leaves it on every FM-1, until a firmware writes it
++            // (felucca-bsp fm1_audio.h FM1_AUDIO_PLL_STOCK0/1: fm1_audio_init_checked starts on nothing else)
++            return match addr {
++                0x119A0 if v == 0 => 0x4540_0203,
++                0x119A4 if v == 0 => 0x3F50_3026,
++                _ => v,
++            };
+         }
+         *self.sfr.get(&addr).unwrap_or(&0)
+     }

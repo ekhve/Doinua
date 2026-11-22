@@ -1,0 +1,38 @@
+{
+  "scenario": "A track's MIDI channel is set on the MIDI page and kept over power-off",
+  "name": "companion: GLO, SCL twice to MIDI, K2: CHORDS on channel 5; a note on channel 5 plays the chords, one on channel 1 nothing; after a power-off channel 5 still plays",
+  "app": "companion",
+  "ms": 5500,
+  "keys": "900:GLO,950:GLO^,1000:SCL,1050:SCL^,1065:SCL,1080:SCL^,1100:SCL,1150:SCL^,1200:e3:+1,1220:e3:+1,1240:e3:+1,1260:e3:+1,1400:GLO,1450:GLO^,1600:m943c64,2000:m843c40,2300:m903c64,2800:m803c40",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1700,
+      "to": 1950,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "silence",
+      "from": 2400,
+      "to": 2750
+    },
+    {
+      "type": "screen",
+      "at": 1300
+    }
+  ],
+  "reboot": {
+    "ms": 2500,
+    "keys": "1000:m943c64,1400:m843c40",
+    "checks": [
+      {
+        "type": "pitch",
+        "from": 1100,
+        "to": 1350,
+        "note": "C4",
+        "cents": 20
+      }
+    ]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "scenario": "ARP plays the notes held up in 16ths, and latch keeps it going",
+  "name": "companion, ST-77: MELODY on the Juno's Xylophone (a clean, quick pitch, dry: no echo to blur it, D-093; it sounds an octave up, 4': C5 E5 G5 for C4 E4 G4), ARP on (MODE up, RATE 1/16 at 90 BPM: 167 ms a step); C4 E4 G4 held: C4, E4, G4 in turn; ARP twice: latch; the keys let go, the pattern goes on and the three keys stay lit; SELECT two on: the rhythm menu, number, name and 16 steps, on 3 hats 2-1 (R-306)",
+  "app": "companion",
+  "ms": 7000,
+  "keys": "900:e1:+2,1000:e6:+1,1200:e2:+3,1400:e6:+22,3600:ARP,3650:ARP^,4000:C4@100,4000:E4@100,4000:G4@100,4800:ARP,4850:ARP^,4950:ARP,5000:ARP^,5300:C4^,5300:E4^,5300:G4^,6200:e0:+2",
+  "note": "PRESETS opens the Sound Browser on Lead (the MELODY template) and K1 to Pad and PRESETS to its last, the Juno's Xylophone; the list has closed when ARP is tapped. Stopped, the arpeggio keeps its own clock at the song's tempo from the first step; each note sounds GATE 50 %, 83 ms.",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 4020,
+      "to": 4085,
+      "note": "C5",
+      "cents": 30
+    },
+    {
+      "type": "pitch",
+      "from": 4190,
+      "to": 4250,
+      "note": "E5",
+      "cents": 30
+    },
+    {
+      "type": "pitch",
+      "from": 4355,
+      "to": 4420,
+      "note": "G5",
+      "cents": 30
+    },
+    {
+      "type": "sound",
+      "from": 5600,
+      "to": 6600
+    },
+    {
+      "type": "lights",
+      "from": 5600,
+      "to": 6600,
+      "keys": {
+        "C4": "on",
+        "E4": "on",
+        "G4": "on",
+        "D4": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 4150
+    },
+    {
+      "type": "screen",
+      "at": 6000
+    },
+    {
+      "type": "screen",
+      "at": 6500
+    }
+  ]
+}

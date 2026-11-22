@@ -1,0 +1,13 @@
+{
+  "scenario": "Guided opens on lesson 1, step 1, and says what to do",
+  "name": "companion: HOME held, SELECT to Guided, HOME, HOME: the guided mode on lesson 1, step 1 of 14, 'Press PLAY' in amber, the step's words, the sequencer and the mixer line",
+  "app": "companion",
+  "ms": 2800,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2500
+    }
+  ]
+}

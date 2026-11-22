@@ -1,0 +1,59 @@
+{
+  "scenario": "Each pad keeps its own repeat, tuning and decay",
+  "name": "companion, DRUMS at 90 BPM: hat1 (F4) with K1 REPEAT 1/16, held a beat, plays four times; kick1 (F3) still plays once; 808 kick4 (G#3) tuned up five semitones names A1",
+  "app": "companion",
+  "ms": 5600,
+  "keys": "900:e1:+3,1000:F4@100,1050:F4^,1200:e2:+4,1500:F4@100,2160:F4^,2400:F3@100,3060:F3^,3300:e6:+1,3500:G#3@100,3600:G#3^,3800:e3:+5",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 1500,
+      "to": 1540,
+      "rms": 60
+    },
+    {
+      "type": "silence",
+      "from": 1600,
+      "to": 1660,
+      "rms": 60
+    },
+    {
+      "type": "sound",
+      "from": 1667,
+      "to": 1707,
+      "rms": 60
+    },
+    {
+      "type": "silence",
+      "from": 1767,
+      "to": 1827,
+      "rms": 60
+    },
+    {
+      "type": "sound",
+      "from": 1834,
+      "to": 1874,
+      "rms": 60
+    },
+    {
+      "type": "sound",
+      "from": 2000,
+      "to": 2040,
+      "rms": 60
+    },
+    {
+      "type": "silence",
+      "from": 2800,
+      "to": 3060,
+      "rms": 60
+    },
+    {
+      "type": "screen",
+      "at": 2000
+    },
+    {
+      "type": "screen",
+      "at": 4100
+    }
+  ]
+}

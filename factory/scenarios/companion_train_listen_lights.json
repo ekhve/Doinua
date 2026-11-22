@@ -1,0 +1,27 @@
+{
+  "scenario": "While a game plays its song on PLAY, each note's key lights as the note sounds",
+  "name": "companion, GAME, the Night Train, PLAY: the song plays by itself and each key lights as its note sounds (G4, then D4), the other keys dark",
+  "app": "companion",
+  "ms": 4000,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2200:e0:+1,2250:e0:+1,2300:e0:+1,3000:PLAY,3100:PLAY^",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 3100,
+      "to": 3500,
+      "keys": {
+        "G4": "on",
+        "D4": "off"
+      }
+    },
+    {
+      "type": "lights",
+      "from": 3750,
+      "to": 3850,
+      "keys": {
+        "D4": "on",
+        "G4": "off"
+      }
+    }
+  ]
+}

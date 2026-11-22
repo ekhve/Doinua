@@ -1,0 +1,12 @@
+{
+  "scenario": "PROGRESSION opens a numbered menu",
+  "name": "companion, CHORDS PLAY, HELP Pads: K2 PROGRESSION turned to the top shows the numbered list (None, Mine, Follow bass, Follow melody, then the styles' with their numerals); it closes by itself",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:e2:+2,1100:e3:-1,1150:e3:-1,1200:e3:-1,1250:e3:-1,1300:e3:-1,1350:e3:-1,1400:e3:-1,2200:e3:+5",
+  "checks": [
+    {"type": "screen", "at": 1700},
+    {"type": "screen", "at": 2500},
+    {"type": "screen", "at": 4000}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "SPEED slows the whole song while practising",
+  "name": "companion, MELODY IDEAS (HEAR off) in a 1-bar 90 BPM song: SPEED 70 % plays at 63 BPM, the top line shows 63 of 90; C5 recorded half way through the bar at 63 BPM plays half way through it at 90 BPM once SPEED is back at 100 %",
+  "app": "companion",
+  "ms": 8300,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+2,1300:SCL,1350:SCL^,1400:e4:-1,1420:e4:-1,1440:e4:-1,1460:e4:-1,1500:e5:+1,1520:e5:+1,1700:REC,1750:REC^,1800:PLAY,1850:PLAY^,3705:C5@100,3900:C5^,4300:REC,4350:REC^,6000:PLAY,6050:PLAY^,6100:e4:+1,6120:e4:+1,6140:e4:+1,6160:e4:+1,6400:PLAY,6450:PLAY^",
+  "checks": [
+    {"type": "screen", "at": 4100},
+    {"type": "silence", "from": 6450, "to": 7650},
+    {"type": "pitch", "from": 7760, "to": 7900, "note": "C5", "cents": 25}
+  ]
+}

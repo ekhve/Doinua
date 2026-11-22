@@ -1,0 +1,32 @@
+{
+  "scenario": "Holding a pad plays a style's beat, with fills and ghost notes",
+  "name": "companion, DRUMS AUTO, Boom bap in a 1-bar loop: holding the main pad (F3) starts the song and the beat (the kick on 1); FILLS 4 bars lights the fill in the fourth bar; letting go stops it; the beats' fills and ghosts are checked in test_music_drums",
+  "app": "companion",
+  "ms": 12800,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+3,1250:SCL,1270:SCL^,1290:SCL,1310:SCL^,1350:e3:+1,1500:F3@100,12100:F3^",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 1300,
+      "to": 1480
+    },
+    {
+      "type": "sound",
+      "from": 1500,
+      "to": 1560
+    },
+    {
+      "type": "screen",
+      "at": 2300
+    },
+    {
+      "type": "screen",
+      "at": 10000
+    },
+    {
+      "type": "silence",
+      "from": 12400,
+      "to": 12750
+    }
+  ]
+}

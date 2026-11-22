@@ -1,0 +1,51 @@
+{
+  "scenario": "The game waits for a key, then the unicorn runs to the first fence and waits there",
+  "name": "companion, GAME, K4 music off (the bell alone, to hear its pitch) (HOME held, SELECT to Game, HOME, HOME): Unicorn Jump waits with every key breathing; C4 starts the run (it sings); the unicorn runs and stops in front of the first fence, the keys breathing (Easy)",
+  "app": "companion",
+  "ms": 7600,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2200:e5:-1,3600:C4@100,3700:C4^",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 2100,
+      "to": 3500,
+      "keys": {
+        "C4": "breath",
+        "G4": "breath"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 2425
+    },
+    {
+      "type": "pitch",
+      "from": 3620,
+      "to": 3900,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "lights",
+      "from": 4000,
+      "to": 5000,
+      "keys": {
+        "C4": "dim",
+        "G4": "dim"
+      }
+    },
+    {
+      "type": "lights",
+      "from": 6000,
+      "to": 7400,
+      "keys": {
+        "C4": "breath",
+        "F3": "breath"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 7025
+    }
+  ]
+}

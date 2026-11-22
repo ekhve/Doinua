@@ -1,0 +1,17 @@
+{
+  "scenario": "Holding REC opens the track's REC layer",
+  "name": "companion, REC layer: REC held shows GRID FEEL CLICK COUNT-IN and what OCT+ EDIT SAVE do; COUNT-IN 1 bar; REC closes it; REC tapped while stopped counts 4 3 2 1 and records C4 on the first beat",
+  "app": "companion",
+  "ms": 9000,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+2,1300:REC,1900:REC^,2000:e5:+1,2300:REC,2350:REC^,2600:REC,2650:REC^,5330:C4@100,5500:C4^,6000:REC,6050:REC^",
+  "checks": [
+    {"type": "screen", "at": 1950},
+    {"type": "screen", "at": 2200},
+    {"type": "sound", "from": 2652, "to": 2675},
+    {"type": "silence", "from": 2800, "to": 3200},
+    {"type": "sound", "from": 3318, "to": 3341},
+    {"type": "screen", "at": 3000},
+    {"type": "silence", "from": 7000, "to": 7900},
+    {"type": "pitch", "from": 8010, "to": 8150, "note": "C4", "cents": 25}
+  ]
+}

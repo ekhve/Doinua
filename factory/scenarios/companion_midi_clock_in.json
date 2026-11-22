@@ -1,0 +1,34 @@
+{
+  "scenario": "The song follows a MIDI clock: Start plays it, each clock moves it, Stop stops it",
+  "name": "companion: a 1-bar loop with C4 recorded (at 90 BPM); then MIDI Start and a clock at 100 BPM on the TRS jack: the C4 comes round on the clock's bar (2.4 s), not the song's own (2.67 s); Stop silences it",
+  "app": "companion",
+  "ms": 7000,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:REC,1250:REC^,1300:PLAY,1350:PLAY^,1400:C4@100,1700:C4^,1800:REC,1850:REC^,1900:PLAY,1950:PLAY^,2500:mfa,2500:mf8,2525:mf8,2550:mf8,2575:mf8,2600:mf8,2625:mf8,2650:mf8,2675:mf8,2700:mf8,2725:mf8,2750:mf8,2775:mf8,2800:mf8,2825:mf8,2850:mf8,2875:mf8,2900:mf8,2925:mf8,2950:mf8,2975:mf8,3000:mf8,3025:mf8,3050:mf8,3075:mf8,3100:mf8,3125:mf8,3150:mf8,3175:mf8,3200:mf8,3225:mf8,3250:mf8,3275:mf8,3300:mf8,3325:mf8,3350:mf8,3375:mf8,3400:mf8,3425:mf8,3450:mf8,3475:mf8,3500:mf8,3525:mf8,3550:mf8,3575:mf8,3600:mf8,3625:mf8,3650:mf8,3675:mf8,3700:mf8,3725:mf8,3750:mf8,3775:mf8,3800:mf8,3825:mf8,3850:mf8,3875:mf8,3900:mf8,3925:mf8,3950:mf8,3975:mf8,4000:mf8,4025:mf8,4050:mf8,4075:mf8,4100:mf8,4125:mf8,4150:mf8,4175:mf8,4200:mf8,4225:mf8,4250:mf8,4275:mf8,4300:mf8,4325:mf8,4350:mf8,4375:mf8,4400:mf8,4425:mf8,4450:mf8,4475:mf8,4500:mf8,4525:mf8,4550:mf8,4575:mf8,4600:mf8,4625:mf8,4650:mf8,4675:mf8,4700:mf8,4725:mf8,4750:mf8,4775:mf8,4800:mf8,4825:mf8,4850:mf8,4875:mf8,4900:mf8,4925:mf8,4950:mf8,4975:mf8,5000:mf8,5025:mf8,5050:mf8,5075:mf8,5100:mf8,5125:mf8,5150:mf8,5175:mf8,5200:mf8,5225:mf8,5250:mf8,5275:mf8,5300:mf8,5400:mfc",
+  "note": "The C4 was played about 100 ms into the loop: on the clock it sounds about 4 clocks after Start (2600) and again a bar of 96 clocks later (5000); at the song's own 90 BPM the second would come at 5267.",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 2650,
+      "to": 2850,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "silence",
+      "from": 3100,
+      "to": 4900
+    },
+    {
+      "type": "pitch",
+      "from": 5050,
+      "to": 5250,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "silence",
+      "from": 5700,
+      "to": 7000
+    }
+  ]
+}

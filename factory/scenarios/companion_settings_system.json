@@ -1,0 +1,40 @@
+{
+  "scenario": "SYSTEM tunes the FM-1 and darkens the screen when nothing is played; a key wakes it and does nothing else",
+  "name": "companion: SYSTEM, TUNE +50 cents: C4 sounds 50 cents sharp; SCREEN OFF 1 min: a minute after the last key the screen is dark; a key wakes it without playing, the next key plays",
+  "app": "companion",
+  "ms": 65500,
+  "keys": "900:GLO,950:GLO^,1000:SCL,1050:SCL^,1065:SCL,1080:SCL^,1100:SCL,1150:SCL^,1200:SCL,1250:SCL^,1300:e2:+1,1400:e3:+1,1420:e3:+1,1440:e3:+1,1460:e3:+1,1480:e3:+1,1500:e3:+1,1520:e3:+1,1540:e3:+1,1560:e3:+1,1580:e3:+1,1600:e3:+1,1620:e3:+1,1640:e3:+1,1660:e3:+1,1680:e3:+1,1700:e3:+1,1720:e3:+1,1740:e3:+1,1760:e3:+1,1780:e3:+1,1800:e3:+1,1820:e3:+1,1840:e3:+1,1860:e3:+1,1880:e3:+1,1900:e3:+1,1920:e3:+1,1940:e3:+1,1960:e3:+1,1980:e3:+1,2000:e3:+1,2020:e3:+1,2040:e3:+1,2060:e3:+1,2080:e3:+1,2100:e3:+1,2120:e3:+1,2140:e3:+1,2160:e3:+1,2180:e3:+1,2200:e3:+1,2220:e3:+1,2240:e3:+1,2260:e3:+1,2280:e3:+1,2300:e3:+1,2320:e3:+1,2340:e3:+1,2360:e3:+1,2380:e3:+1,2500:GLO,2550:GLO^,2700:C4@100,3000:C4^,64000:D4@100,64400:D4^,65000:E4@100,65400:E4^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 2750,
+      "to": 2950,
+      "note": "C4",
+      "cents": 10,
+      "offset": 50
+    },
+    {
+      "type": "screen",
+      "at": 2400
+    },
+    {
+      "type": "screen",
+      "at": 63500,
+      "dark": true
+    },
+    {
+      "type": "silence",
+      "from": 64050,
+      "to": 64350
+    },
+    {
+      "type": "screen",
+      "at": 64700
+    },
+    {
+      "type": "sound",
+      "from": 65050,
+      "to": 65350
+    }
+  ]
+}

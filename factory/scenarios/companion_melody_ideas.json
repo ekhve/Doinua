@@ -1,0 +1,13 @@
+{
+  "scenario": "A melody idea falls onto its keys, in versions",
+  "name": "companion, MELODY IDEAS: PLAY plays the figure the first time round (listen) at SPEED 75 % (the song at 67 of 90 BPM); SELECT shows version 1.2",
+  "app": "companion",
+  "ms": 5000,
+  "keys": "900:e1:+2,1000:SCL,1050:SCL^,1120:e4:-1,1150:e4:-1,1180:e4:-1,1300:PLAY,1350:PLAY^,3800:e0:+1",
+  "checks": [
+    {"type": "silence", "from": 900, "to": 1280},
+    {"type": "sound", "from": 1350, "to": 3600},
+    {"type": "screen", "at": 2000},
+    {"type": "screen", "at": 4200}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "scenario": "REC in lesson 1 says that REC comes in lesson 2",
+  "name": "companion: Guided, REC: the screen says 'REC comes in lesson 2' in red, and nothing records or sounds",
+  "app": "companion",
+  "ms": 3400,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2500:REC,2550:REC^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2800
+    },
+    {
+      "type": "silence",
+      "from": 2550,
+      "to": 3200
+    }
+  ]
+}

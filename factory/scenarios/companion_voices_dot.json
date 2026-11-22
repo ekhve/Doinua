@@ -1,0 +1,26 @@
+{
+  "scenario": "When a note has to take a voice, a dot shows it, and TRACKS shows the voices and the CPU",
+  "name": "companion: 13 keys held on CHORDS PLAY: twelve voices sound, the thirteenth takes the oldest; the amber dot on the top line for two seconds; GLO, TRACKS: Voices 12 of 12 and the CPU",
+  "app": "companion",
+  "ms": 5000,
+  "keys": "1000:F3@100,1020:F#3@100,1040:G3@100,1060:G#3@100,1080:A3@100,1100:A#3@100,1120:B3@100,1140:C4@100,1160:C#4@100,1180:D4@100,1200:D#4@100,1220:E4@100,1240:F4@100,1500:GLO,1550:GLO^,1600:SCL,1650:SCL^,2500:F3^,2500:F#3^,2500:G3^,2500:G#3^,2500:A3^,2500:A#3^,2500:B3^,2500:C4^,2500:C#4^,2500:D4^,2500:D#4^,2500:E4^,2500:F4^",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 1300,
+      "to": 1450
+    },
+    {
+      "type": "screen",
+      "at": 1400
+    },
+    {
+      "type": "screen",
+      "at": 1900
+    },
+    {
+      "type": "screen",
+      "at": 4600
+    }
+  ]
+}

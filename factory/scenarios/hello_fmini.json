@@ -1,0 +1,14 @@
+{
+  "scenario": "An FMini sound plays its note in tune and stops when released",
+  "name": "hello, ST-70: PRESETS to FMini SINE SOLO (its sine oscillator at 8', the ladder open); C4 sounds C4, and stops after its release",
+  "app": "hello",
+  "ms": 5600,
+  "keys": "900:e6:+45,1800:C4@100,2600:C4^",
+  "note": "hello starts on Basic: Piano (sound 1); FMini's sounds come after the drums (engine 8), SINE SOLO is sound 46. The 45 clicks take about 350 ms on the FM-1 (each one chooses a sound), so the key waits for them. The release is the DECAY's time (fmini-1: a factory patch's releases are its decays), about a quarter of a second; then its own delay and reverb (FX: chorus 51, delay 32, reverb 32, D-093) ring on, gone by 5 s.",
+  "checks": [
+    {"type": "silence", "from": 800, "to": 1750},
+    {"type": "sound", "from": 1900, "to": 2550},
+    {"type": "pitch", "from": 2000, "to": 2550, "note": "C4", "cents": 15},
+    {"type": "silence", "from": 5000, "to": 5500}
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "scenario": "Tapping GLO opens the song page, where the key, tempo and length change and nothing played does",
+  "name": "companion: C4 recorded on CHORDS PLAY; GLO tapped opens the song page; K1 locks D major, K2 100 BPM, K3 2 bars; GLO again back to PLAY, whose key lights are now D major's (D half, F# A C# dim, C and F off); the recorded C4 still plays when the 2-bar loop comes round",
+  "app": "companion",
+  "ms": 7600,
+  "keys": "900:REC,950:REC^,1000:PLAY,1050:PLAY^,1200:C4@100,1500:C4^,1600:REC,1650:REC^,2000:GLO,2100:GLO^,2200:e2:+1,2220:e2:+1,2240:e2:+1,2260:e2:+1,2280:e2:+1,2300:e3:+1,2320:e3:+1,2400:e4:-1,2420:e4:-1,3000:GLO,3100:GLO^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2800
+    },
+    {
+      "type": "lights",
+      "from": 3300,
+      "to": 3900,
+      "keys": {
+        "D4": "half",
+        "F#4": "dim",
+        "A4": "dim",
+        "C#4": "dim",
+        "C4": "off",
+        "F4": "off"
+      }
+    },
+    {
+      "type": "sound",
+      "from": 6060,
+      "to": 6300
+    },
+    {
+      "type": "screen",
+      "at": 3500
+    }
+  ],
+  "note": "Before K3 the loop is 4 bars at 90 BPM (10656 ms); at 100 BPM and 2 bars it is 4800 ms, and the C4 recorded at tick ~7 comes round near 1000 + 4800 + 240 = 6040 ms (the tempo change keeps the place in the loop, so a little later). Without the recording it would be silent there."
+}

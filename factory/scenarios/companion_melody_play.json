@@ -1,0 +1,12 @@
+{
+  "scenario": "The melody starts on the key's pentatonic",
+  "name": "companion, MELODY PLAY in C major, HELP Key: C D E G A light (C breathes), F and B stay dark; a key sounds its own pitch",
+  "app": "companion",
+  "ms": 3000,
+  "keys": "900:e1:+2,1500:A4@100,2000:A4^",
+  "checks": [
+    {"type": "lights", "from": 1000, "to": 2300, "keys": {"C4": "breath", "D4": "dim", "E4": "dim", "G4": "dim", "A3": "dim", "F4": "off", "B4": "off", "C#4": "off"}},
+    {"type": "pitch", "from": 1560, "to": 1900, "note": "A4", "cents": 25},
+    {"type": "screen", "at": 1200}
+  ]
+}

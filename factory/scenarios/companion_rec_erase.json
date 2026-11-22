@@ -1,0 +1,33 @@
+{
+  "scenario": "EDIT and a key erase that key's notes as they play",
+  "name": "companion, MELODY 1-bar loop: Bb4 Bb4 C5 recorded; EDIT held with Bb4 from before the loop comes round: both Bb4 are erased before they sound, C5 stays, and the next loop has only C5",
+  "app": "companion",
+  "ms": 9800,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+2,1300:REC,1350:REC^,1400:PLAY,1450:PLAY^,1500:A#4@100,1700:A#4^,2100:A#4@100,2300:A#4^,2900:C5@100,3100:C5^,3500:REC,3550:REC^,4000:EDIT,4020:A#4@100,6900:A#4^,6950:EDIT^",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 4400,
+      "to": 5450
+    },
+    {
+      "type": "pitch",
+      "from": 5580,
+      "to": 5700,
+      "note": "C5",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 7100,
+      "to": 8150
+    },
+    {
+      "type": "pitch",
+      "from": 8260,
+      "to": 8380,
+      "note": "C5",
+      "cents": 25
+    }
+  ]
+}

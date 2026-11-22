@@ -1,0 +1,60 @@
+{
+  "scenario": "AUTO plays the style's verse, then the chorus from the next bar",
+  "name": "companion, CHORDS AUTO, Neo soul, stopped: G3 (VERSE, calm) starts the song with the verse; B4 (CHORUS, energy) waits for the next bar (half lit), then plays",
+  "app": "companion",
+  "ms": 6400,
+  "keys": "820:SCL,840:SCL^,880:SCL,900:SCL^,1000:G3@100,1200:G3^,2000:B4@100,2200:B4^",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 1100,
+      "to": 3500
+    },
+    {
+      "type": "lights",
+      "from": 2300,
+      "to": 3500,
+      "keys": {
+        "G3": "on",
+        "B4": "half",
+        "F3": "dim",
+        "F#3": "dim"
+      }
+    },
+    {
+      "type": "lights",
+      "from": 3900,
+      "to": 6200,
+      "keys": {
+        "B4": "on",
+        "G3": "dim"
+      }
+    },
+    {
+      "type": "sound",
+      "from": 3900,
+      "to": 6200
+    },
+    {
+      "type": "level_ratio",
+      "a": [
+        1100,
+        3500
+      ],
+      "b": [
+        3900,
+        6200
+      ],
+      "ratio": 1.4,
+      "tol": 0.15
+    },
+    {
+      "type": "screen",
+      "at": 3000
+    },
+    {
+      "type": "screen",
+      "at": 5000
+    }
+  ]
+}

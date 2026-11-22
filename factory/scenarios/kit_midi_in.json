@@ -1,0 +1,55 @@
+{
+  "scenario": "Notes from a MIDI keyboard on the TRS jack play and stop",
+  "name": "kit: notes from a MIDI keyboard on the TRS jack play and are named (running status, note-on 0 as release, clock bytes in between)",
+  "app": "hello",
+  "ms": 3600,
+  "keys": "1000:m903c64,1600:m3c00,2000:m4064,2500:m4000,2900:m90f84364,3300:m804340",
+  "note": "1000 C4 on (status 90); 1600 C4 off as running-status note-on velocity 0; 2000 E4 on, running status; 2500 E4 off, the same; 2900 G4 on with a clock byte (F8) between status and data; 3300 G4 off (status 80).",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 700,
+      "to": 950
+    },
+    {
+      "type": "pitch",
+      "from": 1150,
+      "to": 1500,
+      "note": "C4",
+      "cents": 15
+    },
+    {
+      "type": "silence",
+      "from": 1800,
+      "to": 1990
+    },
+    {
+      "type": "pitch",
+      "from": 2150,
+      "to": 2450,
+      "note": "E4",
+      "cents": 15
+    },
+    {
+      "type": "silence",
+      "from": 2700,
+      "to": 2890
+    },
+    {
+      "type": "pitch",
+      "from": 3000,
+      "to": 3250,
+      "note": "G4",
+      "cents": 15
+    },
+    {
+      "type": "silence",
+      "from": 3500,
+      "to": 3590
+    },
+    {
+      "type": "screen",
+      "at": 2300
+    }
+  ]
+}

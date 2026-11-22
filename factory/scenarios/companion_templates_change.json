@@ -1,0 +1,31 @@
+{
+  "scenario": "A track with notes changes its template only after SAVE, and its notes stay",
+  "name": "companion: C4 recorded on track 1 (CHORDS); GLO, TRACKS, K1 to BASS asks first; SAVE: track 1 is BASS, its C4 still plays as the loop comes round, and the keys now play the bass (A3 sounds A2)",
+  "app": "companion",
+  "ms": 5600,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1400:REC,1450:REC^,1500:PLAY,1550:PLAY^,1700:C4@100,2000:C4^,2900:REC,2950:REC^,3000:GLO,3050:GLO^,3100:SCL,3150:SCL^,3200:e2:+1,3400:SAVE,3450:SAVE^,3500:GLO,3550:GLO^,5000:A3@100,5400:A3^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 3300
+    },
+    {
+      "type": "pitch",
+      "from": 4400,
+      "to": 4600,
+      "note": "C4",
+      "cents": 20
+    },
+    {
+      "type": "screen",
+      "at": 4700
+    },
+    {
+      "type": "pitch",
+      "from": 5050,
+      "to": 5350,
+      "note": "A2",
+      "cents": 20
+    }
+  ]
+}

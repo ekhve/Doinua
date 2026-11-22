@@ -1,0 +1,767 @@
+<title>FM-1 Drum Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the FM-1 on the left (screen, knobs, buttons, keys), the song and the scenarios to try on the right. One
+   deliberate dark look, as the instrument's own screen: the page commits to it in both themes. */
+:root {
+  --bg: #0b0d12; --panel: #151821; --panel2: #1c2030; --line: #262b3b;
+  --fg: #e9ecf3; --mute: #8a92a8; --accent: #60a0ff; --accent-d: #22385f; --rec: #eb5050; --ok: #6ed28c;
+  --key-w: #d4d9e3; --key-b: #222633;
+  --f-ui: "Inter Tight", "Helvetica Neue", Arial, sans-serif; --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-ui); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px }
+h1 { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.01em }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); margin: 0 0 10px }
+.wrap { display: grid; grid-template-columns: minmax(0, 760px) minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto }
+@media (max-width: 1100px) { .wrap { grid-template-columns: minmax(0, 1fr) } }
+header { max-width: 1180px; margin: 0 auto 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline }
+header p { margin: 0; color: var(--mute); max-width: 70ch }
+/* the FM-1 itself, laid out as the emulator's panel (1280 x 820 units, after the hardware's controls diagram) */
+.dev { min-width: 0; display: flex; flex-direction: column; gap: 10px }
+.fm1 { position: relative; width: 100%; aspect-ratio: 1280 / 820; container-type: inline-size; user-select: none; touch-action: manipulation }
+.fm1 > * { position: absolute }
+.body { border-radius: 2.4cqw; background: linear-gradient(#5e6166, #4a4d52); box-shadow: 0 1cqw 3cqw #0008 }
+.tray { background: #2b2c2f; border-radius: 1.2cqw }
+.bezel { background: #0d0d0f; border-radius: 1.8cqw }
+.silk { font: 600 1.25cqw var(--f-mono); color: #c9c6bd; letter-spacing: 0.08em; text-align: center; transform: translateX(-50%); white-space: nowrap }
+.brand { font: 500 0.95cqw var(--f-mono); color: #8c8a85; letter-spacing: 0.2em; transform: translateX(-50%) }
+.enc { border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 40% 35%, #6d7178, #3a3d43 62%, #2e3034 63%, #50535a 100%);
+  box-shadow: 0.2cqw 0.35cqw 0 #26272a }
+.enc::after { content: ""; position: absolute; left: 50%; top: 14%; width: 0.3cqw; height: 32%; margin-left: -0.15cqw; background: #eeeae2; border-radius: 0.2cqw;
+  transform-origin: 50% 112%; transform: rotate(var(--a, 0deg)) }
+.enc.turn { box-shadow: 0 0 0 0.35cqw #f2a33a99, 0.2cqw 0.35cqw 0 #26272a }
+.enc .tip { position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 12%; font: 700 1.4cqw var(--f-mono); color: #0000 }
+.enc:hover .tip { color: #f2e7cfaa }
+.btn { border-radius: 0.8cqw; background: linear-gradient(#4b4e54, #3b3d42); box-shadow: 0.1cqw 0.25cqw 0 #1c1d20; cursor: pointer; border: 0; padding: 0;
+  font: 700 1.15cqw var(--f-mono); color: #9c9a94; display: flex; align-items: center; justify-content: center; letter-spacing: 0.04em }
+.btn.lit { background: linear-gradient(#f2a33a, #c9852d); color: #2a1a03 }
+.btn.lit.green { background: linear-gradient(#62d36e, #45a650); color: #0d2a10 }
+.btn.lit.breath { animation: bbr 1.13s ease-in-out infinite }
+@keyframes bbr { 50% { filter: brightness(0.55) } }
+.btn:active { transform: translateY(0.15cqw) }
+.btn.dead { opacity: 0.55; cursor: default }
+.pr { border: 0.17cqw solid #3c6b43; border-radius: 0.9cqw }
+.key { border-radius: 2.6cqw; cursor: pointer; background: linear-gradient(#6a5557, #4f3f42); box-shadow: 0.1cqw 0.3cqw 0 #1a1a1c }
+.key .led { position: absolute; left: 50%; top: 17%; bottom: 17%; width: 0.4cqw; margin-left: -0.2cqw; border-radius: 0.2cqw; background: #8f7c7e }
+.key.dim .led { background: #c9925a } .key.on .led { background: #ffe2b0; box-shadow: 0 0 0.8cqw #f2a33a }
+.key.on { background: linear-gradient(#a8784a, #7a573a) }
+.key.breath .led { animation: kbr 1.13s ease-in-out infinite }
+@keyframes kbr { 0%, 100% { background: #9a7a62 } 50% { background: #ffe2b0; box-shadow: 0 0 0.8cqw #f2a33a } }
+@media (prefers-reduced-motion: reduce) { .key.breath .led, .btn.lit.breath { animation: none } }
+.key.held { transform: translateY(0.25cqw); background: linear-gradient(#b07c44, #8a6236) }
+.key .lab { position: absolute; bottom: 4%; width: 100%; text-align: center; font: 600 0.95cqw var(--f-mono); color: #d8c8c0aa }
+.lcd { border-radius: 0.2cqw }
+.extra { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.side { display: flex; flex-direction: column; gap: 18px; min-width: 0 }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+label { font-size: 12px; color: var(--mute); display: flex; gap: 6px; align-items: center }
+select, input[type=number] { font: 500 13px var(--f-ui); background: var(--panel2); color: var(--fg); border: 1px solid var(--line); border-radius: 7px; padding: 5px 7px }
+.scen { display: flex; flex-direction: column; gap: 12px }
+.sc { border-top: 1px solid var(--line); padding-top: 12px }
+.sc:first-child { border-top: 0; padding-top: 0 }
+.sc h3 { font-size: 15px; margin: 0 0 4px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap }
+.sc h3 small { font: 500 11px var(--f-mono); color: var(--accent) }
+.sc p { margin: 0 0 8px; color: var(--mute); line-height: 1.45; max-width: 68ch }
+.sc ol { margin: 0 0 8px; padding-left: 20px; line-height: 1.5 }
+.sc li b { color: var(--fg) }
+.log { font: 12px var(--f-mono); color: var(--mute); max-height: 140px; overflow: auto; line-height: 1.5 }
+.hint { font-size: 12px; color: var(--mute) }
+kbd { font: 11px var(--f-mono); background: var(--panel2); border: 1px solid var(--line); border-radius: 4px; padding: 1px 4px }
+.grid-legend { font: 12px var(--f-mono); color: var(--mute) }
+</style>
+
+<header>
+  <h1>FM-1 Drum Lab</h1>
+  <p>The drum track's three pages, playable. PLAY: the keys are the kit's pads (four kits). IDEAS: a style's beat falls onto the pads. AUTO: hold a pad and a beat plays. <b>POCKET</b> is the feel: it moves each drum a little off the grid, as a drummer or a Dilla beat does, and you can see it on the screen. Click <b>Start sound</b> first. Keys: click them, or type <kbd>a</kbd> to <kbd>'</kbd> from C4.</p>
+</header>
+
+<div class="wrap">
+  <section class="dev" aria-label="FM-1">
+    <div class="fm1" id="fm1"><canvas id="lcd" class="lcd" width="480" height="480" aria-label="FM-1 screen"></canvas></div>
+    <div class="extra">
+      <button id="power" class="on">Start sound</button>
+      <button id="clear">Clear the drums</button>
+      <span class="hint">Knobs: click the left or right half, or scroll. SCL: the page. PLAY, REC (a count-in when stopped).
+        The kits are made with the synth here; the firmware's sampled kits come from open-licence recordings.</span>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="card">
+      <h2>The song</h2>
+      <div class="row">
+        <label for="backing">Backing
+          <select id="backing">
+            <option value="none">Drums only</option>
+            <option value="neosoul" selected>Neo soul keys and bass</option>
+            <option value="gfunk">G-funk keys and bass</option>
+            <option value="latin">Latin keys and bass</option>
+            <option value="reggae">Reggae: Am D</option>
+            <option value="afro">Afrobeats: Fmaj7 Em7 Dm7 Cmaj7</option>
+            <option value="shatta">Shatta: Am Bb (dark, a half step)</option>
+          </select></label>
+        <label for="bars">Length
+          <select id="bars"><option value="1">1 bar</option><option value="2" selected>2 bars</option><option value="4">4 bars</option></select></label>
+        <label for="bpm">Tempo <input id="bpm" type="number" min="60" max="180" step="2" value="88"></label>
+        <label for="ab"><input id="ab" type="checkbox"> Compare: straight and pocket, bar by bar</label>
+        <label for="loose"><input id="loose" type="checkbox"> Loose: the pocket's small variations change every loop</label>
+        <label for="tips"><input id="tips" type="checkbox" checked> Explanations when a knob turns (firmware: GLO, SYSTEM)</label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Try these (D-U1 to D-U10)</h2>
+      <div class="scen" id="scen"></div>
+    </div>
+    <div class="card">
+      <h2>What happened</h2>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+  </aside>
+</div>
+
+<script>
+"use strict";
+const NAMES = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const mod = (a, n) => ((a % n) + n) % n;
+/* ---------- the pads: every octave from C, the same twelve (as Felucca's and General MIDI's order, in short) ---------- */
+const SLOTS = ["kick", "rim", "snare", "clap", "ghost", "tomL", "hatC", "tomM", "shaker", "tomH", "hatO", "perc", "crash", "vinyl"];
+const GROUP = { kick: "k", rim: "s", snare: "s", clap: "s", ghost: "s", tomL: "p", hatC: "h", tomM: "p", shaker: "h", tomH: "p", hatO: "h", perc: "p", crash: "h", vinyl: "p" };
+const KITS = ["Dusty", "808", "Live", "Latin"];
+const SLOT_NAMES = {
+  Dusty: { kick: "kick", rim: "rim", snare: "snare", clap: "clap", ghost: "ghost", tomL: "tom low", hatC: "hat", tomM: "tom mid", shaker: "shaker", tomH: "tom high", hatO: "open hat", perc: "tambourine" },
+  "808": { kick: "808 kick", rim: "rim", snare: "snare", clap: "clap", ghost: "ghost", tomL: "tom low", hatC: "hat", tomM: "tom mid", shaker: "maracas", tomH: "tom high", hatO: "open hat", perc: "cowbell" },
+  Live: { kick: "kick", rim: "cross stick", snare: "snare", clap: "clap", ghost: "ghost", tomL: "floor tom", hatC: "hat", tomM: "rack tom", shaker: "shaker", tomH: "high tom", hatO: "open hat", perc: "ride bell" },
+  Latin: { kick: "kick", rim: "clave", snare: "snare", clap: "clap", ghost: "ghost", tomL: "conga low", hatC: "hat", tomM: "conga", shaker: "guiro", tomH: "bongo", hatO: "open hat", perc: "timbal" },
+};
+const LO = 53, HI = 79;
+/* a kit: 27 sounds, one a key from F3, named as their WAV files will be. [name, the sound's recipe, the kit whose recipe
+   (null: the kit's own), tune factor, decay factor]. The firmware's kits will be samples with these names. */
+const PAD_LAYOUT = [["kick1", "kick", null, 1, 1], ["kick2", "kick", null, 0.88, 1.4], ["kick3", "kick", null, 1.18, 0.7], ["kick4", "kick", 1, 0.9, 1.6],
+  ["snare1", "snare", null, 1, 1], ["snare2", "snare", null, 1.12, 0.8], ["snare3", "snare", 2, 0.95, 1.2], ["rim1", "rim", null, 1, 1], ["rim2", "rim", null, 1.25, 0.8],
+  ["clap1", "clap", null, 1, 1], ["clap2", "clap", 1, 1.1, 1.3], ["ghost1", "ghost", null, 1, 1], ["hat1", "hatC", null, 1, 1], ["hat2", "hatC", null, 1.15, 0.7],
+  ["pedal1", "hatC", null, 0.85, 0.5], ["open1", "hatO", null, 1, 1], ["open2", "hatO", null, 1.1, 0.6], ["shaker1", "shaker", null, 1, 1], ["shaker2", "shaker", null, 0.8, 1.4],
+  ["tom1", "tomL", null, 1, 1], ["tom2", "tomM", null, 1, 1], ["tom3", "tomH", null, 1, 1]];
+const KIT_EXTRA = [
+  [["tamb1", "perc", 0, 1, 1], ["tamb2", "perc", 0, 1.2, 0.6], ["perc1", "perc", 2, 0.8, 0.7], ["vinyl1", "vinyl", 0, 1, 1]],
+  [["cowbell1", "perc", 1, 1, 1], ["clave1", "rim", 3, 1, 1], ["maracas1", "shaker", 3, 1, 1], ["conga1", "tomM", 3, 1, 1]],
+  [["ride1", "perc", 2, 1, 1], ["bell1", "perc", 2, 1.4, 0.6], ["cowbell1", "perc", 1, 1, 1], ["tamb1", "perc", 0, 1, 1]],
+  [["conga1", "tomL", 3, 1, 1], ["conga2", "tomM", 3, 1, 1], ["bongo1", "tomH", 3, 1, 1], ["timbal1", "perc", 3, 1, 1]]];
+const RENAME = [{}, {}, { rim1: "stick1", rim2: "stick2" }, { rim1: "clave2", shaker1: "guiro1", shaker2: "guiro2" }];
+const KITDEF = KITS.map((_, ki) => PAD_LAYOUT.concat(KIT_EXTRA[ki], [["crash1", "crash", null, 1, 1]])
+  .map(([name, slot, rk, tf, df]) => ({ name: RENAME[ki][name] || name, slot, rk: rk === null ? ki : rk, tf, df })));
+const padOf = (kit, slot) => { const d = KITDEF[kit]; let i = d.findIndex((e) => e.slot === slot && e.rk === kit); if (i < 0) i = d.findIndex((e) => e.slot === slot); return i; };
+
+/* ---------- sound ---------- */
+let ac = null, out = null, bus = null, fxIn = null, noiseBuf = null, openHat = null, rr = {};
+function power() {
+  if (ac) return;
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  out = ac.createGain(); out.gain.value = 0.55; out.connect(ac.destination);
+  bus = ac.createGain(); bus.gain.value = 1;
+  noiseBuf = ac.createBuffer(1, ac.sampleRate * 1, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  setFx(K.play.fx);
+  document.getElementById("power").classList.remove("on"); document.getElementById("power").textContent = "Sound on";
+}
+let TR = 1, DK = 1;                               /* K2 TUNE (a ratio) and K3 DECAY (a factor), the kit's */
+const env = (g, t, peak, dec, att = 0.001) => { dec *= DK; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + att); g.gain.exponentialRampToValueAtTime(0.0001, t + att + dec); };
+function noise(t, dur, filters, peak, dec, att) {
+  const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = noiseBuf; s.loop = true; let n = s;
+  filters.forEach(([type, f, q]) => { const b = ac.createBiquadFilter(); b.type = type; b.frequency.value = Math.min(18000, f * TR); if (q) b.Q.value = q; n.connect(b); n = b; });
+  n.connect(g); g.connect(bus); env(g, t, peak, dec, att); s.start(t, Math.random() * 0.5); s.stop(t + dur); return g;
+}
+function tone(t, type, f0, f1, pd, peak, dec, lp) {
+  const o = ac.createOscillator(), g = ac.createGain(); o.type = type; f0 *= TR; f1 *= TR; o.frequency.setValueAtTime(f0, t); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + pd);
+  let n = o; if (lp) { const b = ac.createBiquadFilter(); b.type = "lowpass"; b.frequency.value = lp; o.connect(b); n = b; }
+  n.connect(g); g.connect(bus); env(g, t, peak, dec); o.start(t); o.stop(t + dec + 0.05); return g;
+}
+function metal(t, base, peak, dec, hp) {          /* an 808-style hat: six square waves, high-passed */
+  const g = ac.createGain(), f = ac.createBiquadFilter(); f.type = "highpass"; f.frequency.value = hp; f.connect(g); g.connect(bus);
+  [2, 3, 4.16, 5.43, 6.79, 8.21].forEach((r) => { const o = ac.createOscillator(); o.type = "square"; o.frequency.value = base * r * TR; o.connect(f); o.start(t); o.stop(t + dec + 0.05); });
+  env(g, t, peak, dec); return g;
+}
+/* one hit: the kit's piece at a velocity (1..127). Two takes per piece alternate (round robin), a little different each. */
+/* the track's pads (keys): each one's sound (any kit's), repeat, tune (semitones) and decay; a style's own kit (IDEAS)
+   plays as it is */
+const PADP = []; for (let i = 0; i < 27; i++) PADP.push({ src: null, repeat: 0, tune: 0, decay: 1 });
+const padSrc = (pad) => PADP[pad].src || { kit: S.kit, pad };
+const padEntry = (pad) => { const s2 = padSrc(pad); return KITDEF[s2.kit][s2.pad]; };
+const padName = (pad) => padEntry(pad).name;
+const padSlot = (pad) => padEntry(pad).slot;
+const custom = () => PADP.some((p) => p.src);
+function hit(kit, pad, t, vel = 100) {
+  if (!ac || pad < 0) return;
+  let e, p = null;
+  if (kit === S.kit) { p = PADP[pad]; e = padEntry(pad); } else e = KITDEF[kit][pad];
+  TR = e.tf * (p ? Math.pow(2, p.tune / 12) : 1); DK = e.df * (p ? DECAY_K[p.decay] : 1);
+  recipe(e.rk, e.slot, t, vel);
+}
+const BASE_HZ = { kick: [50, 46, 54, 52], tomL: [95, 95, 95, 200], tomM: [140, 140, 140, 294], tomH: [190, 190, 190, 399], perc: [0, 0, 2400, 400] };
+function padNote(pad) {                         /* the note a pitched pad plays: "A1" (or null) */
+  const e = padEntry(pad), b = BASE_HZ[e.slot] && BASE_HZ[e.slot][e.rk]; if (!b) return null;
+  const n = Math.round(69 + 12 * Math.log2(b * e.tf * Math.pow(2, PADP[pad].tune / 12) / 440));
+  return NAMES[mod(n, 12)] + (Math.floor(n / 12) - 1);
+}
+function recipe(kit, slot, t, vel = 100) {
+  if (!ac) return;
+  t = Math.max(t, ac.currentTime);
+  rr[slot] = (rr[slot] || 0) + 1; const take = rr[slot] % 2 ? 1 : 0.97, v = (vel / 127) * (slot === "ghost" ? 0.35 : 1);
+  const k = KITS[kit];
+  if (slot === "hatC" && openHat) { openHat.gain.cancelScheduledValues(t); openHat.gain.setTargetAtTime(0.0001, t, 0.008); openHat = null; }  /* the closed hat chokes the open */
+  switch (slot) {
+    case "kick":
+      if (k === "808") { tone(t, "sine", 115 * take, 46, 0.09, 0.95 * v, 1.1); tone(t, "triangle", 900, 120, 0.01, 0.15 * v, 0.02); }
+      else if (k === "Dusty") { tone(t, "sine", 92 * take, 50, 0.07, 0.95 * v, 0.32, 600); noise(t, 0.05, [["lowpass", 1800]], 0.12 * v, 0.02); }
+      else if (k === "Live") { tone(t, "sine", 105 * take, 54, 0.05, 0.9 * v, 0.28); noise(t, 0.04, [["bandpass", 3200, 1.2]], 0.25 * v, 0.012); }
+      else { tone(t, "sine", 150 * take, 52, 0.06, 0.9 * v, 0.38); tone(t, "square", 600, 200, 0.008, 0.12 * v, 0.012); }
+      break;
+    case "snare": case "ghost": {
+      const dull = slot === "ghost" ? 0.6 : 1;
+      if (k === "Dusty") { noise(t, 0.3, [["bandpass", 1700 * take, 0.8], ["lowpass", 4200 * dull]], 0.55 * v, 0.17); tone(t, "triangle", 190, 160, 0.04, 0.35 * v, 0.08); noise(t, 0.08, [["highpass", 5000]], 0.05 * v, 0.06); }
+      else if (k === "808") { tone(t, "sine", 238 * take, 230, 0.05, 0.4 * v, 0.1); tone(t, "sine", 476, 470, 0.05, 0.15 * v, 0.06); noise(t, 0.3, [["highpass", 1800]], 0.4 * v, 0.16); }
+      else if (k === "Live") { noise(t, 0.4, [["highpass", 900], ["lowpass", 9000 * dull]], 0.55 * v, 0.24 * dull); tone(t, "triangle", 210 * take, 180, 0.03, 0.42 * v, 0.07); }
+      else { tone(t, "triangle", 260 * take, 240, 0.02, 0.35 * v, 0.06); noise(t, 0.25, [["bandpass", 3000, 0.7]], 0.5 * v, 0.12); }
+      break; }
+    case "clap":
+      [0, 0.011, 0.023].forEach((d, i) => noise(t + d, 0.06, [["bandpass", 1150, 1.5]], (i === 2 ? 0.6 : 0.45) * v, 0.012));
+      noise(t + 0.03, 0.3, [["bandpass", 1150, 1.2]], 0.35 * v, k === "808" ? 0.22 : 0.14);
+      break;
+    case "rim":
+      if (k === "Latin") tone(t, "sine", 2500 * take, 2500, 0.01, 0.5 * v, 0.03);
+      else { tone(t, "triangle", 1700 * take, 1600, 0.01, 0.4 * v, 0.025); tone(t, "square", 480, 470, 0.01, 0.15 * v, 0.02); }
+      break;
+    case "hatC":
+      if (k === "808") metal(t, 40 * take, 0.22 * v, 0.045, 7000);
+      else if (k === "Dusty") noise(t, 0.08, [["bandpass", 6500 * take, 1.2], ["lowpass", 9000]], 0.35 * v, 0.04);
+      else noise(t, 0.08, [["highpass", 7500 * take]], 0.3 * v, 0.045);
+      break;
+    case "hatO":
+      openHat = k === "808" ? metal(t, 40, 0.18 * v, 0.45, 7000) : noise(t, 0.6, [["highpass", k === "Dusty" ? 5500 : 6800]], 0.26 * v, 0.42);
+      break;
+    case "shaker":
+      if (k === "Latin") { for (let i = 0; i < 6; i++) noise(t + i * 0.012, 0.03, [["bandpass", 4200, 3]], 0.25 * v, 0.012); }
+      else noise(t, 0.12, [["bandpass", 6000 * take, 2]], 0.28 * v, 0.06, 0.012);
+      break;
+    case "tomL": case "tomM": case "tomH": {
+      const f = { tomL: 95, tomM: 140, tomH: 190 }[slot] * (k === "Latin" ? 2.1 : 1) * take;
+      tone(t, "sine", f * 1.4, f, 0.04, 0.7 * v, k === "Latin" ? 0.18 : 0.3);
+      if (k === "Latin") noise(t, 0.03, [["bandpass", 2500, 1]], 0.25 * v, 0.015);
+      break; }
+    case "crash":
+      noise(t, 2.4, [["highpass", 4800 * take]], 0.2 * v, 1.6); metal(t, 90, 0.05 * v, 1.2, 7000);
+      break;
+    case "vinyl":
+      for (let i = 0; i < 6; i++) noise(t + i * 0.035 * Math.random(), 0.02, [["bandpass", 2500 + Math.random() * 4000, 2]], (0.15 + Math.random() * 0.2) * v, 0.008);
+      break;
+    case "perc":
+      if (k === "808") { const g2 = ac.createGain(), b = ac.createBiquadFilter(); b.type = "bandpass"; b.frequency.value = 2600; b.connect(g2); g2.connect(bus);
+        [540, 800].forEach((f) => { const o = ac.createOscillator(); o.type = "square"; o.frequency.value = f; o.connect(b); o.start(t); o.stop(t + 0.4); }); env(g2, t, 0.25 * v, 0.3); }
+      else if (k === "Live") { tone(t, "sine", 2400, 2400, 0.01, 0.2 * v, 0.6); tone(t, "sine", 3600, 3600, 0.01, 0.1 * v, 0.4); }
+      else if (k === "Latin") { tone(t, "sine", 420 * take, 400, 0.03, 0.5 * v, 0.15); noise(t, 0.05, [["highpass", 3000]], 0.2 * v, 0.03); }
+      else { noise(t, 0.2, [["highpass", 7000]], 0.25 * v, 0.12); metal(t, 70, 0.06 * v, 0.1, 8000); }
+      break;
+  }
+}
+/* ---------- FX on the drums (the proposal: an MPC-style compressor and soft clip, lo-fi, tape) ---------- */
+const FXS = ["off", "Punch", "MPC", "Lofi", "Tape"];
+let fxNodes = [], crackle = null;
+function curve(fn) { const c = new Float32Array(1024); for (let i = 0; i < 1024; i++) c[i] = fn(i / 511.5 - 1); return c; }
+function setFx(i) {
+  if (!ac) return;
+  try { bus.disconnect(); } catch (_) {}
+  fxNodes.forEach((n) => { try { n.disconnect(); } catch (_) {} }); fxNodes = [];
+  if (crackle) { try { crackle.stop(); } catch (_) {} crackle = null; }
+  const chain = [];
+  const comp = (th, ra, at, re, makeup) => { const c = ac.createDynamicsCompressor(); c.threshold.value = th; c.ratio.value = ra; c.attack.value = at; c.release.value = re; const g = ac.createGain(); g.gain.value = makeup; chain.push(c, g); };
+  const shaper = (fn) => { const w = ac.createWaveShaper(); w.curve = curve(fn); w.oversample = "2x"; chain.push(w); };
+  const filt = (type, f) => { const b = ac.createBiquadFilter(); b.type = type; b.frequency.value = f; chain.push(b); };
+  const name = FXS[i];
+  if (name === "Punch") comp(-26, 4, 0.012, 0.12, 1.8);
+  if (name === "MPC") { comp(-22, 6, 0.003, 0.09, 2.2); shaper((x) => Math.tanh(1.6 * x) / Math.tanh(1.6)); filt("lowpass", 15000); }
+  if (name === "Lofi") { shaper((x) => Math.round(x * 24) / 24); filt("lowpass", 4600); filt("highpass", 110); comp(-18, 3, 0.01, 0.2, 1.4); }
+  if (name === "Tape") { shaper((x) => Math.tanh(2.2 * x) / Math.tanh(2.2)); filt("lowpass", 9500); comp(-20, 2.5, 0.02, 0.25, 1.3); }
+  let n = bus; chain.forEach((c) => { n.connect(c); n = c; }); n.connect(out); fxNodes = chain;
+  if (name === "Lofi") {                          /* vinyl: sparse crackle */
+    const b = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), d = b.getChannelData(0); for (let j = 0; j < d.length; j++) d[j] = Math.random() < 0.0006 ? (Math.random() * 2 - 1) * 0.5 : (Math.random() * 2 - 1) * 0.004;
+    crackle = ac.createBufferSource(); crackle.buffer = b; crackle.loop = true; crackle.connect(out); crackle.start();
+  }
+}
+
+/* ---------- POCKET: each drum's swing (MPC %), shift (ms) and looseness (ms); k kick, s snare and claps, h hats and shakers, p toms and percussion ---------- */
+const POCKETS = [
+  ["Straight", "On the grid.", {}],
+  ["Swing 55", "A touch of swing: the off-sixteenths a little late.", { sw: { k: 55, s: 55, h: 55, p: 55 } }],
+  ["Swing 62", "A clear shuffle on the sixteenths.", { sw: { k: 62, s: 62, h: 62, p: 62 } }],
+  ["MPC 66", "The MPC's heavy swing: triplet-ish sixteenths.", { sw: { k: 66, s: 66, h: 66, p: 66 } }],
+  ["Dilla", "The kick heavily swung, the hats swung less and loose, the snare late: the feels rub and the beat bounces.", { sw: { k: 72, s: 50, h: 60, p: 64 }, sh: { k: -4, s: 32, h: 6, p: 10 }, jit: { k: 12, s: 6, h: 12, p: 8 } }],
+  ["Laid back", "The snare and hats behind the beat: relaxed.", { sh: { k: 0, s: 20, h: 12, p: 10 }, jit: { k: 2, s: 3, h: 4, p: 3 } }],
+  ["Pushed", "The hats ahead of the beat: urgent.", { sh: { k: 0, s: -6, h: -12, p: -8 }, jit: { k: 2, s: 3, h: 3, p: 3 } }],
+  ["Dembow lean", "The snares of the dembow lean a little late, a light swing.", { sw: { k: 50, s: 54, h: 54, p: 54 }, sh: { k: 0, s: 9, h: 0, p: 6 }, jit: { k: 2, s: 3, h: 3, p: 4 } }],
+  ["Shatta bounce", "A strong bounce, the kick early.", { sw: { k: 60, s: 60, h: 60, p: 60 }, sh: { k: -9, s: 0, h: 0, p: 0 }, jit: { k: 2, s: 2, h: 4, p: 3 } }],
+  ["Drunk", "Everything loose: too far, on purpose.", { jit: { k: 18, s: 18, h: 22, p: 20 } }],
+];
+function hash(a, b, c) { let h = (a * 374761393 + b * 668265263 + c * 2147483647) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296 * 2 - 1; }
+/* a hit's place in seconds after its step: swing on the off-sixteenths, the drum's shift, and its looseness */
+function pocketOffset(pocketI, step, slot, loop) {
+  const p = POCKETS[pocketI][2], gr = GROUP[slot], sec = stepSec();
+  let o = 0;
+  const sw = p.sw ? p.sw[gr] : 50; if (step % 2 === 1) o += (sw / 100 * 2 - 1) * sec;
+  if (p.sh) o += (p.sh[gr] || 0) / 1000;
+  if (p.jit) o += hash(step, SLOTS.indexOf(slot), document.getElementById("loose").checked ? loop : 0) * (p.jit[gr] || 0) / 1000;
+  return o;
+}
+const humanVel = (vel, step, slot, pocketI) => (pocketI ? Math.max(1, Math.min(127, Math.round(vel + hash(step, SLOTS.indexOf(slot), 7) * 8))) : vel);
+
+/* ---------- the styles: a bar of 16 steps per drum ("." rest, 1..9 the velocity, r a two-hit roll); the kit, tempo and pocket they suit ---------- */
+const STYLES = [
+  ["Boom bap", 0, 90, 2, { kick: "9......6..8.....", snare: "....9.......9...", hatC: "7.5.7.5.7.5.7.5.", ghost: "..............3." }],
+  ["Dilla", 0, 86, 4, { kick: "9..8......9.7..6", snare: "....9.......9...", hatC: "8.5.7.5.8.5.7.57", ghost: ".....3.....3..3." }],
+  ["G-funk", 1, 92, 1, { kick: "9.....7...9.....", clap: "....9.......9...", hatC: "7.5.7.5.7.5.7...", hatO: "..............6." }],
+  ["Funk", 2, 100, 5, { kick: "9..7......9..6..", snare: "....9.......9...", ghost: ".3.....3.3....3.", hatC: "7575757575757575" }],
+  ["Disco", 2, 118, 0, { kick: "9...9...9...9...", snare: "....9.......9...", hatC: "6...6...6...6...", hatO: "..8...8...8...8." }],
+  ["Half-time", 2, 76, 5, { kick: "9.........8.....", snare: "........9.......", hatC: "6.4.6.4.6.4.6.4.", rim: "..............5." }],
+  ["Reggaeton", 3, 94, 7, { kick: "9...9...9...9...", snare: "...8..8....8..8.", shaker: "6.4.6.4.6.4.6.4.", perc: "..............7." },
+    { kick: "9...9...9...9...", snare: "...8..8....8..8.", hatC: "6.4.6.4.6.4.6.4.", perc: "..7.......7...7.", clap: "............9..." }],
+  ["Shatta", 1, 100, 8, { kick: "9...9...9...9...", rim: "...8..8....8..8.", hatC: "..t.......t.....", tomM: "......6.......5.", tomH: "..5.......5....." },
+    { kick: "9...9...9...9...", rim: "...8..8....8..8.", clap: "............9...", hatC: "..t...t...t...t.", shaker: "5.5.5.5.5.5.5.5.", tomM: "......6.......5.", tomH: "..5.......5..5.." }],
+  ["Afrobeats", 3, 104, 1, { kick: "9.....8...9.....", rim: "...7..7.....7...", clap: "........9.......", shaker: "5454545454545454", tomM: "..........6..5.." }],
+  ["Reggae", 2, 76, 5, { kick: "........9.......", snare: "........9.......", rim: "........8.......", hatC: "6.4.6.4.6.4.6.4.", hatO: "..............5." }],
+  ["Drum & bass", 2, 172, 0, { kick: "9.........9.....", snare: "....9.......9...", ghost: ".......3.3....3.", hatC: "7.5.7.5.7.5.7.5." }],
+  ["Trap", 1, 140, 0, { kick: "9......8..9.....", clap: "........9.......", hatC: "646464646464rr64" }],
+];
+const VARIANTS = ["main", "busy", "fill", "break", "drop"];
+function variant(styleI, vi) {                     /* busy, fill, break and drop are made from the main beat */
+  const m = vi === 1 && STYLES[styleI][5] ? STYLES[styleI][5] : STYLES[styleI][4], v = {};
+  Object.keys(m).forEach((s) => (v[s] = m[s]));
+  if (vi === 1 && STYLES[styleI][5]) return v;      /* a style's own busy beat (dembow's is shatta) */
+  if (vi === 1) { if (v.hatC && /^(\d\.)+$/.test(v.hatC)) v.hatC = v.hatC.replace(/\./g, "4"); v.ghost = merge(v.ghost, ".......3......3."); if (v.kick) v.kick = merge(v.kick, "..............6."); }
+  if (vi === 2) { Object.keys(v).forEach((s) => (v[s] = v[s].slice(0, 8) + "........")); v.snare = merge(v.snare, "........7.7.9.99"); v.tomH = ".........8......"; v.tomM = "...........8...."; v.tomL = ".............8.."; v.kick = merge(v.kick, "........8......."); }
+  if (vi === 3) { Object.keys(v).forEach((s) => { if (!/hat|shaker/.test(s)) v[s] = s === "kick" ? "9..............." : "................"; }); }
+  if (vi === 4) { delete v.kick; }
+  return v;
+}
+function merge(a, b) { a = a || "................"; return [...a].map((c, i) => (b[i] !== "." ? b[i] : c)).join(""); }
+function hitsOf(pat) {                             /* [{st, slot, vel, sub}] for a bar */
+  const outH = [];
+  Object.entries(pat).forEach(([slot, s]) => [...s].forEach((c, i) => {
+    if (c === ".") return;
+    if (c === "r") { outH.push({ st: i, slot, vel: 70, sub: 0 }, { st: i, slot, vel: 55, sub: 0.5 }); return; }
+    if (c === "t") { [0, 1 / 3, 2 / 3].forEach((sb, j) => outH.push({ st: i, slot, vel: 72 - j * 8, sub: sb })); return; }   /* a triplet burst */
+    outH.push({ st: i, slot, vel: Math.round(+c / 9 * 127), sub: 0 });
+  }));
+  return outH;
+}
+
+/* ---------- state ---------- */
+const S = { page: 2, bpm: 88, bars: 2, playing: false, rec: false, notes: [], last: null, countIn: 0, padHeld: null };
+const PAGES = ["PLAY", "IDEAS", "AUTO"];
+const K = { play: { repeat: 0, tune: 0, decay: 1 }, ideas: { style: 0, variant: 0, speed: 6, guide: 0 }, auto: { style: 1, fills: 0, ghosts: 1 } };
+S.kit = 0; S.fx = 0;
+const GUIDES = ["listen/play", "on", "off"], SPEEDS = [50, 60, 70, 75, 80, 90, 100];
+const REPEATS = ["off", "1/8", "1/16", "1/32", "1/8T", "1/16T"], REPEAT_STEPS = [0, 2, 1, 0.5, 4 / 3, 2 / 3];
+const DECAYS = ["short", "normal", "long"], DECAY_K = [0.55, 1, 1.7], FILLS = ["off", "4 bars", "8 bars"], GHOSTS = ["off", "soft", "more"];
+const FEEL_LIST = POCKETS.map((p) => [p[0], p[1]]);
+const logEl = document.getElementById("log");
+function log(s) { const d = document.createElement("div"); d.textContent = s; logEl.prepend(d); while (logEl.childNodes.length > 40) logEl.lastChild.remove(); }
+const steps = () => S.bars * 16;
+const tempo = () => (S.page === 1 ? Math.round(S.bpm * SPEEDS[K.ideas.speed] / 100) : S.bpm);
+const stepSec = () => 60 / tempo() / 4;
+const kitNow = () => S.kit;
+const pocketNow = () => RL.feel;
+const fxNow = () => S.fx;
+
+/* ---------- the backing: keys and a bass, so the pocket has something to sit with ---------- */
+const BACK = { reggae: [[9, [0, 3, 7]], [2, [0, 4, 7]]], afro: [[5, [0, 4, 7, 11]], [4, [0, 3, 7, 10]], [2, [0, 3, 7, 10]], [0, [0, 4, 7, 11]]], shatta: [[9, [0, 3, 7]], [10, [0, 4, 7]]], neosoul: [[2, [0, 3, 7, 10, 14]], [7, [0, 4, 10, 14, 21]], [0, [0, 4, 7, 11, 14]], [9, [0, 3, 7, 10]]], gfunk: [[9, [0, 3, 7, 10, 14]], [2, [0, 3, 7, 10, 14]]], latin: [[9, [0, 3, 7]], [5, [0, 4, 7]], [0, [0, 4, 7]], [7, [0, 4, 7]]] };
+const hz = (n) => 440 * Math.pow(2, (n - 69) / 12);
+function backing(bar, t, sec) {
+  const b = BACK[document.getElementById("backing").value]; if (!b || !ac) return;
+  const [root, iv] = b[bar % b.length];
+  iv.forEach((i) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "triangle"; o.frequency.value = hz(55 + mod(root - 7, 12) + i);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.025, t + 0.06); g.gain.setTargetAtTime(0, t + sec * 15, 0.1); o.connect(g); g.connect(out); o.start(t); o.stop(t + sec * 16 + 0.5); });
+  [[0, 6], [10, 4]].forEach(([s, l]) => { const o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(); o.type = "sawtooth"; o.frequency.value = hz(36 + root); f.type = "lowpass"; f.frequency.value = 500;
+    const tt = t + s * sec; g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.13, tt + 0.01); g.gain.setTargetAtTime(0, tt + l * sec * 0.9, 0.05); o.connect(f); f.connect(g); g.connect(out); o.start(tt); o.stop(tt + l * sec + 0.3); });
+}
+
+/* ---------- transport ---------- */
+let timer = null, startT = 0, nextStep = 0, nextT = 0;
+function click(when, accent) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = accent ? 2000 : 1000; g.gain.setValueAtTime(0.2, when); g.gain.exponentialRampToValueAtTime(0.001, when + 0.05); o.connect(g); g.connect(out); o.start(when); o.stop(when + 0.07); }
+function countIn() {
+  power(); snapshot();
+  if (!RL.count) { S.rec = true; play(); log("REC: recording"); draw(); return; }
+  const beat = 60 / tempo(), t0 = ac.currentTime + 0.05, nb = 4 * RL.count; S.countIn = 4;
+  for (let i = 0; i < nb; i++) { click(t0 + i * beat, i % 4 === 0); setTimeout(() => { if (S.countIn) { S.countIn = 4 - (i % 4); draw(); } }, (0.05 + i * beat) * 1000); }
+  log("REC: count-in 4 3 2 1");
+  setTimeout(() => { if (S.countIn && !S.playing) { S.countIn = 0; S.rec = true; play(); draw(); } }, (0.05 + nb * beat) * 1000 - 30);
+  draw();
+}
+function play() { power(); S.playing = true; nextStep = 0; nextT = ac.currentTime + 0.08; startT = nextT; timer = setInterval(schedule, 20); log("PLAY: " + S.bars + " bar" + (S.bars > 1 ? "s" : "") + " at " + tempo() + " BPM"); }
+function stop() { S.playing = false; clearInterval(timer); timer = null; S.rec = false; log("STOP"); draw(); }
+const curStepF = () => (S.playing ? ((ac.currentTime - startT) / stepSec()) % steps() : 0);
+const curStep = () => (S.playing ? Math.floor(curStepF()) : -1);
+const loopNow = () => (S.playing ? Math.floor((ac.currentTime - startT) / stepSec() / steps()) : 0);
+const listening = () => (K.ideas.guide === 0 ? loopNow() % 2 === 0 : false);
+/* the pocket for this bar: off on even bars while comparing */
+const pocketFor = (absStep) => (document.getElementById("ab").checked && Math.floor(absStep / 16) % 2 === 0 ? 0 : pocketNow());
+function schedule() {
+  while (nextT < ac.currentTime + 0.15) {
+    const abs = nextStep, st = abs % steps(), s16 = st % 16, t = nextT, sec = stepSec(), loop = Math.floor(abs / steps()), pk = pocketFor(abs);
+    if (s16 === 0) backing(Math.floor(st / 16), t, sec);
+    /* recorded hits: as played, or on the grid with the pocket */
+    S.notes.forEach((n) => {
+      if (!RL.grid) { if (Math.floor(n.st) === st) hit(kitNow(), n.pad, t + (n.st - st) * sec, n.vel); return; }
+      const q = gridPos(n.st);
+      if (Math.floor(q) === st) hit(kitNow(), n.pad, t + (q - st) * sec + pocketOffset(pk, s16, padSlot(n.pad), loop), humanVel(n.vel, s16, padSlot(n.pad), pk));
+    });
+    rlStep(st, t, held);
+    if (S.page === 1 && K.ideas.guide < 2 && (K.ideas.guide === 1 || loop % 2 === 0))
+      { const kI = STYLES[K.ideas.style][1]; hitsOf(variant(K.ideas.style, K.ideas.variant)).forEach((h) => { if (h.st === s16) hit(kI, padOf(kI, h.slot), t + h.sub * sec, h.vel); }); }
+    if (S.page === 2 && S.padHeld !== null) {
+      const bar = Math.floor(abs / 16), fillN = [0, 4, 8][K.auto.fills];
+      const vi = S.padHeld === 0 && fillN && (bar + 1) % fillN === 0 ? 2 : S.padHeld;   /* FILLS: the last bar of every 4 or 8 */
+      let hs = hitsOf(variant(K.auto.style, vi));
+      if (K.auto.ghosts === 0) hs = hs.filter((h) => h.slot !== "ghost");
+      if (K.auto.ghosts === 2) hs = hs.concat(hitsOf({ ghost: ".....3.4.....3.4" }));
+      hs.forEach((h) => { if (h.st === s16) {
+        const when = t + h.sub * sec + pocketOffset(pk, s16, h.slot, loop), vel = humanVel(h.vel, s16, h.slot, pk);
+        const pad = padOf(S.kit, h.slot); hit(S.kit, pad, when, vel); S.last = pad;
+        if (S.rec) S.notes.push({ st: st + h.sub, pad, vel }); } });
+    }
+    nextStep++; nextT += sec;
+  }
+  draw();
+}
+
+/* ---------- the panel ---------- */
+const fm1 = document.getElementById("fm1"), keyEls = new Map(), btnEls = new Map(), encEls = new Map(), encA = new Map();
+const pc = (v, of) => (v / of * 100) + "%";
+function placeEl(el, x, y, w, h) { el.style.left = pc(x, 1280); el.style.top = pc(y, 820); if (w) el.style.width = pc(w, 1280); if (h) el.style.height = pc(h, 820); fm1.appendChild(el); return el; }
+function div(cls, html) { const d = document.createElement("div"); d.className = cls; if (html) d.innerHTML = html; return d; }
+(function build() {
+  placeEl(div("body"), 14, 14, 1252, 792);
+  placeEl(div("bezel"), 352, 24, 516, 516);
+  placeEl(div("tray"), 50, 388, 260, 64); placeEl(div("tray"), 896, 222, 360, 160); placeEl(div("tray"), 34, 562, 1212, 236).style.background = "#2c2c30";
+  placeEl(div("pr"), 1134, 302, 112, 72);
+  placeEl(document.getElementById("lcd"), 370, 42, 480, 480);
+  placeEl(div("brand", "FM-1"), 640, 548);
+  const ENCS = [["MASTER", "pot", 110, 135, 44], ["SELECT", "sel", 250, 135, 44], ["PRESETS", "pre", 110, 295, 44], ["ALGORITHM", "alg", 250, 295, 44],
+    ["KNOB1", 0, 935, 120, 36], ["KNOB2", 1, 1027, 120, 36], ["KNOB3", 2, 1119, 120, 36], ["KNOB4", 3, 1211, 120, 36]];
+  ENCS.forEach(([name, id, cx, cy, r]) => {
+    const lab = placeEl(div("silk", name), cx, cy - r - 30); lab.id = "lab-" + id;
+    const e = placeEl(div("enc", '<div class="tip"><span>−</span><span>+</span></div>'), cx - r, cy - r, 2 * r, 2 * r); e.setAttribute("role", "button"); e.setAttribute("aria-label", name);
+    encEls.set(id, e); encA.set(id, 0);
+    e.addEventListener("click", (ev) => { const b = e.getBoundingClientRect(); turn(id, ev.clientX < b.left + b.width / 2 ? -1 : 1); });
+    e.addEventListener("wheel", (ev) => { ev.preventDefault(); turn(id, ev.deltaY < 0 ? 1 : -1); }, { passive: false });
+  });
+  const BTNS = [["OCT-", 62, 398, 112, 44], ["OCT+", 186, 398, 112, 44]];
+  [["FX", "SCL", "ENV", "LFO", "EDIT", "GLO"], ["HOME", "SAVE", "ARP", "SEQ", "PLAY", "REC"]].forEach((row, r) => row.forEach((n, i) => BTNS.push([n, 906 + i * 58, 232 + r * 76, 50, 64])));
+  BTNS.forEach(([n, x, y, w, h]) => { const b = document.createElement("button"); b.className = "btn" + (["FX", "ENV", "LFO", "GLO", "HOME", "SAVE", "ARP", "SEQ", "EDIT", "OCT-", "OCT+"].includes(n) ? " dead" : ""); b.textContent = n; b.id = "btn-" + n;
+    placeEl(b, x, y, w, h); btnEls.set(n, b); b.addEventListener("click", () => press(n)); });
+  const whites = [0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26], kw = 62, gap = 11, x0 = 61;
+  const mk = (i, x, y, h) => { const n = LO + i, el = div("key", '<div class="led"></div><div class="lab"></div>'); el.setAttribute("role", "button");
+    el.setAttribute("aria-label", NAMES[n % 12] + Math.floor(n / 12 - 1)); placeEl(el, x, y, kw, h);
+    el.addEventListener("pointerdown", (e) => { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (_) {} down(n); });
+    el.addEventListener("pointerup", () => up(n)); el.addEventListener("pointercancel", () => up(n)); keyEls.set(n, el); };
+  whites.forEach((n, i) => mk(n, x0 + i * (kw + gap), 680, 106));
+  [[1, 0], [3, 1], [5, 2], [8, 4], [10, 5], [13, 7], [15, 8], [17, 9], [20, 11], [22, 12], [25, 14]].forEach(([n, after]) => mk(n, x0 + (after + 1) * (kw + gap) - gap / 2 - kw / 2, 574, 94));
+})();
+function turn(id, d) {
+  const e = encEls.get(id); encA.set(id, encA.get(id) + d); e.style.setProperty("--a", encA.get(id) * 18 + "deg");
+  e.classList.add("turn"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("turn"), 250);
+  if (typeof id === "number") knob(id, d);
+  else if (id === "sel") knob(S.page === 1 ? 1 : 0, d);
+  else if (id === "pot" && out) { out.gain.value = Math.max(0, Math.min(1, out.gain.value + d * 0.05)); log("MASTER: " + Math.round(out.gain.value * 100) + "%"); }
+  else if (id === "pre" && S.page === 0 && held.size) {   /* a pad held: its own sound, from any kit */
+    const pad = [...held.keys()][0] - LO, all = []; KITS.forEach((_, ki) => KITDEF[ki].forEach((_, pi) => all.push({ kit: ki, pad: pi })));
+    const cur = padSrc(pad), at = all.findIndex((x) => x.kit === cur.kit && x.pad === cur.pad), nx = all[mod(at + d, all.length)];
+    PADP[pad].src = nx.kit === S.kit && nx.pad === pad ? null : nx; S.sel = pad; hit(S.kit, pad, 0, 110);
+    tip(padName(pad) + "  (" + KITS[nx.kit] + ")", "Hold a key and turn PRESETS: any sound from any kit on that key. Your kit is kept as MY KIT."); draw(); }
+  else if (id === "pre") { S.kit = mod(S.kit + d, 4); tip("KIT " + KITS[S.kit], ["Dusty: boom bap and Dilla, soft and crackly.", "808: the drum machine: long kick, clap, cowbell.", "Live: a real kit: snare with ghost notes, ride bell.", "Latin: congas, bongo, clave, guiro, timbal."][S.kit]); log("PRESETS: the " + KITS[S.kit] + " kit"); draw(); }
+  else log("ALGORITHM: the track (only the drums in this lab)");
+}
+function press(n) {
+  power();
+  if (rlPress(n)) { draw(); return; }
+  if (n === "EDIT") { RL.erase = !RL.erase; if (RL.erase) snapshot(); log(RL.erase ? "EDIT: erase on: hold a pad while the song plays to remove its hits" : "EDIT: erase off"); tip("EDIT " + (RL.erase ? "erase" : "off"), RL.erase ? "Hold a pad while the song plays: its hits go as the playhead passes. SAVE undoes." : "The pads play again."); draw(); return; }
+  if (n === "SAVE") { undo(); draw(); return; }
+  if (n === "SCL") { S.page = (S.page + 1) % 3; S.padHeld = null; setFx(fxNow()); log("SCL: DRUMS " + PAGES[S.page]); if (S.playing) { stop(); play(); } }
+  else if (n === "PLAY") { if (S.countIn) { S.countIn = 0; log("count-in stopped"); } else S.playing ? stop() : play(); }
+  else if (n === "REC") { if (S.rec || S.countIn) { S.rec = false; S.countIn = 0; log("REC off"); } else if (S.playing) { snapshot(); S.rec = true; log("REC: recording now"); } else countIn(); }
+  else log(n + ": not in this lab");
+  draw();
+}
+const held = new Map();
+const AUTO_PADS = [53, 55, 57, 59, 60];           /* F3 G3 A3 B3 C4: main, busy, fill, break, drop */
+function down(k) {
+  power(); if (held.has(k)) return; held.set(k, 1); keyEls.get(k).classList.add("held");
+  if (S.page === 2) {
+    const i = AUTO_PADS.indexOf(k); if (i < 0) { draw(); return; }
+    S.padHeld = i; log("AUTO: " + STYLES[K.auto.style][0] + ", " + VARIANTS[i]);
+    if (!S.playing) { S.autoStarted = true; play(); }
+    draw(); return;
+  }
+  if (RL.erase) { draw(); return; }
+  const pad = k - LO, kit = S.page === 1 ? STYLES[K.ideas.style][1] : S.kit;
+  const one = () => { hit(kit, pad, 0, 110); S.last = pad; S.lastKit = kit; if (S.rec && S.playing) S.notes.push({ st: curStepF(), pad, vel: 110 }); };
+  one();
+  if (S.page === 0) S.sel = pad;                /* the pad the knobs set: the last one played */
+  if (S.page === 0 && PADP[pad].repeat) repeats.set(k, setInterval(one, REPEAT_STEPS[PADP[pad].repeat] * stepSec() * 1000));
+  draw();
+}
+const repeats = new Map();
+function up(k) {
+  if (!held.has(k)) return; held.delete(k); keyEls.get(k).classList.remove("held");
+  if (repeats.has(k)) { clearInterval(repeats.get(k)); repeats.delete(k); }
+  if (S.page === 2 && AUTO_PADS.includes(k) && ![...held.keys()].some((h) => AUTO_PADS.includes(h))) { S.padHeld = null; if (S.autoStarted && !S.rec) { S.autoStarted = false; stop(); } }
+  draw();
+}
+const KB = "awsedftgyhujkolp;'".split("");
+document.addEventListener("keydown", (e) => { if (e.repeat || e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return; const i = KB.indexOf(e.key); if (i >= 0) down(60 + i); });
+document.addEventListener("keyup", (e) => { const i = KB.indexOf(e.key); if (i >= 0) up(60 + i); });
+
+/* ---------- lights ---------- */
+function keyLabel(k) {
+  if (S.page === 2) { const i = AUTO_PADS.indexOf(k); return i >= 0 ? VARIANTS[i].slice(0, 4) : ""; }
+  return "";
+}
+function lights() {
+  const L = new Map(); for (let k = LO; k <= HI; k++) L.set(k, "");
+  const st = curStep();
+  if (S.page === 0) { for (let k = LO; k <= HI; k++) L.set(k, "dim"); held.forEach((_, k) => L.set(k, "on")); }
+  else if (S.page === 1) {                       /* the pads of the beat dim; the next hit breathes, the one now full */
+    const hs = hitsOf(variant(K.ideas.style, K.ideas.variant));
+    const kI = STYLES[K.ideas.style][1], kOf = (h) => LO + padOf(kI, h.slot);
+    hs.forEach((h) => L.set(kOf(h), "dim"));
+    if (S.playing) { const s16 = st % 16;
+      hs.filter((h) => h.st === mod(s16 + 1, 16)).forEach((h) => L.set(kOf(h), "breath"));
+      hs.filter((h) => h.st === s16).forEach((h) => L.set(kOf(h), "on")); }
+  } else AUTO_PADS.forEach((k, i) => L.set(k, S.padHeld === i ? "on" : "dim"));
+  L.forEach((v, k) => { const el = keyEls.get(k); el.classList.toggle("dim", v === "dim"); el.classList.toggle("on", v === "on"); el.classList.toggle("breath", v === "breath");
+    const lab = el.querySelector(".lab"); if (lab) lab.textContent = keyLabel(k); });
+  return L;
+}
+
+/* ---------- the screen ---------- */
+const cv = document.getElementById("lcd"), g = cv.getContext("2d");
+const C = { bg: "#0d0f15", fg: "#eaeef5", mute: "#78809a", line: "#22273a", card: "#181b25", card2: "#1f2330", acc: "#60a0ff", accM: "#345ca0", accD: "#223860", rec: "#eb5050", warm: "#f2a33a", keyW: "#cdd3de", keyB: "#222632" };
+function T(x, y, s, size, col, al = "left", w = 600) { g.font = `${w} ${size * 2}px "Inter Tight", sans-serif`; g.fillStyle = col; g.textAlign = al; g.textBaseline = "top"; g.fillText(s, x * 2, y * 2); return g.measureText(s).width / 2; }
+function TF(x, y, s, size, col, maxw) { g.font = `600 ${size * 2}px "Inter Tight", sans-serif`; while (s.length > 4 && g.measureText(s).width / 2 > maxw) s = s.slice(0, -2).replace(/\s*\S*$/, "") + "…"; return T(x, y, s, size, col); }
+function R(x, y, w, h, col) { g.fillStyle = col; g.fillRect(x * 2, y * 2, w * 2, h * 2); }
+function RR(x, y, w, h, r, col) { g.fillStyle = col; g.beginPath(); g.roundRect(x * 2, y * 2, w * 2, h * 2, r * 2); g.fill(); }
+function cards(items) { items.forEach(([l, v, hi], i) => { const x = 4 + i * 58; RR(x, 32, 56, 30, 6, C.card); T(x + 28, 35, l, 8, C.mute, "center"); T(x + 28, 46, v, 11, hi ? C.acc : C.fg, "center"); }); }
+/* the pocket, drawn: four rows (kick, snare, hats, percussion) over a bar's sixteen steps; each hit where the pocket puts it, a tick at its grid step */
+function pocketGraph(y, hs, pk, n = 16) {
+  const rows = ["k", "s", "h", "p"], names = ["kick", "snare", "hats", "perc"], x0 = 30, w = 202, sw = w / n, sec = stepSec();
+  for (let i = 0; i < n; i++) R(x0 + i * sw, y - 2, 1, 4 * 13 + 2, i % 16 === 0 ? "#4a5068" : i % 4 === 0 ? "#34394c" : C.line);
+  rows.forEach((r, ri) => {
+    const yy = y + ri * 13; T(4, yy - 1, names[ri], 8, C.mute);
+    hs.filter((h) => GROUP[h.slot] === r).forEach((h) => {
+      const off = pocketOffset(pk, h.st % 16, h.slot, 0) / sec + h.sub, x = x0 + (h.st + off) * sw, gx = x0 + h.st * sw;
+      if (Math.abs(off) > 0.02) R(Math.min(x, gx), yy + 4, Math.abs(x - gx), 1, C.warm);
+      RR(x - 2, yy + 1, 4, 7, 1.5, h.slot === "ghost" ? C.accM : C.acc);
+    });
+  });
+  if (S.playing) R(x0 + (curStepF() % n) * sw, y - 3, 1, 4 * 13 + 4, C.fg);
+}
+function draw() {
+  const L = lights();
+  g.fillStyle = C.bg; g.fillRect(0, 0, 480, 480);
+  R(0, 0, 240, 2, C.acc);
+  const w = T(8, 5, "DRUMS", 11, C.fg, "left", 700); T(13 + w, 5, PAGES[S.page], 11, C.mute);
+  const rw = T(232, 5, (custom() ? "My kit" : KITS[S.kit]) + "   " + (tempo() !== S.bpm ? `${tempo()} of ${S.bpm}` : `${tempo()}`) + " BPM", 11, C.mute, "right");
+  if (S.rec) { g.fillStyle = C.rec; g.beginPath(); g.arc((232 - rw - 8) * 2, 12 * 2, 6, 0, 7); g.fill(); }
+  R(8, 24, 224, 1, C.line);
+  S.notes.forEach((n) => R(8 + n.st / steps() * 224, 23, 1.5, 3, C.accM));
+  if (S.playing) R(8 + curStepF() / steps() * 224 - 1, 21, 2, 7, C.fg);
+  const abs = S.playing ? nextStep : 0, pkShown = S.playing ? pocketFor(abs) : pocketNow(), cmp = document.getElementById("ab").checked;
+  if (S.page === 0) {
+    const sel = S.sel || 0, p = PADP[sel], pn = padNote(sel);
+    cards([["REPEAT", REPEATS[p.repeat], p.repeat > 0], ["TUNE", pn || ((p.tune > 0 ? "+" : "") + p.tune), p.tune !== 0], ["DECAY", DECAYS[p.decay], p.decay !== 1], ["FX", FXS[S.fx], S.fx > 0]]);
+    T(8, 72, S.sel !== undefined ? padName(sel) : "-", 34, S.sel !== undefined ? C.fg : C.mute, "left", 700);
+    T(232, 76, RL.grid ? GRIDS[RL.grid] + "  " + POCKETS[RL.feel][0] : "", 9.5, C.mute, "right");
+    const hs = S.notes.map((n) => ({ st: Math.floor(RL.grid ? gridPos(n.st) : n.st), slot: padSlot(n.pad), sub: RL.grid ? gridPos(n.st) % 1 : n.st % 1 }));
+    pocketGraph(140, hs, RL.grid ? pkShown : 0, steps());
+  } else if (S.page === 1) {
+    const sty = STYLES[K.ideas.style];
+    cards([["STYLE", sty[0].split(" /")[0], 0], ["BEAT", VARIANTS[K.ideas.variant], 0], ["SPEED", SPEEDS[K.ideas.speed] + " %", K.ideas.speed < 6], ["HEAR", GUIDES[K.ideas.guide], K.ideas.guide === 0]]);
+    T(8, 66, KITS[sty[1]], 10.5, C.mute);
+    T(232, 66, !S.playing ? "PLAY to start" : K.ideas.guide === 0 ? (listening() ? "LISTEN" : "YOUR TURN") : K.ideas.guide === 1 ? "PLAY ALONG" : "ON YOUR OWN", 10.5, C.acc, "right", 700);
+    /* the beat falls onto the pads C4..B4 */
+    const hs = hitsOf(variant(K.ideas.style, K.ideas.variant)), cur = S.playing ? curStepF() % 16 : -2, TOP = 82, HIT = 166, LA = 8, PX = (HIT - TOP) / LA;
+    for (let x = 8; x < 232; x += 6) R(x, HIT, 3, 1, C.mute);
+    hs.forEach((h) => [0, 1].forEach((lp) => { const d = h.st + h.sub + lp * 16 - cur; if (d < -0.5 || d > LA) return;
+      const k = LO + padOf(STYLES[K.ideas.style][1], h.slot), cx = keyX(k), y = HIT - d * PX; RR(cx - 5, y - 5, 10, 6, 2, d <= 0.3 ? C.acc : listening() ? C.accD : C.accM); }));
+    piano(184, 54, L);
+  } else {
+    const sty = STYLES[K.auto.style];
+    cards([["STYLE", sty[0].split(" /")[0], 0], ["FILLS", FILLS[K.auto.fills], K.auto.fills > 0], ["GHOSTS", GHOSTS[K.auto.ghosts], K.auto.ghosts !== 1], ["FX", FXS[S.fx], S.fx > 0]]);
+    T(8, 66, POCKETS[RL.feel][0], 10.5, C.mute);
+    T(8, 80, S.padHeld !== null ? VARIANTS[S.padHeld] : "Hold a pad", S.padHeld !== null ? 26 : 18, S.padHeld !== null ? C.fg : C.mute, "left", 700);
+    if (cmp && S.playing) T(232, 86, pkShown ? POCKETS[pkShown][0] : "straight", 13, pkShown ? C.warm : C.mute, "right", 700);
+    pocketGraph(116, hitsOf(variant(K.auto.style, S.padHeld ?? 0)), pkShown);
+    AUTO_PADS.forEach((k, i) => { const x = 4 + i * 47, on = S.padHeld === i; RR(x, 184, 44, 50, 5, on ? C.acc : C.card); T(x + 22, 196, VARIANTS[i], 10, on ? C.bg : C.fg, "center", 700); T(x + 22, 214, NAMES[k % 12] + (Math.floor(k / 12) - 1), 8.5, on ? C.bg : C.mute, "center"); });
+  }
+  if (S.countIn) { RR(176, 30, 60, 34, 8, C.rec); T(206, 37, String(S.countIn), 18, C.fg, "center", 700); }
+  rlDraw(); tipDraw();
+  [0, 1, 2, 3].forEach((i) => { document.getElementById("lab-" + i).textContent = RL.open ? ["GRID", "FEEL", "CLICK", "COUNT-IN"][i] : [["REPEAT", "TUNE", "DECAY", "FX"], ["STYLE", "BEAT", "SPEED", "HEAR"], ["STYLE", "FILLS", "GHOSTS", "FX"]][S.page][i]; });
+  const lit = (n, on, cls) => { const b = btnEls.get(n); b.classList.toggle("lit", !!on); b.classList.toggle("breath", cls === "breath"); };
+  lit("PLAY", S.playing || S.countIn, S.countIn ? "breath" : ""); btnEls.get("PLAY").classList.add("green");
+  lit("REC", S.rec || S.countIn || RL.open, S.countIn || RL.open ? "breath" : ""); lit("SCL", S.page !== 0); lit("EDIT", RL.erase);
+}
+const isBlack = (k) => [1, 3, 6, 8, 10].includes(k % 12);
+function keyX(k) { let wi = 0; for (let n = LO; n < k; n++) if (!isBlack(n)) wi++; return isBlack(k) ? wi * 15 - 0.5 : wi * 15 + 7; }
+function piano(y, h, L) {
+  let wi = 0;
+  for (let k = LO; k <= HI; k++) { if (isBlack(k)) continue; const v = L.get(k);
+    R(wi * 15, y, 14, h, held.has(k) ? "#e9b44c" : v === "on" ? C.acc : v === "breath" ? C.accM : v === "dim" ? "#9fb3d6" : C.keyW); wi++; }
+  wi = 0;
+  for (let k = LO; k <= HI; k++) { if (!isBlack(k)) { wi++; continue; } const v = L.get(k);
+    R(wi * 15 - 5, y, 9, h * 0.58, held.has(k) ? "#e9b44c" : v === "on" ? C.acc : v === "breath" ? C.accM : v === "dim" ? "#3d5584" : C.keyB); }
+}
+
+
+/* ---------- the REC layer (Felucca's way: REC held opens it; in the lab a long press). For this track: GRID and FEEL
+   act on playback only (what you played is kept), CLICK, COUNT-IN; OCT+ clears the track (asked first). Outside it:
+   EDIT + a key erases that key's notes as the song plays them; SAVE undoes. ---------- */
+const RL = { open: false, grid: 0, feel: 0, click: 1, count: 1, ask: false, erase: false, undo: [] };
+const GRIDS = ["as played", "1/16", "1/8", "1/16T", "1/8T"], GRID_STEPS = [0, 1, 2, 4 / 3, 8 / 3];
+const CLICKS = ["off", "rec", "on"], COUNTS = ["off", "1 bar", "2 bars"];
+function snapshot() { RL.undo.push(JSON.stringify(S.notes)); if (RL.undo.length > 30) RL.undo.shift(); }
+function undo() { if (!RL.undo.length) { log("SAVE: nothing to undo"); tip("UNDO", "Nothing to undo"); return; } S.notes = JSON.parse(RL.undo.pop()); log("SAVE: undone"); tip("UNDO", "The last change is undone"); }
+function gridPos(st) { const gs = GRID_STEPS[RL.grid]; return gs ? mod(Math.round(st / gs) * gs, steps()) : st; }
+/* the click and the erase, once a step, from schedule() */
+function rlStep(st, t, held) {
+  if (st % 4 === 0 && (RL.click === 2 || (RL.click === 1 && S.rec))) click(t, st % 16 === 0);
+  if (RL.erase && S.playing && held.size) {
+    const before = S.notes.length;
+    S.notes = S.notes.filter((n) => !([...held.keys()].some((k) => eraseMatch(n, k)) && Math.floor(gridPos(n.st)) === st));
+    if (S.notes.length < before) log("EDIT: erased " + (before - S.notes.length));
+  }
+}
+function rlKnob(i, d) {
+  if (i === 0) { RL.grid = mod(RL.grid + d, GRIDS.length); tip("GRID " + GRIDS[RL.grid], RL.grid ? "On playback the notes move to the nearest " + GRIDS[RL.grid] + ". What you played is kept: GRID as played brings it back." : "Playback as you played it, to the millisecond."); }
+  if (i === 1) { RL.feel = mod(RL.feel + d, FEEL_LIST.length); tip("FEEL " + FEEL_LIST[RL.feel][0], FEEL_LIST[RL.feel][1] + (RL.grid ? "" : " (needs a GRID)")); }
+  if (i === 2) { RL.click = mod(RL.click + d, 3); tip("CLICK " + CLICKS[RL.click], ["No click.", "A click while you record.", "A click whenever the song plays."][RL.click]); }
+  if (i === 3) { RL.count = mod(RL.count + d, 3); tip("COUNT-IN " + COUNTS[RL.count], RL.count ? "REC while stopped counts 4, 3, 2, 1" + (RL.count === 2 ? " twice" : "") + ", then records." : "REC while stopped records at once."); }
+}
+function rlPress(n) {                           /* the layer's buttons; 1 when the press is the layer's */
+  if (RL.ask) { if (n === "OCT+") { snapshot(); S.notes = []; log("OCT+: the track is cleared (SAVE: undo)"); tip("CLEARED", "SAVE brings it back"); } else log("Clear: no"); RL.ask = false; return 1; }
+  if (!RL.open) return 0;
+  if (n === "OCT+") { RL.ask = true; return 1; }
+  if (n === "REC") { RL.open = false; log("REC layer closed"); return 1; }
+  return 0;
+}
+function rlLong() { RL.open = !RL.open; RL.ask = false; log(RL.open ? "REC held: the REC layer (GRID, FEEL, CLICK, COUNT-IN; OCT+ clears)" : "REC layer closed"); draw(); }
+function rlDraw() {                             /* over the page: the layer's cards and what the buttons do */
+  if (!RL.open && !RL.ask) return;
+  RR(0, 28, 240, 112, 0, C.bg);
+  cards([["GRID", GRIDS[RL.grid], RL.grid > 0], ["FEEL", FEEL_LIST[RL.feel][0].split(" ")[0], RL.feel > 0], ["CLICK", CLICKS[RL.click], RL.click > 0], ["COUNT-IN", COUNTS[RL.count], RL.count > 0]]);
+  if (RL.ask) { RR(6, 70, 228, 50, 8, C.rec); T(120, 78, "Clear this track?", 14, C.fg, "center", 700); T(120, 100, "OCT+ again: yes    any other: no", 10, C.fg, "center"); return; }
+  [["OCT+", "clear the track"], ["EDIT + key", "erase as it plays"], ["SAVE", "undo"], ["REC", "close"]].forEach(([k, v], i) => { T(10, 72 + i * 16, k, 10, C.acc, "left", 700); T(92, 72 + i * 16, v, 10, C.mute); });
+}
+/* the knob pop-up: what the value means, for 1.8 s */
+let tipT = "", tipB = "", tipUntil = 0;
+function tip(title, body) {
+  if (!document.getElementById("tips").checked) return; tipT = title; tipB = body; tipUntil = performance.now() + 1800; setTimeout(draw, 1850); }
+function tipDraw() {
+  if (performance.now() > tipUntil) return;
+  RR(6, 66, 228, 70, 8, C.card2); T(14, 72, tipT, 12, C.fg, "left", 700);
+  const words = tipB.split(" "); let line = "", y = 92;
+  g.font = `600 ${10 * 2}px "Inter Tight", sans-serif`;
+  words.forEach((w) => { const t2 = line ? line + " " + w : w; if (g.measureText(t2).width / 2 > 210) { T(14, y, line, 10, C.mute); y += 13; line = w; } else line = t2; });
+  if (line) T(14, y, line, 10, C.mute);
+}
+(function rlButtons() {                         /* REC: a long press opens the layer; EDIT and SAVE work */
+  const rec = btnEls.get("REC"); let tm = null, long = false;
+  rec.addEventListener("pointerdown", () => { long = false; tm = setTimeout(() => { long = true; rlLong(); }, 500); });
+  rec.addEventListener("pointerup", () => clearTimeout(tm));
+  rec.addEventListener("click", (e) => { if (long) { e.stopImmediatePropagation(); long = false; } }, true);
+  ["EDIT", "SAVE"].forEach((n) => btnEls.get(n).classList.remove("dead"));
+})();
+
+function eraseMatch(n, k) { return n.pad === k - LO; }
+/* ---------- controls ---------- */
+const wrapI = (v, d, n) => mod(v + d, n);
+const FX_TIP = ["No effect.", "A compressor: the drums hit harder and even.", "An MPC: a fast compressor and a soft clipper. Loud and glued.", "Lo-fi: fewer bits, the highs cut, vinyl crackle.", "Tape: warm saturation, a little softer."];
+function knob(i, d) {
+  power();
+  if (RL.open) { rlKnob(i, d); draw(); return; }
+  if (i === 3 && S.page !== 1) { S.fx = wrapI(S.fx, d, FXS.length); setFx(S.fx); tip("FX " + FXS[S.fx], FX_TIP[S.fx]); draw(); return; }
+  if (S.page === 0) { const kp = K.play;
+    const p = PADP[S.sel || 0], nm = padName(S.sel || 0);
+    if (i === 0) { p.repeat = wrapI(p.repeat, d, REPEATS.length); tip(nm + ": REPEAT " + REPEATS[p.repeat], p.repeat ? "Hold this pad: it repeats every " + REPEATS[p.repeat] + ", in time. Each pad has its own: rolling hats, a single kick." : "This pad plays once."); }
+    if (i === 1) { p.tune = Math.max(-12, Math.min(12, p.tune + d)); hit(S.kit, S.sel || 0, 0, 100); const pn = padNote(S.sel || 0); tip(nm + ": TUNE " + (p.tune > 0 ? "+" : "") + p.tune + (pn ? " = " + pn : ""), pn ? "Tune it to the song's key: an 808 on the root sits with the bass. For an 808 bassline, play an 808 sound on a BASS track." : "This pad higher or lower, in semitones."); }
+    if (i === 2) { p.decay = wrapI(p.decay, d, 3); hit(S.kit, S.sel || 0, 0, 100); tip(nm + ": DECAY " + DECAYS[p.decay], "How long this pad rings: a short tight kick, a long 808 tail."); } }
+  else if (S.page === 1) { const ki = K.ideas;
+    if (i === 0) ki.style = wrapI(ki.style, d, STYLES.length); if (i === 1) ki.variant = wrapI(ki.variant, d, VARIANTS.length);
+    if (i === 2) { ki.speed = Math.max(0, Math.min(6, ki.speed + d)); if (S.playing) { stop(); play(); } } if (i === 3) ki.guide = wrapI(ki.guide, d, 3);
+    tip([STYLES[ki.style][0], "BEAT " + VARIANTS[ki.variant], "SPEED " + SPEEDS[ki.speed] + " %", "HEAR " + GUIDES[ki.guide]][i],
+        ["The beat to learn falls onto its pads.", "The style's main beat, a busier one, its fill, a break or a drop.", "Practice slower: the whole song plays at " + tempo() + " BPM while you are on IDEAS. What you record still fits the song's tempo.",
+         ["The beat plays once, then it is your turn.", "The beat plays with you.", "Only the falling hits: you play."][ki.guide]][i]); }
+  else { const ka = K.auto;
+    if (i === 0) { ka.style = wrapI(ka.style, d, STYLES.length); const s = STYLES[ka.style]; S.kit = s[1]; RL.feel = s[3]; setBpm(s[2]);
+      tip(s[0], "A style is a family of beats: main, busy, fill, break and drop on the pads, with its own kit (" + KITS[s[1]] + "), tempo (" + s[2] + ") and feel (" + POCKETS[s[3]][0] + ")."); }
+    if (i === 1) { ka.fills = wrapI(ka.fills, d, 3); tip("FILLS " + FILLS[ka.fills], ka.fills ? "Holding main, the last bar of every " + FILLS[ka.fills] + " is a fill." : "No automatic fills: hold the fill pad yourself."); }
+    if (i === 2) { ka.ghosts = wrapI(ka.ghosts, d, 3); tip("GHOSTS " + GHOSTS[ka.ghosts], ["No ghost notes: cleaner.", "The style's soft snares in between.", "More soft snares: busier, funkier."][ka.ghosts]); } }
+  draw();
+}
+function setBpm(b) { S.bpm = b; document.getElementById("bpm").value = b; }
+document.getElementById("clear").onclick = () => { S.notes = []; log("The drum track is empty"); draw(); };
+document.getElementById("power").onclick = () => { power(); draw(); };
+document.getElementById("bars").onchange = (e) => { S.bars = +e.target.value; draw(); };
+document.getElementById("bpm").onchange = (e) => { S.bpm = Math.max(60, Math.min(180, +e.target.value || 88)); e.target.value = S.bpm; draw(); };
+document.getElementById("ab").onchange = (e) => log(e.target.checked ? "Compare: bar 1 straight, bar 2 the pocket, and so on" : "Compare off");
+document.getElementById("loose").onchange = (e) => log(e.target.checked ? "Loose: the small variations change every loop" : "Tight: the same small variations every loop");
+
+/* ---------- the scenarios ---------- */
+const autoSet = (style, extra = {}) => { S.page = 2; const s = STYLES[style]; K.auto = { style, fills: 0, ghosts: 1 }; S.kit = s[1]; RL.feel = extra.pocket ?? s[3]; S.fx = extra.fx ?? 0; setBpm(s[2]); setFx(S.fx); };
+const ab = (on) => { document.getElementById("ab").checked = on; };
+const SCEN = [
+  ["D-U1", "Four kits", "PLAY: every key is its own sound, 27 a kit, as on an MPC: play one and the screen names it (kick1, snare2, conga1: the names of its WAV files). Kicks are low on the left, the hats in the middle, the kit's own percussion and a crash at the top. PRESETS changes the kit.",
+   ["<b>Set up</b> (PLAY, the Dusty kit).", "Play across the keys and read the names. <b>PRESETS</b>: the 808, Live and Latin kits.", "The knobs set the pad you played last: play hat1, <b>K1 REPEAT</b> 1/16, hold it: rolling hats, while the kick stays single. On the 808 kit play kick4, <b>K2 TUNE</b>: the screen names its note.", "Your own kit: hold a key on your computer keyboard (<kbd>a</kbd> is C4) and click <b>PRESETS</b>: that key takes any sound from any kit (MY KIT)."],
+   () => { S.page = 0; S.kit = 0; S.fx = 0; S.sel = undefined; PADP.forEach((p) => Object.assign(p, { src: null, repeat: 0, tune: 0, decay: 1 })); setFx(0); ab(false); }],
+  ["D-U2", "One finger, a whole beat", "AUTO: hold a pad and the style's beat plays (the song starts); let go and it stops. A style is a family of beats: the five pads are its main beat, a busier one, a fill, a break and a drop.",
+   ["<b>Set up</b> (AUTO, Boom bap, the Dusty kit, swing 55).", "Hold <b>main</b> (F3): the beat. Slide to <b>busy</b> (G3), <b>fill</b> (A3), <b>break</b> (B3), <b>drop</b> (C4).", "<b>K2 FILLS</b> 4 bars: holding main, every fourth bar is a fill. <b>K3 GHOSTS</b>: more or none.", "<b>K1 STYLE</b>: G-funk, Funk, Disco, Half-time, Dembow (its busy pad is shatta), Trap. Each brings its kit, tempo and feel."],
+   () => { autoSet(0); ab(false); }],
+  ["D-U3", "The Dilla pocket", "Dilla: the kick swung, the hats nearly straight and a little loose, the snare late. The two feels rub against each other, and that is the sound. The screen shows each hit where the pocket puts it: the amber line is how far it moved.",
+   ["<b>Set up</b> (AUTO, Dilla, the Dusty kit, Compare on).", "Hold <b>main</b>: bar 1 is straight, bar 2 is Dilla, and so on. The top right says which; the screen draws each drum where the feel moves it.", "Untick Compare and listen to Dilla alone. Tick <b>Loose</b> in the song panel: the hats never land twice the same.", "Hold <b>REC</b> (a long press): <b>K2 FEEL</b> is the track's feel. Try Drunk: too far, on purpose."],
+   () => { autoSet(1); ab(true); }],
+  ["D-U4", "Swing like an MPC", "The same boom bap beat with more and more swing: the off-sixteenths come later.",
+   ["<b>Set up</b> (AUTO, Boom bap, FEEL Straight).", "Hold <b>busy</b> (G3, sixteenth hats). Hold <b>REC</b> (a long press) and turn <b>K2 FEEL</b>: Swing 55, Swing 62, MPC 66.", "Watch the hats move right on the screen as the swing grows."],
+   () => { autoSet(0, { pocket: 0 }); ab(false); }],
+  ["D-U5", "Laid back or pushed", "The same funk beat, three ways: on the grid, behind the beat (relaxed, D'Angelo), ahead of it (urgent).",
+   ["<b>Set up</b> (AUTO, Funk, the Live kit, Compare on, FEEL Laid back).", "Hold <b>main</b>: straight, then laid back, bar by bar.", "In the REC layer, <b>K2 FEEL</b> to Pushed: the hats lean forward."],
+   () => { autoSet(3, { pocket: 5 }); ab(true); }],
+  ["D-U6", "Reggaeton, shatta, afrobeats, reggae, drum and bass", "New styles. Reggaeton is the dembow (its snares lean a little late); Shatta is a first take on Kybba and Limitlezz (an 808 kit, a clap on three, rim rolls): tell us how close it is.",
+   ["<b>Set up</b> (AUTO, Reggaeton, the Latin kit, Latin backing).", "Hold <b>main</b>, then <b>busy</b>.", "<b>K1 STYLE</b>: Shatta, Afrobeats, Reggae (one drop), Drum &amp; bass (172 BPM)."],
+   () => { document.getElementById("backing").value = "latin"; autoSet(6); ab(false); }],
+  ["D-U10", "Shatta, as Kybba plays it", "Built from your description: a four-on-the-floor dembow kick on the 808 kit, clipped rims on the dembow's off-beats, quick triplet hat bursts and conga and bongo accents between the hits, and space. The busy pad is the energy switch: more hats, a shaker, a clap.",
+   ["<b>Set up</b> (AUTO, Shatta, the 808 kit, MPC FX for the clipped sound, the Shatta backing).", "Hold <b>main</b>, then <b>busy</b> for the switch; <b>K2 FILLS</b> 8 bars for a change every eight.", "On PLAY, tune kick4 (the long 808) to the song's A: <b>K2 TUNE</b> until the screen says A1."],
+   () => { document.getElementById("backing").value = "shatta"; autoSet(7, { fx: 2 }); K.auto.fills = 2; ab(false); }],
+  ["D-U7", "Record, tidy and give it a feel", "Play a beat on the pads as you feel it. In the REC layer (REC held), GRID puts it on the grid and FEEL gives it a pocket, on playback only: what you played is kept. EDIT and a pad erase that pad's hits as they play; SAVE undoes; OCT+ in the layer clears the track.",
+   ["<b>Set up</b> (PLAY, the Dusty kit, GRID as played, the click on while recording).", "<b>REC</b>: a count-in 4 3 2 1, then play kick, snare and hats for two bars. <b>REC</b> again.", "Hold <b>REC</b> (a long press): <b>K1 GRID</b> 1/16, <b>K2 FEEL</b> Dilla, Laid back, MPC 66: the same recording, other feels. <b>REC</b> closes it.", "A hit you don't want? <b>EDIT</b>, hold its pad while it comes round, <b>EDIT</b> again. <b>SAVE</b>: undo."],
+   () => { S.page = 0; S.notes = []; RL.undo = []; RL.grid = 0; RL.feel = 4; RL.click = 1; RL.count = 1; S.kit = 0; S.fx = 0; setFx(0); ab(false); }],
+  ["D-U8", "Learn a beat", "IDEAS: the style's beat falls onto the pads it belongs to (C4 to B4). The first time round you listen, the next it is your turn: play each hit as it lands.",
+   ["<b>Set up</b> (IDEAS, Boom bap, SPEED 70 %).", "<b>PLAY</b>: LISTEN, then YOUR TURN. The whole song plays slower while you practise.", "<b>K3 SPEED</b> up to 100 %; <b>K2 BEAT</b> busy or fill; <b>K1</b> another style."],
+   () => { S.page = 1; K.ideas = { style: 0, variant: 0, speed: 2, guide: 0 }; setFx(0); ab(false); }],
+  ["D-U9", "Punch, MPC, lo-fi, tape", "FX on the drum track: Punch (a compressor), MPC (a fast compressor and a soft clipper, loud and glued), Lofi (fewer bits, the highs cut, vinyl crackle), Tape (warm saturation).",
+   ["<b>Set up</b> (AUTO, Boom bap, FX off).", "Hold <b>main</b> and turn <b>K4 FX</b> through them (on PLAY too).", "Dilla with MPC, Trap with Punch, Boom bap with Lofi."],
+   () => { autoSet(0); ab(false); }],
+];
+const scEl = document.getElementById("scen");
+SCEN.forEach(([id, title, why, stepsL, setup]) => {
+  const d = document.createElement("div"); d.className = "sc";
+  d.innerHTML = `<h3><small>${id}</small>${title}</h3><p>${why}</p><ol>${stepsL.map((s) => `<li>${s}</li>`).join("")}</ol>`;
+  const b = document.createElement("button"); b.textContent = "Set up " + id; b.id = "setup-" + id;
+  b.onclick = () => { power(); if (S.playing) stop(); setup(); log("Set up " + id + ": " + title); draw(); };
+  d.appendChild(b); scEl.appendChild(d);
+});
+autoSet(1);
+S.page = 0;                                     /* every template starts on PLAY */
+draw();
+document.fonts && document.fonts.ready.then(draw);
+</script>

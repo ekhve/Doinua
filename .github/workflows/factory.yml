@@ -1,0 +1,55 @@
+# Every push and pull request: set up the toolchain and the emulator, then run every automated gate
+# (factory/check.sh): build, the music oracle, safety, and the scenarios on the host simulator and
+# on the real firmware in the emulator. The firmware packages and the screens go up as artifacts
+# for a person to look at and, on a real FM-1, to try.
+name: Factory
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: System packages for the emulator
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libx11-dev libxkbcommon-dev
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache the JieLi toolchain and SDK files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.jieli
+            ~/fw-AC79_AIoT_SDK
+          key: jieli-${{ hashFiles('tools/setup.sh') }}
+      - name: Cache the emulator build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            third_party/fm1-emu/target
+          key: emu-${{ hashFiles('.gitmodules', 'factory/patches/*.patch') }}-${{ github.sha }}
+          restore-keys: emu-${{ hashFiles('.gitmodules', 'factory/patches/*.patch') }}-
+      - name: Setup
+        run: tools/setup.sh
+      - name: Gates
+        run: factory/check.sh
+      - name: Firmware and screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-and-screens
+          path: |
+            build/*/*.fwsc
+            work/factory/*/*.png
+            work/factory/summary.json
+          if-no-files-found: ignore

@@ -1,0 +1,38 @@
+{
+  "scenario": "The drums go through Punch, MPC, Lofi or Tape",
+  "name": "companion, DRUMS: snare1 (A3) with FX off, then FX MPC (K4): about twice as loud (rms over its first 200 ms) at the same peak (under -16 dBFS both times)",
+  "app": "companion",
+  "ms": 2600,
+  "keys": "900:e1:+3,1200:A3@100,1300:A3^,1500:e5:+2,1800:A3@100,1900:A3^",
+  "checks": [
+    {
+      "type": "level_ratio",
+      "a": [
+        1200,
+        1400
+      ],
+      "b": [
+        1800,
+        2000
+      ],
+      "ratio": 2.08,
+      "tol": 0.2
+    },
+    {
+      "type": "peak",
+      "from": 1200,
+      "to": 1500,
+      "max_dbfs": -16.0
+    },
+    {
+      "type": "peak",
+      "from": 1800,
+      "to": 2100,
+      "max_dbfs": -16.0
+    },
+    {
+      "type": "screen",
+      "at": 2300
+    }
+  ]
+}

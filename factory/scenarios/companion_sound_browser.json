@@ -1,0 +1,17 @@
+{
+  "scenario": "PRESETS opens the sound list on the track's group, K1 jumps a group while it shows, and it closes 2 s after",
+  "name": "companion, ST-68: CHORDS, PRESETS opens the list on Keys (CLAV SOFT), two more (HARPSICHORD), K1 to Organ (Combo Organ, the Juno's, first since D-090); a key held keeps the list open past 2 s; let go, it closes 2 s later; K1 then is the page's again",
+  "app": "companion",
+  "ms": 9000,
+  "keys": "1000:e6:+1,1600:e6:+2,2200:e2:+1,2800:C4@100,5200:C4^,8000:e2:+1",
+  "note": "The chords track's sound at start (Basic: Piano) is not in the list, so the first turn opens the list on the template's group, Keys, at its first sound. The browser shows the owner's picks of the engines built: FMini's and three of ours (FULL ORGAN, STRINGS, ARP 8BIT).",
+  "checks": [
+    {"type": "screen", "at": 1300},
+    {"type": "screen", "at": 1900},
+    {"type": "screen", "at": 2500},
+    {"type": "sound", "from": 2900, "to": 3400},
+    {"type": "screen", "at": 5000},
+    {"type": "screen", "at": 7400},
+    {"type": "screen", "at": 8500}
+  ]
+}

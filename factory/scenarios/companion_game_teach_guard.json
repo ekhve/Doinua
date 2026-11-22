@@ -1,0 +1,28 @@
+{
+  "scenario": "The built-in songs cannot be taught over, and leaving while teaching keeps nothing",
+  "name": "companion, GAME: REC on Twinkle Twinkle does nothing (PRESS A KEY); K3 back one (MY SONG 4), REC, C4 E4 played: LISTENING, 2 notes; HOME held, Game picked again: MY SONG 4 still says TEACH ME; a key there just sings (C4)",
+  "app": "companion",
+  "ms": 7600,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2500:REC,2550:REC^,3000:e4:-1,3500:REC,3550:REC^,4000:C4@100,4100:C4^,4500:E4@100,4600:E4^,5000:HOME,5700:HOME^,6000:HOME,6050:HOME^,6200:HOME,6250:HOME^,6800:C4@100,6900:C4^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2825
+    },
+    {
+      "type": "screen",
+      "at": 4825
+    },
+    {
+      "type": "screen",
+      "at": 6725
+    },
+    {
+      "type": "pitch",
+      "from": 6820,
+      "to": 7100,
+      "note": "C4",
+      "cents": 25
+    }
+  ]
+}

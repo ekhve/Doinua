@@ -1,0 +1,33 @@
+{
+  "scenario": "The click on CLICK plays every beat while the song plays",
+  "name": "companion: GLO, SCL to CLICK, K1 to On; PLAY: a click on each beat (90 BPM: 667 ms), quiet between",
+  "app": "companion",
+  "ms": 3000,
+  "keys": "900:GLO,950:GLO^,1000:SCL,1050:SCL^,1065:SCL,1080:SCL^,1100:e2:+1,1150:e2:+1,1300:GLO,1350:GLO^,1500:PLAY,1550:PLAY^",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 1502,
+      "to": 1525
+    },
+    {
+      "type": "silence",
+      "from": 1700,
+      "to": 2100
+    },
+    {
+      "type": "sound",
+      "from": 2170,
+      "to": 2193
+    },
+    {
+      "type": "silence",
+      "from": 2400,
+      "to": 2800
+    },
+    {
+      "type": "screen",
+      "at": 1200
+    }
+  ]
+}

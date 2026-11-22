@@ -1,0 +1,13 @@
+{
+  "scenario": "PLUS adds a voice in the key, or an echo",
+  "name": "companion, MELODY PLUS echo at 90 BPM: C4 played once repeats softer a dotted eighth (500 ms) and two later; PLUS 3rd shows +E",
+  "app": "companion",
+  "ms": 3400,
+  "keys": "900:e1:+2,1000:e5:+4,1200:C4@100,1300:C4^,2700:e5:-3,3000:C4@100,3200:C4^",
+  "checks": [
+    {"type": "sound", "from": 1700, "to": 1850},
+    {"type": "pitch", "from": 1700, "to": 1850, "note": "C4", "cents": 25},
+    {"type": "sound", "from": 2200, "to": 2350},
+    {"type": "screen", "at": 3100}
+  ]
+}

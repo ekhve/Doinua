@@ -1,0 +1,29 @@
+{
+  "scenario": "With chords, SCALE walks the scales that fit them, best first, in a pop-up with their fit",
+  "name": "companion: a 1-bar song with Am recorded, in C major; on BASS PLAY, K2 from major goes to the next in fit order (mixolydian, 100 %): B goes dark, Bb glows; the pop-up closes by itself",
+  "app": "companion",
+  "ms": 5200,
+  "keys": "900:GLO,1000:GLO^,1050:e4:-1,1070:e4:-1,1090:e4:-1,1200:GLO,1300:GLO^,1400:REC,1450:REC^,1500:PLAY,1550:PLAY^,1700:A3@100,1710:C4@100,1720:E4@100,2700:A3^,2700:C4^,2700:E4^,2900:REC,2950:REC^,3100:e1:+1,3300:e3:+1",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 3400,
+      "to": 3600,
+      "keys": {
+        "B4": "off",
+        "A#4": "dim",
+        "D4": "dim",
+        "C#4": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 3600
+    },
+    {
+      "type": "screen",
+      "at": 5000
+    }
+  ],
+  "note": "The pop-up shows for 1.5 s after K2 turns (3300 to 4800 ms)."
+}

@@ -1,0 +1,13 @@
+{
+  "scenario": "A take is undone with SAVE held, and quantize keeps what was played",
+  "name": "companion, MELODY, SEQ to SEQUENCE: LENGTH 1 bar; REC, PLAY, C5 played 300 ms in; REC off: the next loop plays it; QUANTIZE 1/16 and back to off; SAVE held: the take is gone, the loop after is silent",
+  "app": "companion",
+  "ms": 7600,
+  "keys": "900:e1:+2,950:SEQ,1000:SEQ^,1050:SEQ,1100:SEQ^,1200:e5:-1,1220:e5:-1,1240:e5:-1,1300:REC,1350:REC^,1400:PLAY,1450:PLAY^,1700:C5@100,1900:C5^,2200:REC,2250:REC^,2400:e2:+4,4800:e2:-4,5000:SAVE,5700:SAVE^",
+  "checks": [
+    {"type": "sound", "from": 4380, "to": 4560},
+    {"type": "silence", "from": 6800, "to": 7400},
+    {"type": "screen", "at": 3500},
+    {"type": "screen", "at": 6000}
+  ]
+}

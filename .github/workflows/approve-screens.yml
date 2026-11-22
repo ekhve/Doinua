@@ -1,0 +1,103 @@
+# The owner approves screens (CLAUDE.md rule 4: a person's call, D-078). Only the owner can start it: Actions >
+# "Approve screens" > Run workflow, on the branch whose screens they looked at (main, or a PR's branch). It runs
+# `factory/run.py --approve` for the scenarios named, or for every scenario with a screen that has no approved
+# reference yet ("new"), and pushes the references to a new branch, screens-approved-<run>, with the owner as the
+# approver in the commit. The factory lead opens the PR from it; CI then checks the references like any change.
+name: Approve screens
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenarios:
+        description: "Scenarios to approve, by file name without .json, separated by spaces; or: new (every scenario with a screen not yet approved)"
+        required: true
+        default: "new"
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    if: github.actor == 'ekhve'                 # the owner's own click, nobody else's
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: System packages for the emulator
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libx11-dev libxkbcommon-dev
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache the JieLi toolchain and SDK files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.jieli
+            ~/fw-AC79_AIoT_SDK
+          key: jieli-${{ hashFiles('tools/setup.sh') }}
+      - name: Cache the emulator build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            third_party/fm1-emu/target
+          key: emu-${{ hashFiles('.gitmodules', 'factory/patches/*.patch') }}-${{ github.sha }}
+          restore-keys: emu-${{ hashFiles('.gitmodules', 'factory/patches/*.patch') }}-
+      - name: Setup and build
+        run: |
+          tools/setup.sh
+          for a in apps/*/; do python3 tools/build.py "$(basename "$a")"; done
+      - name: The scenarios to approve
+        id: which
+        env:
+          WANT: ${{ inputs.scenarios }}
+        run: |
+          python3 - <<'EOF' > which.txt
+          import json, os, re
+          from pathlib import Path
+          want = os.environ["WANT"].split()
+          names = []
+          for p in sorted(Path("factory/scenarios").glob("*.json")):
+              sc = json.loads(p.read_text())
+              ats = [c["at"] for c in sc.get("checks", []) if c["type"] == "screen"]
+              ats += [c["at"] for c in sc.get("reboot", {}).get("checks", []) if c["type"] == "screen"]
+              if not ats:
+                  continue
+              if want == ["new"]:
+                  if any(not list(Path("factory/approved").glob(f"{p.stem}*_{at}.png")) for at in ats):
+                      names.append(p.stem)
+              elif p.stem in want:
+                  names.append(p.stem)
+          for w in want:
+              if w != "new" and w not in names:
+                  raise SystemExit(f"no scenario with screens called {w}")
+          print(" ".join(names))
+          EOF
+          echo "names=$(cat which.txt)" >> "$GITHUB_OUTPUT"
+          echo "Approving: $(cat which.txt)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Approve
+        env:
+          NAMES: ${{ steps.which.outputs.names }}
+        run: |
+          test -n "$NAMES" || { echo "nothing to approve" >> "$GITHUB_STEP_SUMMARY"; exit 0; }
+          for n in $NAMES; do python3 factory/run.py "factory/scenarios/$n.json" --approve; done
+      - name: Push the references to a branch
+        env:
+          NAMES: ${{ steps.which.outputs.names }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: screens-approved-${{ github.run_number }}
+        run: |
+          git add factory/approved
+          if git diff --cached --quiet; then echo "no references changed" >> "$GITHUB_STEP_SUMMARY"; exit 0; fi
+          git -c user.name="$ACTOR" -c user.email="$ACTOR@users.noreply.github.com" commit -q \
+            -m "Screens approved by $ACTOR (run ${{ github.run_number }} on ${{ github.ref_name }})" -m "Scenarios: $NAMES"
+          git push origin "HEAD:refs/heads/$BRANCH"
+          echo "Pushed to **$BRANCH**: the factory lead opens the PR." >> "$GITHUB_STEP_SUMMARY"
+      - name: The approved screens, to look at
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: approved-screens
+          path: factory/approved/*.png
+          if-no-files-found: ignore

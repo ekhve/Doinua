@@ -1,0 +1,48 @@
+{
+  "scenario": "Settings survive a power-off",
+  "name": "kit: settings survive a power-off (hello: key, scale and note names)",
+  "app": "hello",
+  "ms": 4500,
+  "keys": "1000:e0:+2,1200:e1:+1,1400:SCL,1500:SCL^",
+  "note": "Turns the key to D, the scale to Natural minor and the names to Do-Re-Mi; hello saves 2 s after the last change (about 3.5 s). The reboot starts from the store that run left.",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 1700,
+      "to": 3200,
+      "keys": {
+        "D4": "breath",
+        "F4": "dim",
+        "F#4": "off",
+        "C4": "dim",
+        "C#4": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 4200
+    }
+  ],
+  "reboot": {
+    "ms": 2500,
+    "keys": "",
+    "checks": [
+      {
+        "type": "lights",
+        "from": 800,
+        "to": 2300,
+        "keys": {
+          "D4": "breath",
+          "F4": "dim",
+          "F#4": "off",
+          "C4": "dim",
+          "C#4": "off"
+        }
+      },
+      {
+        "type": "screen",
+        "at": 2000
+      }
+    ]
+  }
+}

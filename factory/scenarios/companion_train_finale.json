@@ -1,0 +1,39 @@
+{
+  "scenario": "The song's end brings the train to Star Station, where it wins a star it keeps",
+  "name": "companion, GAME, the Night Train, K3 Funiculì, PLAY: the song played (29 s), the train running it; at its end the golden run, then Star Station: the sheriff throws a star onto the tender; after a power-off the star is still there",
+  "app": "companion",
+  "ms": 46000,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2200:e0:+1,2250:e0:+1,2300:e0:+1,2500:e4:+1,3500:PLAY,3600:PLAY^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 20025
+    },
+    {
+      "type": "screen",
+      "at": 33525
+    },
+    {
+      "type": "screen",
+      "at": 38025
+    },
+    {
+      "type": "screen",
+      "at": 41525
+    },
+    {
+      "type": "screen",
+      "at": 44025
+    }
+  ],
+  "reboot": {
+    "ms": 3200,
+    "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2200:e0:+1,2250:e0:+1,2300:e0:+1",
+    "checks": [
+      {
+        "type": "screen",
+        "at": 3025
+      }
+    ]
+  }
+}

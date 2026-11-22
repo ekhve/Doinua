@@ -1,0 +1,11 @@
+{
+  "scenario": "TRANSPOSE whites plays the key on the white keys",
+  "name": "companion, CHORDS PLAY, E-flat major, HELP Free, TRANSPOSE whites: C4 sounds E-flat 4; C E G is named Eb",
+  "app": "companion",
+  "ms": 3600,
+  "keys": "900:GLO,1000:GLO^,1050:e2:+1,1070:e2:+1,1090:e2:+1,1110:e2:+1,1130:e2:+1,1150:e2:+1,1170:e2:+1,1250:GLO,1350:GLO^,1450:e2:-1,1550:e3:+1,1800:C4@100,2300:C4^,2600:C4@100,2610:E4@100,2620:G4@100,3300:C4^,3300:E4^,3300:G4^",
+  "checks": [
+    {"type": "pitch", "from": 1900, "to": 2250, "note": "D#4", "cents": 25},
+    {"type": "screen", "at": 3100}
+  ]
+}

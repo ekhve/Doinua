@@ -1,0 +1,30 @@
+# The FM-106 (Juno-106) presets the owner picked in the audition (round 4, 2026-11-20, 28 of 128): its number and name.
+# tools/gen_juno.py makes fm1kit/src/juno/juno_bank.h from these and FM-106's fm106_presets.h.
+  0 Brass
+  1 Brass Swell
+  3 Flutes
+  4 Moving Stri
+  6 Choir
+  8 Organ I
+  9 Organ II
+ 10 Combo Organ
+ 18 Xylophone
+ 21 Strings III
+ 24 Bass Clarin
+ 33 Lead II
+ 35 Funky II
+ 42 Frontier Or
+ 47 Synth Pad
+ 48 Sweep I
+ 49 Pluck Sweep
+ 54 Sustainer
+ 62 FX Sweep
+ 69 Recorder
+ 74 Orchestral
+ 79 FX Rise 2
+ 81 Helicopter
+ 85 FX Sweep 1
+104 E Piano Tre
+105 Clarinet
+114 Meow Bass
+117 Rolling Wah

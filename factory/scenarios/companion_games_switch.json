@@ -1,0 +1,29 @@
+{
+  "scenario": "SELECT turns from one game to the next",
+  "name": "companion, GAME: Unicorn Jump; SELECT up: Hiru Damatxo; up: Aldapeko Sagarra; up: the Night Train; up: Unicorn Jump again",
+  "app": "companion",
+  "ms": 5600,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,3000:e0:+1,3500:e0:+1,4200:e0:+1,4900:e0:+1",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2725
+    },
+    {
+      "type": "screen",
+      "at": 3325
+    },
+    {
+      "type": "screen",
+      "at": 3925
+    },
+    {
+      "type": "screen",
+      "at": 4525
+    },
+    {
+      "type": "screen",
+      "at": 5225
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "scenario": "SAVE tapped says how to undo and keeps the take",
+  "name": "companion, MELODY 1-bar loop: C4 recorded; SAVE tapped shows Hold SAVE to undo and the C4 still plays the next time round",
+  "app": "companion",
+  "ms": 7600,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+2,1300:REC,1350:REC^,1400:PLAY,1450:PLAY^,1500:C4@100,1700:C4^,2000:REC,2050:REC^,4300:SAVE,4350:SAVE^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 4500
+    },
+    {
+      "type": "pitch",
+      "from": 6850,
+      "to": 6970,
+      "note": "C4",
+      "cents": 25
+    }
+  ]
+}

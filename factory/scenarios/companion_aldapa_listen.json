@@ -1,0 +1,22 @@
+{
+  "scenario": "In Aldapeko Sagarra PLAY plays the song, the sheep dance its end, and TXIRULIRULI!",
+  "name": "companion, GAME, Aldapeko Sagarra: PLAY: the song played (36 s); in its last part the sheep dance; at its end TXIRULIRULI!, the windows lit; (the dance's screen is taken 45 ms into its step: with the whole song sounding, the FM-1 draws this scene in more than 25 ms)",
+  "app": "companion",
+  "ms": 41000,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2200:e0:+1,2300:e0:+1,3000:PLAY,3050:PLAY^",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 3400,
+      "to": 4400
+    },
+    {
+      "type": "screen",
+      "at": 28045
+    },
+    {
+      "type": "screen",
+      "at": 39625
+    }
+  ]
+}

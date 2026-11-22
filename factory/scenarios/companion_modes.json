@@ -1,0 +1,54 @@
+{
+  "scenario": "Holding HOME opens the modes; a new mode asks first, shows its home and keeps the song",
+  "name": "companion: a 1-bar loop with C4 recorded on CHORDS PLAY; HOME held opens the picker; SELECT to Guided, HOME, HOME confirms: Guided's first lesson, teal, while the song goes on; back to Producer the same way: PLAY's key lights again (C half), and the song is still there",
+  "app": "companion",
+  "ms": 8200,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:REC,1250:REC^,1300:PLAY,1350:PLAY^,1400:C4@100,1700:C4^,1800:REC,1850:REC^,2200:HOME,2900:HOME^,3000:e0:+1,3100:HOME,3150:HOME^,3300:HOME,3350:HOME^,5000:HOME,5700:HOME^,5800:e0:-1,5900:HOME,5950:HOME^,6100:HOME,6150:HOME^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2800
+    },
+    {
+      "type": "screen",
+      "at": 3200
+    },
+    {
+      "type": "screen",
+      "at": 3600
+    },
+    {
+      "type": "lights",
+      "from": 3500,
+      "to": 4800,
+      "keys": {
+        "C4": "off",
+        "D4": "off"
+      }
+    },
+    {
+      "type": "sound",
+      "from": 4120,
+      "to": 4300
+    },
+    {
+      "type": "sound",
+      "from": 6780,
+      "to": 6950
+    },
+    {
+      "type": "lights",
+      "from": 6300,
+      "to": 7000,
+      "keys": {
+        "C4": "half",
+        "D4": "dim"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 7300
+    }
+  ],
+  "note": "1 bar at 90 BPM is 2664 ms; the C4 recorded at about 1400 ms comes round at about 4064 and 6728 ms: the song goes on in Guided and is still there in Producer."
+}

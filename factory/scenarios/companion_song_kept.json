@@ -1,0 +1,56 @@
+{
+  "scenario": "The song is there after a power-off",
+  "name": "companion, ST-89: C4 recorded in sequence 1, copied to 2 and 3, the song 1, 3, 2 (as companion_seq_song); stopped, it is kept 3 s later; switched off and on, SONG shows the same song and PLAY plays it",
+  "app": "companion",
+  "ms": 8200,
+  "keys": "900:REC,950:REC^,1000:PLAY,1050:PLAY^,1200:C4@100,1500:C4^,1600:REC,1650:REC^,1800:PLAY,1850:PLAY^,1950:SEQ,2000:SEQ^,2200:F3@100,2300:G3@100,2400:G3^,2450:F3^,2600:F3@100,2700:A3@100,2800:A3^,2850:F3^,3000:G3@100,3100:G3^,3300:e2:-1,3500:A3@100,3600:A3^",
+  "note": "The bank writes the song once it has stayed the same for 3 s with the song stopped (about 6.6 s here). The reboot starts from the flash that run left: SEQ opens SONG with the three sequences and the order 1, 3, 2, and PLAY plays the song (sequence 1's C4 sounds from its first beat).",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 3800,
+      "to": 7800,
+      "keys": {
+        "F3": "half",
+        "G3": "half",
+        "A3": "on",
+        "B3": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 8000
+    }
+  ],
+  "reboot": {
+    "ms": 4400,
+    "keys": "900:SEQ,950:SEQ^,3200:PLAY,3250:PLAY^",
+    "checks": [
+      {
+        "type": "lights",
+        "from": 1100,
+        "to": 2900,
+        "keys": {
+          "F3": "half",
+          "G3": "half",
+          "A3": "on",
+          "B3": "off"
+        }
+      },
+      {
+        "type": "screen",
+        "at": 3000
+      },
+      {
+        "type": "silence",
+        "from": 2000,
+        "to": 3150
+      },
+      {
+        "type": "sound",
+        "from": 3300,
+        "to": 4300
+      }
+    ]
+  }
+}

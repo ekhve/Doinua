@@ -1,0 +1,74 @@
+name: Problem report
+description: Something does not do what it should — found by a gate, in the emulator, on a real FM-1 or in a play test
+title: "Problem: "
+labels: ["problem"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you saw or heard, in one or two sentences
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+      description: And the requirement or scenario it breaks, if there is one (R-nnn, scenario name)
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where it was found
+      options:
+        - A factory gate (CI or factory/check.sh)
+        - Host simulator
+        - Emulator (fm1-emu)
+        - A real FM-1
+        - A play test
+        - Reading the code or docs
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: |
+        S1: can stop an FM-1 from updating or booting, loses saved data, or is unsafe (too loud, stuck loud note).
+        S2: wrong music (wrong note, name, scale, timing) or a feature does not work.
+        S3: cosmetic, or works with a workaround.
+      options:
+        - "S1 — safety, update, data loss"
+        - "S2 — wrong music or broken feature"
+        - "S3 — cosmetic or has a workaround"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen
+      description: Steps on the FM-1, or a key script the factory can replay (e.g. `1000:C4@100,1600:C4^,2000:e0:+2`)
+      placeholder: |
+        1. Turn SELECT two clicks
+        2. Press and hold C4
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Firmware
+      description: Commit, PR or .fwsc it happened on
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Photos, screenshots, recordings, logs, factory output
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Did it work before?
+      options:
+        - Don't know
+        - "Yes — it is a regression"
+        - "No — it never worked"

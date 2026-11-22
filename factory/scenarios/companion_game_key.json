@@ -1,0 +1,37 @@
+{
+  "scenario": "In Key mode the next fence's key lights; a wrong key bumps and it waits; two wrong, a poop",
+  "name": "companion, GAME, K4 music off (the bell alone, to hear its pitch), K1 Key: C4 lights for the first fence; D4 bumps (it waits), E4 bumps again and the unicorn poops (counted on the top line); C4 then jumps it and C4 sings",
+  "app": "companion",
+  "ms": 10500,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2100:e2:+1,2200:e5:-1,3600:C4@100,3700:C4^,6500:D4@100,6600:D4^,7300:E4@100,7400:E4^,8600:C4@100,8700:C4^",
+  "checks": [
+    {
+      "type": "lights",
+      "from": 4000,
+      "to": 5000,
+      "keys": {
+        "C4": "on",
+        "D4": "off"
+      }
+    },
+    {
+      "type": "screen",
+      "at": 6725
+    },
+    {
+      "type": "screen",
+      "at": 7925
+    },
+    {
+      "type": "pitch",
+      "from": 8620,
+      "to": 8900,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "screen",
+      "at": 9125
+    }
+  ]
+}

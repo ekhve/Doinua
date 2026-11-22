@@ -1,0 +1,12 @@
+{
+  "scenario": "OCT- and OCT+ move the keys at most two octaves",
+  "name": "hello: three OCT+ presses move C4's key up two octaves (C6) and no further; five OCT- then move G5's key down two octaves (G3) and no further",
+  "app": "hello",
+  "ms": 3200,
+  "keys": "900:OCTUP,950:OCTUP^,1000:OCTUP,1050:OCTUP^,1100:OCTUP,1150:OCTUP^,1300:C4@100,1800:C4^,1900:OCTDN,1950:OCTDN^,2000:OCTDN,2050:OCTDN^,2100:OCTDN,2150:OCTDN^,2200:OCTDN,2250:OCTDN^,2300:OCTDN,2350:OCTDN^,2500:G5@100,3000:G5^",
+  "checks": [
+    {"type": "pitch", "from": 1400, "to": 1750, "note": "C6", "cents": 15},
+    {"type": "pitch", "from": 2600, "to": 2950, "note": "G3", "cents": 15},
+    {"type": "screen", "at": 2800}
+  ]
+}

@@ -1,0 +1,58 @@
+name: Story
+description: An increment to the software, as a user story with acceptance criteria
+title: "Story: "
+labels: ["story"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A story is one increment someone can notice: a child, a parent, a teacher, or us as builders.
+        Its acceptance criteria are what the factory checks, so write each one so it is either true or false.
+        Requirements go in `docs/REQUIREMENTS.md` as `R-nnn`; scenarios in `features/fm1-scales.feature` (Gherkin).
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      description: As a ..., I want ..., so that ...
+      placeholder: As a child learning the piano, I want the keys of the scale to light up, so that I can see which notes to play.
+    validations:
+      required: true
+  - type: input
+    id: use_case
+    attributes:
+      label: Use case
+      description: The use case it serves (UC-nn in docs/USE_CASES.md), or "new"
+      placeholder: UC-01
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Acceptance criteria — requirements
+      description: |
+        One per line: ID, statement (true or false of the product), how it is verified.
+        Verification: A = automated (host simulator + emulated firmware), H = on a real FM-1,
+        K = play test with a child, I = inspection, J = judgement.
+      placeholder: |
+        R-0xx | The keys of the selected scale are lit dim and the tonic breathes | A
+        R-0xx | A child of 6 finds the tonic without being told | K
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Acceptance criteria — scenarios
+      description: Gherkin. Tag @auto (the factory checks it) or @manual (a person checks it on the FM-1 or with a child).
+      render: gherkin
+      placeholder: |
+        @UC-01 @auto
+        Scenario: The scale lights the keys
+          Given the key is "D major"
+          Then the keys D E F# G A B C# are lit dim
+          And the D keys breathe
+  - type: textarea
+    id: decisions
+    attributes:
+      label: Decisions it needs
+      description: Anything in it that is yours to decide (see "Which decisions come to you" in CLAUDE.md). Each becomes a Decision issue.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Context, sketches, links, what is out of scope

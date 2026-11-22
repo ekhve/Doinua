@@ -1,0 +1,20 @@
+{
+  "scenario": "The song page closes when the track's sound or octave changes",
+  "name": "companion: GLO opens the song page; OCT+ closes it and raises the octave, so C4 sounds C5 and the track page shows",
+  "app": "companion",
+  "ms": 2800,
+  "keys": "900:GLO,950:GLO^,1200:OCTUP,1250:OCTUP^,1500:C4@100,2300:C4^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1700,
+      "to": 1900,
+      "note": "C5",
+      "cents": 25
+    },
+    {
+      "type": "screen",
+      "at": 2400
+    }
+  ]
+}

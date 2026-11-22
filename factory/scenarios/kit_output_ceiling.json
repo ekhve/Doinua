@@ -1,0 +1,21 @@
+{
+  "scenario": "The output stays at or below −6 dBFS",
+  "name": "kit: the output ceiling holds with eight loud voices at full MASTER (HAZ-01)",
+  "app": "hello",
+  "ms": 2500,
+  "keys": "850:pot:1023,900:e6:+1,1100:C4@127,1100:D4@127,1100:E4@127,1100:F4@127,1100:G4@127,1100:A4@127,1100:B4@127,1100:C5@127,2300:C4^,2300:D4^,2300:E4^,2300:F4^,2300:G4^,2300:A4^,2300:B4^,2300:C5^",
+  "note": "PRESETS +1 from Piano is Basic Organ (steady). The device writes Q15 << 7 into 24 bits, a -6 dBFS ceiling (D-008); the host models the same chain.",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 1300,
+      "to": 2200
+    },
+    {
+      "type": "peak",
+      "from": 1100,
+      "to": 2500,
+      "max_dbfs": -6.0
+    }
+  ]
+}

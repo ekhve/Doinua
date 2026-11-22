@@ -1,0 +1,15 @@
+{
+  "scenario": "SONG adds a sequence after the cursor, and asks before deleting one",
+  "name": "companion, SEQ to SONG: C4 recorded in sequence 1, copied to 2 and 3 (key held + empty key); the song 1, 2, the cursor back on 1, sequence 3 goes after it (1, 3, 2); EDIT + 3 asks, EDIT + 3 again deletes it",
+  "app": "companion",
+  "ms": 6800,
+  "keys": "900:REC,950:REC^,1000:PLAY,1050:PLAY^,1200:C4@100,1500:C4^,1600:REC,1650:REC^,1800:PLAY,1850:PLAY^,1950:SEQ,2000:SEQ^,2200:F3@100,2300:G3@100,2400:G3^,2450:F3^,2600:F3@100,2700:A3@100,2800:A3^,2850:F3^,3000:G3@100,3100:G3^,3300:e2:-1,3500:A3@100,3600:A3^,4400:EDIT,4500:A3@100,4600:A3^,4700:EDIT^,5200:EDIT,5300:A3@100,5400:A3^,5500:EDIT^",
+  "checks": [
+    {"type": "lights", "from": 2100, "to": 2180, "keys": {"F3": "on", "G3": "off", "A3": "off"}},
+    {"type": "lights", "from": 3700, "to": 4300, "keys": {"F3": "half", "G3": "half", "A3": "on", "B3": "off"}},
+    {"type": "lights", "from": 5800, "to": 6600, "keys": {"F3": "half", "G3": "on", "A3": "off"}},
+    {"type": "screen", "at": 4350},
+    {"type": "screen", "at": 5000},
+    {"type": "screen", "at": 6000}
+  ]
+}

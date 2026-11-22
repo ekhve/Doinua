@@ -1,0 +1,64 @@
+{
+  "scenario": "Every engine's first preset plays its note",
+  "name": "hello: every engine's first preset plays its note (Noise: plays), and stops when released",
+  "app": "hello",
+  "ms": 11500,
+  "keys": "900:e6:+3,1100:C4@100,1700:C4^,2200:e6:+12,2400:C4@100,3000:C4^,3500:e6:+6,3700:C4@100,4300:C4^,4800:e6:+5,5000:C4@100,5600:C4^,6100:e6:+5,6300:C4@100,6900:C4^,7400:e6:+5,7600:C4@100,8600:C4^",
+  "note": "Trio FAT BASS has its third oscillator 12 semitones down and Organ wheel FULL ORGAN has the 16' drawbar: both sound C3 for the C4 key, by design. Noise WIND has a 2 s attack and release.",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 1300,
+      "to": 1650,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "pitch",
+      "from": 2600,
+      "to": 2950,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "pitch",
+      "from": 3900,
+      "to": 4250,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "pitch",
+      "from": 5200,
+      "to": 5550,
+      "note": "C3",
+      "cents": 25
+    },
+    {
+      "type": "pitch",
+      "from": 6500,
+      "to": 6850,
+      "note": "C3",
+      "cents": 25
+    },
+    {
+      "type": "sound",
+      "from": 8000,
+      "to": 8550,
+      "rms": 100
+    },
+    {
+      "type": "silence",
+      "from": 11100,
+      "to": 11450
+    },
+    {
+      "type": "screen",
+      "at": 1500
+    },
+    {
+      "type": "screen",
+      "at": 4100
+    }
+  ]
+}

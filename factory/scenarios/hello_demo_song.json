@@ -1,0 +1,57 @@
+{
+  "scenario": "A song plays its four tracks, looping, and stops",
+  "name": "hello: SEQ plays the demo song at 120 BPM: the bass A2, the melody E5, a chord and the drums each alone in bar 1, all together in bar 2, then again from the top; SEQ again stops it",
+  "app": "hello",
+  "ms": 6700,
+  "keys": "1000:SEQ,1100:SEQ^,5600:SEQ,5700:SEQ^",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 600,
+      "to": 950
+    },
+    {
+      "type": "pitch",
+      "from": 1060,
+      "to": 1440,
+      "note": "A2",
+      "cents": 25
+    },
+    {
+      "type": "pitch",
+      "from": 1560,
+      "to": 1940,
+      "note": "E5",
+      "cents": 25
+    },
+    {
+      "type": "sound",
+      "from": 2060,
+      "to": 2440
+    },
+    {
+      "type": "sound",
+      "from": 2520,
+      "to": 2700
+    },
+    {
+      "type": "sound",
+      "from": 3050,
+      "to": 4900
+    },
+    {
+      "type": "pitch",
+      "from": 5060,
+      "to": 5440,
+      "note": "A2",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 6250,
+      "to": 6650,
+      "rms": 400
+    }
+  ],
+  "note": "Stopping releases the notes, as releasing a key does: Phase BELL (the melody) has a long release (90 of 127), so its tail fades after the stop. Bar 2 would sound at rms ~2500 from 6000 ms if the song still played."
+}

@@ -1,0 +1,13 @@
+{
+  "scenario": "The patterns change the order",
+  "name": "hello: KNOB1 one step picks Down, KNOB2 +6 steps sets 120 BPM; PLAY then plays C5, B4, A4 a note every 500 ms",
+  "app": "hello",
+  "ms": 2700,
+  "keys": "850:e2:+1,900:e3:+6,1000:PLAY,1100:PLAY^",
+  "checks": [
+    {"type": "pitch", "from": 1080, "to": 1420, "note": "C5", "cents": 15},
+    {"type": "pitch", "from": 1580, "to": 1920, "note": "B4", "cents": 15},
+    {"type": "pitch", "from": 2080, "to": 2420, "note": "A4", "cents": 15},
+    {"type": "screen", "at": 1300}
+  ]
+}

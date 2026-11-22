@@ -1,0 +1,9 @@
+[submodule "third_party/felucca-bsp"]
+	path = third_party/felucca-bsp
+	url = https://github.com/hugelton/felucca-bsp.git
+[submodule "third_party/felucca-engines"]
+	path = third_party/felucca-engines
+	url = https://github.com/hugelton/Felucca-Engines.git
+[submodule "third_party/fm1-emu"]
+	path = third_party/fm1-emu
+	url = https://github.com/joakimeriksson/fm1-emu.git

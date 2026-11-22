@@ -1,0 +1,31 @@
+{
+  "scenario": "Holding GLO shows help for the screen",
+  "name": "companion: on the chords' AUTO page, GLO held (half a second) shows its help over its lights (the parts and moves dim); released, the page again; on the keyboard page, GLO held shows that page's help",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "820:SCL,840:SCL^,900:SCL,950:SCL^,1200:GLO,2000:GLO^,2600:SCL,2650:SCL^,2700:SCL,2750:SCL^,3000:GLO,3800:GLO^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 1800
+    },
+    {
+      "type": "screen",
+      "at": 2300
+    },
+    {
+      "type": "screen",
+      "at": 3600
+    },
+    {
+      "type": "lights",
+      "from": 1300,
+      "to": 1900,
+      "keys": {
+        "F3": "dim",
+        "F#3": "dim",
+        "F#5": "off"
+      }
+    }
+  ]
+}

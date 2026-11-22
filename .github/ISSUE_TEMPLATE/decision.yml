@@ -1,0 +1,57 @@
+name: Decision
+description: A choice that is the product owner's to make (normally raised by an agent and asked in the conversation)
+title: "Decision: "
+labels: ["decision"]
+assignees: ["ekhve"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Decisions in the "ask first" tier (CLAUDE.md) stop the work that depends on them until they are answered.
+        The answer is recorded here and as a D-nnn in docs/PLATFORM.md (or docs/DESIGN.md once there is a product).
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options:
+        - Learning content and approach
+        - What the child sees and touches
+        - Safety (update path, flash, volume)
+        - Contracts and architecture (API, dependencies, licence, pins)
+        - Scope and priority
+        - Something that leaves the repo (release, publish, upstream, hardware)
+        - The gates themselves (thresholds, approvals)
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this needs deciding now, and what it touches
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options
+      description: Each option with its pros and cons
+      placeholder: |
+        **A. ...** — pros: ... — cons: ...
+        **B. ...** — pros: ... — cons: ...
+    validations:
+      required: true
+  - type: textarea
+    id: recommendation
+    attributes:
+      label: Recommendation
+      description: Which option the agent recommends, and why
+  - type: textarea
+    id: blocks
+    attributes:
+      label: What waits on it
+      description: Issues or PRs that cannot finish until this is decided
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision
+      description: Filled in when decided — the option, by whom, and the D-nnn it was recorded as

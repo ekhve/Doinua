@@ -1,0 +1,25 @@
+{
+  "scenario": "In Easy mode the fences are plain and the unicorn flies when the song ends",
+  "name": "companion, GAME, Easy, K3 Mary's Lamb, K2 fast: F3 again and again; the unicorn runs with no rainbow, the fences plain; at the 26th, the last fence: YAY and the flight to the moon; no fence until it lands, then the first fence of the next round",
+  "app": "companion",
+  "ms": 30000,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2100:e4:+1,2150:e3:+1,2200:e3:+1,3600:C4@100,3700:C4^,4600:F3@100,4680:F3^,5300:F3@100,5380:F3^,6000:F3@100,6080:F3^,6700:F3@100,6780:F3^,7400:F3@100,7480:F3^,8100:F3@100,8180:F3^,8800:F3@100,8880:F3^,9500:F3@100,9580:F3^,10200:F3@100,10280:F3^,10900:F3@100,10980:F3^,11600:F3@100,11680:F3^,12300:F3@100,12380:F3^,13000:F3@100,13080:F3^,13700:F3@100,13780:F3^,14400:F3@100,14480:F3^,15100:F3@100,15180:F3^,15800:F3@100,15880:F3^,16500:F3@100,16580:F3^,17200:F3@100,17280:F3^,17900:F3@100,17980:F3^,18600:F3@100,18680:F3^,19300:F3@100,19380:F3^,20000:F3@100,20080:F3^,20700:F3@100,20780:F3^,21400:F3@100,21480:F3^,22100:F3@100,22180:F3^,22800:F3@100,22880:F3^,23500:F3@100,23580:F3^,24200:F3@100,24280:F3^,24900:F3@100,24980:F3^,25600:F3@100,25680:F3^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 10025
+    },
+    {
+      "type": "screen",
+      "at": 22525
+    },
+    {
+      "type": "screen",
+      "at": 24525
+    },
+    {
+      "type": "screen",
+      "at": 27525
+    }
+  ]
+}

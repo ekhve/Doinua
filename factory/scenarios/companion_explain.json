@@ -1,0 +1,25 @@
+{
+  "scenario": "A knob explains its value, unless explanations are off",
+  "name": "companion: explanations are off unless chosen (D-072): GLO SYSTEM K3 EXPLAIN On; then K4 to PLUS echo explains it (gone within two seconds); GLO SYSTEM K3 EXPLAIN Off; then K4 shows no explanation",
+  "app": "companion",
+  "ms": 7400,
+  "keys": "800:GLO,850:GLO^,900:SCL,950:SCL^,1000:SCL,1050:SCL^,1100:SCL,1150:SCL^,1200:SCL,1250:SCL^,1350:e4:+1,1500:GLO,1550:GLO^,1900:e1:+2,2000:e5:+4,4100:GLO,4150:GLO^,4200:SCL,4250:SCL^,4300:SCL,4350:SCL^,4400:SCL,4450:SCL^,4500:SCL,4550:SCL^,4700:e4:-1,5000:GLO,5050:GLO^,5300:e5:-1",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2300
+    },
+    {
+      "type": "screen",
+      "at": 3900
+    },
+    {
+      "type": "screen",
+      "at": 4800
+    },
+    {
+      "type": "screen",
+      "at": 5600
+    }
+  ]
+}

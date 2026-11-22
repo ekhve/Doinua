@@ -1,0 +1,24 @@
+{
+  "scenario": "The train waits under the moon, and a key is a chuff",
+  "name": "companion, GAME, the Night Train, K4 music off: Old Number 7 waits under the moon; G4 (Easy, the first note of the Railroad): a chuff, the reed sings G4, a puff goes up, the engine moves on",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:HOME,1600:HOME^,1700:e0:+1,1750:e0:+1,1800:HOME,1850:HOME^,1950:HOME,2000:HOME^,2200:e0:+1,2250:e0:+1,2300:e0:+1,2400:e5:-1,3000:G4@100,3100:G4^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2925
+    },
+    {
+      "type": "pitch",
+      "from": 3100,
+      "to": 3350,
+      "note": "G4",
+      "cents": 25
+    },
+    {
+      "type": "screen",
+      "at": 3425
+    }
+  ]
+}

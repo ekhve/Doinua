@@ -1,0 +1,13 @@
+{
+  "scenario": "Shapes lights the chord to play and the next one",
+  "name": "companion, CHORDS PLAY, HELP Shapes on Pop I-V-vi-IV in C major: C E G full, G B D half; SELECT: G B D full, A C E half",
+  "app": "companion",
+  "ms": 3400,
+  "keys": "900:e2:+1,2200:e0:+1",
+  "checks": [
+    {"type": "lights", "from": 1200, "to": 2100, "keys": {"C4": "on", "E4": "on", "G4": "on", "B4": "half", "D5": "half", "C#4": "off", "D4": "dim"}},
+    {"type": "lights", "from": 2400, "to": 3300, "keys": {"G4": "on", "B4": "on", "D5": "on", "A3": "half", "C4": "half", "E4": "half"}},
+    {"type": "screen", "at": 2000},
+    {"type": "screen", "at": 3200}
+  ]
+}

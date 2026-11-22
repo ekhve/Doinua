@@ -1,0 +1,44 @@
+{
+  "scenario": "SAVE held undoes the last change",
+  "name": "companion, MELODY 1-bar loop: C4 recorded, then E4 in a second pass; SAVE held undoes the E4 pass (C4 stays, no E4); EDIT with C4 erases it as the loop comes round, SAVE brings it back; OCT+ twice clears the track, SAVE brings it back",
+  "app": "companion",
+  "ms": 17300,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+2,1300:REC,1350:REC^,1400:PLAY,1450:PLAY^,1500:C4@100,1700:C4^,2000:REC,2050:REC^,4300:REC,4350:REC^,4900:E4@100,5100:E4^,5500:REC,5550:REC^,6900:SAVE,7500:SAVE^,7200:EDIT,7220:C4@100,9600:C4^,9650:EDIT^,9800:SAVE,10400:SAVE^,12500:REC,13100:REC^,13200:OCTUP,13250:OCTUP^,13400:OCTUP,13450:OCTUP^,13600:REC,13650:REC^,14200:SAVE,14800:SAVE^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 6850,
+      "to": 6970,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 8300,
+      "to": 9950
+    },
+    {
+      "type": "screen",
+      "at": 9900
+    },
+    {
+      "type": "pitch",
+      "from": 12190,
+      "to": 12310,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "silence",
+      "from": 13500,
+      "to": 14800
+    },
+    {
+      "type": "pitch",
+      "from": 14860,
+      "to": 14980,
+      "note": "C4",
+      "cents": 25
+    }
+  ]
+}

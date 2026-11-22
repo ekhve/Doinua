@@ -1,0 +1,27 @@
+{
+  "scenario": "PRESETS changes the kit; a held key and PRESETS change that key's sound",
+  "name": "companion, DRUMS: PRESETS turns Dusty to 808 (named on the top line); A4 held and PRESETS puts the next sound on that key, and the top line says My kit",
+  "app": "companion",
+  "ms": 3600,
+  "keys": "900:e1:+3,1000:F3@100,1100:F3^,1300:e6:+1,1500:F3@100,1600:F3^,2000:D#5@100,2200:e6:+1,2600:D#5^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 1200
+    },
+    {
+      "type": "screen",
+      "at": 1700
+    },
+    {
+      "type": "screen",
+      "at": 2400
+    },
+    {
+      "type": "sound",
+      "from": 2202,
+      "to": 2228,
+      "rms": 60
+    }
+  ]
+}

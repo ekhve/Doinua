@@ -1,0 +1,41 @@
+{
+  "scenario": "OCT+ in the REC layer clears the track after asking",
+  "name": "companion, MELODY 1-bar loop: C4 recorded; REC held, OCT+ asks 'Clear this track?'; SEQ says no and C4 still plays; OCT+ twice clears it",
+  "app": "companion",
+  "ms": 12800,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+2,1300:REC,1350:REC^,1400:PLAY,1450:PLAY^,1500:C4@100,1700:C4^,2000:REC,2050:REC^,4500:REC,5100:REC^,5200:OCTUP,5250:OCTUP^,5500:SEQ,5550:SEQ^,7300:OCTUP,7350:OCTUP^,7500:OCTUP,7550:OCTUP^,8000:REC,8050:REC^",
+  "checks": [
+    {
+      "type": "pitch",
+      "from": 4180,
+      "to": 4300,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "screen",
+      "at": 5350
+    },
+    {
+      "type": "pitch",
+      "from": 6850,
+      "to": 6970,
+      "note": "C4",
+      "cents": 25
+    },
+    {
+      "type": "screen",
+      "at": 7420
+    },
+    {
+      "type": "silence",
+      "from": 9450,
+      "to": 9900
+    },
+    {
+      "type": "silence",
+      "from": 12100,
+      "to": 12600
+    }
+  ]
+}
