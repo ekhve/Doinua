@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define BS2_N 11
+static const char *const BS2_NAMES[BS2_N] = {"Grit Bass", "Dub Plate", "Station Bass", "Acid Slide", "Fm Growl", "Wobble Dub", "Sync Screamer", "S&H Computer", "Square Solo", "Sync Punch", "Slow Sweep Pad"};
 static const uint8_t BS2_PATCHES[BS2_N][152] = {
     { /* P09 Grit Bass */
         0x00, 0x20, 0x29, 0x00, 0x33, 0x00, 0x01, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x4c,

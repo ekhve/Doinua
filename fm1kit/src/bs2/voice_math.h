@@ -54,3 +54,14 @@ static inline float vm_tanhf(float x)       /* fm_tanhf's */
     r = 1.0f - 2.0f / (e + 1.0f);
     return x > 0.0f ? r : -r;
 }
+
+/* Positive gain-normalization factors. Two Newton steps keep this independent
+ * of the host math library and the device runtime. */
+static inline float bs2_rsqrt(float x)
+{
+    fm_bits_t bits = {.f = x};
+    bits.u = 0x5f3759dfu - (bits.u >> 1);
+    float y = bits.f;
+    y *= 1.5f - 0.5f * x * y * y;
+    return y * (1.5f - 0.5f * x * y * y);
+}

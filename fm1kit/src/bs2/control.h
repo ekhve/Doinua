@@ -108,7 +108,7 @@ static inline void bs2_prepare(bs2_track_t *t, const patch_t *patch)
         .need1 = p->lvl1 || p->ring, .need2 = p->lvl2 || p->ring || p->ofm,
         .awake = 1, .ofm = p->ofm, .dist = p->dist, .aenv = &t->amp,
         .fc = &t->filter, .fm = &t->mod_filter, .rng = 1};
-    t->step.dm = 1.f / __builtin_sqrtf(1.f + 0.25f * (t->step.dg - 1.f));
+    t->step.dm = bs2_rsqrt(1.f + 0.25f * (t->step.dg - 1.f));
 }
 
 static inline void bs2_key_down(bs2_track_t *t, int note, int velocity)

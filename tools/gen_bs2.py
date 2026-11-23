@@ -34,6 +34,7 @@ def main():
              " * at 4c8a82f by tools/gen_bs2.py. Do not edit by hand. */",
              "#pragma once", "#include <stdint.h>", "",
              f"#define BS2_N {len(picks)}",
+             "static const char *const BS2_NAMES[BS2_N] = {" + ", ".join(json.dumps(n) for _, n in picks) + "};",
              "static const uint8_t BS2_PATCHES[BS2_N][152] = {"]
     for slot, name in picks:
         offset = (int(slot) - 1) * 154

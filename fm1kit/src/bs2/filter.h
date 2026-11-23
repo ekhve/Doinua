@@ -77,7 +77,7 @@ static inline void filter_coefs(fcoef_t *c, uint8_t mode, uint8_t resonance, uin
     c->pre = 1.0f + (float)drive * (7.0f / 127.0f);
     /* the loop fed at 0.3 and made up after it: a note playing does not choke its tanh, so it still sings over one
      * (fed whole, the loop's gain under the note fell short of the little past singing) */
-    c->post = 1.0f / __builtin_sqrtf(1.0f + 0.4f * (c->pre - 1.0f)) * (1.0f / 0.3f);   /* full drive about 1 dB louder */
+    c->post = bs2_rsqrt(1.0f + 0.4f * (c->pre - 1.0f)) * (1.0f / 0.3f);   /* full drive about 1 dB louder */
     c->gin = 0.3f * (acid ? 1.0f : 1.0f + 0.5f * c->k);   /* Classic: make-up for the loss in the pass band */
     c->bias = acid ? 0.1f : 0.0f;
     c->bias0 = vm_tanhf(c->bias);

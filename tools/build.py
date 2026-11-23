@@ -25,11 +25,11 @@ KIT = ROOT / "fm1kit"
 BSP = ROOT / "third_party" / "felucca-bsp"
 PRODUCT = "FM-1_1301"                     # the identity the installer sees (device.c FM1KIT_PRODUCT)
 CFLAGS = ["-Os", "-ffunction-sections", "-fno-builtin", "-Wall", "-Wno-unused-function"]
-# juno.c only (FM-106's engine computes in single-precision float, D-090): the AC79's FPU, as FM-106 builds it
+# The Juno and BS2 engines compute in single-precision float on the AC79 FPU.
 # (-mcpu=r3 -mfprev1, the SDK's flags; without them clang emits soft-float calls this link has no library for).
 # The FPU is used on the audio path alone, so no other code's float state can be disturbed.
-FPU_FLAGS = {"juno.c": ["-mcpu=r3", "-mfprev1", "-ffp-contract=off"]}
-PORTABLE = ["core.c", "gfx.c", "synth.c", "music.c", "engines.c", "store.c", "bank.c", "juno.c", "fxbus.c", "midi.c", "player.c", "image.c", "seq.c"]
+FPU_FLAGS = {src: ["-mcpu=r3", "-mfprev1", "-ffp-contract=off"] for src in ("juno.c", "bs2.c")}
+PORTABLE = ["core.c", "gfx.c", "synth.c", "music.c", "engines.c", "store.c", "bank.c", "bs2.c", "juno.c", "fxbus.c", "midi.c", "player.c", "image.c", "seq.c"]
 ENGINES = ROOT / "third_party" / "felucca-engines"
 APP_BASE = 0x02000120
 APP_SLOT = 0x8DFBC                        # the app area's size (fm1pkg.py APP_SLOT)
