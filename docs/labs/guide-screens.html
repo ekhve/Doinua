@@ -1,0 +1,225 @@
+<title>Guided Mode Screens</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&display=swap">
+<style>
+/* Layout: one row per screen variant, the same seven moments of a lesson across it, each screen at the FM-1's own
+   240 × 240 pixels in its own fonts (Inter Tight 10/13/16/24/40), on the device's dark glass. One look on purpose. */
+:root {
+  --bg: #0d1018;
+  --panel: #151a26;
+  --ink: #eef0f6;
+  --muted: #9aa3bb;
+  --line: #262d40;
+  --accent: #ffb547;
+  --ui: "Inter Tight", "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--ui); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 22px; }
+h1 { font-size: 22px; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+p { margin: 0; color: var(--muted); line-height: 1.55; max-width: 70ch; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.controls button { font: 600 13px var(--ui); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; cursor: pointer; }
+.controls button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.variant { display: grid; gap: 10px; background: var(--panel); border-radius: 14px; padding: 14px; }
+.variant h2 { font-size: 16px; margin: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.variant h2 .tag { font-size: 12px; font-weight: 700; color: #141414; background: var(--accent); border-radius: 5px; padding: 2px 7px; }
+.variant .why { font-size: 13px; }
+.strip { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+figure { margin: 0; display: grid; gap: 6px; flex: none; }
+figcaption { font-size: 11.5px; color: var(--muted); max-width: 240px; }
+canvas { display: block; border-radius: 6px; border: 3px solid #05070c; background: #000; }
+.notes { font-size: 13px; color: var(--muted); display: grid; gap: 6px; max-width: 80ch; }
+.notes b { color: var(--ink); }
+</style>
+
+<div class="wrap">
+  <h1>Guided mode: five minimal screens</h1>
+  <p>The FM-1 has one 240 × 240 screen and you read only it, so each variant must say clearly what to do. Every screen below is drawn at the device's size in its own font sizes (10, 13, 16, 24 and 40 px), the same seven moments in each row. Compare them, pick one, or pick parts of several.</p>
+  <div class="controls" role="group" aria-label="Screen size">
+    <span style="font-size:13px;color:var(--muted)">Size:</span>
+    <button id="z1" aria-pressed="true">Real size (240 px)</button>
+    <button id="z15" aria-pressed="false">1.5×</button>
+  </div>
+  <div id="rows"></div>
+  <div class="notes">
+    <div><b>What the four share:</b> the lesson and the step at the top, what to do as the strongest text, green when done, red for a warning. They differ in how much else the screen shows.</div>
+    <div><b>Not shown here:</b> the keys' lights, which do half of the guiding on the FM-1 (bright = play this, dim = the family).</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* the FM-1's colours (they become RGB565 on the device) and font sizes */
+const C = { bg: "#0b0e18", bar: "#151a2b", ink: "#f1efe8", muted: "#8f97b3", dim: "#3a4160", amber: "#ffb547", green: "#4fc07f", red: "#ff6464", teal: "#45d6c2", violet: "#a98bff", pink: "#ff7ab8", line: "#232a40" };
+const F = { tiny: 10, xs: 13, small: 16, medium: 24, large: 40 };
+const W = { tiny: 600, xs: 600, small: 500, medium: 600, large: 700 };
+/* the seven moments */
+const M = [
+  { id: "wait", cap: "Lesson 1, step 2: waiting", lesson: "1 · WHAT'S IN A BEAT", step: 2, of: 14, words: "The knobs K1–K4 are a mixer. K1 is the drums.", todo: "Turn K1 up", detail: "now 3 of 10", state: "todo", w: { kind: "knob", k: 1, name: "DRUMS", v: 3, target: 6 } },
+  { id: "done", cap: "The same step, done", lesson: "1 · WHAT'S IN A BEAT", step: 2, of: 14, words: "The knobs K1–K4 are a mixer. K1 is the drums.", todo: "Done!", detail: "SELECT › next step", state: "done", w: { kind: "knob", k: 1, name: "DRUMS", v: 7, target: 6 } },
+  { id: "swing", cap: "Lesson 3: swing", lesson: "3 · GROOVE", step: 4, of: 10, words: "Swing: every second hat a little late.", todo: "Turn K3 to 60%", detail: "now 56%", state: "todo", w: { kind: "grid", swing: 0.56 } },
+  { id: "chord", cap: "Lesson 4: play the chords", lesson: "4 · KEYS AND CHORDS", step: 7, of: 10, words: "You play the chords; the band plays drums and bass.", todo: "Play F", detail: "the bright key · 3 of 8", state: "todo", w: { kind: "chord", now: "F", roman: "VI", feel: "major, warm", next: "C" } },
+  { id: "scale", cap: "Practice: a scale from memory", lesson: "PRACTICE · SCALES", step: 3, of: 13, words: "A minor from memory: only HOME is lit.", todo: "Next note?", detail: "3 of 8 · 1 mistake", state: "todo", w: { kind: "scale", notes: ["A", "B", "C", "D", "E", "F", "G", "A"], at: 2 } },
+  { id: "list", cap: "HOME tapped: the lessons", lesson: "LESSONS", step: 0, of: 0, words: "", todo: "", state: "list", w: { kind: "list" } },
+  { id: "warn", cap: "A key outside the key", lesson: "1 · WHAT'S IN A BEAT", step: 13, of: 14, words: "Melody out: you play it. The lit keys are the key.", todo: "D♯: not in A minor", detail: "it rubs: stay on the lit keys", state: "warn", w: { kind: "notes" } },
+];
+const LESSONS = [["WHAT'S IN A BEAT", 14, 1], ["TEMPO, YOUR FIRST BEAT", 9, 1], ["GROOVE", 10, 0], ["KEYS AND CHORDS", 10, 0], ["CHORD COLOURS", 8, 0], ["THE BASS", 6, 0]];
+
+/* ---- drawing helpers, in device pixels ---- */
+let g;
+const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+function T(s, x, y, size, c, align = "left") { g.font = `${W[size]} ${F[size]}px "Inter Tight", sans-serif`; g.fillStyle = c; g.textAlign = align; g.textBaseline = "alphabetic"; g.fillText(s, x, y); g.textAlign = "left"; }
+function wrapT(s, x, y, w, size, c, lh, maxLines = 9, align = "left") {
+  g.font = `${W[size]} ${F[size]}px "Inter Tight", sans-serif`; const words = s.split(" "), lines = []; let line = "";
+  for (const wd of words) { const t = line ? line + " " + wd : wd; if (g.measureText(t).width > w && line) { lines.push(line); line = wd; } else line = t; }
+  if (line) lines.push(line);
+  lines.slice(0, maxLines).forEach((l, i) => T(l, align === "center" ? x + w / 2 : x, y + i * lh, size, c, align)); return y + (Math.min(lines.length, maxLines) - 1) * lh;
+}
+const stateCol = (m) => m.state === "done" ? C.green : m.state === "warn" ? C.red : C.amber;
+function ring(cx, cy, r, v, target, col) {                               /* a knob: its value as an arc, the target as a tick */
+  g.lineCap = "round"; g.lineWidth = 7; const a0 = Math.PI * 0.75, span = Math.PI * 1.5;
+  g.strokeStyle = C.line; g.beginPath(); g.arc(cx, cy, r, a0, a0 + span); g.stroke();
+  g.strokeStyle = col; g.beginPath(); g.arc(cx, cy, r, a0, a0 + span * v / 10); g.stroke();
+  if (target != null) { const a = a0 + span * target / 10; g.strokeStyle = C.ink; g.lineWidth = 2; g.beginPath(); g.moveTo(cx + Math.cos(a) * (r - 7), cy + Math.sin(a) * (r - 7)); g.lineTo(cx + Math.cos(a) * (r + 7), cy + Math.sin(a) * (r + 7)); g.stroke(); }
+}
+function hats(x, y, w, h, swing, rows = ["KICK", "SNARE", "HATS"]) {     /* a bar of drums; the late hats shown moved */
+  const cw = w / 16, pat = { KICK: [0, 10], SNARE: [4, 12], HATS: [...Array(16).keys()] }, rh = h / rows.length;
+  rows.forEach((r, ri) => { const yy = y + ri * rh;
+    for (let s = 0; s < 16; s++) R(x + s * cw, yy, cw - 1, rh - 2, s % 4 === 0 ? "#1b2236" : "#141a2a");
+    for (const s of pat[r]) { const off = r === "HATS" && s % 2 === 1 ? (swing - 0.5) * 2 * cw * 2.5 : 0, hh = r === "HATS" ? (s % 4 === 0 ? rh - 4 : s % 2 === 0 ? rh * 0.6 : rh * 0.35) : rh - 4;
+      R(x + s * cw + 1 + off, yy + rh - 2 - hh, cw - 3, hh, C.amber); } });
+}
+function dots(m, y) { const n = m.of, w = Math.min(10, 200 / n); for (let i = 0; i < n; i++) R(120 - n * w / 2 + i * w + 2, y, w - 4, 3, i < m.step - 1 ? C.green : i === m.step - 1 ? C.amber : C.line); }
+
+/* ---- the variants ---- */
+const V = [
+  { name: "A · The lab, as now", tag: "today", why: "Words, the instruction on a coloured bar, then the whole studio: the 16-step grid of six tracks, tempo and key, the mixer. Everything visible all the time; much to read at once.",
+    draw(m) {
+      R(0, 0, 240, 16, C.bar); R(0, 0, 240, 2, C.amber);
+      if (m.w.kind === "list") return listScreen();
+      T(m.lesson, 4, 12, "tiny", C.amber); T(`${m.step}/${m.of}`, 236, 12, "tiny", C.muted, "right");
+      let y = wrapT(m.words, 6, 32, 228, "xs", C.ink, 14, 2);
+      const col = stateCol(m); R(3, y + 6, 234, 22, col); T((m.state === "done" ? "✓ " : "") + m.todo + (m.detail ? "  " + m.detail : ""), 9, y + 22, "xs", m.state === "todo" ? "#141414" : "#ffffff");
+      const gy = y + 34, rows = ["KICK", "SNARE", "HATS", "BASS", "CHORD", "MELODY"];
+      rows.forEach((r, i) => { T(r, 2, gy + i * 12 + 9, "tiny", i < 3 ? C.amber : [C.violet, C.teal, C.pink][i - 3]);
+        for (let s = 0; s < 16; s++) R(40 + s * 12.3, gy + i * 12, 11, 10, s % 4 === 0 ? "#1b2236" : "#141a2a");
+        if (i < 3) [[0, 10], [4, 12], [0, 2, 4, 6, 8, 10, 12, 14]][i].forEach((s) => R(41 + s * 12.3, gy + i * 12 + 2, 9, 7, C.amber));
+        if (i === 3) R(41, gy + i * 12 + 3, 70, 5, C.violet); if (i === 4) R(41, gy + i * 12 + 2, 160, 6, C.teal); });
+      const my = 196; T("88 BPM   A MIN   HIP-HOP", 4, my - 3, "tiny", C.muted);
+      ["DRUMS", "BASS", "CHORDS", "MELODY"].forEach((n, i) => { const x = 4 + i * 59; R(x, my, 55, 42, "#141a2a"); T(n, x + 27, my + 12, "tiny", [C.amber, C.violet, C.teal, C.pink][i], "center");
+        R(x + 8, my + 16, 6, 22, "#0a0d16"); const v = i === 0 ? m.w.v || 0 : i === 2 ? 8 : 0; R(x + 8, my + 38 - v * 2.2, 6, v * 2.2, [C.amber, C.violet, C.teal, C.pink][i]); T("K" + (i + 1), x + 38, my + 32, "xs", C.ink, "center"); });
+    } },
+  { name: "B · One thing: the instruction", tag: "most minimal", why: "Only what to do, big, in the middle; the step's words small under it; one thin line at the bottom for what the step is about. No grid, no mixer: the keys' lights and the sound do the rest.",
+    draw(m) {
+      if (m.w.kind === "list") return listScreen();
+      T(m.lesson, 10, 20, "tiny", C.muted); if (m.of) T(`${m.step} / ${m.of}`, 230, 20, "tiny", C.muted, "right"); dots(m, 28);
+      const col = stateCol(m);
+      if (m.state === "done") { g.fillStyle = C.green; g.beginPath(); g.arc(120, 86, 22, 0, 7); g.fill(); T("✓", 120, 98, "large", "#0b0e18", "center"); }
+      else { g.fillStyle = col; g.beginPath(); g.arc(120, 80, 5, 0, 7); g.fill(); }
+      const y = wrapT(m.todo, 14, m.state === "done" ? 140 : 118, 212, "medium", m.state === "done" ? C.green : m.state === "warn" ? C.red : C.ink, 28, 2, "center");
+      if (m.detail) T(m.detail, 120, y + 22, "xs", col, "center");
+      wrapT(m.words, 20, y + 50, 200, "xs", C.muted, 16, 3, "center");
+      const ctx = m.w.kind === "knob" ? `K1 · ${m.w.name} · ${m.w.v} of 10` : m.w.kind === "grid" ? "K3 · SWING · 56%" : m.w.kind === "chord" ? "NOW F · NEXT C" : m.w.kind === "scale" ? "A · B · ? · · · · · ·" : "A MIN · 88 BPM";
+      R(0, 222, 240, 18, C.bar); T(ctx, 120, 235, "tiny", C.muted, "center");
+    } },
+  { name: "C · Instruction, then one picture", tag: "recommended", why: "The instruction big at the top, the words under it, and below a single picture of what the step is about, drawn large: the knob you turn, the drums that swing, the chord you play, the scale you climb. Each step shows only its own thing.",
+    draw(m) {
+      if (m.w.kind === "list") return listScreen();
+      T(m.lesson, 8, 16, "tiny", C.muted); if (m.of) T(`${m.step} / ${m.of}`, 232, 16, "tiny", C.muted, "right");
+      const col = stateCol(m); R(0, 22, 4, 52, col);
+      const y = wrapT((m.state === "done" ? "✓ " : "") + m.todo, 12, 46, 220, "medium", col, 26, 2);
+      if (m.detail) T(m.detail, 12, y + 20, "xs", C.ink);
+      const wy = wrapT(m.words, 12, y + 42, 220, "xs", C.muted, 16, 2);
+      const top = Math.max(wy + 16, 128), w = m.w;
+      if (w.kind === "knob") { ring(120, top + 48, 34, w.v, w.target, m.state === "done" ? C.green : C.amber); T(String(w.v), 120, top + 58, "medium", C.ink, "center"); T(`K${w.k} · ${w.name}`, 120, top + 98, "tiny", C.muted, "center"); }
+      if (w.kind === "grid") { hats(14, top + 4, 212, 60, w.swing); T("KICK  ·  SNARE  ·  HATS: the late ones move right", 120, top + 82, "tiny", C.muted, "center"); }
+      if (w.kind === "chord") { T(w.now, 84, top + 66, "large", C.teal, "center"); T(w.roman, 84, top + 86, "xs", C.muted, "center"); T("›", 136, top + 58, "medium", C.dim, "center"); T(w.next, 176, top + 62, "medium", C.dim, "center"); T("next", 176, top + 84, "tiny", C.dim, "center"); }
+      if (w.kind === "scale") scaleBoxes(top + 20, w);
+      if (w.kind === "notes") { T("D♯", 120, top + 62, "large", C.red, "center"); T("A B C D E F G: the lit keys", 120, top + 86, "tiny", C.muted, "center"); }
+    } },
+  { name: "D · Read on top, play below", tag: "two zones", why: "The top half is for reading (the instruction, the words); the bottom half is always the instrument: the four tracks as K1–K4, with the one the step uses lit, or the step's own picture when it needs one. The same place for the same thing, every step.",
+    draw(m) {
+      if (m.w.kind === "list") return listScreen();
+      T(m.lesson, 8, 16, "tiny", C.muted); if (m.of) T(`${m.step} / ${m.of}`, 232, 16, "tiny", C.muted, "right");
+      const col = stateCol(m);
+      const y = wrapT((m.state === "done" ? "✓ " : "") + m.todo, 10, 46, 220, "medium", col, 26, 2);
+      wrapT((m.detail ? m.detail + ". " : "") + m.words, 10, y + 22, 220, "xs", C.muted, 16, 3);
+      R(0, 134, 240, 1, C.line);
+      const w = m.w;
+      if (w.kind === "grid") { hats(10, 146, 220, 60, w.swing); T("K3 SWING · 56%", 120, 228, "tiny", C.muted, "center"); return; }
+      if (w.kind === "chord") { T(w.now, 60, 196, "large", C.teal, "center"); T(w.roman + " · " + w.feel, 60, 216, "tiny", C.muted, "center"); T("next " + w.next, 176, 190, "small", C.dim, "center"); return; }
+      if (w.kind === "scale") { scaleBoxes(168, w); return; }
+      ["DRUMS", "BASS", "CHORDS", "MELODY"].forEach((n, i) => { const x = 8 + i * 57, on = w.kind === "knob" && i === 0, v = on ? w.v : [0, 0, 8, 0][i], cl = [C.amber, C.violet, C.teal, C.pink][i];
+        R(x, 144, 52, 88, on ? "#1d2335" : "#121725"); if (on) { R(x, 144, 52, 2, m.state === "done" ? C.green : C.amber); }
+        T("K" + (i + 1), x + 26, 162, "small", on ? C.ink : C.muted, "center"); R(x + 20, 172, 12, 40, "#0a0d16"); R(x + 20, 212 - v * 4, 12, v * 4, v ? cl : C.dim); T(n, x + 26, 226, "tiny", v ? cl : C.dim, "center"); });
+    } },
+  { name: "E · Instruction, the sequencer, one line", tag: "C + the sequencer", why: "What to do first, big. Then the sequencer, always in the same place while the music plays: what you hear is what you see, the playhead running. The rows the step is about are lit, the rest dimmed. Underneath, one line for the knob or the chord of the step. Practice and the lesson list, where nothing plays, use C's picture.",
+    draw(m) {
+      if (m.w.kind === "list") return listScreen();
+      T(m.lesson, 8, 14, "tiny", C.muted); if (m.of) T(`${m.step} / ${m.of}`, 232, 14, "tiny", C.muted, "right");
+      const col = stateCol(m); R(0, 20, 4, 30, col);
+      T((m.state === "done" ? "✓ " : "") + m.todo, 12, 42, "medium", col);
+      const wy = wrapT((m.detail ? m.detail + ". " : "") + m.words, 12, 64, 220, "xs", C.muted, 15, 3);
+      const w = m.w;
+      if (w.kind === "scale") { scaleBoxes(Math.max(wy + 30, 130), w); return; }
+      seq(m, 116);
+      R(0, 206, 240, 34, C.bar);
+      if (w.kind === "knob") ["DRUMS", "BASS", "CHORDS", "MELODY"].forEach((n, i) => { const x = 6 + i * 58, on = i === 0, v = on ? w.v : [0, 0, 8, 0][i], cl = [C.amber, C.violet, C.teal, C.pink][i];
+        T("K" + (i + 1), x + 4, 219, "xs", on ? C.ink : C.muted); R(x + 24, 211, 28, 6, "#0a0d16"); R(x + 24, 211, 28 * v / 10, 6, v ? cl : C.dim); T(n, x + 24, 233, "tiny", v ? cl : C.dim); if (on) R(x, 236, 54, 2, m.state === "done" ? C.green : C.amber); });
+      if (w.kind === "grid") { T("K3 SWING", 12, 228, "xs", C.ink); R(90, 219, 100, 8, "#0a0d16"); R(90, 219, 100 * (w.swing - 0.5) / 0.2, 8, C.amber); R(140, 215, 2, 16, C.ink); T(Math.round(w.swing * 100) + "%", 228, 228, "xs", C.amber, "right"); }
+      if (w.kind === "chord") { T("NOW", 12, 228, "tiny", C.muted); T(w.now + "  " + w.roman, 40, 230, "small", C.teal); T("NEXT", 140, 228, "tiny", C.muted); T(w.next, 172, 230, "small", C.dim); }
+      if (w.kind === "notes") { T("THE KEY", 12, 228, "tiny", C.muted); T("A B C D E F G", 70, 230, "small", C.ink); }
+    } },
+];
+/* E: the sequencer, its rows lit by what the step is about, the rest dimmed */
+function seq(m, y) {
+  const rows = [["KICK", "k"], ["SNARE", "s"], ["HATS", "h"], ["BASS", "b"], ["CHORD", "c"], ["MELODY", "m"]], cols = { k: C.amber, s: C.amber, h: C.amber, b: C.violet, c: C.teal, m: C.pink };
+  const focus = m.w.kind === "knob" ? ["k", "s", "h"] : m.w.kind === "grid" ? ["h"] : m.w.kind === "chord" ? ["c"] : m.w.kind === "notes" ? ["m"] : [];
+  const gx = 42, cw = 12, rh = 12, playing = 6, swing = m.w.kind === "grid" ? m.w.swing : 0.5;
+  rows.forEach(([nm, id], r) => { const yy = y + r * rh, on = !focus.length || focus.includes(id), col = on ? cols[id] : "#3b4256";
+    T(nm, 4, yy + 9, "tiny", on ? col : "#4a5068");
+    for (let s = 0; s < 16; s++) R(gx + s * cw, yy, cw - 1, rh - 2, s === playing ? "#2d3550" : s % 4 === 0 ? "#1b2236" : "#141a2a");
+    if (id === "k") [0, 10].forEach((s) => R(gx + s * cw + 1, yy + 1, cw - 3, rh - 4, col));
+    if (id === "s") [4, 12].forEach((s) => R(gx + s * cw + 1, yy + 1, cw - 3, rh - 4, col));
+    if (id === "h") for (let s = 0; s < 16; s += m.w.kind === "grid" ? 1 : 2) { const off = s % 2 ? (swing - 0.5) * 2 * cw * 2.5 : 0, hh = m.w.kind === "grid" ? (s % 4 === 0 ? rh - 4 : s % 2 === 0 ? 5 : 3) : rh - 5; R(gx + s * cw + 1 + off, yy + rh - 3 - hh, cw - 3, hh, col); }
+    if (id === "b") [[0, 3], [3, 1], [5, 1], [7, 2], [10, 1], [11, 1], [13, 2]].forEach(([s, l]) => R(gx + s * cw + 1, yy + 3, cw * l - 3, 4, col));
+    if (id === "c") { R(gx + 1, yy + 1, cw * 13.5 - 3, rh - 4, col); if (on) T(m.w.kind === "chord" ? m.w.now : "Am", gx + 5, yy + 8, "tiny", "#0b0e18"); R(gx + 14 * cw + 1, yy + 1, cw * 2 - 3, rh - 4, col); }
+    if (id === "m") [[2, 2], [4, 2], [6, 6]].forEach(([s, l], i) => R(gx + s * cw + 1, yy + 2 + i * 2, cw * l - 3, 3, col));
+  });
+  R(gx + playing * cw + cw / 2, y - 2, 1, 6 * rh, "#ffffff");
+}
+function scaleBoxes(y, w) { const n = w.notes.length, bw = 24; w.notes.forEach((nm, i) => { const x = 120 - n * bw / 2 + i * bw; R(x + 1, y, bw - 3, 30, i < w.at ? "#1f5b3d" : i === w.at ? "#3a4266" : "#1a2033");
+  T(i < w.at ? nm : i === w.at ? "?" : "", x + bw / 2 - 1, y + 21, "small", i === w.at ? C.amber : C.ink, "center"); }); T("HOME A is lit · find the rest", 120, y + 52, "tiny", C.muted, "center"); }
+function listScreen() {
+  T("LESSONS", 120, 26, "small", C.ink, "center");
+  LESSONS.forEach(([t, n, done], i) => { const y = 38 + i * 32, sel = i === 2; R(8, y, 224, 28, sel ? "#1d2335" : "#121725"); if (sel) R(8, y, 3, 28, C.amber);
+    T(String(i + 1), 24, y + 19, "small", sel ? C.amber : C.muted, "center"); T(t, 40, y + 13, "xs", sel ? C.ink : "#c6cbe0"); T(`${n} steps`, 40, y + 24, "tiny", C.muted); if (done) T("★", 222, y + 19, "small", "#ffd84a", "right"); });
+  R(0, 228, 240, 12, C.bar); T("SELECT choose · HOME open", 120, 237, "tiny", C.muted, "center");
+}
+
+/* ---- the page ---- */
+let zoom = 1;
+function render() {
+  const rows = document.getElementById("rows"); rows.innerHTML = "";
+  const dpr = Math.max(2, window.devicePixelRatio || 1);
+  for (const v of V) {
+    const sec = document.createElement("section"); sec.className = "variant";
+    sec.innerHTML = `<h2>${v.name} <span class="tag">${v.tag}</span></h2><p class="why">${v.why}</p><div class="strip"></div>`;
+    const strip = sec.querySelector(".strip");
+    for (const m of M) {
+      const fig = document.createElement("figure"), cv = document.createElement("canvas"), px = 240 * zoom;
+      cv.width = 240 * dpr * zoom; cv.height = 240 * dpr * zoom; cv.style.width = px + "px"; cv.style.height = px + "px";
+      cv.setAttribute("role", "img"); cv.setAttribute("aria-label", `${v.name}: ${m.cap}`);
+      g = cv.getContext("2d"); g.scale(dpr * zoom, dpr * zoom); R(0, 0, 240, 240, C.bg); v.draw(m);
+      const cap = document.createElement("figcaption"); cap.textContent = m.cap; fig.append(cv, cap); strip.append(fig);
+    }
+    rows.append(sec);
+  }
+}
+for (const [id, z] of [["z1", 1], ["z15", 1.5]]) document.getElementById(id).addEventListener("click", () => { zoom = z; document.querySelectorAll(".controls button").forEach((b) => b.setAttribute("aria-pressed", String(b.id === id))); render(); });
+(document.fonts && document.fonts.load ? Promise.all([600, 500, 700].map((w) => document.fonts.load(`${w} 16px "Inter Tight"`))) : Promise.resolve()).then(render, render);
+render();
+</script>

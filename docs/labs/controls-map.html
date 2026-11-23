@@ -1,0 +1,177 @@
+<title>FM-1 Controls Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; the diagram and the big table scroll sideways in their own boxes on a phone. */
+:root {
+  --bg: #f3f4f7; --panel: #ffffff; --ink: #161a24; --muted: #5b6375; --line: #d9dce4;
+  --accent: #d9581f; --ok: #24834f; --warn: #a86f12; --bad: #b8382f; --free: #2f6fb8;
+  --ui: "Inter Tight", "Inter", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11131a; --panel: #1a1d27; --ink: #e9ebf1; --muted: #9aa2b4; --line: #2c3040;
+  --accent: #ff8a4d; --ok: #4cc283; --warn: #e2a93b; --bad: #f0695f; --free: #6fb7ff; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11131a; --panel: #1a1d27; --ink: #e9ebf1; --muted: #9aa2b4; --line: #2c3040;
+  --accent: #ff8a4d; --ok: #4cc283; --warn: #e2a93b; --bad: #f0695f; --free: #6fb7ff; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--ui); }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-weight: 800; font-size: 30px; margin: 0; text-wrap: balance; }
+h2 { font-weight: 800; font-size: 21px; margin: 40px 0 8px; text-wrap: balance; }
+h3 { font-size: 16px; margin: 18px 0 6px; }
+p { margin: 0 0 10px; max-width: 70ch; }
+.lede { color: var(--muted); margin-top: 8px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; }
+pre.mermaid { margin: 0; background: transparent; }
+table { border-collapse: collapse; font-size: 13.5px; min-width: 760px; }
+th, td { border-bottom: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+th { font-weight: 700; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: var(--panel); position: sticky; top: 0; }
+td:first-child { font-weight: 700; white-space: nowrap; }
+.free { color: var(--free); font-weight: 700; }
+.find { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 4px 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+.find:first-child { border-top: 0; }
+.sev { font: 700 11px var(--ui); letter-spacing: .05em; text-transform: uppercase; align-self: start; padding: 2px 7px; border-radius: 4px; border: 1px solid currentColor; justify-self: start; }
+.sev.high { color: var(--bad); } .sev.mid { color: var(--warn); } .sev.low { color: var(--muted); } .sev.good { color: var(--ok); }
+.find b { display: block; }
+.find .fix { color: var(--muted); font-size: 14px; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.rule { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.rule kbd { font: 600 12px var(--mono); padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; }
+.rule p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+kbd { font: 600 12px var(--mono); padding: 0 5px; border: 1px solid var(--line); border-radius: 4px; }
+</style>
+
+<div class="wrap">
+  <h1>FM-1 Controls Map</h1>
+  <p class="lede">Kept up to date as we decide. Every screen of the companion firmware as it is (main, 2026-11-18, with the fixes of #102), how you get to it, what each control does there, and how you get back. Read from the code, not from the manual. At the end: what I found that could leave someone stuck or surprised, and the four buttons nobody uses yet.</p>
+
+  <h2>The rules that hold everywhere</h2>
+  <div class="rules">
+    <div class="rule"><kbd>HOME</kbd> held<p>The mode picker, from any screen, in any mode, even in a game or while teaching the unicorn. The one way out that always works.</p></div>
+    <div class="rule"><kbd>HOME</kbd> tap<p>Back to the mode's home: in Producer it closes whatever is open (the song page, the REC layer, a question); in Guided the lesson list. In a game it does nothing.</p></div>
+    <div class="rule"><kbd>GLO</kbd> tap / held<p>The song page and back (Producer only). Held: help for the page, gone when you let go.</p></div>
+    <div class="rule"><kbd>PLAY</kbd><p>Plays and stops the song everywhere; stops a count-in.</p></div>
+    <div class="rule"><kbd>REC</kbd> tap / held<p>Arms recording / opens the REC layer; tap again closes it.</p></div>
+    <div class="rule">Asleep<p>The press that wakes the screen does nothing else, and is ignored until you let go.</p></div>
+  </div>
+
+  <h2>The screens and how they connect</h2>
+  <p>The happy path. Solid arrows go to a screen, dashed arrows are layers that open over a screen and close back to it.</p>
+  <div class="box"><pre class="mermaid">
+flowchart TD
+  ON([Switched on]) --> TP
+  subgraph PROD[Producer]
+    TP["Track page<br/>ALGORITHM: CHORDS · BASS · MELODY · DRUMS<br/>SCL: PLAY · IDEAS · AUTO"]
+    SP["Song page<br/>SCL: SONG · TRACKS · CLICK · MIDI · SYSTEM"]
+    RL["REC layer<br/>GRID · FEEL · CLICK · COUNT-IN"]
+    CLR{"Clear this track?"}
+    TPL{"Change template?"}
+    TP -- "GLO tap" --> SP
+    SP -- "GLO tap / HOME tap" --> TP
+    TP -. "REC held" .-> RL
+    RL -. "REC tap" .-> TP
+    RL -- "OCT+" --> CLR
+    CLR -- "OCT+: clear / any button: keep" --> RL
+    SP -- "TRACKS: K turned on a track with notes" --> TPL
+    TPL -- "SAVE: change / any button: keep" --> SP
+  end
+  HELP["Help<br/>GLO held"]
+  TP -. "GLO held" .-> HELP
+  SP -. "GLO held" .-> HELP
+  HELP -. "let go" .-> TP
+  PICK["Mode picker<br/>SELECT: Producer · Guided · Game"]
+  CONF{"Switch to it?"}
+  TP -- "HOME held" --> PICK
+  SP -- "HOME held" --> PICK
+  PICK -- "HOME on another mode" --> CONF
+  PICK -- "HOME on this mode / any button" --> BACK([back where you were])
+  CONF -- "HOME: switch, the song kept" --> G
+  CONF -- "HOME" --> GM
+  CONF -- "any button: no" --> PICK
+  subgraph GUIDED[Guided]
+    G["Lesson step<br/>SELECT: the step · K1-K4 mixer"]
+    GL["Lesson list"]
+    G -- "HOME tap" --> GL
+    GL -- "HOME tap: open" --> G
+  end
+  subgraph GAMES[Game]
+    GM["Unicorn · Damatxo · Aldapa · Night Train<br/>SELECT: the next game"]
+    TEACH["Teaching the unicorn<br/>REC on a MY SONG"]
+    GM -- "REC" --> TEACH
+    TEACH -- "SAVE or REC: keep" --> GM
+  end
+  G -- "HOME held" --> PICK
+  GM -- "HOME held" --> PICK
+  TEACH -- "HOME held: not kept" --> PICK
+  </pre></div>
+
+  <h2>Every control on every screen</h2>
+  <p>What a control does on each screen. <span class="free">Free</span> means the button does nothing anywhere yet.</p>
+  <div class="box"><table>
+    <thead><tr><th>Control</th><th>Track page</th><th>Song page</th><th>REC layer</th><th>Mode picker</th><th>Guided</th><th>Game</th></tr></thead>
+    <tbody>
+      <tr><td>Keys</td><td>Play the track (by page: notes, pads, chords, drums)</td><td>Still play the track, behind the page</td><td>Play and record</td><td>Ignored</td><td>The lesson's keys</td><td>The game</td></tr>
+      <tr><td>SELECT</td><td>IDEAS: walk the ideas · drums: the style</td><td>(nothing)</td><td>(as track page)</td><td>Choose the mode</td><td>The step</td><td>Next game (not while teaching)</td></tr>
+      <tr><td>ALGORITHM</td><td>The track</td><td>Closes the page, then changes the track</td><td>Changes the track</td><td>Ignored</td><td>The tempo</td><td>The game's</td></tr>
+      <tr><td>PRESETS</td><td>The track's sound</td><td>Closes the page, then changes the sound</td><td>The sound</td><td>Ignored</td><td>The drum part or style</td><td>The game's</td></tr>
+      <tr><td>K1-K4</td><td>The page's four settings</td><td>The sub-page's settings</td><td>GRID, FEEL, CLICK, COUNT-IN</td><td>Ignored</td><td>The mixer</td><td>The game's (K1: take back a taught note)</td></tr>
+      <tr><td>SCL</td><td>PLAY · IDEAS · AUTO</td><td>SONG · TRACKS · CLICK · MIDI · SYSTEM</td><td>(as track page)</td><td>Cancels</td><td>-</td><td>-</td></tr>
+      <tr><td>PLAY</td><td colspan="3">Play / stop the song; stops a count-in</td><td>Cancels</td><td>The lesson's song</td><td>The game's</td></tr>
+      <tr><td>REC</td><td colspan="3">Tap: arm / stop recording · held: the REC layer · tap on the layer: close it</td><td>Cancels</td><td>"REC comes in lesson 2"</td><td>Unicorn: teach a MY SONG</td></tr>
+      <tr><td>EDIT</td><td>Tap: lights off (chord IDEAS only) · held with a key: erase that key's notes</td><td>(as track page)</td><td>(as track page)</td><td>Cancels</td><td>-</td><td>-</td></tr>
+      <tr><td>SAVE</td><td>Held: <b>undo</b> the last recording, erase or clear · tap: says so</td><td>TRACKS: confirms a template change</td><td>Undo</td><td>Cancels</td><td>-</td><td>Unicorn: keep a taught song</td></tr>
+      <tr><td>ARP</td><td>Chord IDEAS: the arpeggiator on / off</td><td>(as track page)</td><td>(as track page)</td><td>Cancels</td><td>-</td><td>-</td></tr>
+      <tr><td>OCT- / OCT+</td><td>The octave, two each way</td><td>(as track page)</td><td>OCT+: clear the track (asks; the question takes the knobs and new keys)</td><td>Cancels</td><td>The key (from the key step)</td><td>The game's</td></tr>
+      <tr><td>GLO</td><td colspan="3">Tap: the song page and back · held: help</td><td>Cancels</td><td>Held: help</td><td>Held: help</td></tr>
+      <tr><td>HOME</td><td>Tap: closes what is open · held: modes</td><td>Tap: back · held: modes</td><td>Tap: closes it · held: modes</td><td>Tap: choose, then confirm</td><td>Tap: lessons · held: modes</td><td>Tap: nothing · held: modes</td></tr>
+      <tr><td>FX</td><td colspan="6" class="free">Free</td></tr>
+      <tr><td>ENV</td><td colspan="6" class="free">Free</td></tr>
+      <tr><td>LFO</td><td colspan="6" class="free">Free</td></tr>
+      <tr><td>SEQ</td><td colspan="6" class="free">Free</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>What I found</h2>
+  <p>Nothing leaves you stuck: HOME held works from every screen, every question has an answer button and "any other button" as no, and the sleeping screen eats the waking press. What could surprise, and where each stands:</p>
+  <div class="box">
+    <div class="find"><span class="sev good">Fixed</span><div><b>SAVE undid on a tap.</b> Now held, as R-147 always said; a tap shows "Hold SAVE to undo". <span class="fix">Merged in #102 (D-071, R-243).</span></div></div>
+    <div class="find"><span class="sev good">Fixed</span><div><b>The song page hid changes behind it.</b> ALGORITHM, PRESETS and OCT now close it first, so you see what they did. <span class="fix">Merged in #102 (R-240).</span></div></div>
+    <div class="find"><span class="sev good">Fixed</span><div><b>HOME tap did not close everything.</b> In Producer it now closes the song page, the REC layer and a question. In a game it still does nothing. <span class="fix">Merged in #102 (R-241).</span></div></div>
+    <div class="find"><span class="sev mid">Open</span><div><b>EDIT does three unrelated things.</b> Lights off (chord IDEAS only), erase (held with a key), and soon the sound pages. <span class="fix">Fix: give the sound its own buttons (ENV, LFO, FX are free, below) and keep EDIT for editing notes.</span></div></div>
+    <div class="find"><span class="sev low">Open</span><div><b>Settings that stay on without showing much.</b> ARP on, lights off, SPEED below 100 %, MIDI IN on Follow (the screen jumps to the track a keyboard plays). Each is shown somewhere, but small. <span class="fix">Fix: one row of small status marks on the play screen.</span></div></div>
+    <div class="find"><span class="sev good">Fixed</span><div><b>Knobs and keys acted during a question.</b> They now wait; a key let go still stops its note. <span class="fix">Merged in #102 (R-242).</span></div></div>
+    <div class="find"><span class="sev good">Fixed</span><div><b>A stuck note behind the mode picker</b> (found while fixing): hold a key, hold HOME, let the key go while the modes show, and the note kept sounding. The picker now lets the release through. <span class="fix">Merged in #102 (R-244, HAZ-02).</span></div></div>
+    <div class="find"><span class="sev good">Good</span><div><b>The ways out hold.</b> HOME held reaches the picker from games, teaching, lessons, help, the song page and the REC layer; leaving while teaching drops the unfinished song, as designed. The picker's confirm needs a second HOME; any other button cancels.</div></div>
+  </div>
+
+  <h2>Decided so far, and what is still open</h2>
+  <div class="box"><table>
+    <thead><tr><th>What</th><th>Decision</th><th>Where it stands</th></tr></thead>
+    <tbody>
+      <tr><td>Sound screens</td><td>Dials (variant B), a live spectrum behind the filter</td><td>Decided (2026-11-18), in the Sound Edit Lab</td></tr>
+      <tr><td>EDIT</td><td>Builds the sound, a page a press: OSC, FILTER, F.ENV, A.ENV, VOICE, LFO, MOD. The keys keep their mode (notes, chords, scale) while you edit</td><td>In the lab v3, for your notes</td></tr>
+      <tr><td>FX</td><td>Plays it live: PERFORM (BEND, MOD, X/Y pairs chosen with SELECT), then DELAY, REVERB, DIRT</td><td>In the lab v3</td></tr>
+      <tr><td>ENV, LFO</td><td>Jump to their EDIT pages</td><td>In the lab v3</td></tr>
+      <tr><td>Glide</td><td>On chords too; SLIDE always (portamento) or legato</td><td>In the lab v3; R-234..R-236 approved</td></tr>
+      <tr><td>SEQ</td><td>The sequencer: a whole song with sections; record live and erase live, and draw notes, chords or drums by hand</td><td>Later; the Sequencer Lab is a first sketch</td></tr>
+      <tr><td>Recording</td><td>Every knob on every page (sound, FX, PERFORM) recordable as motion, from any screen</td><td>To decide with the sequencer</td></tr>
+      <tr><td>Presets</td><td>An INIT per engine, your own stored presets, compare, favourites</td><td>Stories to write</td></tr>
+      <tr><td>Expression</td><td>Pressure on the keys for vibrato (as ChoralRoot and MONK-1 do)</td><td>On the todo list</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Four free buttons, and what they could be</h2>
+  <p>FX, ENV, LFO and SEQ do nothing yet. Their stickers already say what the sound and sequencer pages need, so the next controls design could be:</p>
+  <div class="box"><table>
+    <thead><tr><th>Button</th><th>Proposal</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>SEQ</td><td>The sequencer view: the track's steps, and the song's patterns</td><td>The sticker says so, and you want to design it next</td></tr>
+      <tr><td>ENV</td><td>Jumps to the envelopes (F.ENV, then A.ENV)</td><td>A shortcut into EDIT's pages</td></tr>
+      <tr><td>LFO</td><td>Jumps to the LFO page</td><td>A shortcut into EDIT's pages</td></tr>
+      <tr><td>FX</td><td>PERFORM first, then the effects (ST-69)</td><td>Live playing and effects in one place</td></tr>
+    </tbody>
+  </table></div>
+  <p class="lede">EDIT for the sound (your choice) means its other jobs (lights off, erase with a key) need a new home: decided with the sequencer, as erasing belongs there.</p>
+</div>

@@ -1,0 +1,860 @@
+<title>Wild West Night Train</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the FM-1's 240x240 screen, its keys under it, the knobs beside: the other game labs' frame. One look on
+   purpose: a desert night, the engine's lamp the brightest thing on the page. */
+:root {
+  --bg: #120d24;          /* the desert night behind the device */
+  --panel: #221a3c;       /* the FM-1's face */
+  --ink: #f6efe4;
+  --muted: #b8a9c8;
+  --lamp: #ffcf5a;        /* the accent: the engine's lamp */
+  --key-w: #efe9f0;
+  --key-b: #2a2240;
+  --display: "Press Start 2P", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px; }
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-family: var(--display); font-size: 17px; letter-spacing: .04em; margin: 0; color: var(--lamp); text-wrap: balance; line-height: 1.5; }
+p.lead { margin: 0; color: var(--muted); max-width: 65ch; line-height: 1.55; }
+.device { background: var(--panel); border-radius: 18px; padding: 16px; display: grid; gap: 14px; box-shadow: 0 0 0 2px #3a2e60 inset; }
+.top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+canvas#screen { width: min(480px, 100%); aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; background: #000;
+  border: 3px solid #0c0818; max-width: 100%; }
+.knobs { display: grid; gap: 10px; flex: 1; min-width: 180px; }
+.knob { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; background: #1a1433; border-radius: 10px; padding: 8px 10px; }
+.knob button { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #4a3c80; background: radial-gradient(#463a7c, #1e183c);
+  color: var(--ink); font: 11px var(--display); cursor: pointer; }
+.knob button:focus-visible, .start:focus-visible, .key:focus-visible { outline: 3px solid var(--lamp); outline-offset: 2px; }
+.knob .lab { font: 9px var(--display); color: var(--muted); letter-spacing: .06em; }
+.knob .val { font-weight: 600; margin-top: 4px; }
+.start { font: 12px var(--display); background: var(--lamp); color: #2a1c00; border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.keys { position: relative; height: 120px; overflow-x: auto; }
+.keys-inner { position: relative; height: 100%; min-width: 480px; }
+.key { position: absolute; top: 0; border: 1px solid #0c0818; border-radius: 0 0 6px 6px; cursor: pointer; padding: 0;
+  display: flex; align-items: flex-end; justify-content: center; font: 9px var(--display); color: #6f6a99; }
+.key.w { background: var(--key-w); height: 100%; z-index: 1; }
+.key.b { background: var(--key-b); height: 60%; z-index: 2; color: #8b86b8; }
+.key.glow { box-shadow: 0 0 14px 4px var(--glow, #fff) inset, 0 0 12px 2px var(--glow, #fff); }
+.key.down { filter: brightness(.8); }
+.notes { color: var(--muted); font-size: 13px; line-height: 1.55; display: grid; gap: 6px; max-width: 70ch; }
+.notes b { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .key.glow { box-shadow: 0 0 0 3px var(--glow, #fff) inset; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap">
+
+<div class="wrap">
+  <h1>Wild West Night Train</h1>
+  <p class="lead">Old Number 7 steams across the desert at night, under a huge moon: a big engine with a balloon stack, a bell and a lamp, the tender full of logs and a puppy riding on top. Each note is a chuff. Play well and it turns into a golden super train.</p>
+  <div class="device">
+    <div class="top">
+      <canvas id="screen" width="240" height="240" aria-label="The game screen: an old steam engine crossing the desert at night, its lamp shining ahead"></canvas>
+      <div class="knobs">
+        <button class="start" id="listen">♪ Listen first</button>
+        <div class="knob"><button id="k1" aria-label="K1 mode">K1</button><div><div class="lab">MODE</div><div class="val" id="v1">Easy: any key</div></div></div>
+        <div class="knob"><button id="k2" aria-label="K2 voice">K2</button><div><div class="lab">VOICE</div><div class="val" id="v2">harmonica</div></div></div>
+        <div class="knob"><button id="k3" aria-label="K3 song">K3</button><div><div class="lab">SONG</div><div class="val" id="v3">Working on the Railroad</div></div></div>
+        <div class="knob"><button id="k4" aria-label="K4 music">K4</button><div><div class="lab">MUSIC</div><div class="val" id="v4">boom-chick on</div></div></div>
+      </div>
+    </div>
+    <div class="keys"><div class="keys-inner" id="keys"></div></div>
+  </div>
+  <div class="notes">
+    <div><b>Play:</b> tap the keys, the computer keys <b>A S D F G H J K L</b> (white) and <b>W E T Y U O P</b> (black), or a MIDI keyboard where the browser allows it. Each note is a chuff: the wheels turn, the engine moves on, a puff in the note's colour goes up. At the end of each line the whistle goes <i>choo choo</i>, the bell rings and the coyote howls along. Stop and the engine waits, hissing.</div>
+    <div><b>Mistakes (Key mode):</b> one wrong key and the engine coughs black smoke. Two in a row and the engine itself sneezes: <i>ah… ah… CHOO!</i> Its front rears up, it slams down, the driver's cap flies off and the sooty cloud blows back over the train. The puppy barks <i>WOOF!</i>, and the driver goes red, frowns, shakes his fist out of the window and steams from the ears: <i>HMPH!</i></div>
+    <div><b>Super train:</b> eight right notes in a row in Key mode, or the end of the song in either mode. The engine turns gold, its smoke turns to rainbow stars, sparks fly from the wheels, and it races off with a whistle fanfare. A cowboy gallops alongside, waving his hat.</div>
+    <div><b>The song's end:</b> a golden run with fireworks over the mesas, then the train pulls into Star Station. The sheriff, a lady with a lantern and a boy wave and cheer, and the sheriff throws the train a star. It keeps its stars on the tender, one more each time the song is played to the end. The next key sets off again.</div>
+    <div><b>Along the line:</b> telegraph poles with an owl that hoots as you pass, a ranch with its windmill turning, a covered wagon camp with a campfire, a cowboy playing guitar and his horse, a longhorn that moos in the lamplight, prairie dogs that pop up as the train comes, a tumbleweed, bats across the moon, shooting stars. Now and then a canyon, crossed on a wooden trestle, the wheels clattering. A jackrabbit races the train, until it sits down, puffing. From "Dinah, won't you blow" on, the cacti bloom in the lamplight.</div>
+    <div><b>The songs</b> (K3): the traditional <i>I've Been Working on the Railroad</i> (printed 1894, public domain), the verse and "Dinah, won't you blow", in G as the Digital Tradition has it: 93 notes, D4 to C5; and <i>Funiculì, funiculà</i> (Luigi Denza, 1880, public domain; the song of Vesuvius's funicular railway), its verse and its chorus, in G as an old piffero part and The Session have them: 64 notes, G4 to A5. K2 picks the voice: harmonica, banjo or steam organ.</div>
+    <div>Our own pixel drawing, a sketch to talk about, not the firmware yet.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------- the tune: I've Been Working on the Railroad (traditional), notes and lengths in eighths ---------- */
+const RAILROAD = [
+  [67,3],[62,1],[67,1.5],[62,.5],[67,1.5],[69,.5],[71,4],[67,4],[72,3],[72,1],[67,2],[69,2],[71,8],
+  [67,3],[62,1],[67,1.5],[62,.5],[67,1.5],[69,.5],[71,4],[67,2],[71,1.5],[71,.5],[71,2],[69,2],[69,2],[71,2],[69,8],
+  [69,3],[69,1],[68,1.5],[69,.5],[71,1.5],[69,.5],[67,4],[62,4],[72,2],[72,1.5],[72,.5],[67,1.5],[67,.5],[69,1.5],[69,.5],[71,8],
+  [64,3],[66,1],[67,1.5],[66,.5],[67,1.5],[64,.5],[62,4],[67,4],[71,2],[72,2],[71,2],[69,2],[67,8],
+  [62,1.5],[62,.5],[62,1.5],[62,.5],[67,4],[64,1.5],[64,.5],[64,1.5],[64,.5],[69,4],[66,1.5],[66,.5],[66,1.5],[66,.5],[64,2],[66,2],[67,2],[69,2],[71,8],
+  [62,1.5],[62,.5],[62,1.5],[62,.5],[67,4],[64,1.5],[64,.5],[64,1.5],[64,.5],[69,4],[66,1.5],[66,.5],[66,1.5],[66,.5],[64,2],[66,2],[67,8]];
+/* Funiculì, funiculà (Luigi Denza, 1880): the verse and the chorus, in G, 6/8, as the old piffero part and The Session
+   have it (ties joined: one key a note). [note, eighths, a line ends here, the chord from here on] */
+const FUNICULI = [
+  [74,1,0,"G"],[79,8],[79,1],[78,2],[78,1],[74,2],[74,1],[76,2],[76,1],[71,3],[71,5,1],[71,1],[69,2,0,"D7"],[67,1],[67,8,1,"G"],
+  [71,1],[69,2,0,"D7"],[67,1],[67,9,1,"G"],
+  [78,3,0,"D7"],[76,3],[78,3],[76,3],[79,2],[78,1],[76,2],[79,1],[78,6,1],
+  [78,3],[76,3],[78,3],[76,3],[79,2],[78,1],[76,2],[79,1],[74,2,0,"G"],[71,1],
+  [71,2],[71,1],[71,2],[71,1],[71,2],[71,1],[71,2],[71,1],[71,2],[71,1],[71,2],[71,1],[79,6,1,"Em"],
+  [81,2,0,"C"],[79,1],[76,2],[79,1],[74,2,0,"G"],[71,1],[71,2],[72,1],[74,2,0,"D7"],[72,1],[71,2],[69,1],[67,6,1,"G"]];
+const SONGS = [
+  { name: "Working on the Railroad", tune: RAILROAD, eighth: 0.22, late: 61, ends: new Set(RAILROAD.map((t, i) => (t[1] >= 8 ? i : -1)).filter((i) => i >= 0)) },
+  { name: "Funiculì, funiculà", tune: FUNICULI, eighth: 0.2, late: 19, ends: new Set(FUNICULI.map((t, i) => (t[2] ? i : -1)).filter((i) => i >= 0)) },
+];
+let song = 0, TUNE = SONGS[0].tune, PHRASE_END = SONGS[0].ends, EIGHTH = SONGS[0].eighth;
+function setSong(k) { song = k; TUNE = SONGS[k].tune; PHRASE_END = SONGS[k].ends; EIGHTH = SONGS[k].eighth; }
+const LO = 55, HI = 84;
+const NAMES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const isBlack = (n) => [1, 3, 6, 8, 10].includes(n % 12);
+const NOTE_COL = ["#ff4d4d", "#ff7a59", "#ff9f1c", "#ffbf47", "#ffe14d", "#5ed36b", "#38c9a4", "#2ec4f0", "#4d8cff", "#8a6bff", "#c26bff", "#ff6bc6"];
+
+/* ---------- sound ---------- */
+let ac = null, bus = null;
+function power() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    bus = ac.createGain(); bus.gain.value = 0.9; bus.connect(ac.destination);
+    const cv = ac.createConvolver(), len = Math.floor(ac.sampleRate * 1.8), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    cv.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.22; bus.connect(cv); cv.connect(wet); wet.connect(ac.destination);
+  }
+  if (ac.state === "suspended") ac.resume();
+}
+const hz = (n) => 440 * Math.pow(2, (n - 69) / 12);
+const now = () => ac.currentTime;
+function noise(sec) { const len = Math.max(1, Math.floor(ac.sampleRate * sec)), b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; return b; }
+function env(g, t, a, peak, hold, rel) { g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.setValueAtTime(peak * 0.85, t + Math.max(a, hold)); g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(a, hold) + rel); }
+function harmonica(n, dur) {                                     /* a reed: two buzzy waves through a mouth-shaped filter, vibrato that comes in */
+  const t = now(), g = ac.createGain(), bp = ac.createBiquadFilter(), lp = ac.createBiquadFilter();
+  bp.type = "bandpass"; bp.frequency.value = 1300; bp.Q.value = 0.7; lp.type = "lowpass"; lp.frequency.value = 3200;
+  const lfo = ac.createOscillator(), dep = ac.createGain(); lfo.frequency.value = 5.2; dep.gain.setValueAtTime(0, t); dep.gain.linearRampToValueAtTime(hz(n) * 0.012, t + 0.35); lfo.connect(dep);
+  const os = [["sawtooth", 1, 0.09], ["square", 1.003, 0.06], ["square", 2, 0.02]].map(([ty, m, lv]) => { const o = ac.createOscillator(), og = ac.createGain(); o.type = ty; o.frequency.value = hz(n) * m; og.gain.value = lv; dep.connect(o.frequency); o.connect(og); og.connect(bp); return o; });
+  const br = ac.createBufferSource(), bg = ac.createGain(), bf = ac.createBiquadFilter(); br.buffer = noise(dur + 0.2); bf.type = "bandpass"; bf.frequency.value = 2500; bg.gain.value = 0.05; br.connect(bf); bf.connect(bg); bg.connect(bp);
+  bp.connect(lp); lp.connect(g); g.connect(bus); env(g, t, 0.04, 1.4, dur - 0.04, 0.12);
+  [...os, lfo, br].forEach((o) => { o.start(t); o.stop(t + dur + 0.2); });
+}
+function banjo(n, dur) {                                         /* a pluck: bright, twangy, gone quickly */
+  const t = now(), g = ac.createGain(), f = ac.createBiquadFilter(), hp = ac.createBiquadFilter();
+  f.type = "lowpass"; f.frequency.setValueAtTime(5000, t); f.frequency.exponentialRampToValueAtTime(700, t + 0.4); hp.type = "highpass"; hp.frequency.value = 250;
+  [["sawtooth", 1, 0.12], ["square", 2, 0.04], ["triangle", 3, 0.03]].forEach(([ty, m, lv]) => {
+    const o = ac.createOscillator(), og = ac.createGain(); o.type = ty; o.frequency.setValueAtTime(hz(n) * m * 1.012, t); o.frequency.exponentialRampToValueAtTime(hz(n) * m, t + 0.05);
+    og.gain.value = lv; o.connect(og); og.connect(f); o.start(t); o.stop(t + 0.9);
+  });
+  f.connect(hp); hp.connect(g); g.connect(bus); g.gain.setValueAtTime(1.6, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.75);
+}
+function calliope(n, dur) {                                      /* a little steam organ, round and bright */
+  const t = now(), g = ac.createGain(), f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 2200;
+  const os = [["square", 1, 0.05], ["square", 1.004, 0.04], ["sine", 2, 0.06], ["triangle", 0.5, 0.08]].map(([ty, m, lv]) => { const o = ac.createOscillator(), og = ac.createGain(); o.type = ty; o.frequency.value = hz(n) * m; og.gain.value = lv; o.connect(og); og.connect(f); return o; });
+  const lfo = ac.createOscillator(), dep = ac.createGain(); lfo.frequency.value = 6; dep.gain.value = hz(n) * 0.005; lfo.connect(dep); os.forEach((o) => dep.connect(o.frequency));
+  f.connect(g); g.connect(bus); env(g, t, 0.015, 1, dur - 0.05, 0.12); [...os, lfo].forEach((o) => { o.start(t); o.stop(t + dur + 0.15); });
+}
+const VOICES = [["harmonica", harmonica], ["banjo", banjo], ["steam organ", calliope]];
+let voice = 0;
+function chuff(level = 0.1) {
+  const t = now(), s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = noise(0.2); f.type = "bandpass"; f.frequency.value = 1000; f.Q.value = 0.8;
+  g.gain.setValueAtTime(level, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16); s.connect(f); f.connect(g); g.connect(bus); s.start(t);
+}
+function whistle(times = 2, at = 0, chord = [587, 740, 880]) {   /* choo choo: the steam whistle's chord, breathy */
+  for (let k = 0; k < times; k++) {
+    const t = now() + at + k * 0.42, len = k === times - 1 ? 0.55 : 0.3, g = ac.createGain();
+    env(g, t, 0.05, 0.11, len - 0.06, 0.08); g.connect(bus);
+    chord.forEach((f0) => { const o = ac.createOscillator(); o.type = "triangle"; o.frequency.setValueAtTime(f0 * 0.97, t); o.frequency.linearRampToValueAtTime(f0, t + 0.08); o.connect(g); o.start(t); o.stop(t + len + 0.1); });
+    const s = ac.createBufferSource(), bf = ac.createBiquadFilter(), bg = ac.createGain(); s.buffer = noise(len + 0.1); bf.type = "bandpass"; bf.frequency.value = 2400; bg.gain.value = 0.25;
+    s.connect(bf); bf.connect(bg); bg.connect(g); s.start(t);
+  }
+}
+function bell(at = 0) {                                          /* the engine's bell: ding */
+  const t = now() + at;
+  [[1, 0.12, 1.2], [2.76, 0.05, 0.6], [5.4, 0.03, 0.3]].forEach(([m, lv, d]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.value = 1180 * m / 2; g.gain.setValueAtTime(lv, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g); g.connect(bus); o.start(t); o.stop(t + d); });
+}
+function noiseHit(len, type, freq, level, at = 0, q = 0.8) {
+  const t = now() + at, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = noise(len); f.type = type; f.frequency.value = freq; f.Q.value = q;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(level, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  s.connect(f); f.connect(g); g.connect(bus); s.start(t);
+}
+function tone(type, f0, f1, len, level, at = 0, vib = 0) {
+  const t = now() + at, o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + len);
+  if (vib) { const l = ac.createOscillator(), d = ac.createGain(); l.frequency.value = vib; d.gain.value = f0 * 0.03; l.connect(d); d.connect(o.frequency); l.start(t); l.stop(t + len); }
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(level, t + Math.min(0.05, len / 4)); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  o.connect(g); g.connect(bus); o.start(t); o.stop(t + len + 0.02);
+}
+function cough() { [0, 0.2].forEach((dt, i) => { noiseHit(0.18, "lowpass", 520 - i * 60, 0.5, dt, 3); tone("sine", 110, 60, 0.14, 0.2, dt); }); }
+function sneezeSound() {                                         /* "ah... ah... CHOO!" from the whole engine */
+  [0, 0.32].forEach((at, i) => tone("sawtooth", 170 + i * 50, 260 + i * 70, 0.28, 0.07, at));
+  tone("sawtooth", 230, 420, 0.3, 0.1, 0.62);
+  noiseHit(0.5, "bandpass", 1600, 0.8, 0.9, 0.6); noiseHit(0.35, "lowpass", 300, 0.6, 0.9, 1); tone("sine", 140, 45, 0.3, 0.35, 0.9);
+  tone("triangle", 1400, 900, 0.18, 0.05, 1.0);                  /* and a squeak from the whistle */
+}
+function hiss() { noiseHit(1.2, "highpass", 3000, 0.06); }
+function moo() { const t = now(), o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(); o.type = "sawtooth"; o.frequency.setValueAtTime(150, t); o.frequency.linearRampToValueAtTime(125, t + 0.9); f.type = "lowpass"; f.frequency.setValueAtTime(350, t); f.frequency.linearRampToValueAtTime(900, t + 0.3); f.frequency.linearRampToValueAtTime(300, t + 0.9); env(g, t, 0.1, 0.2, 0.8, 0.2); o.connect(f); f.connect(g); g.connect(bus); o.start(t); o.stop(t + 1.1); }
+function hoot() { tone("sine", 420, 380, 0.22, 0.08, 0); tone("sine", 420, 370, 0.38, 0.08, 0.32); }
+function squeak() { tone("sine", 1900, 2400, 0.08, 0.04, 0); tone("sine", 1900, 2500, 0.08, 0.04, 0.12); }
+function howl(at = 0.9) { tone("sine", 480, 820, 0.5, 0.05, at, 5); tone("sine", 820, 620, 0.8, 0.05, at + 0.5, 5); }
+function yeehaw() { tone("sawtooth", 260, 520, 0.25, 0.05, 0); tone("sawtooth", 520, 300, 0.4, 0.05, 0.25); }
+function woof(at = 0) { tone("sawtooth", 420, 210, 0.13, 0.12, at); noiseHit(0.1, "bandpass", 700, 0.25, at, 1.5); }
+function clack() { noiseHit(0.05, "highpass", 2500, 0.18, 0); noiseHit(0.05, "highpass", 2500, 0.14, 0.09); tone("sine", 220, 160, 0.08, 0.08, 0); }
+function chime() { tone("sine", 1320, 1320, 0.5, 0.05, 0); tone("sine", 1760, 1760, 0.6, 0.04, 0.08); }
+function cheer() { for (let i = 0; i < 5; i++) tone("sawtooth", 300 + Math.random() * 200, 500 + Math.random() * 300, 0.3, 0.025, i * 0.12); noiseHit(1.2, "bandpass", 1500, 0.08, 0, 0.5); }
+function boom() { noiseHit(0.6, "lowpass", 500, 0.4); }
+function fanfare() { [[587, 740, 880], [659, 830, 988], [784, 988, 1175]].forEach((c, i) => whistle(1, i * 0.3, c)); [0, 0.15, 0.3, 0.45, 0.6].forEach((a) => bell(a)); }
+/* the music: a boom-chick under the tune (the root, then the fifth, and a soft strum), and a pad */
+const CHORD = { G: [55, 59, 62, 43], C: [55, 60, 64, 48], D: [54, 57, 62, 50], E: [56, 59, 64, 40], A: [57, 61, 64, 45], D7: [54, 57, 60, 50], Em: [55, 59, 64, 40], B7: [54, 59, 63, 47] };
+const CHORD_OF = { 7: "G", 11: "G", 2: "G", 0: "C", 4: "C", 9: "D", 6: "D", 8: "E", 1: "A" };
+let chord = "G", music = true, boomFifth = false;
+function chordFor(n) { const pc = n % 12; if (CHORD[chord].some((m) => m % 12 === pc)) return chord; return CHORD_OF[pc] || "G"; }
+let songChord = "G";
+function boomChick(n, k) {
+  if (!music) return;
+  if (TUNE[k] && TUNE[k][3]) songChord = TUNE[k][3];
+  chord = TUNE[0][3] ? songChord : chordFor(n);
+  const c = CHORD[chord], root = c[3], bass = boomFifth ? root + 7 : root; boomFifth = !boomFifth;
+  const t = now(), o = ac.createOscillator(), g = ac.createGain(); o.type = "triangle"; o.frequency.value = hz(bass);
+  g.gain.setValueAtTime(0.22, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.4);
+  c.slice(0, 3).forEach((m, i) => { const o2 = ac.createOscillator(), g2 = ac.createGain(), f = ac.createBiquadFilter(); o2.type = "sawtooth"; o2.frequency.value = hz(m); f.type = "lowpass"; f.frequency.value = 1400;
+    const t2 = t + 0.11 + i * 0.012; g2.gain.setValueAtTime(0.0001, t2); g2.gain.linearRampToValueAtTime(0.025, t2 + 0.005); g2.gain.exponentialRampToValueAtTime(0.0001, t2 + 0.16); o2.connect(f); f.connect(g2); g2.connect(bus); o2.start(t2); o2.stop(t2 + 0.2); });
+}
+
+/* ---------- drawing helpers ---------- */
+const KW = 240, OUT = "#0c0a10";
+const cv = document.getElementById("screen"), g = cv.getContext("2d");
+g.imageSmoothingEnabled = false;
+function R(x, y, w, h, c, ctx = g) { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+function disc(cx, cy, r, c, a = 1, ctx = g) {
+  ctx.globalAlpha = a; ctx.fillStyle = c;
+  for (let dy = -Math.floor(r); dy <= Math.floor(r); dy++) { const w = Math.floor(Math.sqrt(r * r - dy * dy)); ctx.fillRect(Math.round(cx - w), Math.round(cy + dy), 2 * w + 1, 1); }
+  ctx.globalAlpha = 1;
+}
+function line(x0, y0, x1, y1, c, th = 1, ctx = g) {
+  const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); ctx.fillStyle = c;
+  for (let i = 0; i <= n; i++) ctx.fillRect(Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), th, th);
+}
+const wrap = (v, p) => ((v % p) + p) % p;
+function sx(wx, par, period, margin = 60) { const x = wrap(wx - S.scroll * par + margin, period) - margin; return x < KW + margin ? x : null; }
+function mixc(a, b, t) { const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)); const A = p(a), B = p(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); }
+function text(s, x, y, size, col, outline = OUT, center = false) {
+  g.font = `${size}px 'Press Start 2P'`; if (center) x -= g.measureText(s).width / 2;
+  g.fillStyle = outline; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1]]) g.fillText(s, x + dx, y + dy);
+  g.fillStyle = col; g.fillText(s, x, y);
+}
+
+/* ---------- state ---------- */
+const K = { mode: 0 };
+const S = { t: 0, dt: 0, idx: 0, scroll: 0, v: 0, wheel: 0, puffs: [], sparks: [], misses: 0, streak: 0,
+  cough: 0, sneeze: 0, soot: 0, wave: 0, super: 0, superLen: 6, fin: 0, listen: null, lastNote: -10, nextHiss: 4, letterPop: 0,
+  hat: null, angry: 0, bark: 0, stars: 0, station: null, phase: null, phaseT: 0, flyStar: null, rabbit: null, nextRabbit: 10, bellSwing: 0, whistleSteam: 0, rider: null, bats: null, star: null, howl: 0, tw: { x: 300, a: 0 } };
+
+try { S.stars = +(localStorage.getItem("fm1-train-stars") || 0) || 0; } catch (_) { /* no storage: the stars start again */ }
+function pixStar(x, y, c, ctx = g) {                             /* a small sheriff's star, 7 x 7 */
+  for (const [dx, dy, w] of [[3, 0, 1], [3, 1, 1], [0, 2, 7], [1, 3, 5], [2, 4, 3], [1, 5, 2], [4, 5, 2], [0, 6, 1], [6, 6, 1]]) R(x + dx, y + dy, w, 1, c, ctx);
+}
+function bigStar(cx, cy, r, c) {                                 /* a big five-pointed star, filled */
+  g.fillStyle = c; g.beginPath();
+  for (let i = 0; i < 10; i++) { const an = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(cx + Math.cos(an) * rr, cy + Math.sin(an) * rr); }
+  g.fill();
+}
+
+/* ---------- the engine: Old Number 7, a 4-4-0 with a balloon stack, drawn into its own small canvas ---------- */
+const EW = 172, EH = 122, G0 = 112, X0 = 48;                     /* the engine's canvas; its rails at G0; the cab's left at X0 */
+const ec = document.createElement("canvas"); ec.width = EW; ec.height = EH; const e = ec.getContext("2d");
+const OX = 20, OY = 212 - G0;                                    /* where the engine's canvas sits on the screen */
+const PAL = { body: "#23222e", shine: "#4a4a62", smoke: "#17161e", trim: "#c8302a", trimD: "#7a1a18", brass: "#d8a83a", brassL: "#ffe08a",
+  wood: "#8a5a2a", woodD: "#5a3820", log: "#9a6a3a", rod: "#c8c8d8" };
+const GOLD = { ...PAL, body: "#b8862a", shine: "#ffe9a0", smoke: "#8a5e1a", trim: "#ff5a3a", brass: "#fff0b0", brassL: "#ffffff" };
+function buildEngine() {
+  const P = S.super > 0 ? GOLD : PAL, G = G0, x0 = X0, a = S.wheel;
+  e.clearRect(0, 0, EW, EH);
+  const L = [], r = (x, y, w, h, c) => L.push([0, x, y, w, h, c]), d = (x, y, rr, c) => L.push([1, x, y, rr, c]);
+  /* the tender: planks, a load of logs, two wheels */
+  r(2, G - 40, 42, 26, P.wood); r(0, G - 43, 46, 4, P.woodD); r(2, G - 15, 42, 3, P.shine);
+  for (const [lx, ly] of [[7, G - 47], [14, G - 47], [21, G - 47], [28, G - 47], [35, G - 47], [10, G - 53], [17, G - 53], [24, G - 53], [31, G - 53]]) d(lx, ly, 3.5, P.log);
+  d(11, G - 7, 7, P.trim); d(35, G - 7, 7, P.trim);
+  /* the dark undercarriage first, so nothing behind the train shows through it: under the boiler, between the wheels,
+     the tender's frame and the coupling to the cab */
+  r(x0 + 26, G - 40, 76, 14, P.smoke); r(x0 + 2, G - 24, 100, 15, P.smoke); r(3, G - 16, 40, 8, P.smoke); r(42, G - 30, 8, 7, P.smoke);
+  /* the frame, the cab, the boiler, the domes, the stack, the lamp, the cylinder, the wheels */
+  r(x0 - 2, G - 27, 108, 5, P.trim);
+  r(x0, G - 80, 30, 55, P.trim); r(x0 - 4, G - 84, 38, 5, P.body);
+  r(x0 + 28, G - 64, 70, 27, P.body); r(x0 + 96, G - 66, 8, 31, P.smoke);
+  r(x0 + 44, G - 73, 11, 9, P.brass); r(x0 + 68, G - 71, 9, 7, P.brass);
+  r(x0 + 84, G - 78, 9, 14, P.body); r(x0 + 77, G - 96, 23, 3, P.body);
+  for (let k = 0; k < 15; k++) { const w = Math.round(21 - k * 0.85); r(x0 + 88.5 - w / 2, G - 93 + k, w, 1, P.body); }
+  r(x0 + 91, G - 82, 15, 13, P.body);
+  r(x0 + 70, G - 37, 21, 11, P.shine);
+  d(x0 + 18, G - 14, 14, P.trim); d(x0 + 47, G - 14, 14, P.trim); d(x0 + 81, G - 6, 6, P.trim); d(x0 + 95, G - 6, 6, P.trim);
+  /* outlines first, then the colours, so every part keeps a dark edge */
+  for (const p of L) { if (p[0] === 0) R(p[1] - 1, p[2] - 1, p[3] + 2, p[4] + 2, OUT, e); else disc(p[1], p[2], p[3] + 1, OUT, 1, e); }
+  for (const p of L) { if (p[0] === 0) R(p[1], p[2], p[3], p[4], p[5], e); else disc(p[1], p[2], p[3], p[4], 1, e); }
+  /* the details */
+  for (let k = 0; k < 4; k++) R(2, G - 34 + k * 6, 42, 1, P.woodD, e);                       /* planks */
+  for (let i = 0; i < Math.min(5, S.stars); i++) { pixStar(4 + i * 8, G - 32, OUT, e); pixStar(4 + i * 8, G - 33, "#ffd84a", e); }   /* the stars it has won */
+  for (const [lx, ly] of [[7, G - 47], [14, G - 47], [21, G - 47], [28, G - 47], [35, G - 47], [10, G - 53], [17, G - 53], [24, G - 53], [31, G - 53]]) { disc(lx, ly, 2, "#c8945a", 1, e); R(lx, ly, 1, 1, P.woodD, e); }
+  R(x0 + 28, G - 62, 70, 2, P.shine, e);                                                    /* the boiler's light, its brass bands */
+  for (const bx of [x0 + 40, x0 + 62, x0 + 82]) R(bx, G - 64, 2, 27, P.brass, e);
+  if (S.super > 0) { const bx = x0 + 28 + wrap(S.t * 90, 90); R(bx, G - 63, 3, 25, "#ffffff", e); R(bx + 4, G - 63, 1, 25, P.brassL, e); }
+  R(x0 + 45, G - 72, 9, 2, P.brassL, e); R(x0 + 69, G - 70, 7, 2, P.brassL, e);
+  const sw = Math.round(Math.sin(S.t * 18) * 2 * Math.min(1, S.bellSwing));                /* the bell, swinging when it rings */
+  R(x0 + 58, G - 74, 2, 3, OUT, e); disc(x0 + 59 + sw, G - 69, 4, OUT, 1, e); disc(x0 + 59 + sw, G - 69, 3, P.brass, 1, e); R(x0 + 56 + sw, G - 66, 7, 2, P.brass, e); R(x0 + 58 + sw, G - 71, 1, 2, P.brassL, e);
+  R(x0 + 32, G - 70, 3, 6, OUT, e); R(x0 + 33, G - 69, 1, 5, P.brass, e);                   /* the whistle */
+  R(x0 + 79, G - 95, 19, 1, P.shine, e); R(x0 + 84, G - 76, 2, 12, P.shine, e);             /* the stack's rim and light */
+  R(x0 + 93, G - 80, 11, 9, P.brass, e); R(x0 + 103, G - 79, 3, 7, "#fff6c8", e); R(x0 + 95, G - 78, 6, 5, "#fff2b0", e);   /* the lamp */
+  R(x0 + 70, G - 35, 21, 1, P.brassL, e); R(x0 + 70, G - 28, 21, 1, P.smoke, e);            /* the cylinder */
+  R(x0 + 2, G - 78, 26, 1, mixc(P.trim, "#ffffff", 0.3), e);                                /* the cab: its window, the driver, the number */
+  R(x0 + 6, G - 74, 17, 15, OUT, e); R(x0 + 7, G - 73, 15, 13, "#ffd27a", e); R(x0 + 14, G - 73, 1, 13, OUT, e);
+  const sooty = S.soot > 0 || (S.sneeze > 0.9 && S.sneeze < 3), coughing = S.cough > 0;
+  const cross = S.angry > 0;
+  R(x0 + 8, G - 68, 6, 6, sooty ? "#2a2228" : cross ? "#f08a72" : "#f1c7a3", e);              /* the driver's face */
+  if (cross) { R(x0 + 8, G - 68, 2, 1, "#111", e); R(x0 + 12, G - 68, 2, 1, "#111", e); R(x0 + 9, G - 67, 1, 1, "#111", e); R(x0 + 12, G - 67, 1, 1, "#111", e); R(x0 + 9, G - 63, 4, 1, "#5a1a1a", e); R(x0 + 8, G - 64, 1, 1, "#5a1a1a", e); R(x0 + 13, G - 64, 1, 1, "#5a1a1a", e);
+    const sh = Math.round(Math.sin(S.t * 30) * 1.5); R(x0 + 17, G - 72 + sh, 4, 4, OUT, e); R(x0 + 18, G - 71 + sh, 3, 3, "#f1c7a3", e); R(x0 + 18, G - 68 + sh, 2, 3, "#3a5aa8", e); }   /* a fist, shaking */
+  if (sooty) { R(x0 + 9, G - 66, 1, 1, "#ffffff", e); R(x0 + 12, G - 66, 1, 1, "#ffffff", e); }
+  else { const bl = wrap(S.t, 3.3) < 0.12; R(x0 + 9, G - 66, 1, bl ? 1 : 2, "#111", e); R(x0 + 12, G - 66, 1, bl ? 1 : 2, "#111", e); }
+  R(x0 + 8, G - 62, 6, 2, "#c8302a", e);                                                     /* his bandana */
+  if (coughing) R(x0 + 10, G - 64, 4, 2, "#f1c7a3", e);                                       /* a hand to his mouth */
+  if (!S.hat) { R(x0 + 7, G - 71, 8, 3, "#3a5aa8", e); R(x0 + 7, G - 70, 8, 1, "#e8e8f8", e); R(x0 + 13, G - 69, 3, 1, "#3a5aa8", e); }   /* his striped cap */
+  if (S.wave > 0 && !cross) R(x0 + 15, G - 70 - Math.round(Math.abs(Math.sin(S.t * 14)) * 3), 3, 6, "#f1c7a3", e);   /* waving */
+  R(x0 + 8, G - 50, 14, 9, P.brass, e); R(x0 + 9, G - 49, 12, 7, P.trimD, e);                /* the plate: 7 */
+  R(x0 + 12, G - 48, 6, 1, P.brassL, e); line(x0 + 17, G - 48, x0 + 14, G - 43, P.brassL, 1, e);
+  for (let i = 0; i < 17; i++) { const h = Math.round(21 - i * 1.25); R(x0 + 101 + i, G - 22, 1, h + 1, OUT, e); }   /* the cowcatcher: a slatted wedge down to the rail */
+  for (let i = 0; i < 16; i++) { const h = Math.round(21 - i * 1.25) - 1; R(x0 + 101 + i, G - 21, 1, h, i % 3 === 2 ? P.trimD : P.trim, e); }
+  R(x0 + 100, G - 23, 18, 2, P.brass, e);
+  for (const [wx, wy, rr] of [[x0 + 18, G - 14, 14], [x0 + 47, G - 14, 14], [x0 + 81, G - 6, 6], [x0 + 95, G - 6, 6], [11, G - 7, 7], [35, G - 7, 7]]) {
+    disc(wx, wy, rr - 2, P.trimD, 1, e);                                                     /* spokes turning */
+    const ns = rr > 8 ? 10 : 6;
+    for (let s = 0; s < ns; s++) { const an = a * (14 / rr) + s * Math.PI * 2 / ns; line(wx + Math.cos(an) * 2, wy + Math.sin(an) * 2, wx + Math.cos(an) * (rr - 2), wy + Math.sin(an) * (rr - 2), P.trim, 1, e); }
+    disc(wx, wy, rr > 8 ? 3 : 2, P.brass, 1, e);
+  }
+  const cx1 = x0 + 18 + Math.cos(a) * 8, cy1 = G - 14 + Math.sin(a) * 8, cx2 = x0 + 47 + Math.cos(a) * 8, cy2 = G - 14 + Math.sin(a) * 8;
+  R(cx1 - 1, cy1 - 2, cx2 - cx1 + 3, 4, OUT, e); R(cx1, cy1 - 1, cx2 - cx1 + 1, 2, P.rod, e);  /* the coupling rod */
+  const chx = x0 + 66 + Math.cos(a) * 8, chy = G - 32;                                       /* the crosshead, the main rod, the piston */
+  R(chx, chy - 1, x0 + 70 - chx, 3, P.rod, e); R(chx - 2, chy - 2, 4, 5, P.brass, e);
+  line(chx, chy, cx2, cy2, OUT, 3, e); line(chx, chy + 1, cx2, cy2 + 1, P.rod, 2, e);
+  R(cx1 - 1, cy1 - 1, 2, 2, P.brass, e); R(cx2 - 1, cy2 - 1, 2, 2, P.brass, e);
+}
+/* the engine onto the screen: column by column, so its front can rear up when it sneezes */
+let geo = { lamp: [0, 0], stack: [0, 0], tilt: 0, jx: 0, jy: 0 };
+function engineTilt() {
+  const s = S.sneeze; let tilt = 0, jx = 0, jy = 0;
+  if (s > 0 && s < 0.9) { tilt = 0.13 * (s / 0.9); jx = Math.round(Math.sin(S.t * 40) * (s > 0.6 ? 1 : 0)); }
+  else if (s >= 0.9 && s < 1.4) { const k = (s - 0.9) / 0.5; tilt = -0.03 * (1 - k) ; jx = Math.round(-6 * (1 - k)); jy = Math.round(2 * (1 - k)); }
+  if (S.cough > 0) jx += Math.round(Math.sin(S.t * 70));
+  if (S.v > 4 && S.sneeze <= 0) jy += Math.round(Math.sin(S.wheel * 2) * 0.6);
+  return { tilt, jx, jy };
+}
+function blitEngine() {
+  const { tilt, jx, jy } = engineTilt(), piv = X0 + 18;
+  for (let c = 0; c < EW; c++) { const yo = -Math.round(Math.max(0, c - piv) * tilt); g.drawImage(ec, c, 0, 1, EH, OX + c + jx, OY + yo + jy, 1, EH); }
+  const at = (x, y) => [OX + x + jx, OY + y + jy - Math.round(Math.max(0, x - piv) * tilt)];
+  geo = { lamp: at(X0 + 106, G0 - 76), stack: at(X0 + 88, G0 - 97), whistle: at(X0 + 33, G0 - 71), tilt, jx, jy, cab: at(X0 + 11, G0 - 72) };
+}
+function puppy() {                                               /* the puppy riding on the logs */
+  const x = OX + 23 + geo.jx, y = OY + G0 - 58 + geo.jy - (S.bark > 0 ? Math.round(Math.abs(Math.sin(S.bark * 9)) * 4) : 0);
+  const ear = S.v > 25 || S.super > 0 ? -4 : 0;
+  disc(x, y, 8, OUT); disc(x, y, 7, "#e8d8b8"); disc(x - 1, y + 7, 6, OUT); disc(x - 1, y + 7, 5, "#e8d8b8");
+  R(x - 10, y - 4 + ear, 4, 9, OUT); R(x + 6, y - 4 + ear, 4, 9, OUT); R(x - 9, y - 3 + ear, 2, 8, "#7a4a2a"); R(x + 7, y - 3 + ear, 2, 8, "#7a4a2a");
+  if (S.soot > 0) { if (S.bark > 0 && wrap(S.bark, 0.45) > 0.2) R(x - 2, y + 5, 5, 3, "#ff6b8a"); disc(x, y, 7, "#1e1a1e"); const b = wrap(S.t, 0.9) < 0.15; R(x - 4, y - 2, 3, 3, b ? "#111" : "#fff"); R(x + 2, y - 2, 3, 3, b ? "#111" : "#fff"); if (!b) { R(x - 3, y - 1, 2, 2, "#111"); R(x + 3, y - 1, 2, 2, "#111"); } return; }
+  const bl = wrap(S.t + 1.3, 3.7) < 0.12;
+  disc(x + 3, y - 2, 3, "#b07a44");                                                          /* a brown patch round one eye, a muzzle, a nose */
+  disc(x, y + 2, 3, "#fff4e0");
+  R(x - 3, y - 2, 2, bl ? 1 : 2, "#111"); R(x + 2, y - 2, 2, bl ? 1 : 2, "#111"); R(x - 1, y + 1, 3, 2, "#111");
+  if (S.bark > 0 && wrap(S.bark, 0.45) > 0.2) { R(x - 2, y + 4, 5, 3, "#5a1a1a"); R(x - 1, y + 6, 3, 1, "#ff6b8a"); }   /* barking */
+  if (S.wave > 0 || S.super > 0) R(x, y + 3, 3, 3 + Math.round(Math.abs(Math.sin(S.t * 12)) * 2), "#ff6b8a");   /* panting, happy */
+  if (S.super > 0) R(x - 6, y - 12 - Math.round(Math.abs(Math.sin(S.t * 16)) * 3), 2, 5, "#e8d8b8");           /* a paw up */
+}
+
+/* ---------- smoke, sparks ---------- */
+function puff(x, y, col, o = {}) { S.puffs.push({ x, y, r: o.r || 3, vx: o.vx ?? (-6 - Math.random() * 6), vy: o.vy ?? (-26 - Math.random() * 10), life: o.life || 1.6, max: o.life || 1.6, col, dark: !!o.dark, grow: o.grow || 5, star: !!o.star, drag: o.drag || 0.8, wind: o.wind || 0 }); }
+function drawPuffs() {
+  for (const p of S.puffs) {
+    const a = Math.min(1, p.life / p.max * 1.6) * (p.dark ? 0.94 : 0.75);
+    if (p.star) { const c = p.col; R(p.x - 1, p.y - 3, 3, 7, c); R(p.x - 3, p.y - 1, 7, 3, c); R(p.x, p.y, 1, 1, "#ffffff"); continue; }
+    disc(p.x, p.y, p.r + 1, p.dark ? "#000000" : mixc(p.col, "#000000", 0.35), a * 0.6);
+    disc(p.x - 1, p.y - 1, p.r, p.col, a);
+    if (!p.dark && p.r > 3) disc(p.x - p.r * 0.35, p.y - p.r * 0.35, p.r * 0.35, "#ffffff", a * 0.35);
+  }
+}
+
+/* ---------- the lamp's beam: forward and a little down, onto the track ahead ---------- */
+function beam() {
+  const [lx, ly] = geo.lamp, sup = S.super > 0, len = 90, col = sup ? "#fff2c0" : "#ffe2a0";
+  g.globalCompositeOperation = "lighter";
+  const fl = (0.93 + 0.07 * Math.sin(S.t * 13) * Math.sin(S.t * 7.3)) * (S.sneeze > 0.4 && S.sneeze < 0.9 ? 1.5 : 1);
+  for (let dx = 0; dx < len && lx + dx < KW; dx++) {
+    const half = 3 + dx * (sup ? 0.42 : 0.34), cy = ly + dx * (0.22 + geo.tilt * 1.2), a = (sup ? 0.3 : 0.22) * (1 - dx / len) * fl;
+    g.fillStyle = col; g.globalAlpha = a; g.fillRect(lx + dx, Math.round(cy - half), 1, Math.round(half * 2));
+    g.globalAlpha = a * 0.8; g.fillRect(lx + dx, Math.round(cy - half * 0.45), 1, Math.round(half * 0.9));
+  }
+  g.globalAlpha = 1; disc(lx, ly, 8, col, 0.35 * fl); disc(lx, ly, 4, "#ffffff", 0.45 * fl);
+  g.globalCompositeOperation = "source-over";
+}
+const ahead = (x) => x > 186 && x < 236;                         /* in the lamplight, just ahead of the engine */
+
+/* ---------- the world around the line ---------- */
+const W = {
+  cow: { was: false, t: 0 }, owls: {}, dogs: {}, camp: {},
+};
+function sky() {
+  const gr = g.createLinearGradient(0, 0, 0, 162); [["#0a0826", 0], ["#18124a", .35], ["#34205a", .62], ["#6e2a58", .86], ["#a8405a", 1]].forEach(([c, s]) => gr.addColorStop(s, c));
+  g.fillStyle = gr; g.fillRect(0, 0, KW, 162);
+  for (let i = 0; i < 60; i++) { const x = (i * 53 + (i >> 3) * 7) % 240, y = (i * 31) % 118; R(x, y, 1, 1, wrap(S.t * 0.7 + i * 0.37, 3) < 0.22 ? "#5a5a90" : (i % 7 ? "#e8e0ff" : "#ffe8b0")); }
+  if (S.star) { const s = S.star; for (let k = 0; k < 12; k++) R(s.x + k * 2, s.y - k, 1, 1, k < 2 ? "#ffffff" : "#a8a8e0"); }
+  const mx = 58, my = 50;                                                                  /* the huge moon */
+  disc(mx, my, 42, "#fff0c8", 0.05); disc(mx, my, 34, "#fff0c8", 0.09); disc(mx, my, 27, "#fff3d0");
+  disc(mx - 9, my - 6, 6, "#efe2bc"); disc(mx + 8, my + 9, 5, "#efe2bc"); disc(mx + 7, my - 10, 3, "#efe2bc"); disc(mx - 6, my + 12, 2, "#efe2bc"); R(mx - 17, my - 3, 3, 2, "#efe2bc");
+  if (S.bats) for (const b of S.bats) {                                                    /* bats across the moon */
+    const up = wrap(S.t * 9 + b.ph, 2) < 1;
+    R(b.x - 1, b.y, 3, 2, OUT); if (up) { line(b.x - 5, b.y - 3, b.x - 1, b.y, OUT); line(b.x + 5, b.y - 3, b.x + 1, b.y, OUT); } else { line(b.x - 5, b.y + 2, b.x - 1, b.y, OUT); line(b.x + 5, b.y + 2, b.x + 1, b.y, OUT); }
+  }
+}
+function mesas() {
+  const mesa = (wx, w, top, col, par, period) => { const x0 = sx(wx, par, period, 140); if (x0 === null) return; for (let k = 0; k < w; k++) { const e2 = Math.min(k, w - k), y = top + Math.max(0, 7 - e2) * 3; R(x0 + k, y, 1, 162 - y, col); if (e2 > 7 && k % 9 === 0) R(x0 + k, y + 3, 1, 162 - y - 3, mixc(col, "#000000", 0.18)); } };
+  mesa(140, 90, 102, "#4a2048", 0.06, 640); mesa(250, 50, 116, "#3e1c40", 0.06, 640); mesa(430, 76, 110, "#4a2048", 0.06, 640); mesa(540, 40, 122, "#3e1c40", 0.06, 640);
+  const ho = S.scroll * 0.2;
+  for (let x = 0; x < KW; x++) { const y = 148 + Math.round(Math.sin((x + ho) / 34) * 4 + Math.sin((x + ho) / 13) * 1.5); R(x, y, 1, 18, "#2c1530"); }
+  let x = sx(60, 0.2, 520, 60);                                                            /* the coyote on its rock */
+  if (x !== null) {
+    R(x - 6, 142, 36, 10, "#1a0e1a"); R(x - 2, 138, 28, 6, "#1a0e1a");
+    const up = S.howl > 0 ? 1 : 0;
+    for (const [dx, dy, w, h] of [[2, 128, 14, 8], [14, 120 - up * 4, 5, 10 + up * 2], [16, 116 - up * 6, 4, 4], [18 + up, 112 - up * 8, 2, 4], [0, 130, 3, 8], [12, 134, 3, 4], [4, 134, 2, 4], [-2, 128, 4, 2]]) R(x + dx, dy, w, h, "#1a0e1a");
+    if (S.howl > 0) text("ow-oo", x + 20, 104 - (1.6 - S.howl) * 6, 6, "#e8d0ff");
+  }
+}
+function ranch() {                                                                         /* a ranch house, its window lit, the windmill turning */
+  const x = sx(150, 0.4, 560, 80); if (x === null) return;
+  R(x - 1, 140, 40, 25, OUT); R(x, 141, 38, 23, "#5a3428"); for (let k = 0; k < 5; k++) R(x, 144 + k * 4, 38, 1, "#4a2a20");
+  g.fillStyle = OUT; g.beginPath(); g.moveTo(x - 4, 142); g.lineTo(x + 19, 128); g.lineTo(x + 42, 142); g.fill(); g.fillStyle = "#3a1e1a"; g.beginPath(); g.moveTo(x - 2, 141); g.lineTo(x + 19, 130); g.lineTo(x + 40, 141); g.fill();
+  const lit = wrap(S.t, 11) < 8.5;
+  R(x + 6, 148, 9, 8, OUT); R(x + 7, 149, 7, 6, lit ? "#ffcf6a" : "#2a2040"); R(x + 10, 149, 1, 6, OUT);
+  if (lit) disc(x + 10, 152, 8, "#ffcf6a", 0.12);
+  R(x + 24, 150, 8, 14, OUT); R(x + 25, 151, 6, 13, "#3a1e16");
+  const wx = x + 56;                                                                       /* the windmill */
+  line(wx - 7, 165, wx - 1, 110, "#2a1a20", 2); line(wx + 7, 165, wx + 1, 110, "#2a1a20", 2); for (let k = 0; k < 4; k++) R(wx - 6 + k * 1.3, 152 - k * 13, 12 - k * 2.6, 1, "#2a1a20");
+  const ang = S.t * (1.2 + S.v / 25);
+  for (let b = 0; b < 12; b++) { const an = ang + b * Math.PI / 6; line(wx, 108, wx + Math.cos(an) * 13, 108 + Math.sin(an) * 13, b % 2 ? "#4a3a48" : "#5e4a58", 1); }
+  disc(wx, 108, 2, "#7a6a78"); R(wx, 106, 14, 2, "#2a1a20"); R(wx + 12, 102, 5, 8, "#4a3a48");
+}
+function poles() {                                                                         /* telegraph poles going by, their wires, an owl */
+  const P = 170, base = 206, top = 88, off = wrap(S.scroll, P), xs = [];
+  for (let k = -1; k < 3; k++) xs.push(k * P - off + 40);
+  for (let i = 0; i < xs.length - 1; i++) for (let x = Math.max(0, xs[i]); x < Math.min(KW, xs[i + 1]); x++) {
+    const t2 = (x - xs[i]) / P, sag = 8 * (1 - (2 * t2 - 1) ** 2);
+    R(x, top + 5 + sag, 1, 1, "#4a3a58"); R(x, top + 10 + sag, 1, 1, "#4a3a58");
+  }
+  for (const x of xs) {
+    if (x < -20 || x > KW + 20) continue;
+    R(x - 2, top, 5, base - top, OUT); R(x - 1, top, 3, base - top, "#4a2e22"); R(x - 12, top + 4, 25, 3, OUT); R(x - 11, top + 5, 23, 1, "#5a3a2a");
+    for (const ix of [-10, -4, 4, 10]) R(x + ix, top + 2, 2, 3, "#8ac8c0");
+    const idx = Math.round((x + S.scroll) / P);
+    if (wrap(idx, 3) === 1) {                                                              /* the owl */
+      const o = W.owls[idx] || (W.owls[idx] = { hooted: false });
+      const near = x > 40 && x < 190; if (near && !o.hooted) { o.hooted = true; o.t = 1.6; hoot(); }
+      if (o.t > 0) o.t -= S.dt;
+      const oy = top - 9, look = o.t > 0 ? 1 : 0;
+      disc(x, oy, 6, OUT); disc(x, oy, 5, "#7a5a3a"); disc(x, oy + 4, 4, "#9a7a5a"); R(x - 5, oy - 7, 2, 3, "#7a5a3a"); R(x + 4, oy - 7, 2, 3, "#7a5a3a");
+      const bl = wrap(S.t + idx, 4.1) < 0.15;
+      for (const ex of [-2, 2]) { disc(x + ex, oy - 1, 2, "#ffd84a"); if (!bl) R(x + ex + look - (look ? 1 : 0), oy - 1, 1, 1, "#111"); else R(x + ex - 1, oy - 1, 3, 1, "#7a5a3a"); }
+      R(x, oy + 1, 1, 2, "#e8a83a");
+      if (o.t > 0.6) text("hoo", x + 8, oy - 8, 6, "#e8e0ff");
+    }
+  }
+}
+function camp() {                                                                          /* a covered wagon, a campfire, a cowboy with a guitar, his horse */
+  const x = sx(300, 0.6, 760, 120); if (x === null) return;
+  const gy = 176;
+  const fl = Math.sin(S.t * 17) * 1.5 + Math.sin(S.t * 7) * 1, fx = x + 62;
+  disc(fx, gy - 4, 30 + fl, "#ff9a3a", 0.07); disc(fx, gy - 4, 18 + fl, "#ffb84a", 0.1);  /* the firelight round them */
+  /* the wagon: a wooden box, white canvas over hoops, big spoked wheels */
+  R(x - 1, gy - 19, 46, 12, OUT); R(x, gy - 18, 44, 10, "#7a4a24"); R(x, gy - 18, 44, 2, "#9a6a3a");
+  for (let k = 0; k < 18; k++) { const yy = gy - 19 - Math.round(Math.sin((k + 0.5) / 18 * Math.PI) * 4) - 14; }
+  for (let xx = 2; xx < 43; xx++) { const t2 = (xx - 2) / 40, h = 15 + Math.round(Math.sin(t2 * Math.PI) * 4); R(x + xx, gy - 18 - h, 1, h, xx % 9 === 2 ? "#c8b898" : (xx < 8 ? "#d8c8a8" : "#f0e6d0")); R(x + xx, gy - 19 - h, 1, 1, OUT); }
+  R(x + 1, gy - 33, 2, 15, OUT); R(x + 41, gy - 33, 2, 15, OUT); disc(x + 22, gy - 26, 5, "#e8d8b8"); disc(x + 22, gy - 26, 3, "#2a1a14");
+  for (const wx of [x + 8, x + 36]) { disc(wx, gy - 6, 7, OUT); disc(wx, gy - 6, 6, "#6a4424"); disc(wx, gy - 6, 4, "#2a1a14"); for (let s = 0; s < 6; s++) { const an = s * Math.PI / 3; line(wx, gy - 6, wx + Math.cos(an) * 5, gy - 6 + Math.sin(an) * 5, "#8a5a2a"); } disc(wx, gy - 6, 1, "#c8a878"); }
+  line(x + 44, gy - 10, x + 52, gy - 4, "#5a3a2a");
+  /* the fire: stones, logs, flames, sparks going up */
+  for (let k = -3; k <= 3; k++) R(fx + k * 3 - 1, gy - 3, 3, 3, k % 2 ? "#5a5060" : "#6a6070");
+  R(fx - 6, gy - 5, 12, 2, "#5a3a2a"); line(fx - 5, gy - 3, fx + 5, gy - 7, "#6a4424", 2);
+  disc(fx, gy - 8, 4 + fl * 0.5, "#ff5a1a"); disc(fx, gy - 9 - fl * 0.5, 2.5, "#ffb84a"); R(fx - 1, gy - 14 - fl, 2, 4, "#ffe14d");
+  W.camp.sp = W.camp.sp || []; if (Math.random() < S.dt * 6) W.camp.sp.push({ dx: (Math.random() - 0.5) * 6, y: 0, life: 1.2 });
+  for (const s of W.camp.sp) { s.y += 22 * S.dt; s.life -= S.dt; s.dx += Math.sin(S.t * 5 + s.y) * 0.1; if (s.life > 0) R(fx + s.dx, gy - 14 - s.y, 1, 1, s.life > 0.6 ? "#ffe14d" : "#ff7a3a"); }
+  W.camp.sp = W.camp.sp.filter((s) => s.life > 0);
+  /* the cowboy on a log, playing; hat, red shirt */
+  const cx = fx + 14;
+  R(cx - 5, gy - 4, 12, 4, OUT); R(cx - 4, gy - 3, 10, 2, "#6a4424");
+  R(cx - 3, gy - 17, 8, 12, OUT); R(cx - 2, gy - 16, 6, 10, "#b8302a"); R(cx - 3, gy - 6, 4, 6, "#3a4a7a"); R(cx + 2, gy - 6, 5, 3, "#3a4a7a"); R(cx + 6, gy - 5, 2, 5, "#3a2418");
+  disc(cx + 1, gy - 20, 4, OUT); disc(cx + 1, gy - 20, 3, "#e8b088"); R(cx - 4, gy - 23, 11, 2, "#8a5a2a"); R(cx - 1, gy - 27, 5, 4, "#8a5a2a"); R(cx - 4, gy - 23, 11, 1, OUT);
+  disc(cx - 4, gy - 10, 3, "#c88a3a"); R(cx - 4, gy - 11, 12, 1, "#5a3a1a");                 /* the guitar */
+  const strum = Math.round(Math.sin(S.t * 8) * 1.5); R(cx - 2, gy - 12 + strum, 2, 3, "#e8b088");
+  /* the horse, tied up, its tail swishing */
+  const hx = fx + 40;
+  R(hx - 9, gy - 21, 22, 10, OUT); R(hx - 8, gy - 20, 20, 8, "#5a3424"); R(hx + 10, gy - 30, 6, 12, "#5a3424"); R(hx + 11, gy - 33, 8, 5, "#5a3424"); R(hx + 17, gy - 31, 3, 3, "#3a2014"); R(hx + 11, gy - 35, 2, 3, "#5a3424");
+  R(hx + 9, gy - 31, 2, 10, "#2a1810"); R(hx + 14, gy - 32, 1, 1, "#111");
+  for (const lx of [-7, -3, 6, 10]) R(hx + lx, gy - 12, 2, 12, "#4a2a1c");
+  const sw = Math.round(Math.sin(S.t * 3) * 2); line(hx - 9, gy - 19, hx - 12 + sw, gy - 8, "#2a1810", 2);
+  R(hx + 26, gy - 18, 2, 18, "#4a2e22"); line(hx + 17, gy - 30, hx + 26, gy - 14, "#c8a878");
+}
+function cow() {                                                                           /* a longhorn grazing; the lamplight makes her look up and moo */
+  const x = sx(560, 0.85, 700, 60); if (x === null) return;
+  const c = W.cow, lit = ahead(x); if (lit && !c.was) { c.t = 2.2; moo(); } c.was = lit; if (c.t > 0) c.t -= S.dt;
+  const up = c.t > 0, gy = 190;
+  R(x - 13, gy - 16, 26, 12, OUT); R(x - 12, gy - 15, 24, 10, "#e8dcc8"); disc(x - 5, gy - 11, 4, "#6a3a24"); disc(x + 6, gy - 13, 3, "#6a3a24");
+  for (const lx of [-11, -7, 6, 10]) R(x + lx, gy - 5, 2, 7, "#c8b8a0");
+  const hx = x + 13, hy = up ? gy - 21 : gy - 9;
+  R(hx - 1, hy - 1, 9, 9, OUT); R(hx, hy, 7, 7, "#e8dcc8"); R(hx + 3, hy + 5, 4, 3, "#e8a8a0");
+  R(hx - 7, hy - 3, 21, 2, OUT); R(hx - 6, hy - 2, 19, 1, "#f0e8d0"); R(hx - 7, hy - 4, 2, 2, "#f0e8d0"); R(hx + 12, hy - 4, 2, 2, "#f0e8d0");
+  R(hx + 2, hy + 2, 1, 1, "#111"); R(hx + 5, hy + 2, 1, 1, "#111");
+  const sw = Math.round(Math.sin(S.t * 2.5) * 2); line(x - 13, gy - 14, x - 16 + sw, gy - 6, "#c8b8a0");
+  if (c.t > 1) text("MOO!", hx - 4, hy - 8, 8, "#ffffff");
+}
+const CANYON_P = 1700, CANYON_A = 1150, CANYON_B = 1430;
+function inCanyon(x) { const k = wrap(x + S.scroll, CANYON_P); return k > CANYON_A && k < CANYON_B; }
+function canyon() {                                                                        /* now and then the line crosses a canyon on a wooden trestle */
+  for (let x = 0; x < KW; x++) {
+    const k = wrap(x + S.scroll, CANYON_P); if (k <= CANYON_A - 6 || k >= CANYON_B + 6) continue;
+    const edge = Math.min(k - CANYON_A, CANYON_B - k), top = 200 + Math.max(0, 3 - Math.floor(edge / 2)) * 4 + ((k * 7) % 5);
+    if (edge < 0) continue;
+    R(x, top, 1, 240 - top, "#160a18");
+    for (const sy of [212, 220, 228]) if (sy > top) R(x, sy + ((k >> 3) % 2), 1, 1, "#2a1426");
+    if (edge > 6) { R(x, 234, 1, 6, "#1e3a6a"); if (wrap(k + Math.floor(S.t * 20), 23) < 3) R(x, 235, 1, 1, "#8ab8e8"); }
+    R(x, top, 1, 1, "#5a3040");
+  }
+}
+function trestle() {
+  const off = wrap(S.scroll, 16);
+  for (let x = -off; x < KW; x += 16) {
+    if (!inCanyon(x) || !inCanyon(x + 16)) continue;
+    R(x, 216, 2, 24, OUT); R(x + 1, 216, 1, 24, "#7a4a2a");
+    line(x + 1, 218, x + 15, 238, "#5a3820"); line(x + 15, 218, x + 1, 238, "#5a3820");
+    R(x, 227, 16, 1, "#6a4024");
+  }
+}
+function ground() {
+  g.fillStyle = "#3a1e30"; g.fillRect(0, 162, KW, 78);
+  const fo = wrap(S.scroll * 0.85, 48);
+  for (let k = -1; k < 7; k++) { R(k * 48 - fo + 7, 172, 3, 1, "#4a2a3a"); R(k * 48 - fo + 30, 184, 2, 1, "#4a2a3a"); R(k * 48 - fo + 18, 198, 4, 1, "#4a2a3a"); }
+  for (const [wx, base, h] of [[40, 192, 26], [220, 186, 18], [380, 188, 22], [560, 194, 28]]) { const x = sx(wx, 0.85, 700, 40); cactus(x, base, h, "m" + wx, x !== null && ahead(x)); }
+}
+const blooms = {};
+function cactus(x, base, h, id, lit) {
+  if (x === null) return;
+  const late = S.idx >= SONGS[song].late || S.phase;                                                     /* "Dinah, won't you blow" on: the cacti bloom */
+  if (id && late && lit && !blooms[id]) { blooms[id] = S.t; chime(); }
+  const c = "#1e4a32", dd = "#163a26", hi = "#2e6a46";
+  R(x - 3, base - h - 1, 7, h + 1, OUT); R(x - 2, base - h, 5, h, c); R(x - 2, base - h, 1, h, dd); R(x + 1, base - h + 1, 1, h - 2, hi);
+  R(x - 8, base - h * 0.7, 4, 9, OUT); R(x - 7, base - h * 0.7, 2, 8, c); R(x - 7, base - h * 0.7 + 6, 6, 2, c);
+  R(x + 4, base - h * 0.55, 4, 8, OUT); R(x + 5, base - h * 0.55, 2, 7, c); R(x + 2, base - h * 0.55 + 5, 5, 2, c);
+  if (id && blooms[id]) {                                                                  /* a flower opening on its top, and on an arm */
+    const p = Math.min(1, (S.t - blooms[id]) / 0.7);
+    for (const [fx, fy, sz] of [[x + 0.5, base - h - 2, 1], [x - 6.5, base - h * 0.7 - 2, 0.7]]) {
+      const r2 = 1 + p * 2.5 * sz;
+      for (let i = 0; i < 5; i++) { const an = i * Math.PI * 2 / 5 - Math.PI / 2 + S.t * 0.2; disc(fx + Math.cos(an) * r2, fy + Math.sin(an) * r2, 1.2 + p * 0.8 * sz, i % 2 ? "#ff6bc6" : "#ff8ad8"); }
+      disc(fx, fy, 1 + p * sz, "#ffe14d");
+      if (p < 1) for (let i = 0; i < 4; i++) R(fx + Math.cos(i * 1.6 + S.t * 6) * 6, fy + Math.sin(i * 1.6 + S.t * 6) * 6, 1, 1, "#ffffff");
+    }
+  }
+}
+function track() {
+  const off = wrap(S.scroll, 8);
+  for (let x = 0; x < KW; x++) if (!inCanyon(x)) R(x, 213, 1, 7, "#2a1624");
+  for (let x = -off; x < KW; x += 8) R(x, 213, 6, 3, inCanyon(x) ? "#7a4a2a" : "#5a3a2a");
+  for (let x = -wrap(S.scroll, 5); x < KW; x += 5) if (!inCanyon(x)) R(x, 219, 2, 1, "#4a3040");
+  trestle();
+  R(0, 211, KW, 2, "#b8b0c8"); R(0, 216, KW, 1, "#8a8098");
+}
+function foreground() {                                                                    /* nearest of all: prairie dogs, a cactus, rocks, the tumbleweed */
+  for (const wx of [90, 300]) {
+    const x = sx(wx, 1.3, 520, 40); if (x === null || inCanyon(x) || inCanyon(x + 14)) continue;
+    const d = W.dogs[wx] || (W.dogs[wx] = { was: false, t: 0 }), near = x > 140 && x < 240;
+    if (near && !d.was) { d.t = 2; squeak(); } d.was = near; if (d.t > 0) d.t -= S.dt;
+    const up = d.t > 0 ? Math.min(1, (2 - d.t) * 5) * Math.min(1, d.t * 3) : 0, y = 232;
+    for (const dx of [0, 14]) {
+      if (up > 0.05) { const h = Math.round(up * 10); R(x + dx - 3, y - h - 1, 7, h + 2, OUT); R(x + dx - 2, y - h, 5, h, "#b8885a"); R(x + dx - 1, y - h + 1, 1, 1, "#111"); R(x + dx + 1, y - h + 1, 1, 1, "#111"); R(x + dx - 3, y - h + 4, 2, 2, "#b8885a"); }
+      R(x + dx - 6, y, 13, 3, "#5a3424"); R(x + dx - 3, y - 1, 7, 2, "#2a1410");
+    }
+  }
+  { const x = sx(220, 1.3, 520, 40); if (x !== null && !inCanyon(x)) cactus(x, 240, 24, "f220", x > 150 && x < 236); }
+  for (const [wx, w] of [[30, 6], [160, 4], [410, 8]]) { const x = sx(wx, 1.3, 520, 20); if (x !== null && !inCanyon(x)) { R(x, 234, w, 3, "#5a3a4a"); R(x + 1, 233, w - 2, 1, "#6a4a5a"); } }
+  const t = S.tw, y = (inCanyon(t.x) ? 212 : 230) - Math.abs(Math.sin(S.t * 3)) * 6;
+  for (let k = 0; k < 8; k++) { const an = t.a + k * Math.PI / 4; for (let r = 2; r < 8; r++) R(t.x + Math.cos(an) * r, y + Math.sin(an) * r, 1, 1, k % 2 ? "#9a7a4a" : "#7a5a3a"); }
+  disc(t.x, y, 8, "#7a5a3a", 0.3);
+}
+function rabbit() {                                                                       /* a jackrabbit races the train, then sits down, puffed out */
+  const r = S.rabbit; if (!r) return;
+  const x = r.x, y = inCanyon(x) ? 214 : 231, hop = !r.tired && r.rs > 0 ? Math.round(Math.abs(Math.sin(r.t * 12)) * 7) : 0;
+  const heave = r.tired ? Math.round(Math.sin(S.t * 12)) : 0;
+  if (!r.tired) {
+    R(x - 7, y - 6 - hop, 13, 6, OUT); R(x - 6, y - 5 - hop, 11, 4, "#b8946a"); R(x - 8, y - 6 - hop, 3, 3, "#ffffff");
+    R(x + 3, y - 9 - hop, 6, 5, OUT); R(x + 4, y - 8 - hop, 4, 3, "#b8946a"); R(x + 6, y - 7 - hop, 1, 1, "#111");
+    line(x + 4, y - 9 - hop, x - 1, y - 15 - hop, "#b8946a", 2); line(x + 6, y - 9 - hop, x + 2, y - 16 - hop, "#a8845a", 2);
+    const f = wrap(r.t * 12, 2) < 1; line(x - 5, y - 2 - hop, x - (f ? 9 : 3), y + 1 - hop, "#b8946a"); line(x + 3, y - 2 - hop, x + (f ? 7 : 1), y + 1 - hop, "#b8946a");
+  } else {                                                                                 /* sitting up, ears drooping, tongue out */
+    R(x - 4, y - 11 + heave, 9, 11, OUT); R(x - 3, y - 10 + heave, 7, 10, "#b8946a"); R(x - 2, y - 6 + heave, 5, 5, "#e8d4b0");
+    R(x - 3, y - 16, 8, 7, OUT); R(x - 2, y - 15, 6, 5, "#b8946a"); R(x - 1, y - 13, 1, 1, "#111"); R(x + 2, y - 13, 1, 1, "#111"); R(x, y - 11, 2, 2, "#ff6b8a");
+    line(x - 2, y - 15, x - 7, y - 12, "#a8845a", 2); line(x + 3, y - 15, x + 8, y - 12, "#a8845a", 2);
+    if (wrap(S.t, 0.8) < 0.5) text("pant", x - 10, y - 21, 6, "#e8e0ff");
+  }
+}
+function station() {                                                                       /* Star Station, where the song's end brings the train */
+  const st = S.station; if (!st) return;
+  const x = st.wx - S.scroll; if (x < -300) { if (!S.phase) S.station = null; return; }
+  if (x > KW + 200) return;
+  R(x - 170, 197, 270, 9, OUT); R(x - 169, 198, 268, 7, "#7a4a2a"); for (let k = -168; k < 98; k += 6) R(x + k, 198, 1, 7, "#5a3820");
+  R(x - 1, 117, 86, 81, OUT); R(x, 140, 84, 57, "#8a5a3a"); for (let k = 0; k < 9; k++) R(x, 144 + k * 6, 84, 1, "#6a4024");
+  R(x + 4, 118, 76, 22, "#9a6a40"); R(x + 2, 116, 80, 3, "#5a3820");                       /* its false front and sign */
+  R(x + 8, 121, 68, 13, "#2a1810"); text("STAR", x + 15, 131, 6, "#ffd84a", "#2a1810"); pixStar(x + 64, 124, "#ffd84a");
+  R(x + 8, 136, 68, 2, "#5a3820");
+  for (const wx of [x + 10, x + 58]) { R(wx, 152, 16, 14, OUT); R(wx + 1, 153, 14, 12, "#ffcf6a"); R(wx + 8, 153, 1, 12, OUT); R(wx + 1, 159, 14, 1, OUT); disc(wx + 8, 159, 12, "#ffcf6a", 0.1); }
+  R(x + 34, 160, 14, 37, OUT); R(x + 35, 161, 12, 36, "#4a2a1a"); R(x + 44, 178, 2, 2, "#d8a83a");
+  R(x - 14, 145, 112, 4, OUT); R(x - 13, 146, 110, 2, "#5a3820");                           /* the awning, its posts, its lanterns */
+  for (const px of [x - 12, x + 94]) R(px, 148, 2, 50, "#5a3820");
+  for (const lx of [x - 6, x + 88]) { R(lx, 149, 1, 4, OUT); R(lx - 2, 153, 5, 6, OUT); R(lx - 1, 154, 3, 4, "#ffe08a"); disc(lx, 156, 9, "#ffcf6a", 0.15); }
+  /* the people: the sheriff, a lady with a lantern, a boy jumping */
+  const cheer = S.phase === "stop" || S.phase === "wait", wv = Math.round(Math.sin(S.t * 10) * 3);
+  const sx1 = x + 46, sy = 197;
+  R(sx1 - 4, sy - 22, 9, 14, OUT); R(sx1 - 3, sy - 21, 7, 13, "#5a6a8a"); R(sx1 - 3, sy - 21, 2, 13, "#3a2a24"); R(sx1 + 2, sy - 21, 2, 13, "#3a2a24"); pixStar(sx1 - 3, sy - 19, "#ffd84a");
+  R(sx1 - 3, sy - 8, 3, 8, "#3a3040"); R(sx1 + 1, sy - 8, 3, 8, "#3a3040");
+  disc(sx1, sy - 26, 4, OUT); disc(sx1, sy - 26, 3, "#e8b088"); R(sx1 - 2, sy - 25, 5, 1, "#5a3a2a");   /* a moustache */
+  R(sx1 - 6, sy - 30, 13, 2, "#3a2418"); R(sx1 - 3, sy - 34, 7, 4, "#3a2418");
+  if (cheer && !S.flyStar) R(sx1 + 5, sy - 32 + wv, 2, 10, "#e8b088"); else R(sx1 + 5, sy - 21, 2, 9, "#e8b088");
+  const lx2 = x + 62;
+  for (let k = 0; k < 14; k++) R(lx2 - 3 - Math.floor(k / 3), sy - 14 + k, 7 + 2 * Math.floor(k / 3), 1, k === 13 ? OUT : "#8a3a6a");
+  R(lx2 - 3, sy - 22, 7, 9, "#8a3a6a"); disc(lx2, sy - 26, 3, "#f1c7a3"); R(lx2 - 5, sy - 30, 11, 3, "#e8e0d0"); R(lx2 - 4, sy - 31, 9, 2, "#e8e0d0");
+  const lsw = cheer ? Math.sin(S.t * 6) * 6 : 0, lanx = lx2 + 7 + lsw, lany = sy - 30 - (cheer ? 4 : -10);
+  line(lx2 + 3, sy - 20, lanx, lany + 3, "#f1c7a3", 2); R(lanx - 2, lany, 5, 6, OUT); R(lanx - 1, lany + 1, 3, 4, "#ffe08a"); disc(lanx, lany + 3, 8, "#ffcf6a", 0.18);
+  const kx = x + 76, jump = cheer ? Math.round(Math.abs(Math.sin(S.t * 8)) * 6) : 0;
+  R(kx - 3, sy - 15 - jump, 7, 9, OUT); R(kx - 2, sy - 14 - jump, 5, 8, "#3a8a4a"); R(kx - 2, sy - 6 - jump, 2, 6, "#3a4a7a"); R(kx + 1, sy - 6 - jump, 2, 6, "#3a4a7a");
+  disc(kx, sy - 18 - jump, 3, "#e8b088"); R(kx - 3, sy - 22 - jump, 7, 2, "#c84a2a");
+  if (cheer) { R(kx - 5, sy - 22 - jump, 2, 7, "#e8b088"); R(kx + 4, sy - 22 - jump, 2, 7, "#e8b088"); }
+}
+function rider() {                                                                         /* the super train's escort: a cowboy galloping alongside */
+  const r = S.rider; if (!r) return;
+  const x = r.x, y = 226, f = wrap(S.t * 10, 2) < 1;
+  R(x - 12, y - 10, 24, 9, OUT); R(x - 11, y - 9, 22, 7, "#e8e0d8"); disc(x - 4, y - 6, 3, "#3a2a24");
+  R(x + 9, y - 18, 6, 11, OUT); R(x + 10, y - 17, 4, 10, "#e8e0d8"); R(x + 11, y - 20, 9, 5, OUT); R(x + 12, y - 19, 7, 3, "#e8e0d8"); R(x + 17, y - 18, 1, 1, "#111");
+  R(x + 8, y - 17, 2, 9, "#c8a878");
+  const legs = f ? [[-10, -3], [-6, 3], [6, -3], [10, 3]] : [[-10, 3], [-6, -3], [6, 3], [10, -3]];
+  for (const [lx, sk] of legs) line(x + lx, y - 2, x + lx + sk, y + 6, "#c8c0b8", 2);
+  line(x - 12, y - 8, x - 18, y - 4 + (f ? -2 : 2), "#c8b8a8", 2);
+  R(x - 3, y - 22, 7, 12, OUT); R(x - 2, y - 21, 5, 10, "#2a6aa8"); disc(x + 1, y - 25, 3, "#e8b088");
+  const hatUp = Math.round(Math.sin(S.t * 14) * 3);
+  R(x + 3, y - 34 + hatUp, 2, 8, "#e8b088"); R(x, y - 37 + hatUp, 10, 2, "#8a5a2a"); R(x + 3, y - 40 + hatUp, 4, 3, "#8a5a2a");
+  if (r.t < 1.6) text("YEE-HAW!", x - 20, y - 44, 7, "#ffe14d");
+}
+
+/* ---------- playing ---------- */
+function letter() {
+  if (K.mode !== 1 || S.listen || S.phase || S.sneeze > 0) return;
+  const n = TUNE[S.idx % TUNE.length][0], name = NAMES[n % 12].replace("#", "♯"), c = NOTE_COL[n % 12];
+  const x = 150, y = 92 - Math.round(Math.sin(S.t * 3) * 2) - (S.letterPop > 0 ? 4 : 0);
+  disc(x + 7, y - 7, 15, c, 0.18); disc(x + 7, y - 7, 11, "#ffffff", 0.12);
+  text(name, x - (name.length > 1 ? 7 : 0), y, 16, c);
+}
+function play(k, dur) {
+  const n = TUNE[k][0];
+  VOICES[voice][1](n, dur); chuff(0.08 + Math.random() * 0.04); boomChick(n, k);
+  if (inCanyon(OX + X0 + 47)) clack();                                              /* on the bridge: the wheels clatter on the timbers */
+  S.v = Math.min(S.super > 0 ? 160 : 75, S.v + 18 + TUNE[k][1] * 3); S.lastNote = S.t; S.letterPop = 0.15;
+  const [sx0, sy0] = geo.stack;
+  if (S.super > 0) for (let i = 0; i < 3; i++) puff(sx0, sy0, NOTE_COL[(n + i * 4) % 12], { star: true, vy: -40 - i * 10, vx: -20 + i * 8, life: 1.4 });
+  else puff(sx0, sy0, mixc(NOTE_COL[n % 12], "#ffffff", 0.55), { r: 4 + TUNE[k][1] * 0.45 });
+  if (PHRASE_END.has(k)) {
+    whistle(2, Math.min(0.3, dur * 0.4)); S.whistleSteam = 1.2; bell(0.05); S.bellSwing = 1.2; S.wave = 1.8; S.howl = 1.6; howl();
+    for (let i = 0; i < 4; i++) setTimeout(() => { const s2 = geo.stack; puff(s2[0], s2[1], "#f4f4ff", { r: 6, vy: -42 }); }, 120 + i * 140);
+  }
+  if (k === TUNE.length - 1) finale();
+}
+function superTrain(len) {
+  S.super = len; S.superLen = len; S.v = Math.max(S.v, 120); fanfare(); S.bellSwing = 1.5;
+  S.rider = { x: -40, t: 0 }; setTimeout(() => yeehaw(), 900);
+}
+function finale() {                                             /* the song's end: a golden run, then the station, then a star */
+  S.phase = "super"; S.phaseT = 0; superTrain(3.6); whistle(3, 1.0);
+  for (let k = 0; k < 4; k++) setTimeout(() => bang(), 500 + k * 700);
+}
+function phases(dt) {
+  if (!S.phase) return;
+  S.phaseT += dt;
+  if (S.phase === "super" && S.super <= 0.3) { S.phase = "arrive"; S.phaseT = 0; S.station = { wx: S.scroll + 330 }; }
+  else if (S.phase === "arrive") {
+    const target = S.station.wx - 150, d = target - S.scroll;
+    S.v = Math.max(0, Math.min(110, d * 1.2));
+    if (d < 0.8) { S.scroll = target; S.v = 0; S.phase = "stop"; S.phaseT = 0; whistle(1); bell(0.2); bell(0.5); cheer(); hiss(); }
+  } else if (S.phase === "stop") {
+    if (!S.flyStar && S.phaseT > 1.0 && S.phaseT - dt <= 1.0) S.flyStar = { t: 0, x0: S.station.wx - S.scroll + 52, y0: 166 };
+    if (S.phaseT > 5) S.phase = "wait";
+  }
+  if (S.flyStar) {
+    const f = S.flyStar; f.t += dt / 1.1;
+    if (f.t >= 1) {
+      S.flyStar = null; S.stars++; try { localStorage.setItem("fm1-train-stars", String(S.stars)); } catch (_) { /* no storage */ }
+      chime(); bell(0); bell(0.2); fanfare(); S.wave = 3; S.gotStar = 2.5;
+      for (let i = 0; i < 20; i++) { const an = i / 20 * Math.PI * 2; S.sparks.push({ x: OX + 4 + Math.min(4, S.stars - 1) * 8 + 3, y: OY + G0 - 30, vx: Math.cos(an) * 40, vy: Math.sin(an) * 40, col: "#ffd84a", life: 0.8, fall: 30 }); }
+    }
+  }
+}
+function starPos() { const f = S.flyStar, i = Math.min(4, S.stars), tx = OX + 4 + i * 8 + 3, ty = OY + G0 - 30, t = f.t; return [f.x0 + (tx - f.x0) * t, f.y0 + (ty - f.y0) * t - Math.sin(t * Math.PI) * 60]; }
+function bang() {
+  const x = 30 + Math.random() * 180, y = 24 + Math.random() * 60, c = NOTE_COL[Math.floor(Math.random() * 12)];
+  for (let i = 0; i < 28; i++) { const an = i / 28 * Math.PI * 2, sp = 34 + Math.random() * 10; S.sparks.push({ x, y, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, col: c, life: 1.3, fall: 22, big: true }); }
+  if (ac) boom();
+}
+function wrong() {
+  S.misses++; S.streak = 0;
+  const [sx0, sy0] = geo.stack;
+  if (S.misses === 1) {                                          /* a cough: black smoke */
+    cough(); S.cough = 0.9; S.v *= 0.4;
+    for (let i = 0; i < 6; i++) setTimeout(() => puff(sx0, sy0, "#1a1a1e", { dark: true, r: 4, vy: -30 - Math.random() * 15, vx: (Math.random() - .5) * 20, grow: 7 }), i * 70);
+  } else {                                                       /* the engine's sneeze: ah... ah... CHOO */
+    S.misses = 0; S.sneeze = 0.001; S.v = 0; sneezeSound();
+  }
+}
+function sneezeStep(prev) {                                      /* the sneeze's moments, as its clock passes them */
+  const s = S.sneeze, at = (t) => prev < t && s >= t;
+  if (at(0.3) || at(0.6)) { const [x, y] = geo.stack; puff(x, y, "#c8c8d0", { r: 2, vy: -14, life: 0.5 }); }
+  if (at(0.9)) {                                                 /* CHOO: a great dark cloud out of the stack and the front */
+    const [x, y] = geo.stack, [lx, ly] = geo.lamp;
+    for (let i = 0; i < 22; i++) puff(x + 4, y + 4, i % 3 ? "#1a1a1e" : "#3a3a44", { dark: true, r: 4 + Math.random() * 4, vx: 70 + Math.random() * 90, vy: -30 + Math.random() * 50, life: 2.6, grow: 7, drag: 2.2, wind: -55 });
+    for (let i = 0; i < 8; i++) puff(lx + 4, ly + 4, "#2a2a30", { dark: true, r: 3 + Math.random() * 3, vx: 60 + Math.random() * 60, vy: -10 + Math.random() * 30, life: 2.2, grow: 6, drag: 2.2, wind: -55 });
+    S.hat = { x: geo.cab[0], y: geo.cab[1], vx: -35, vy: -95, rot: 0 };
+    for (let i = 0; i < 14; i++) S.sparks.push({ x: OX + X0 + 18 + Math.random() * 40, y: 210, vx: -30 + Math.random() * 60, vy: -40 - Math.random() * 40, col: "#ffd84a", life: 0.6, fall: 160 });
+  }
+  if (at(1.2)) { S.angry = 4.5; tone("sawtooth", 160, 120, 0.35, 0.06, 0.1); }   /* hmph! */
+  if (at(1.35)) { S.bark = 1.4; woof(0); woof(0.45); woof(0.9); }
+  if (at(2.3)) S.soot = 4.5;                                     /* the cloud has blown back over the puppy */
+}
+function press(note) {
+  power();
+  if (S.listen || S.sneeze > 0) return;
+  if (S.phase && S.phase !== "wait") return;
+  if (S.phase === "wait") { S.phase = null; S.idx = 0; whistle(2); S.v = 40; return; }
+  const k = S.idx % TUNE.length, want = TUNE[k][0];
+  if (K.mode === 1 && note !== want) { wrong(); return; }
+  S.misses = 0; S.streak++;
+  play(k, Math.min(0.9, TUNE[k][1] * EIGHTH * 0.9 + 0.08));
+  S.idx = k + 1 >= TUNE.length ? 0 : k + 1;
+  if (K.mode === 1 && S.streak >= 8 && S.super <= 0 && S.idx !== 0) { S.streak = 0; superTrain(6); }
+}
+document.getElementById("listen").addEventListener("click", () => {
+  power();
+  const b = document.getElementById("listen");
+  if (S.listen) { S.listen = null; b.textContent = "♪ Listen first"; return; }
+  S.idx = 0; S.listen = { k: 0, at: 0 }; b.textContent = "■ Stop";
+});
+
+let last = performance.now();
+function frame(nowMs) {
+  const dt = Math.min(0.05, (nowMs - last) / 1000); last = nowMs; S.t += dt; S.dt = dt;
+  if (S.listen) {
+    S.listen.at -= dt;
+    if (S.listen.at <= 0) {
+      const k = S.listen.k, len = TUNE[k][1] * EIGHTH;
+      play(k, len * 0.92); S.listen.at += len; S.listen.k++; S.idx = S.listen.k % TUNE.length;
+      if (S.listen.k >= TUNE.length) { S.listen = null; document.getElementById("listen").textContent = "♪ Listen first"; }
+    }
+  }
+  if (S.sneeze > 0) { const p = S.sneeze; S.sneeze += dt; sneezeStep(p); if (S.sneeze > 3) S.sneeze = 0; }
+  if (S.super > 0) { S.v = Math.max(S.v, 70 + 80 * Math.min(1, S.super / 2)); if (Math.random() < dt * 14) { const [x, y] = geo.stack; puff(x, y, NOTE_COL[Math.floor(Math.random() * 12)], { star: true, vy: -40, vx: -30, life: 1.2 }); }
+    if (Math.random() < dt * 30) S.sparks.push({ x: OX + X0 + 10 + Math.random() * 90, y: 211, vx: -40 - Math.random() * 60, vy: -20 - Math.random() * 30, col: Math.random() < .5 ? "#ffe14d" : "#ff9a3a", life: 0.5, fall: 120 }); }
+  S.v *= Math.exp(-dt * 0.9); if (S.v < 0.5) S.v = 0;
+  phases(dt);
+  if (S.idx < SONGS[song].late && !S.phase) for (const k in blooms) delete blooms[k];
+  if (!S.rabbit && !S.phase && S.v > 15 && S.t > S.nextRabbit) { S.rabbit = { x: -14, t: 0, tired: false, rs: 0 }; S.nextRabbit = S.t + 20 + Math.random() * 10; }
+  if (S.rabbit) { const r = S.rabbit; r.t += dt;
+    if (!r.tired && (r.t > 7 || S.v > 95)) { r.tired = true; tone("sine", 900, 700, 0.15, 0.03); }
+    r.rs = r.tired ? 0 : Math.min(95, S.v * 1.3 + 30);
+    r.x += (r.rs - S.v * 1.3) * dt; if (!r.tired) r.x = Math.min(r.x, 226);
+    if (r.x < -20 && r.tired) S.rabbit = null; }
+  S.scroll += S.v * dt; S.wheel += S.v * dt / 8;
+  if (S.v === 0 && S.t > S.nextHiss && S.t - S.lastNote > 4 && S.sneeze <= 0 && !S.phase) {
+    hiss(); S.nextHiss = S.t + 5 + Math.random() * 3;
+    for (let i = 0; i < 6; i++) puff(OX + X0 + 92 + i * 2, 204, "#e8e8f4", { r: 2, vx: 24 + i * 6, vy: -4, life: 0.9, grow: 6 });
+  }
+  if (S.v > 30 && S.super <= 0 && Math.random() < dt * 6) { const [x, y] = geo.stack; puff(x, y, "#d8d8e8", { r: 2, life: 1 }); }
+  for (const p of S.puffs) { p.vx += (p.wind - p.vx) * Math.min(1, p.drag * dt) * (p.wind ? 1 : 0); p.x += (p.vx - S.v * 0.7) * dt; p.y += p.vy * dt; p.vy *= Math.exp(-dt * (p.wind ? 2 : 0.8)); p.r += p.grow * dt; p.life -= dt; }
+  S.puffs = S.puffs.filter((p) => p.life > 0 && p.x > -30 && p.x < 280);
+  for (const s of S.sparks) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += (s.fall || 0) * dt; s.life -= dt; }
+  S.sparks = S.sparks.filter((s) => s.life > 0 && s.y < 250);
+  if (S.hat) { const h = S.hat; h.x += h.vx * dt; h.y += h.vy * dt; h.vy += 160 * dt; h.rot += dt * 12; if (h.vy > 0 && h.y >= geo.cab[1]) S.hat = null; }
+  if (S.rider) { const r = S.rider; r.t += dt; const want = S.super > 0.8 ? 120 : -80; r.x += (want - r.x) * Math.min(1, dt * (S.super > 0.8 ? 1.2 : 0.8)); if (S.super <= 0 && r.x < -40) S.rider = null; }
+  for (const k of ["cough", "soot", "wave", "letterPop", "super", "howl", "bellSwing", "whistleSteam", "angry", "bark", "gotStar"]) if (S[k] > 0) S[k] -= dt;
+  S.tw.x += (-16 - S.v * 1.3) * dt; S.tw.a -= (16 + S.v * 1.3) * dt / 8; if (S.tw.x < -20) S.tw.x = 260 + Math.random() * 200;
+  if (!S.star && Math.random() < dt / 7) S.star = { x: 120 + Math.random() * 100, y: 8 + Math.random() * 30 };
+  if (S.star) { S.star.x -= 120 * dt; S.star.y += 50 * dt; if (S.star.x < 70) S.star = null; }
+  if (!S.bats && Math.random() < dt / 9) S.bats = [0, 1, 2].map((i) => ({ x: 250 + i * 14, y: 30 + i * 7 + Math.random() * 10, ph: i }));
+  if (S.bats) { S.bats.forEach((b) => { b.x -= 40 * dt; b.y += Math.sin(S.t * 3 + b.ph) * 0.4; }); if (S.bats.every((b) => b.x < -10)) S.bats = null; }
+  draw(); glowKeys();
+  requestAnimationFrame(frame);
+}
+function draw() {
+  sky(); mesas(); ranch(); ground(); camp(); cow(); poles(); station(); canyon(); track();
+  if (S.super > 0) {                                             /* speed lines */
+    g.globalAlpha = Math.min(0.5, S.super / 2);
+    for (let i = 0; i < 14; i++) { const y = 20 + (i * 37) % 200, x = wrap(-S.t * 600 + i * 97, 340) - 50; R(x, y, 40 + (i % 3) * 20, 1, "#ffffff"); }
+    g.globalAlpha = 1;
+  }
+  buildEngine(); blitEngine(); puppy();
+  if (S.whistleSteam > 0) { const [wx, wy] = geo.whistle; disc(wx, wy - 4 - (1.2 - S.whistleSteam) * 8, 3 + (1.2 - S.whistleSteam) * 4, "#ffffff", S.whistleSteam * 0.5); }
+  if (S.hat) { const h = S.hat, up = Math.cos(h.rot) > 0; R(h.x - 4, h.y, 8, up ? 3 : 2, "#3a5aa8"); R(h.x - 4, h.y + 1, 8, 1, "#e8e8f8"); }
+  foreground(); rabbit(); rider();
+  drawPuffs();
+  beam();
+  for (const s of S.sparks) { const a = Math.min(1, s.life * 2); g.globalAlpha = a; R(s.x, s.y, s.big ? 2 : 1, s.big ? 2 : 1, s.col); g.globalAlpha = 1; }
+  letter();
+  if (S.sneeze > 0) {                                            /* ah... ah... CHOO! */
+    const s = S.sneeze, [x, y] = geo.stack;
+    if (s < 0.9) text(s < 0.3 ? "AH" : s < 0.6 ? "AH..AH" : "AAAH..", x - 30, y - 8 - s * 6, 8, "#ffffff");
+    else if (s < 2) text("CHOO!", x + 8 - (s - 0.9) * 4, y - 6, 12 + (s < 1.1 ? 2 : 0), "#ffe14d");
+  }
+  if (S.angry > 0) {                                             /* the driver: steam from his ears, HMPH! */
+    const [cx, cy] = geo.cab, k = wrap(S.t * 2, 1);
+    disc(cx - 5 - k * 3, cy - 4 - k * 8, 1.5 + k * 2, "#ffffff", 0.7 * (1 - k)); disc(cx + 6 + k * 3, cy - 4 - k * 8, 1.5 + k * 2, "#ffffff", 0.7 * (1 - k));
+    if (S.angry > 2.5) text("HMPH!", cx - 22, cy - 16, 7, "#ff8a72");
+  }
+  if (S.bark > 0) text("WOOF!", OX + 6, OY + G0 - 72 - Math.round((1.4 - S.bark) * 4), 7, "#ffffff");
+  if (S.flyStar) { const [x, y] = starPos(); bigStar(x, y, 8, OUT); bigStar(x, y - 1, 7, "#ffd84a"); }
+  if (S.gotStar > 0) text("A STAR!", KW / 2, 56, 12, "#ffd84a", OUT, true);
+  if (S.stars > 5) text("x" + S.stars, OX + 2, OY + G0 - 36, 6, "#ffd84a");
+  if (S.phase === "stop" || S.phase === "wait") text("YAY!", KW / 2, 30 + Math.sin(S.t * 6) * 3, 14, NOTE_COL[Math.floor(S.t * 10) % 12], OUT, true);
+  if (S.super > 0) {
+    const big = S.phase ? "CHOO CHOO!" : "SUPER TRAIN!";
+    text(big, KW / 2, 30 + Math.sin(S.t * 6) * 3, big.length > 10 ? 12 : 14, NOTE_COL[Math.floor(S.t * 10) % 12], OUT, true);
+  }
+}
+
+/* ---------- the keys ---------- */
+const keysEl = document.getElementById("keys"), keyEls = {};
+(function buildKeys() {
+  const whites = []; for (let n = LO; n <= HI; n++) if (!isBlack(n)) whites.push(n);
+  const w = 100 / whites.length; let wi = 0;
+  for (let n = LO; n <= HI; n++) {
+    const b = document.createElement("button"); b.className = "key " + (isBlack(n) ? "b" : "w");
+    b.setAttribute("aria-label", NAMES[n % 12] + (Math.floor(n / 12) - 1));
+    if (isBlack(n)) { b.style.left = `calc(${wi * w}% - ${w * 0.3}%)`; b.style.width = `${w * 0.6}%`; }
+    else { b.style.left = `${wi * w}%`; b.style.width = `${w}%`; b.textContent = n % 12 === 0 ? "C" + (Math.floor(n / 12) - 1) : ""; wi++; }
+    b.addEventListener("pointerdown", (ev) => { ev.preventDefault(); b.classList.add("down"); press(n); });
+    ["pointerup", "pointerleave"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("down")));
+    keysEl.appendChild(b); keyEls[n] = b;
+  }
+})();
+function glowKeys() {
+  const want = K.mode === 1 && !S.listen ? TUNE[S.idx % TUNE.length][0] : -1;
+  Object.entries(keyEls).forEach(([n, el]) => { const on = +n === want; el.classList.toggle("glow", on); if (on) el.style.setProperty("--glow", NOTE_COL[+n % 12]); });
+}
+const KB = { a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66, g: 67, y: 68, h: 69, u: 70, j: 71, k: 72, o: 73, l: 74, p: 75 };
+document.addEventListener("keydown", (ev) => {
+  if (ev.repeat || ev.metaKey || ev.ctrlKey) return;
+  const n = KB[ev.key.toLowerCase()]; if (n === undefined) return;
+  ev.preventDefault(); press(n); keyEls[n] && keyEls[n].classList.add("down");
+});
+document.addEventListener("keyup", (ev) => { const n = KB[ev.key.toLowerCase()]; if (n !== undefined && keyEls[n]) keyEls[n].classList.remove("down"); });
+try {
+  if (navigator.requestMIDIAccess) navigator.requestMIDIAccess().then((m) => {
+    m.inputs.forEach((i) => { i.onmidimessage = (ev) => { const [st, n, v] = ev.data; if ((st & 0xF0) === 0x90 && v > 0) press(n); }; });
+  }).catch(() => {});
+} catch (_) { /* no MIDI here: the keys and the computer keys still play */ }
+document.getElementById("k1").addEventListener("click", () => { K.mode = 1 - K.mode; S.streak = 0; document.getElementById("v1").textContent = K.mode ? "Key: the next note's letter" : "Easy: any key"; });
+document.getElementById("k2").addEventListener("click", () => { voice = (voice + 1) % VOICES.length; document.getElementById("v2").textContent = VOICES[voice][0]; power(); VOICES[voice][1](67, 0.4); });
+document.getElementById("k3").addEventListener("click", () => {
+  if (S.listen || S.phase) return;
+  setSong((song + 1) % SONGS.length); S.idx = 0; S.streak = 0; S.misses = 0;
+  document.getElementById("v3").textContent = SONGS[song].name; power(); whistle(1);
+});
+document.getElementById("k4").addEventListener("click", () => { music = !music; document.getElementById("v4").textContent = music ? "boom-chick on" : "off: the tune alone"; });
+requestAnimationFrame(frame);
+</script>

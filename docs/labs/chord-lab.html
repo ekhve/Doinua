@@ -1,0 +1,951 @@
+<title>Chord Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: the FM-1 as a panel (screen, knobs, buttons, 27 keys) centred; what changed and how to try it below. */
+:root {
+  --bg: #eceef2; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #d6dae1;
+  --body-dev: #23262c; --dev-edge: #31353d; --btn: #3a3f48; --btn-fg: #e9edf3;
+  --acc: #4d8dff; --acc-d: #1d3a6e; --good: #3ccf7a;
+  --wk: #d7dbe3; --bk: #1b1e24;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 22px 50px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; }
+.lead { color: var(--muted); margin: 4px 0 14px; max-width: 78ch; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+.bar label { font-size: .85rem; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+select, .bar input[type=number] { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+.start { font: 600 .9rem var(--body); padding: 7px 14px; border-radius: 8px; border: 0; background: var(--acc); color: #fff; cursor: pointer; }
+.dev { background: var(--body-dev); border: 1px solid var(--dev-edge); border-radius: 18px; padding: 16px; color: var(--btn-fg); overflow-x: auto; }
+.top { display: grid; grid-template-columns: auto 1fr; gap: 18px; min-width: 760px; }
+.screen { width: 360px; height: 360px; background: #0a0d13; border-radius: 6px; }
+.controls { display: grid; gap: 12px; align-content: start; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.knob { width: 74px; text-align: center; font-size: .7rem; color: #aab2bf; user-select: none; }
+.knob .dial { width: 54px; height: 54px; margin: 0 auto 4px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #5a606b, #2a2e35); border: 2px solid #4a4f58; position: relative; cursor: ns-resize; touch-action: none; }
+.knob .dial::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 14px; margin-left: -1.5px; background: #e9edf3; border-radius: 2px; transform-origin: 50% 21px; transform: rotate(var(--a, 0deg)); }
+.knob .b { display: flex; gap: 4px; justify-content: center; margin-top: 2px; }
+.knob button, .btn { font: 600 .72rem var(--body); background: var(--btn); color: var(--btn-fg); border: 1px solid #4a505a; border-radius: 6px; padding: 6px 9px; cursor: pointer; }
+.knob button { padding: 2px 8px; }
+.btn:focus-visible, .knob button:focus-visible, .k:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.keys { position: relative; height: 150px; margin-top: 16px; min-width: 760px; user-select: none; touch-action: none; }
+.k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; font: 600 .62rem var(--body); padding-bottom: 6px; box-sizing: border-box; }
+.k.w { background: var(--wk); color: #555c68; height: 150px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); color: #8a909b; height: 92px; z-index: 2; border: 1px solid #000; }
+.k .lab { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: .58rem; color: inherit; }
+.k.dim { box-shadow: inset 0 0 0 150px rgba(77,141,255,.16); }
+.k.half { box-shadow: inset 0 0 0 150px rgba(77,141,255,.45); color: #fff; }
+.k.on { box-shadow: inset 0 0 0 150px rgba(77,141,255,.92); color: #fff; }
+.k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.9) !important; color: #fff; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font: 600 1rem var(--display); }
+.card p, .card li { margin: 4px 0; font-size: .88rem; }
+.card ul { padding-left: 18px; margin: 4px 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .8rem; color: #aab2bf; margin-top: 8px; }
+.sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+</style>
+
+<div class="wrap">
+  <h1>Chord Lab</h1>
+  <p class="lead">Version 2, with your notes from 2026-11-19. Press <b>Start sound</b>, then play with the mouse, touch, or the computer keys printed on each key. <b>SCL</b> steps PLAY → IDEAS → AUTO, and K1 is HELP on PLAY.</p>
+  <div class="bar">
+    <button class="start" id="start">Start sound</button>
+    <label>Key <select id="keysel"></select></label>
+    <label>Tempo <input id="bpm" type="number" min="60" max="160" value="90" style="width:64px"></label>
+    <label><input type="checkbox" id="demo"> Demo song (bass and melody) while playing</label>
+  </div>
+
+  <div class="dev">
+    <div class="top">
+      <canvas class="screen" id="scr" width="240" height="240" aria-label="The FM-1 screen"></canvas>
+      <div class="controls">
+        <div class="row" id="knobs"></div>
+        <div class="row">
+          <button class="btn" id="scl">SCL</button>
+          <button class="btn" id="octD">OCT −</button>
+          <button class="btn" id="octU">OCT +</button>
+          <button class="btn" id="selL">SELECT ◀</button>
+          <button class="btn" id="selR">SELECT ▶</button>
+          <button class="btn" id="play">PLAY ▶</button>
+          <button class="btn" id="glo">GLO (hold)</button>
+        </div>
+        <div class="legend"><span><span class="sw" style="background:rgba(77,141,255,.92)"></span>full: play this</span><span><span class="sw" style="background:rgba(77,141,255,.45)"></span>half: next, or a suggestion</span><span><span class="sw" style="background:rgba(77,141,255,.16)"></span>faint: in the key</span><span><span class="sw" style="background:rgba(60,207,122,.9)"></span>held</span></div>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+
+  <div class="notes">
+    <div class="card"><h3>What changed</h3><ul>
+      <li><b>v4:</b> each white key plays the chord of its own step, as if in C: <b>C</b> = I, <b>D</b> = ii, <b>E</b> = iii, <b>F</b> = IV, <b>G</b> = V, <b>A</b> = vi, <b>B</b> = vii° (in any key). The Pads screen names the key over every chord, and every chord of the progression with the keys that play it (Am7 = A + C#).</li>
+      <li><b>v4:</b> fixed: chords of the key were called "outside" (a bug), and a colour now shows in the chord's name (Cmaj7).</li>
+      <li><b>v4:</b> FEEL plays like hands: tight, pianist (bass first, the rest a hair later, the top note sung), rolled, strum up, strum down.</li>
+      <li><b>v4:</b> IDEAS are snippets: a progression with a rhythm (push, hip hop, stabs, halves), 4 to 6 a style. SELECT walks the chords and lights them, stopped too.</li>
+      <li><b>v4:</b> AUTO: 9 players (pop piano, ballad, arp, Alberti, reggae, house, funk, neo soul, pads), SWING you can hear, SELECT picks the chord it starts on.</li>
+      <li>The keys' names are on the keys outside the pads.</li>
+      <li><b>v3:</b> on Pads and AUTO, the screen draws the FM-1's keys with what each one plays (C, Dm… on the white keys; s2, s4, 6, 7, M7, 9, +9, 11, 13, ° on the black; NX, LK, AG at the top). On the other pages a small keyboard shows the lights.</li>
+      <li><b>v3:</b> turning PROGRESSION opens a numbered menu: number, style, and the progression in numerals (ii9 V13 Imaj7).</li>
+      <li>The keyboard is the right way up.</li>
+      <li>No more breathing lights: <b>full</b> means play it, <b>half</b> means next or suggested.</li>
+      <li>Shapes' inversions always fit on the FM-1's 27 keys.</li>
+      <li><b>K2 TRANSPOSE</b> on Free and Key: <i>whites</i> puts any major key on C's white keys, and any minor key on A's.</li>
+      <li>The black keys hold 10 colours, in order: sus2, sus4, 6, 7, maj7, 9, add9, 11, 13, dim.</li>
+      <li>NEXT and AGAIN play in the octave of your last pad.</li>
+      <li>FEEL is block, strum up, strum down, or human. Arp is gone from FEEL (it gets its own button).</li>
+      <li>PROGRESSION starts with <b>None</b>, <b>Mine</b>, <b>Follow bass</b> and <b>Follow melody</b>, then 45 progressions: our 13 styles and Sketchpad's 14 sets.</li>
+      <li>IDEAS: the next chord shows at half light for the whole bar before it comes. SPEED goes back to 100% when you leave IDEAS.</li>
+      <li>AUTO: PLAY runs the progression by itself, with a rhythm. Holding a pad changes the chord, as in GarageBand's autoplay.</li>
+    </ul></div>
+    <div class="card"><h3>PLAY · HELP</h3><ul>
+      <li><b>Free:</b> it names what you play. K2 TRANSPOSE, K4 PLUS (hold, oct).</li>
+      <li><b>Key:</b> the key's notes are faint and the home note half; the 7 chords are on the screen. <b>Hold one note</b>: the rest of a chord with it lights full; SELECT gives the next one; K3 COLOUR colours it. Let go: the usual next chords light half in the row.</li>
+      <li><b>Shapes:</b> the chord's keys light full and the next chord's half. SELECT moves on. K2 PROGRESSION, K3 COLOUR, K4 VOICING.</li>
+      <li><b>Pads:</b> each white key is a chord; hold a black key for a colour. F5 NEXT, G5 AGAIN, F#5 LOCK. K2 PROGRESSION, K3 VOICING, K4 FEEL.</li>
+    </ul></div>
+    <div class="card"><h3>PROGRESSION, the first four</h3><ul>
+      <li><b>None:</b> no progression. All the key's chords are on the white keys, and NEXT plays a likely next chord.</li>
+      <li><b>Mine:</b> the last chords you played on the pads, up to 8. Play four pads, then NEXT loops them: your own progression.</li>
+      <li><b>Follow bass:</b> with the demo song playing, the suggested chord is the key's chord built on the bass note playing now.</li>
+      <li><b>Follow melody:</b> the key's chord that holds the melody note playing now.</li>
+    </ul></div>
+    <div class="card"><h3>IDEAS and AUTO</h3><ul>
+      <li><b>IDEAS:</b> press PLAY. The chord now lights full and the next one half, a whole bar ahead. The first time round you listen, then it's your turn. K1 STYLE, K2 IDEA, K3 SPEED, K4 HEAR.</li>
+      <li><b>AUTO:</b> press PLAY. The progression plays by itself with the style's rhythm. Hold a white key to play another chord instead, and a black key to colour it. K1 STYLE, K2 PROGRESSION, K3 FEEL (straight, swing), K4 PATTERN.</li>
+    </ul></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+// ---------------------------------------------------------------- theory
+const NAMES_S = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const NAMES_F = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+const MAJ = [0,2,4,5,7,9,11], MIN = [0,2,3,5,7,8,10];
+const LOW = 53, HIGH = 79, NK = 27;          // F3..G5
+const isBlack = n => [1,3,6,8,10].includes(((n % 12) + 12) % 12);
+const mod = (a, n = 12) => ((a % n) + n) % n;
+const pc12 = x => mod(x);                    // for .map: map passes the index as a second argument
+let key = { tonic: 0, minor: false };
+const scale = () => key.minor ? MIN : MAJ;
+const flats = () => key.minor ? [2,7,0,5,10,3,8].includes(key.tonic) : [5,10,3,8,1,6].includes(key.tonic);
+const pcName = p => (flats() ? NAMES_F : NAMES_S)[mod(p)];
+const degPc = d => key.tonic + scale()[mod(d, 7)] + 12 * Math.floor(d / 7);
+const inKey = p => scale().some(s => mod(key.tonic + s) === mod(p));
+const NUM_MAJ = ["I","ii","iii","IV","V","vi","vii°"], NUM_MIN = ["i","ii°","III","iv","v","VI","VII"];
+const numeral = d => (key.minor ? NUM_MIN : NUM_MAJ)[d];
+
+// colours (black keys, K3 COLOUR): 7 is the key's own seventh (G7, Dm7, Cmaj7); maj7 always a major seventh; 9 has the seventh, add9 not
+const COLOURS = ["none","sus2","sus4","6","7","maj7","9","add9","11","13","dim"];
+function degChord(d, colour) {
+  const s = i => degPc(d + i);
+  let n = [s(0), s(2), s(4)];
+  switch (colour) {
+    case "sus2": n = [s(0), s(1), s(4)]; break;
+    case "sus4": n = [s(0), s(3), s(4)]; break;
+    case "6": n.push(s(5)); break;
+    case "7": n.push(s(6)); break;
+    case "maj7": n.push(s(0) + 11); break;
+    case "9": n.push(s(6), s(8)); break;
+    case "add9": n.push(s(8)); break;
+    case "11": n.push(s(6), s(8), s(10)); break;
+    case "13": n.push(s(6), s(8), s(12)); break;
+    case "dim": n = [s(0), s(0) + 3, s(0) + 6, s(0) + 9]; break;
+  }
+  return n;
+}
+// chord names from intervals
+const TPL = [
+  ["", [0,4,7]], ["m", [0,3,7]], ["°", [0,3,6]], ["+", [0,4,8]], ["sus2", [0,2,7]], ["sus4", [0,5,7]],
+  ["7", [0,4,7,10]], ["maj7", [0,4,7,11]], ["m7", [0,3,7,10]], ["m7b5", [0,3,6,10]], ["°7", [0,3,6,9]], ["m(maj7)", [0,3,7,11]],
+  ["6", [0,4,7,9]], ["m6", [0,3,7,9]], ["add9", [0,2,4,7]], ["m(add9)", [0,2,3,7]], ["6/9", [0,2,4,7,9]],
+  ["9", [0,2,4,7,10]], ["maj9", [0,2,4,7,11]], ["m9", [0,2,3,7,10]], ["11", [0,2,5,7,10]], ["m11", [0,2,3,5,7,10]],
+  ["13", [0,2,4,7,9,10]], ["maj13", [0,2,4,7,9,11]], ["m13", [0,2,3,7,9,10]], ["7sus4", [0,5,7,10]], ["sus4(9)", [0,2,5,7]],
+  ["maj7#11", [0,4,6,7,11]], ["maj9#11", [0,2,4,6,7,11]], ["11 (no 3)", [0,2,5,7,10]], ["5", [0,7]],
+  ["7", [0,4,10]], ["m7", [0,3,10]], ["maj7", [0,4,11]], ["m9", [0,2,3,10]], ["maj9", [0,2,4,11]], ["9", [0,2,4,10]]
+];
+const SYM = {}; TPL.forEach(([s0, iv]) => { if (!(s0 in SYM)) SYM[s0] = iv; });   // the full chord first (maj7 with its 5th)
+SYM["m7♭5"] = SYM["m7b5"]; SYM["maj7♯11"] = SYM["maj7#11"];
+function nameOf(root, iv) {
+  const set = [...new Set(iv.map(i => mod(i)))].sort((a, b) => a - b);
+  for (const [suf, t] of TPL) if (t.length === set.length && t.every(x => set.includes(x))) return pcName(root) + suf;
+  return pcName(root) + "?";
+}
+function identify(midis) {
+  const pcs = [...new Set(midis.map(m => mod(m)))];
+  if (pcs.length < 2) return null;
+  const bass = mod(Math.min(...midis));
+  let best = null;
+  for (const r of pcs) {
+    const set = pcs.map(p => mod(p - r)).sort((a, b) => a - b);
+    for (const [suf, t] of TPL) {
+      if (t.length !== set.length || !t.every(i => set.includes(i))) continue;
+      const score = (r === bass ? 2 : 0) + (suf.length < 4 ? 1 : 0);
+      if (!best || score > best.score) best = { root: r, suf, score };
+    }
+  }
+  if (!best) return null;
+  let name = pcName(best.root) + best.suf;
+  if (best.root !== bass) name += "/" + pcName(bass);
+  return { name, root: best.root, pcs };
+}
+// the key degree a set of pitch classes belongs to (its root is the degree's root and all its notes are in the key)
+function degreeOfPcs(root, pcs) {
+  if (!pcs.every(inKey)) return -1;
+  for (let d = 0; d < 7; d++) if (mod(degPc(d)) === mod(root)) {
+    const tri = degChord(d, "none").map(pc12);
+    if (pcs.includes(tri[1]) || !pcs.some(p => [mod(root + 3), mod(root + 4)].includes(p))) return d;
+  }
+  return -1;
+}
+// a chord: {notes (semitones, root first), label, num, deg (or -1), outside}
+function mkDeg(d, colour) {
+  const notes = degChord(d, colour); const iv = notes.map(n => n - notes[0]);
+  return { notes, label: nameOf(notes[0], iv), num: numeral(d), deg: d, outside: false, colour };
+}
+function mkRoot(root, iv) {
+  const notes = iv.map(i => root + i), pcs = notes.map(pc12);
+  const d = degreeOfPcs(root, pcs);
+  const romanBase = ["I","♭II","II","♭III","III","IV","♯IV","V","♭VI","VI","♭VII","VII"][mod(root - key.tonic)];
+  return { notes, label: nameOf(root, iv), num: d >= 0 ? numeral(d) : romanBase, deg: d, outside: d < 0 };
+}
+const NEXT = { 0: [3,4,5], 1: [4], 2: [5,3], 3: [4,0,1], 4: [0,5], 5: [3,1,4], 6: [0] };
+
+// ---------------------------------------------------------------- progressions: ours (pad.c, 13 styles) and Sketchpad's 14 sets
+const P = (name, steps) => ({ name, steps });
+const D = (d, c = "none") => ({ d, c });
+const OURS = [
+  ["Pop", [["I-V-vi-IV", [D(0),D(4),D(5),D(3)]], ["I-vi-IV-V", [D(0),D(5),D(3),D(4)]], ["vi-IV-I-V", [D(5),D(3,"add9"),D(0),D(4,"sus4")]]]],
+  ["Neo soul", [["ii-V-I", [D(1,"9"),D(4,"13"),D(0,"maj7")]], ["IV-iii-ii-I", [D(3,"maj7"),D(2,"7"),D(1,"9"),D(0,"maj7")]], ["IV-V-iii-vi", [D(3,"maj7"),D(4,"9"),D(2,"7"),D(5,"9")]]]],
+  ["Hip hop", [["vi-IV", [D(5,"7"),D(3,"maj7")]], ["vi-iii-IV", [D(5,"9"),D(2,"7"),D(3,"maj7")]], ["ii-V", [D(1,"9"),D(4,"13")]]]],
+  ["West coast", [["vi-ii", [D(5,"9"),D(1,"9")]], ["vi-IV-V", [D(5,"7"),D(3,"maj7"),D(4,"7")]], ["iii-vi", [D(2,"7"),D(5,"9")]]]],
+  ["Funk", [["I vamp", [D(0,"9")]], ["I-IV", [D(0,"9"),D(3,"9")]], ["ii-V", [D(1,"7"),D(4,"9")]]]],
+  ["Electronic", [["vi-IV-I-V", [D(5,"add9"),D(3,"add9"),D(0,"sus2"),D(4,"sus4")]], ["I-V-vi-IV", [D(0,"add9"),D(4),D(5,"add9"),D(3,"add9")]], ["IV-V-vi", [D(3,"add9"),D(4,"sus4"),D(5)]]]],
+  ["Jazz", [["ii-V-I", [D(1,"7"),D(4,"7"),D(0,"maj7")]], ["I-vi-ii-V", [D(0,"maj7"),D(5,"7"),D(1,"7"),D(4,"7")]], ["iii-vi-ii-V", [D(2,"7"),D(5,"7"),D(1,"7"),D(4,"13")]]]],
+  ["Reggae", [["I-IV", [D(0),D(3)]], ["vi-ii", [D(5),D(1)]], ["I-IV-V", [D(0),D(3),D(4)]]]],
+  ["Afrobeats", [["IV-V-vi", [D(3,"maj7"),D(4),D(5,"7")]], ["ii-iii-IV", [D(1,"7"),D(2,"7"),D(3,"maj7")]], ["vi-IV-I-V", [D(5,"7"),D(3,"add9"),D(0,"add9"),D(4)]]]],
+  ["Shatta", [["vi-V", [D(5),D(4)]], ["vi-IV-V", [D(5),D(3),D(4)]]]],
+  ["Reggaeton", [["vi-IV-I-V", [D(5),D(3),D(0),D(4)]], ["vi-V-IV-V", [D(5),D(4),D(3),D(4)]]]],
+  ["Drum & bass", [["vi-IV-V-iii", [D(5,"9"),D(3,"maj7"),D(4,"9"),D(2,"7")]], ["ii-V-I", [D(1,"9"),D(4,"9"),D(0,"maj7")]]]],
+  ["Rock", [["I-♭VII-IV", [D(0),{ r: 10, iv: [0,4,7] },D(3),D(0)]]]]
+];
+const SKETCHPAD = [   // [name, mode, slots [offset, sym], progression (slot numbers)] from core/chordsets.mjs
+  ["Neo-soul keys","minor",[[0,"m9"],[5,"m7"],[8,"maj7"],[10,"7"],[3,"maj9"]],[0,2,4,3]],
+  ["Lo-fi loop","minor",[[0,"m7"],[5,"m7"],[10,"maj7"],[3,"maj7"]],[0,3,1,2]],
+  ["House stabs","minor",[[0,"m7"],[3,"maj7"],[5,"m7"],[7,"m7"],[10,"7"]],[0,2,1,4]],
+  ["Soul changes","major",[[0,"maj7"],[9,"m7"],[2,"m7"],[7,"7"]],[0,1,2,3]],
+  ["ii – V – I","major",[[2,"m7"],[7,"7"],[0,"maj7"]],[0,1,2,2]],
+  ["West coast","minor",[[0,"m9"],[0,"m7"],[10,"maj7"],[5,"m9"]],[0,2,3,1]],
+  ["Dark loop","minor",[[0,"m"],[1,"maj7"],[8,"maj7"]],[0,1,0,2]],
+  ["Gospel turns","major",[[0,"maj7"],[2,"m7"],[4,"m7"],[5,"maj7"],[7,"7"]],[0,2,1,4]],
+  ["Bossa","major",[[0,"maj9"],[2,"m7"],[7,"9"]],[1,2,0,0]],
+  ["Boom bap","minor",[[0,"m7"],[3,"maj7"],[8,"maj9"],[5,"m7"],[10,"7"]],[0,2,4,0]],
+  ["Ambient major","major",[[0,"maj9"],[5,"maj7"],[7,"sus4"],[9,"m9"]],[0,1,3,2]],
+  ["Storybook","major",[[0,"maj13"],[5,"maj7♯11"],[9,"m11"],[2,"m(add9)"],[7,"sus4(9)"]],[0,1,2,4]],
+  ["Wandering minor","minor",[[0,"m11"],[8,"maj13"],[3,"maj7♯11"],[5,"m13"]],[0,1,3,2]],
+  ["Cinematic minor","minor",[[0,"m"],[8,"maj7"],[3,"maj7"],[10,""]],[0,1,3,2]]
+];
+const SPECIAL = ["None", "Mine", "Follow bass", "Follow melody"];
+const PROGS = [
+  ...SPECIAL.map(n => ({ name: n, special: true })),
+  ...OURS.flatMap(([style, ps]) => ps.map(([n, steps]) => ({ name: style + " " + n, style, steps }))),
+  ...SKETCHPAD.map(([n, mode, slots, prog]) => ({ name: n, sk: true, mode, steps: prog.map(i => ({ off: slots[i][0], sym: slots[i][1] })) }))
+];
+// a progression step as a chord in the current key (a Sketchpad set in the other mode sits on the relative key)
+function stepChord(s, prog, colourOverride) {
+  if (s.d !== undefined) return mkDeg(s.d, colourOverride && colourOverride !== "none" ? colourOverride : s.c);
+  if (s.r !== undefined) return mkRoot(key.tonic + s.r, s.iv);
+  const home = prog && prog.mode === "minor" && !key.minor ? key.tonic + 9 : prog && prog.mode === "major" && key.minor ? key.tonic + 3 : key.tonic;
+  return mkRoot(home + s.off, SYM[s.sym] || [0,4,7]);
+}
+
+// voicings, always on the FM-1's keys (F3..G5)
+const VOICINGS = ["Root","Inv 1","Inv 2","Open","Wide"];
+function voice(notes, v) {
+  let out = [57 + mod(notes[0] - 57)];
+  for (let i = 1; i < notes.length; i++) { let m = out[0] + mod(notes[i] - notes[0]); while (m <= out[i - 1]) m += 12; out.push(m); }
+  if (v === 1 && out.length > 2) out.push(out.shift() + 12);
+  if (v === 2 && out.length > 2) { out.push(out.shift() + 12); out.push(out.shift() + 12); }
+  if (v === 3 && out.length > 2) out[0] -= 12;
+  if (v === 4) { out[0] -= 12; for (let i = 2; i < out.length; i++) out[i] += 12; }
+  return fitKeys(out.sort((a, b) => a - b));
+}
+function fitKeys(ms) {       // move the chord by octaves, then fold the highest notes down, until every note is a key
+  while (Math.max(...ms) > HIGH && Math.min(...ms) - 12 >= LOW) ms = ms.map(m => m - 12);
+  while (Math.min(...ms) < LOW) ms = ms.map(m => m + 12);
+  ms = ms.map(m => { while (m > HIGH) m -= 12; return m; });
+  return [...new Set(ms)].sort((a, b) => a - b);
+}
+function lightNear(notes, near) {    // each pitch class at its key nearest to near (sounding notes -> keys, through TRANSPOSE)
+  const res = new Set();
+  for (const n of notes) {
+    let best = -1, bd = 99;
+    for (let i = 0; i < NK; i++) if (mod(LOW + i + tShift()) === mod(n) && Math.abs(LOW + i + tShift() - near) < bd) { bd = Math.abs(LOW + i + tShift() - near); best = i; }
+    if (best >= 0) res.add(best);
+  }
+  return res;
+}
+
+// ---------------------------------------------------------------- sound
+let ac = null, master = null;
+function startAudio() {
+  if (ac) return;
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = 0.25;
+  const comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination);
+}
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+const voices = new Map(); let vid = 0;
+function noteOn(m, vel = 0.8, when = 0, dur = 0, kind = "keys") {
+  if (!ac) return -1;
+  const t = ac.currentTime + Math.max(0, when);
+  const o1 = ac.createOscillator(), o2 = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+  const bass = kind === "bass", lead = kind === "lead";
+  o1.type = bass ? "triangle" : lead ? "square" : "sawtooth"; o2.type = bass ? "sine" : "triangle";
+  o1.frequency.value = hz(m); o2.frequency.value = hz(m) * (bass ? 0.5 : 1.003);
+  f.type = "lowpass"; f.frequency.value = bass ? 600 : lead ? 1800 : 2200;
+  const lv = bass ? 0.5 : lead ? 0.12 : 0.22;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vel * lv, t + 0.01); g.gain.setTargetAtTime(vel * lv * 0.65, t + 0.02, 0.25);
+  o1.connect(f); o2.connect(f); f.connect(g); g.connect(master); o1.start(t); o2.start(t);
+  const id = ++vid; voices.set(id, { o1, o2, g });
+  if (dur) noteOff(id, when + dur);
+  return id;
+}
+function noteOff(id, when = 0) {
+  const v = voices.get(id); if (!v || !ac) return;
+  const t = ac.currentTime + Math.max(0, when);
+  v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0, t, 0.08);
+  v.o1.stop(t + 0.5); v.o2.stop(t + 0.5); voices.delete(id);
+}
+function click(when, accent) {
+  if (!ac) return; const t = ac.currentTime + when;
+  const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = accent ? 1600 : 1100;
+  g.gain.setValueAtTime(0.1, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.05);
+}
+// FEEL: the start of each note of a chord (s) and its velocity
+const FEELS = ["Tight", "Pianist", "Laid back", "Rolled", "Strum ↑", "Strum ↓", "Sloppy"];
+const sixteenth = () => 60 / (typeof bpm === "function" ? bpm() : 90) / 4;
+function feelOf(i, n, feel) {        // [delay s, velocity] of note i of n, low to high
+  const r = () => Math.random(), q = sixteenth(), top = i === n - 1;
+  switch (feel) {
+    case 1:                          // pianist: the bass lands, the inner notes come a little after and soft, the top note sings
+      if (i === 0) return [r() * .004, .85];
+      return top ? [.008 + r() * .012, .92] : [.014 + r() * .022, .42 + r() * .16];
+    case 2: {                        // laid back: the whole hand late, by a third of a 16th at this tempo, soft and a bit spread
+      const late = q * (.3 + r() * .1);
+      return [late + i * (.006 + r() * .006), .5 + r() * .12 + (top ? .1 : 0)];
+    }
+    case 3: return [i * q * (.22 + r() * .05), .45 + .45 * i / Math.max(1, n - 1)];          // rolled: a harp, getting louder
+    case 4: return [i * (.012 + r() * .007), .95 - i * .1];                                   // strum up: the low string hit hardest
+    case 5: return [(n - 1 - i) * (.011 + r() * .007), .95 - (n - 1 - i) * .1];              // strum down: the top string first and hardest
+    case 6: return [r() * q * .45, .35 + r() * .6];                                             // sloppy: anyone's first try
+    default: return [r() * .003, .78 + r() * .04];                                              // tight
+  }
+}
+
+// ---------------------------------------------------------------- state
+const MODES = ["PLAY","IDEAS","AUTO"], HELPS = ["Free","Key","Shapes","Pads"], PLUS = ["off","hold","oct"];
+const IDEA_STYLES = OURS.map(([s]) => s);
+// a pattern: [16th, length in 16ths, what]: "c" the chord, "r" rolled, "b" the root an octave down, 0..3 one note of the chord
+const arp = (order, every, len) => Array.from({ length: 16 / every }, (_, i) => [i * every, len || every, order[i % order.length]]);
+const AUTO_STYLES = [
+  { name: "Pop piano", pats: [[[0,4,"b"],[0,4,"c"],[4,2,"c"],[6,2,"c"],[8,4,"b"],[8,4,"c"],[12,2,"c"],[14,2,"c"]], [[0,6,"c"],[6,4,"c"],[10,6,"c"]]] },
+  { name: "Ballad", pats: [arp([0,1,2,1,3,2,1,2], 2, 3), [[0,16,"b"], ...arp([1,2,3,2], 4, 4)]] },
+  { name: "Arp", pats: [arp([0,1,2,3], 1), arp([0,1,2,3,2,1], 2)] },
+  { name: "Alberti", pats: [arp([0,2,1,2], 2), arp([0,2,1,2], 1)] },
+  { name: "Reggae", pats: [[[4,2,"c"],[12,2,"c"]], [[4,1,"c"],[6,1,"c"],[12,1,"c"],[14,1,"c"]]] },
+  { name: "House", pats: [[[2,1,"c"],[6,1,"c"],[10,1,"c"],[14,1,"c"]], [[0,1,"c"],[3,1,"c"],[6,1,"c"],[10,2,"c"],[14,1,"c"]]] },
+  { name: "Funk", pats: [[[0,1,"c"],[3,1,"c"],[6,1,"c"],[10,1,"c"],[11,1,"c"],[14,1,"c"]], [[0,2,"c"],[4,1,"c"],[7,1,"c"],[8,1,"c"],[12,1,"c"],[15,1,"c"]]] },
+  { name: "Neo soul", pats: [[[0,10,"r"],[14,2,"c"]], [[0,6,"r"],[7,7,"r"]]] },
+  { name: "Pads", pats: [[[0,16,"c"]], [[0,8,"c"],[8,8,"c"]]] }
+];
+const SWINGS = ["straight", "light", "medium", "heavy"], SWING_AMT = [0, .22, .4, .6];
+const BLACK_COL = { 1: "sus2", 3: "sus4", 5: "6", 8: "7", 10: "maj7", 13: "9", 15: "add9", 17: "11", 20: "13", 22: "dim" };
+const WHITE_ORDER = []; for (let i = 0; i < 24; i++) if (!isBlack(LOW + i)) WHITE_ORDER.push(i);
+const padDeg = i => (i >= 24 || isBlack(LOW + i)) ? -1 : [0, -1, 1, -1, 2, 3, -1, 4, -1, 5, -1, 6][mod(LOW + i)];
+const KEYL = "CDEFGAB";
+const COLKEY = { sus2: "F#", sus4: "G#", "6": "A#", "7": "C#", maj7: "D#", "9": "F#↑", add9: "G#↑", "11": "A#↑", "13": "C#↑", dim: "D#↑" };
+const st = {
+  mode: 0, help: 1, trans: 0, plus: 0, prog: 4, colour: 0, voicing: 0, feel: 0, pstep: 0, keyCand: 0,
+  istyle: 1, iidea: 0, ideaSel: 0, speed: 100, hear: 1, astyle: 1, aprog: 4, afeel: 0, apat: 0, apos: 0, starter: -1, dens: 1, afollow: 0, vars: new Set(),
+  held: new Map(), black: new Set(), lock: null, lastPad: null, lastOct: 0, padNow: null, mine: [],
+  nextHint: null, latched: [], popT: -1e9, popWhich: "play", playing: false, knobFlash: -1, knobFlashT: 0, flash: "", flashT: 0
+};
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const tShift = () => 12 * (st.oct || 0) + tTrans();   // OCT moves the keys an octave (2026-11-21), TRANSPOSE the key
+const tTrans = () => { if (!st.trans || MODES[st.mode] !== "PLAY" || HELPS[st.help] === "Pads") return 0; const t = mod(key.tonic - (key.minor ? 9 : 0)); return t > 5 ? t - 12 : t; };
+const colourHeld = () => { const b = [...st.black]; return b.length ? BLACK_COL[b[b.length - 1]] : st.lock; };
+
+// ---------------------------------------------------------------- knobs per page
+function knobDefs() {
+  const m = MODES[st.mode], h = HELPS[st.help];
+  const NONE = { n: "—", v: () => "", turn: () => {} };
+  if (m === "PLAY") {
+    const K1 = { n: "HELP", v: () => h, turn: d => { st.help = clamp(st.help + d, 0, 3); st.keyCand = 0; } };
+    const TR = { n: "TRANSPOSE", v: () => st.trans ? "whites" : "off", turn: d => { st.trans = clamp(st.trans + d, 0, 1); } };
+    const PL = { n: "PLUS", v: () => PLUS[st.plus], turn: d => { st.plus = clamp(st.plus + d, 0, 2); releaseLatch(); } };
+    const PR = { n: "PROGRESSION", v: () => String(st.prog + 1), turn: d => { st.prog = clamp(st.prog + d, 0, PROGS.length - 1); st.pstep = 0; st.popT = performance.now(); st.popWhich = "play"; } };
+    const CO = { n: "COLOUR", v: () => COLOURS[st.colour], turn: d => { st.colour = clamp(st.colour + d, 0, COLOURS.length - 1); } };
+    const VO = { n: "VOICING", v: () => VOICINGS[st.voicing], turn: d => { st.voicing = clamp(st.voicing + d, 0, 4); } };
+    const FE = { n: "FEEL", v: () => FEELS[st.feel], turn: d => { st.feel = clamp(st.feel + d, 0, FEELS.length - 1); } };
+    if (h === "Free") return [K1, TR, NONE, PL];
+    if (h === "Key") return [K1, TR, CO, PL];
+    if (h === "Shapes") return [K1, PR, CO, VO];
+    return [K1, PR, VO, FE];
+  }
+  if (m === "IDEAS") return [
+    { n: "STYLE", v: () => IDEA_STYLES[st.istyle], turn: d => { st.istyle = clamp(st.istyle + d, 0, IDEA_STYLES.length - 1); st.iidea = 0; st.ideaSel = 0; } },
+    { n: "IDEA", v: () => (st.iidea + 1) + " / " + ideasOf(st.istyle).length, turn: d => { st.iidea = clamp(st.iidea + d, 0, ideasOf(st.istyle).length - 1); st.ideaSel = 0; } },
+    { n: "SPEED", v: () => st.speed + "%", turn: d => { st.speed = clamp(st.speed + 10 * d, 50, 100); } },
+    { n: "HEAR", v: () => ["once","on","off"][st.hear], turn: d => { st.hear = clamp(st.hear + d, 0, 2); } }];
+  return [
+    { n: "STYLE", v: () => OURS[st.astyle][0], turn: d => { st.astyle = clamp(st.astyle + d, 0, OURS.length - 1); } },
+    { n: "DENSITY", v: () => ["sparse", "normal", "busy"][st.dens], turn: d => { st.dens = clamp(st.dens + d, 0, 2); } },
+    { n: "SWING", v: () => SWINGS[st.afeel], turn: d => { st.afeel = clamp(st.afeel + d, 0, 3); } },
+    { n: "FOLLOW", v: () => ["off", "bass", "melody"][st.afollow], turn: d => { st.afollow = clamp(st.afollow + d, 0, 2); } }];
+  return [
+    { n: "PROGRESSION", v: () => String(st.aprog + 1), turn: d => { st.aprog = clamp(st.aprog + d, 0, PROGS.length - 1); st.popT = performance.now(); st.popWhich = "auto"; } },
+    { n: "SWING", v: () => SWINGS[st.afeel], turn: d => { st.afeel = clamp(st.afeel + d, 0, 3); } },
+    { n: "PATTERN", v: () => String(st.apat + 1), turn: d => { st.apat = clamp(st.apat + d, 0, 1); } }];
+}
+// how many bars each chord gets so that an idea is 4 bars: 1 chord 4; 2 chords A B A B; 3 chords A B C-C; 4 chords one each; more: one each, the last filling to 8
+const PLAN = n => n === 1 ? [[0, 4]] : n === 2 ? [[0, 1], [1, 1], [0, 1], [1, 1]] : n === 3 ? [[0, 1], [1, 1], [2, 2]]
+  : n === 4 ? [[0, 1], [1, 1], [2, 1], [3, 1]] : Array.from({ length: n }, (_, i) => [i, i === n - 1 ? 8 - (n - 1) : 1]);
+const planBeats = (n, beatsPerBar) => { let b = 0; return PLAN(n).map(([c, bars]) => { const r = [c, b, bars * beatsPerBar]; b += bars * beatsPerBar; return r; }); };
+const RHY = {      // [step of the progression, start beat, length in beats]; beats: the idea's length
+  bar: n => { const ev = planBeats(n, 4); return { beats: ev.reduce((a, e) => a + e[2], 0), ev }; },
+  push: n => { const ev = planBeats(n, 4).map(([c, b0, l], i) => i ? [c, b0 - .5, l + .5] : [c, b0, l - .5]); ev[ev.length - 1][2] += .5; return { beats: ev.reduce((a, e) => a + e[2], 0), ev }; },
+  halves: n => { const ev = planBeats(n, 2); return { beats: ev.reduce((a, e) => a + e[2], 0), ev }; },
+  "hip hop": n => ({ beats: 8, ev: [[0, 0, 1.5], [0, 1.5, 2.5], [0, 4, 3], [n - 1, 7, 1]] }),
+  stabs: n => { const pl = planBeats(n, 4), ev = []; pl.forEach(([c, b0, l]) => { for (let x = b0; x < b0 + l; x += 4) ev.push([c, x, .5], [c, x + 1.5, .5], [c, x + 2.5, 1]); }); return { beats: pl.reduce((a, e) => a + e[2], 0), ev }; }
+};
+const STYLE_RHY = { Pop: ["bar", "halves"], "Neo soul": ["push", "hip hop"], "Hip hop": ["hip hop", "push"], "West coast": ["hip hop", "bar"],
+  Funk: ["stabs", "halves"], Electronic: ["bar", "stabs"], Jazz: ["halves", "push"], Reggae: ["halves", "stabs"], Afrobeats: ["push", "stabs"],
+  Shatta: ["stabs", "bar"], Reggaeton: ["halves", "push"], "Drum & bass": ["bar", "push"], Rock: ["bar", "halves"] };
+function ideasOf(si) {
+  const [style, ps] = OURS[si];
+  return ps.flatMap(([pn]) => (STYLE_RHY[style] || ["bar"]).map(r => {
+    const prog = PROGS.find(p => p.name === style + " " + pn), rr0 = RHY[r](prog.steps.length);
+    return { name: pn + " · " + r, prog, beats: rr0.beats, ev: rr0.ev };
+  }));
+}
+const idea = () => { const l = ideasOf(st.istyle); return l[clamp(st.iidea, 0, l.length - 1)]; };
+const ideaProg = () => idea().prog;
+
+// ---------------------------------------------------------------- the song clock: beat, demo song, IDEAS, AUTO
+const DEMO_BASS = [0, 5, 3, 4];                          // a bar each: I vi IV V
+const DEMO_MEL = [[4, 2, 0, 2], [0, 2, 4, 2], [5, 4, 3, 1], [4, 6, 1, 4]];   // degrees, a beat each
+function bpm() { return clamp(+document.getElementById("bpm").value || 90, 60, 160) * (MODES[st.mode] === "IDEAS" ? st.speed / 100 : 1); }
+let sched = null, nextTick = 0, tick16 = 0, demoBassNow = 0, demoMelNow = 4;
+function playToggle() {
+  startAudio();
+  st.playing = !st.playing;
+  if (st.playing) { tick16 = 0; nextTick = ac.currentTime + 0.05; sched = setInterval(schedule, 25); }
+  else { clearInterval(sched); sched = null; voices.forEach((_, id) => { if (![...st.held.values()].flat().includes(id)) noteOff(id); }); ideaNow = ideaNext = null; }
+}
+const demoOn = () => document.getElementById("demo").checked && st.playing;
+function schedule() {
+  const sp = 60 / bpm() / 4;
+  while (nextTick < ac.currentTime + 0.1) {
+    const when = nextTick - ac.currentTime, step = tick16 % 16, bar = Math.floor(tick16 / 16);
+    if (step % 4 === 0) click(when, step === 0);
+    if (document.getElementById("demo").checked) {
+      if (step % 8 === 0) { const d = DEMO_BASS[bar % 4]; noteOn(36 + mod(degPc(d)) + (step === 8 ? 12 : 0), 0.9, when, sp * 6, "bass"); later(when, () => demoBassNow = d); }
+      if (step % 4 === 0) { const d = DEMO_MEL[bar % 4][step / 4]; noteOn(72 + mod(degPc(d)), 0.6, when, sp * 3, "lead"); later(when, () => demoMelNow = d); }
+    }
+    if (MODES[st.mode] === "IDEAS") ideasTick(step, bar, when);
+    if (MODES[st.mode] === "AUTO") autoTick(step, bar, when, sp);
+    tick16++;
+    nextTick += sp;
+  }
+}
+const later = (when, f) => setTimeout(f, Math.max(0, when * 1000));
+// IDEAS: a chord a bar; the next one shows the whole bar before
+let ideaNow = null, ideaNext = null, ideaRound = 0, ideaBar = -1, ideaVoices = [];
+function ideasTick(step, bar, when) {           // the idea's chords, each on its beat for its length
+  const id = idea(), L = id.beats * 4, at = (bar * 16 + step) % L, round = Math.floor((bar * 16 + step) / L);
+  id.ev.forEach(([si, start, len], k) => {
+    if (Math.round(start * 4) !== at) return;
+    const cur = stepChord(id.prog.steps[si], id.prog), nx = id.ev[(k + 1) % id.ev.length], nxt = stepChord(id.prog.steps[nx[0]], id.prog);
+    const hear = st.hear === 1 || (st.hear === 0 && round === 0), sp = 60 / bpm() / 4;
+    if (hear) voice(cur.notes, 0).forEach((m, i) => { const [w, v] = feelOf(i, cur.notes.length, 1); noteOn(m, v * 0.85, when + w, len * 4 * sp * 0.95); });
+    later(when, () => { ideaNow = cur; ideaNext = nxt; ideaRound = round; ideaBar = k; });
+  });
+}
+// the chord a progression gives now (AUTO, Shapes, Pads' NEXT)
+function progChord(pi, stepIdx) {
+  const p = PROGS[pi];
+  if (p.name === "None") return mkDeg(st.lastPad ? st.lastPad.deg : 0, "none");
+  if (p.name === "Mine") return st.mine.length ? st.mine[mod(stepIdx, st.mine.length)] : mkDeg(0, "none");
+  if (p.name === "Follow bass") return mkDeg(demoBassNow, "none");
+  if (p.name === "Follow melody") { for (const d of [0, 3, 4, 5, 1, 2, 6]) if (degChord(d, "none").map(pc12).includes(mod(degPc(demoMelNow)))) return mkDeg(d, "none"); }
+  return stepChord(p.steps[mod(stepIdx, p.steps.length)], p);
+}
+const progLen = pi => { const p = PROGS[pi]; return p.name === "Mine" ? Math.max(1, st.mine.length) : p.special ? 1 : p.steps.length; };
+let autoNow = null; st.aBar = 0; st.part = null; st.partNext = null; st.partBar = 0; st.buildT = 0;
+function autoTick(step, bar, when, sp) {
+  if (step === 0 && st.partNext) { st.part = st.partNext; st.partNext = null; st.aBar = bar; }   // a new part starts on the bar
+  if (!st.part) return;
+  const parts = partsOf(st.astyle), pt = parts[st.part.idx], hi = st.part.hi, chords = partSteps(pt);
+  const ch = st.afollow === 1 ? progChord(PROGS.findIndex(q => q.name === "Follow bass"), 0)
+    : st.afollow === 2 ? progChord(PROGS.findIndex(q => q.name === "Follow melody"), 0) : chords[mod(bar - st.aBar, chords.length)];
+  if (step === 0) later(when, () => { autoNow = ch; st.partBar = mod(bar - st.aBar, chords.length); });
+  const sw = SWING_AMT[st.afeel], swingDelay = (step % 4 === 2 ? sw : step % 2 === 1 ? sw * .5 : 0) * sp;   // the off-beats lean late
+  const v = st.vars, pl = AUTO_STYLES[hi && pt.pl === AUTO_STYLES.findIndex(a => a.name === "Pads") ? AUTO_STYLES.findIndex(a => a.name === GENRE_PLAYERS[OURS[st.astyle][0]][0]) : pt.pl];
+  let dens = clamp(pt.dens + (hi ? 1 : 0) + (st.dens - 1), 0, 2); if (v.has("fill") || v.has("build")) dens = 2;
+  if (v.has("stop")) return;
+  let pat = dens === 2 ? pl.pats[0].concat(pl.pats[1]) : pl.pats[0];
+  if (dens === 0) pat = pat.filter(([at]) => at % 8 === 0).length ? pat.filter(([at]) => at % 8 === 0) : pat.slice(0, 1);
+  if (v.has("half")) pat = pat.filter(([at]) => at % 8 === 0).map(([at, len, w]) => [at, len * 2, w]);
+  if (v.has("fill") && step >= 12) pat = pat.concat([[step, 1, "c"]]);              // the last beat rolls in 16ths
+  const build = v.has("build") ? Math.min(1, (performance.now() - st.buildT) / 4000) : 0;
+  const gain = (hi ? 1 : .72) * (1 + build * .4);
+  const ms = voice(ch.notes, 0).map(m => m + (v.has("oct up") || build > .5 ? 12 : 0) - (!hi && pt.dens === 0 ? 12 : 0));
+  for (const [at, len, what] of pat) if (at === step) {
+    const w = when + swingDelay, d = sp * len * 0.92;
+    if (what === "b") noteOn(ms[0] - 12, 0.7 * gain, w, d);
+    else if (typeof what === "number") noteOn(ms[Math.min(what, ms.length - 1)], (0.6 + Math.random() * .08) * gain, w + Math.random() * .006, d);
+    else ms.forEach((m, i) => { const [dl, v] = feelOf(i, ms.length, what === "r" ? 3 : 1); noteOn(m, v * .85 * gain, w + dl, d); });
+  }
+}
+
+// ---------------------------------------------------------------- keys
+const keysEl = document.getElementById("keys");
+const KB = "zsxdcvgbhnjm,l.;/q2w3er5t6y";
+const keyEls = [];
+(function buildKeys() {
+  const whites = []; for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) whites.push(i);
+  const ww = 100 / whites.length;
+  for (let i = 0; i < NK; i++) {
+    const el = document.createElement("div"), b = isBlack(LOW + i);
+    el.className = "k " + (b ? "b" : "w"); el.tabIndex = 0;
+    const wi = b ? whites.indexOf(i - 1) : whites.indexOf(i);
+    el.style.left = (b ? (wi + 1) * ww - ww * 0.3 : wi * ww) + "%";
+    el.style.width = (b ? ww * 0.6 : ww) + "%";
+    el.innerHTML = `<span class="lab"></span>${KB[i]}`;
+    el.addEventListener("pointerdown", e => { e.preventDefault(); el.setPointerCapture(e.pointerId); press(i); });
+    el.addEventListener("pointerup", () => release(i));
+    el.addEventListener("pointercancel", () => release(i));
+    keysEl.appendChild(el); keyEls.push(el);
+  }
+})();
+const down = new Set();
+addEventListener("keydown", e => { if (["INPUT","SELECT"].includes(e.target.tagName)) return; const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0 && !down.has(i)) { down.add(i); press(i); e.preventDefault(); } });
+addEventListener("keyup", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0) { down.delete(i); release(i); } });
+function releaseLatch() { st.latched.forEach(v => noteOff(v)); st.latched = []; }
+const soundingHeld = () => [...st.held.keys()].filter(i => !(i in BLACK_COL) || !padsPage()).map(i => LOW + i + tShift());
+const padsPage = () => MODES[st.mode] === "PLAY" && HELPS[st.help] === "Pads";
+const autoPage = () => MODES[st.mode] === "AUTO";
+const GENRE_PLAYERS = { Pop: ["Pop piano", "Ballad", "Arp"], "Neo soul": ["Neo soul", "Pads", "Ballad"], "Hip hop": ["Neo soul", "Pads", "Arp"],
+  "West coast": ["Pads", "Neo soul", "Arp"], Funk: ["Funk", "House", "Pop piano"], Electronic: ["House", "Arp", "Pads"], Jazz: ["Ballad", "Neo soul", "Alberti"],
+  Reggae: ["Reggae", "Pop piano", "Pads"], Afrobeats: ["House", "Arp", "Pop piano"], Shatta: ["Reggae", "House", "Pads"], Reggaeton: ["Reggae", "House", "Arp"],
+  "Drum & bass": ["Pads", "Arp", "House"], Rock: ["Pop piano", "Ballad", "Pads"] };
+const PARTS = ["INTRO", "VERSE", "PRE", "CHORUS", "BRIDGE", "BREAK", "OUTRO"];
+function partsOf(si) {             // each part: a progression (or part of one), a player and a density, written for the style
+  const [style, ps] = OURS[si], P = k => PROGS.findIndex(q => q.name === style + " " + ps[Math.min(k, ps.length - 1)][0]);
+  const pl = GENRE_PLAYERS[style].map(n => AUTO_STYLES.findIndex(a => a.name === n)), pads = AUTO_STYLES.findIndex(a => a.name === "Pads");
+  return [
+    { prog: P(0), pl: pads, dens: 0, take: 2 },            // intro: the first two chords, held
+    { prog: P(0), pl: pl[0], dens: 1 },                    // verse: the style's own progression
+    { prog: P(1), pl: pl[1], dens: 1 },                    // pre-chorus: another, building
+    { prog: P(2), pl: pl[0], dens: 2 },                    // chorus: the third, busier
+    { prog: P(1), pl: pl[2], dens: 1, from: 1 },           // bridge: somewhere else, another player
+    { prog: P(0), pl: pads, dens: 0, take: 1 },            // break: one chord, space
+    { prog: P(0), pl: pl[1], dens: 0, home: true }];       // outro: the progression, then home on I
+}
+function partSteps(pt) {
+  const pr = PROGS[pt.prog]; let steps = pr.steps.slice();
+  if (pt.from) steps = steps.slice(pt.from).concat(steps.slice(0, pt.from));
+  if (pt.take) steps = steps.slice(0, pt.take);
+  if (pt.home) steps = steps.concat([{ d: 0, c: "none" }]);
+  // a bar each, laid out so the part is 2 or 4 bars and never hangs: 3 chords A B C C, 2 chords A B A B, 1 chord held
+  const chords = steps.map(x => stepChord(x, pr)), out = [];
+  PLAN(chords.length).forEach(([c, bars]) => { for (let b = 0; b < bars; b++) out.push(chords[c]); });
+  return out;
+}
+const MOVES = { 1: "fill", 3: "build", 5: "half", 8: "oct up", 10: "stop" };   // the black keys, while held (both octaves)
+for (const k of [1, 3, 5, 8, 10]) MOVES[k + 12] = MOVES[k];
+function startersOf(si) {         // up to 14: the style's progressions with its players, then Sketchpad's sets
+  const [style, ps] = OURS[si], players = GENRE_PLAYERS[style].map(n => AUTO_STYLES.findIndex(a => a.name === n)), out = [];
+  ps.forEach(([pn]) => { const prog = PROGS.findIndex(q => q.name === style + " " + pn); players.forEach(pl => out.push({ prog, pl })); });
+  for (let k = 0; out.length < 14 && k < SKETCHPAD.length; k++) out.push({ prog: PROGS.findIndex(q => q.sk && q.name === SKETCHPAD[k][0]), pl: players[k % players.length] });
+  return out.slice(0, 14);
+}
+const VARS = { 1: "sparse", 3: "busy", 5: "break", 8: "oct up", 10: "oct down" };
+let lastHeld = [];
+
+function press(i) {
+  startAudio();
+  const m = MODES[st.mode];
+  if (autoPage()) {                                    // a white key: that starter plays (alone, or in the song on PLAY); a black key: a variation while held
+    if (MOVES[i]) { st.vars.add(MOVES[i]); if (MOVES[i] === "build") st.buildT = performance.now(); st.held.set(i, []); return; }
+    const k = WHITE_ORDER.indexOf(i); if (k < 0) return;
+    const part = { idx: k % 7, hi: k >= 7 }; st.held.set(i, []);
+    if (st.playing) st.partNext = part; else { st.part = part; st.aBar = 0; playToggle(); }
+    return;
+  }
+  if (padsPage()) {
+    if (i in BLACK_COL) { st.black.add(i); st.held.set(i, []); return; }
+    if (m === "PLAY" && i === 24) { st.pstep++; st.held.set(i, playChord(progChord(st.prog, st.pstep), st.lastOct)); return; }       // NEXT
+    if (m === "PLAY" && i === 26) { if (st.padNow) st.held.set(i, playChord(st.padNow, st.lastOct)); return; }                       // AGAIN
+    if (m === "PLAY" && i === 25) { st.lock = st.lock ? null : (colourHeld() || COLOURS[Math.max(1, st.colour)]); flash(st.lock ? "lock " + st.lock : "unlocked"); return; }
+    const d = padDeg(i); if (d < 0) return;
+    st.lastOct = LOW + i < 60 ? -12 : LOW + i >= 72 ? 12 : 0;
+    const ch = mkDeg(d, colourHeld() || "none");
+    st.mine = [...st.mine, ch].slice(-8);
+    st.held.set(i, playChord(ch, st.lastOct));
+    return;
+  }
+  if (st.plus === 1 && st.held.size === 0) releaseLatch();
+  const s = LOW + i + tShift();
+  const ids = [noteOn(s)];
+  if (st.plus === 2) ids.push(noteOn(s + 12, 0.5));
+  st.held.set(i, ids);
+  if (HELPS[st.help] === "Key" && st.held.size === 1) st.keyCand = 0;
+}
+function release(i) {
+  const ids = st.held.get(i); if (!ids) return;
+  st.held.delete(i); st.black.delete(i); if (MOVES[i]) st.vars.delete(MOVES[i]);
+  const m = MODES[st.mode];
+  if (m === "PLAY" && !padsPage() && st.plus === 1) st.latched.push(...ids); else ids.forEach(v => noteOff(v));
+  if (m === "PLAY" && st.held.size === 0 && lastHeld.length) {
+    const info = identify(lastHeld); const d = info ? degreeOfPcs(info.root, info.pcs) : lastHeld.length === 1 ? -1 : -1;
+    st.nextHint = d >= 0 ? NEXT[d] : null;
+  }
+}
+function playChord(ch, oct = 0, audition = false) {
+  if (ch.deg >= 0) st.lastPad = ch;
+  st.padNow = ch;
+  const ms = fitKeys(voice(ch.notes, st.voicing).map(x => x + oct));
+  return ms.map((m, k) => { const [w, v] = feelOf(k, ms.length, st.feel); return noteOn(m, v, w, audition ? 0.7 : 0); }).filter(() => !audition);
+}
+
+// ---------------------------------------------------------------- SELECT, SCL, PLAY
+function select(dir) {
+  const m = MODES[st.mode], h = HELPS[st.help];
+  if (m === "PLAY" && h === "Key") st.keyCand += dir;
+  else if (m === "PLAY" && h === "Shapes") st.pstep += dir;
+  else if (m === "PLAY" && h === "Pads") { st.pstep += dir; playChord(progChord(st.prog, st.pstep), st.lastOct, true); }
+  else if (m === "IDEAS") { const id = idea(); st.ideaSel = mod(st.ideaSel + dir, id.ev.length); if (!st.playing) playChord(stepChord(id.prog.steps[id.ev[st.ideaSel][0]], id.prog), 0, true); }
+  else if (m === "AUTO") { const c = st.partNext || st.part || { idx: -1, hi: false }; const next = { idx: mod(c.idx + dir, 7), hi: c.hi }; if (st.playing) st.partNext = next; else st.part = next; }
+}
+document.getElementById("selL").onclick = () => select(-1);
+document.getElementById("selR").onclick = () => select(1);
+document.getElementById("scl").onclick = () => {
+  if (MODES[st.mode] === "IDEAS") st.speed = 100;                 // SPEED is only for practising on IDEAS
+  st.mode = (st.mode + 1) % 3;
+  st.held.forEach(ids => ids.forEach(v => noteOff(v))); st.held.clear(); st.black.clear(); releaseLatch();
+  if (st.playing) playToggle(); autoNow = null;
+};
+document.getElementById("play").onclick = playToggle;
+document.getElementById("octD").onclick = () => { st.oct = Math.max(-2, (st.oct || 0) - 1); };
+document.getElementById("octU").onclick = () => { st.oct = Math.min(2, (st.oct || 0) + 1); };
+(() => { const b = document.getElementById("glo"); b.addEventListener("pointerdown", e => { e.preventDefault(); st.glo = true; }); ["pointerup", "pointerleave"].forEach(ev => b.addEventListener(ev, () => { st.glo = false; })); })();
+const HELPTXT = {
+  Free: ["PLAY · FREE", "Keys play notes; the chord is named", "K1 HELP: Free Key Shapes Pads", "K2 TRANSPOSE: whites = C major", "K4 PLUS: hold, octave"],
+  Key: ["PLAY · KEY", "The key's notes faint, home half", "Hold a note: its chord lights", "SELECT: another chord with it", "K3 COLOUR: colour the suggestion", "Let go: next chords in the row"],
+  Shapes: ["PLAY · SHAPES", "Full: play this. Half: next", "SELECT: next chord", "K2 PROGRESSION (menu)", "K3 COLOUR  K4 VOICING"],
+  Pads: ["PLAY · PADS", "White keys: chords (C = I)", "Black keys held: a colour", "F5 NEXT  G5 AGAIN  F#5 LOCK", "K2 PROGRESSION  K3 VOICING", "K4 FEEL"],
+  IDEAS: ["IDEAS", "PLAY: the idea loops", "Lit: play now. Half: next", "SELECT: walk its chords", "K1 STYLE  K2 IDEA", "K3 SPEED  K4 HEAR"],
+  AUTO: ["AUTO · SONG PARTS", "White keys: intro verse pre chorus", "bridge break outro (low calm, high energy)", "A part changes on the next bar", "Black held: fill build half oct-up stop", "K1 STYLE  K2 DENSITY", "K3 SWING  K4 FOLLOW", "REC records what it plays"] };
+function drawHelp() {
+  const m = MODES[st.mode], h = HELPTXT[m === "PLAY" ? HELPS[st.help] : m];
+  g.fillStyle = "rgba(10,13,19,.97)"; rr(4, 22, 232, 214, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke();
+  g.fillStyle = C.acc; g.font = "700 10px Inter, sans-serif"; g.textBaseline = "middle"; g.fillText("GLO · " + h[0], 12, 36);
+  g.fillStyle = C.fg; g.font = "500 9.5px Inter, sans-serif"; h.slice(1).forEach((l, i) => g.fillText(l, 12, 58 + i * 21));
+}
+document.getElementById("start").onclick = () => { startAudio(); ac.resume(); document.getElementById("start").textContent = "Sound on"; };
+const ksel = document.getElementById("keysel");
+for (let mi = 0; mi < 2; mi++) for (let t = 0; t < 12; t++) { const o = document.createElement("option"); o.value = t + "," + mi; o.textContent = (mi ? NAMES_F : NAMES_S)[t] + (mi ? " minor" : " major"); ksel.appendChild(o); }
+ksel.value = "0,0";
+ksel.onchange = () => { const [t, mi] = ksel.value.split(","); key = { tonic: +t, minor: mi === "1" }; st.mine = []; };
+
+// ---------------------------------------------------------------- knobs UI
+const knobsEl = document.getElementById("knobs"); const ang = [0,0,0,0];
+(function buildKnobs() {
+  for (let idx = 0; idx < 4; idx++) {
+    const w = document.createElement("div"); w.className = "knob";
+    w.innerHTML = `<div class="dial" aria-label="K${idx + 1}"></div>K${idx + 1}<div class="b"><button aria-label="K${idx + 1} down">−</button><button aria-label="K${idx + 1} up">+</button></div>`;
+    const dial = w.querySelector(".dial"); let y0 = null, acc = 0;
+    const turn = d => { knobDefs()[idx].turn(d); ang[idx] = (ang[idx] + d * 24) % 360; dial.style.setProperty("--a", ang[idx] + "deg"); st.knobFlash = idx; st.knobFlashT = performance.now(); };
+    dial.addEventListener("pointerdown", e => { y0 = e.clientY; acc = 0; dial.setPointerCapture(e.pointerId); });
+    dial.addEventListener("pointermove", e => { if (y0 === null) return; acc += y0 - e.clientY; y0 = e.clientY; while (Math.abs(acc) > 14) { turn(Math.sign(acc)); acc -= 14 * Math.sign(acc); } });
+    dial.addEventListener("pointerup", () => { y0 = null; });
+    dial.addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+    const [bm, bp] = w.querySelectorAll("button"); bm.onclick = () => turn(-1); bp.onclick = () => turn(1);
+    knobsEl.appendChild(w);
+  }
+})();
+function flash(s) { st.flash = s; st.flashT = performance.now(); }
+
+// ---------------------------------------------------------------- lights and screen, every frame
+const cv = document.getElementById("scr"), g = cv.getContext("2d");
+const C = { bg: "#0a0d13", fg: "#e8edf5", mute: "#7f8796", card: "#161b24", acc: "#4d8dff", half: "#2a4f8f", accd: "#1d3a6e", good: "#3ccf7a", warn: "#f2a33c" };
+function keyCandidates(note) {
+  const p = mod(note), out = [];
+  for (const pos of [0, 1, 2]) for (let d = 0; d < 7; d++) if (mod(degChord(d, "none")[pos]) === p) out.push(d);
+  return out;
+}
+function draw() {
+  const m = MODES[st.mode], h = HELPS[st.help];
+  const lit = new Map(); const R = { dim: 1, half: 2, on: 3 };
+  const set = (i, s) => { if (i < 0 || i >= NK) return; if (!lit.has(i) || R[s] > R[lit.get(i)]) lit.set(i, s); };
+  const keyOf = sounding => sounding - tShift() - LOW;
+  const midis = soundingHeld(); if (midis.length) lastHeld = midis;
+  let big = "", sub = "", sub2 = "", subCol = C.mute, rowLit = -1, rowHalf = [], strip = null, stripCur = -1;
+  if (m === "PLAY" && (h === "Key" || h === "Shapes")) for (let i = 0; i < NK; i++) { const s = LOW + i + tShift(); if (inKey(s)) set(i, mod(s) === mod(key.tonic) && h === "Key" ? "half" : "dim"); }
+  if (m === "PLAY" && h !== "Pads") {
+    const info = identify(midis);
+    if (midis.length === 1) { big = pcName(midis[0]) + Math.floor(midis[0] / 12 - 1); sub = inKey(midis[0]) ? "" : "outside"; }
+    else if (info) { const d = degreeOfPcs(info.root, info.pcs); big = info.name; sub = d >= 0 ? numeral(d) : "outside"; rowLit = d; }
+    else if (midis.length > 1) { big = midis.map(pcName).join(" "); sub = "no chord"; }
+    if (st.trans && tShift() !== 0) sub2 = "keys: " + (key.minor ? "A minor" : "C major") + " → " + pcName(key.tonic) + (key.minor ? " minor" : " major");
+    if (h === "Key") {
+      if (midis.length >= 1) {
+        // the key's chords (with COLOUR) that hold every note held: the suggestion stays while you add its notes
+        const pcs = [...new Set(midis.map(pc12))];
+        const cands = keyCandidates(Math.min(...midis)).filter(d => pcs.every(p => mkDeg(d, COLOURS[st.colour]).notes.map(pc12).includes(p)));
+        rowHalf = cands;
+        if (cands.length) {
+          const d = cands[mod(st.keyCand, cands.length)], ch = mkDeg(d, COLOURS[st.colour]);
+          const miss = ch.notes.filter(n => !pcs.includes(mod(n)));
+          lightNear(miss, Math.min(...midis) + 4).forEach(k => { if (!st.held.has(k)) set(k, "on"); });
+          if (midis.length === 1 || miss.length) { rowLit = d; sub2 = (miss.length ? "→ " : "✓ ") + ch.label + (cands.length > 1 ? "    ▶ " + mkDeg(cands[mod(st.keyCand + 1, cands.length)], COLOURS[st.colour]).label : ""); }
+        }
+      } else if (!midis.length && st.nextHint) { rowHalf = st.nextHint; sub2 = "next: " + st.nextHint.map(d => mkDeg(d).label).join("  "); }
+    }
+    if (h === "Shapes") {
+      const col = COLOURS[st.colour] !== "none" ? COLOURS[st.colour] : null;
+      let ch = progChord(st.prog, st.pstep); if (col && ch.deg >= 0) ch = mkDeg(ch.deg, col);
+      let nx = progChord(st.prog, st.pstep + 1); if (col && nx.deg >= 0) nx = mkDeg(nx.deg, col);
+      voice(nx.notes, st.voicing).forEach(x => set(keyOf(x), "half"));
+      voice(ch.notes, st.voicing).forEach(x => set(keyOf(x), "on"));
+      const want = new Set(ch.notes.map(pc12)), have = new Set(midis.map(pc12));
+      const ok = midis.length >= 3 && [...want].every(p => have.has(p)) && [...have].every(p => want.has(p));
+      if (!midis.length || ok) { big = ch.label; sub = ch.num + (ch.outside ? "  outside" : ""); }
+      sub2 = ok ? "✓  next " + nx.label : "next " + nx.label; subCol = ok ? C.good : C.mute; rowLit = ch.deg;
+      if (!PROGS[st.prog].special) { strip = PROGS[st.prog].steps.map(s => stepChord(s, PROGS[st.prog])); stripCur = mod(st.pstep, strip.length); }
+    }
+  }
+  if (m === "PLAY" && h === "Pads") {
+    WHITE_ORDER.forEach(i => set(i, "dim")); Object.keys(BLACK_COL).forEach(i => set(+i, "dim")); [24, 26].forEach(i => set(i, "dim")); if (st.lock) set(25, "on");
+    const nx = progChord(st.prog, st.pstep + 1);
+    if (nx.deg >= 0) WHITE_ORDER.forEach(i => { if (padDeg(i) === nx.deg) set(i, "half"); });
+    set(24, "half");
+    if (st.padNow) { big = st.padNow.label; sub = st.padNow.num + (st.padNow.outside ? "  outside" : ""); rowLit = st.padNow.deg; } else { big = "Pads"; }
+    sub2 = (st.prog + 1) + " " + PROGS[st.prog].name + (st.lock ? "   lock " + st.lock : "");
+    if (PROGS[st.prog].name === "Mine") { strip = st.mine; stripCur = mod(st.pstep, Math.max(1, st.mine.length)); }
+    else if (!PROGS[st.prog].special) { strip = PROGS[st.prog].steps.map(s => stepChord(s, PROGS[st.prog])); stripCur = mod(st.pstep, strip.length); }
+  }
+  if (m === "IDEAS") {
+    const id = idea(); strip = id.ev.map(([si]) => stepChord(id.prog.steps[si], id.prog)); stripCur = st.playing ? ideaBar : st.ideaSel;
+    if (!st.playing) { ideaNow = strip[st.ideaSel]; ideaNext = strip[(st.ideaSel + 1) % strip.length]; ideaRound = 1; }
+    if (ideaNow) {
+      if (ideaNext) lightNear(ideaNext.notes, 64).forEach(k => set(k, "half"));
+      lightNear(ideaNow.notes, 64).forEach(k => set(k, "on"));
+      big = ideaNow.label; sub = ideaNow.num; rowLit = ideaNow.deg;
+      const want = new Set(ideaNow.notes.map(pc12)), have = new Set(midis.map(pc12));
+      const ok = midis.length >= 3 && [...want].every(p => have.has(p));
+      sub2 = !st.playing ? id.name + "   ▶ to play" : ok ? "✓  next " + (ideaNext ? ideaNext.label : "") : (st.hear === 0 && ideaRound === 0 ? "listen   next " : "your turn   next ") + (ideaNext ? ideaNext.label : "");
+      subCol = ok ? C.good : C.mute;
+    } else { big = IDEA_STYLES[st.istyle]; sub = "▶"; }
+  }
+  if (m === "AUTO") {
+    WHITE_ORDER.forEach((i, k) => { const on = st.part && st.part.idx === k % 7 && st.part.hi === k >= 7, nx = st.partNext && st.partNext.idx === k % 7 && st.partNext.hi === k >= 7; set(i, on ? "on" : nx ? "half" : "dim"); });
+    Object.keys(MOVES).forEach(i => set(+i, "dim"));
+    if (st.part) { const pt = partsOf(st.astyle)[st.part.idx]; strip = partSteps(pt); stripCur = st.playing ? st.partBar ?? 0 : -1;
+      big = st.playing && autoNow ? autoNow.label : strip[0].label; sub = PARTS[st.part.idx] + (st.part.hi ? " · energy" : " · calm") + (st.partNext ? "   → " + PARTS[st.partNext.idx] : ""); }
+    else { big = OURS[st.astyle][0]; sub = "a white key: a part"; }
+  }
+  st.held.forEach((_, i) => set(i, "on"));
+  keyEls.forEach((el, i) => {
+    ["dim","half","on"].forEach(c => el.classList.toggle(c, lit.get(i) === c));
+    el.classList.toggle("held", st.held.has(i));
+    let lab = "";
+    if (autoPage()) { const k = WHITE_ORDER.indexOf(i); if (k >= 0) lab = PARTS[k % 7].toLowerCase() + (k >= 7 ? " +" : ""); if (MOVES[i]) lab = MOVES[i]; }
+    else if (padsPage()) { const d = padDeg(i); if (d >= 0) lab = mkDeg(d).label; if (BLACK_COL[i]) lab = BLACK_COL[i]; if (m === "PLAY") { if (i === 24) lab = "NEXT"; if (i === 25) lab = "LOCK"; if (i === 26) lab = "AGAIN"; } }
+    else lab = pcName(LOW + i + tShift());
+    el.querySelector(".lab").textContent = lab;
+  });
+
+  // the screen, 240 x 240: the top line, the four knobs, the chord big, its numeral, a line, the key's 7 chords, the progression
+  g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240); g.fillStyle = C.acc; g.fillRect(0, 0, 240, 2);
+  g.textBaseline = "middle"; g.font = "600 11px Inter, sans-serif"; g.fillStyle = C.fg; g.fillText("CHORDS", 6, 12);
+  g.fillStyle = C.mute; g.fillText(m, 56, 12);
+  g.textAlign = "right"; g.fillText(pcName(key.tonic) + (key.minor ? " min" : " maj") + "   " + Math.round(bpm()) + "   Oct " + ((st.oct || 0) > 0 ? "+" : "") + (st.oct || 0) + (st.playing ? " ▶" : ""), 234, 12);   // the octave on every page whose keys play notes (the owner, 2026-11-21) g.textAlign = "left";
+  g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
+  const recent = performance.now() - st.knobFlashT < 900;
+  knobDefs().forEach((k, idx) => {
+    const x = 4 + idx * 58; g.fillStyle = recent && st.knobFlash === idx ? C.accd : C.card; rr(x, 26, 54, 30, 5); g.fill();
+    g.textAlign = "center"; g.fillStyle = C.mute; g.font = "500 7.5px Inter, sans-serif"; g.fillText(k.n, x + 27, 34);
+    g.fillStyle = k.n === "—" ? C.mute : C.acc; g.font = "600 9.5px Inter, sans-serif"; g.fillText(fit(k.v(), 50), x + 27, 47); g.textAlign = "left";
+  });
+  g.fillStyle = C.fg; g.font = "700 38px 'Space Grotesk', Inter, sans-serif"; g.fillText(fit(big, 228), 8, 88);
+  g.font = "500 13px Inter, sans-serif"; g.fillStyle = sub.includes("outside") ? C.warn : C.mute; g.fillText(sub, 10, 118);
+  g.fillStyle = subCol; g.font = "500 11px Inter, sans-serif"; g.fillText(fit(sub2, 226), 10, 138);
+  if (performance.now() - st.flashT < 900 && st.flash) { g.fillStyle = C.accd; rr(150, 108, 84, 20, 6); g.fill(); g.fillStyle = C.fg; g.textAlign = "center"; g.fillText(st.flash, 192, 118); g.textAlign = "left"; }
+  const padView = padsPage();
+  if (autoPage()) {                                    // the starters: a tile each, numbered as its key, the one playing lit
+    if (strip) drawStrip(strip, stripCur, 140);
+    for (let k = 0; k < 14; k++) {                      // two rows: calm (the lower keys F3–E4), energy (F4–E5)
+      const x = 22 + (k % 7) * 30.5, y = 166 + Math.floor(k / 7) * 36, hi = k >= 7;
+      const on = st.part && st.part.idx === k % 7 && st.part.hi === hi, nx = st.partNext && st.partNext.idx === k % 7 && st.partNext.hi === hi;
+      g.fillStyle = on ? C.acc : nx ? C.half : hi ? "#1d2433" : C.card; rr(x, y, 28, 32, 5); g.fill();
+      g.textAlign = "center"; g.fillStyle = on || nx ? "#fff" : C.fg; g.font = "700 6.5px Inter, sans-serif"; g.fillText(PARTS[k % 7], x + 14, y + 12);
+      g.fillStyle = on ? "#dfe8ff" : C.mute; g.font = "600 7px Inter, sans-serif"; g.fillText(KEYL[(k % 7 + 3) % 7] + ((k % 7 < 4 ? 3 : 4) + (hi ? 1 : 0)), x + 14, y + 24); g.textAlign = "left";
+    }
+    g.save(); g.translate(10, 182); g.rotate(-Math.PI / 2); g.textAlign = "center"; g.fillStyle = C.mute; g.font = "700 7px Inter, sans-serif"; g.fillText("CALM", 0, 0); g.restore();
+    g.save(); g.translate(10, 218); g.rotate(-Math.PI / 2); g.textAlign = "center"; g.fillStyle = C.mute; g.font = "700 7px Inter, sans-serif"; g.fillText("ENERGY", 0, 0); g.restore();
+  } else if (padView) {                                // Pads: the progression as on Shapes, then every key of the FM-1 with what it plays
+    if (strip) drawStrip(strip, stripCur, 142);
+    drawKeys(166, 72, lit, true);
+  } else {
+    if (!(m === "PLAY" && h === "Free")) for (let d = 0; d < 7; d++) {
+      const x = 4 + d * 33, y = 146, on = d === rowLit, half = rowHalf.includes(d);
+      g.fillStyle = on ? C.acc : half ? C.half : C.card; rr(x, y, 30, 32, 5); g.fill();
+      g.textAlign = "center"; g.fillStyle = on || half ? "#fff" : C.mute; g.font = "500 8px Inter, sans-serif"; g.fillText(numeral(d), x + 15, y + 9);
+      g.fillStyle = on || half ? "#fff" : C.fg; g.font = "600 10px Inter, sans-serif"; g.fillText(fit(mkDeg(d).label, 28), x + 15, y + 22); g.textAlign = "left";
+    }
+    if (strip && strip.length) {
+      const n = Math.min(strip.length, 8), w = 228 / n;
+      for (let i = 0; i < n; i++) {
+        const x = 6 + i * w; g.fillStyle = i === stripCur ? C.accd : "transparent"; rr(x, 182, w - 3, 14, 3); g.fill();
+        g.textAlign = "center"; g.fillStyle = i === stripCur ? "#fff" : C.mute; g.font = "500 8px Inter, sans-serif"; g.fillText(fit(strip[i].label, w - 5), x + w / 2 - 1.5, 189); g.textAlign = "left";
+      }
+    }
+    drawKeys(200, 38, lit, false);                      // the FM-1's keys, lit as on the panel
+  }
+  if (st.glo) { drawHelp(); return; }
+  // the progression menu: while PROGRESSION turns, every progression with its number, style and numerals
+  if (performance.now() - st.popT < 1600) {
+    const cur = st.popWhich === "auto" ? st.aprog : st.prog;
+    g.fillStyle = "rgba(10,13,19,.96)"; rr(4, 60, 232, 176, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke();
+    g.font = "600 9px Inter, sans-serif"; g.fillStyle = C.mute; g.fillText("PROGRESSION  " + (cur + 1) + " / " + PROGS.length, 12, 72);
+    for (let r = -3; r <= 3; r++) {
+      const i = cur + r; if (i < 0 || i >= PROGS.length) continue;
+      const y = 92 + (r + 3) * 20, on = r === 0, pr = PROGS[i];
+      if (on) { g.fillStyle = C.accd; rr(8, y - 9, 224, 18, 4); g.fill(); }
+      g.fillStyle = on ? "#fff" : C.mute; g.font = "600 9px Inter, sans-serif"; g.fillText(String(i + 1).padStart(2, " "), 12, y);
+      g.fillStyle = on ? "#fff" : C.fg; g.font = (on ? "700 " : "500 ") + "9.5px Inter, sans-serif"; g.fillText(fit(pr.special ? pr.name : (pr.style || pr.name), 82), 30, y);
+      g.fillStyle = on ? "#cfe0ff" : C.mute; g.font = "500 9px Inter, sans-serif"; g.fillText(fit(progNums(pr), 118), 114, y);
+    }
+  }
+}
+const ABBR = { sus2: "s2", sus4: "s4", "6": "6", "7": "7", maj7: "M7", "9": "9", add9: "+9", "11": "11", "13": "13", dim: "°" };
+// the pads, readable: the 7 chords as tiles (both octaves play the same), the black keys as chips between them with
+// their two colours (lower octave below, upper octave above), NEXT, LOCK and AGAIN at the side
+function drawStrip(strip, cur, y) {
+  const n = Math.min(strip.length, 8), w = 228 / n;
+  for (let i = 0; i < n; i++) {
+    const x = 6 + i * w, on = i === cur, nx = cur >= 0 && i === (cur + 1) % n;
+    g.fillStyle = on ? C.acc : nx ? C.half : "#141922"; rr(x, y, w - 3, 18, 4); g.fill();
+    g.textAlign = "center"; g.fillStyle = on || nx ? "#fff" : C.mute; g.font = "700 9px Inter, sans-serif"; g.fillText(fit(strip[i].label, w - 6), x + w / 2 - 1.5, y + 9); g.textAlign = "left";
+  }
+}
+function drawPadGuide(y, lit, rowLit, strip, stripCur) {
+  const held = d => [...st.held.keys()].some(k => padDeg(k) === d);
+  for (let d = 0; d < 7; d++) {                     // the key's chords: the white key's letter on top, the chord under it
+    const x = 4 + d * 33, on = held(d), cur = d === rowLit;
+    g.fillStyle = on ? C.good : cur ? C.acc : C.card; rr(x, y, 30, 30, 5); g.fill();
+    g.textAlign = "center"; g.fillStyle = on || cur ? "#fff" : C.mute; g.font = "700 8.5px Inter, sans-serif"; g.fillText(KEYL[d], x + 15, y + 8);
+    g.fillStyle = on || cur ? "#fff" : C.fg; g.font = "700 10.5px Inter, sans-serif"; g.fillText(fit(mkDeg(d).label, 28), x + 15, y + 21); g.textAlign = "left";
+  }
+  if (strip && strip.length) {                      // the progression: each chord with the keys that play it
+    const n = Math.min(strip.length, 8), w = 228 / n;
+    for (let i = 0; i < n; i++) {
+      const c = strip[i], x = 6 + i * w, on = i === stripCur, nx = i === (stripCur + 1) % n;
+      g.fillStyle = on ? C.acc : nx ? C.half : "#141922"; rr(x, y + 34, w - 3, 28, 4); g.fill();
+      g.textAlign = "center"; g.fillStyle = "#fff"; g.font = "700 9.5px Inter, sans-serif"; g.fillText(fit(c.label, w - 6), x + w / 2 - 1.5, y + 43);
+      g.fillStyle = on || nx ? "#dfe8ff" : C.mute; g.font = "600 8px Inter, sans-serif"; g.fillText(fit(padKeys(c), w - 4), x + w / 2 - 1.5, y + 55); g.textAlign = "left";
+    }
+  }
+  g.fillStyle = C.mute; g.font = "500 7.5px Inter, sans-serif";
+  g.fillText("black keys: F# s2  G# s4  A# 6  C# 7  D# M7  · higher: 9 +9 11 13 °", 6, y + 70);
+  if (MODES[st.mode] === "PLAY") g.fillText("F5 NEXT   G5 AGAIN   F#5 LOCK the colour", 6, y + 81);
+}
+// the keys that play a chord on the pads: its white key, and the black key of its colour (a borrowed chord too, when one fits)
+function padKeys(c) {
+  const pcs = [...new Set(c.notes.map(pc12))].sort((a, b) => a - b).join();
+  for (let d = 0; d < 7; d++) if (mod(degPc(d)) === mod(c.notes[0])) for (const col of COLOURS) {
+    const t = [...new Set(degChord(d, col).map(pc12))].sort((a, b) => a - b).join();
+    if (t === pcs) return KEYL[d] + (col === "none" ? "" : " + " + COLKEY[col]);
+  }
+  return "not on the pads";
+}
+function drawPadMap(y, lit) {
+  const m = MODES[st.mode], R = { dim: 1, half: 2, on: 3 }, tw = 28, x0 = 4;
+  const stateOf = keys => { let best = ""; for (const k of keys) { if (st.held.has(k)) return "held"; const s = lit.get(k); if (s && (!best || R[s] > R[best])) best = s; } return best; };
+  const col = s => s === "held" ? C.good : s === "on" ? C.acc : s === "half" ? C.half : C.card;
+  for (let d = 0; d < 7; d++) {
+    const keys = WHITE_ORDER.filter(i => padDeg(i) === d), s = stateOf(keys), x = x0 + d * tw;
+    g.fillStyle = col(s); rr(x, y + 30, tw - 2, 40, 4); g.fill();
+    g.textAlign = "center"; g.fillStyle = s ? "#fff" : C.mute; g.font = "500 8px Inter, sans-serif"; g.fillText(numeral(d), x + tw / 2 - 1, y + 58);
+    g.fillStyle = s ? "#fff" : C.fg; g.font = "700 11px Inter, sans-serif"; g.fillText(fit(mkDeg(d).label, tw - 4), x + tw / 2 - 1, y + 46); g.textAlign = "left";
+  }
+  [[1, 0], [3, 1], [5, 2], [8, 4], [10, 5]].forEach(([lo, after]) => {
+    const hi = lo + 12, x = x0 + (after + 1) * tw - 12, s = stateOf([lo, hi]);
+    g.fillStyle = s === "held" ? C.good : s === "on" ? C.acc : "#262c38"; rr(x, y, 22, 28, 4); g.fill();
+    g.textAlign = "center"; g.font = "700 8.5px Inter, sans-serif";
+    g.fillStyle = st.held.has(hi) ? "#fff" : "#c9d3e6"; g.fillText(ABBR[BLACK_COL[hi]], x + 11, y + 8);
+    g.fillStyle = st.held.has(lo) ? "#fff" : "#c9d3e6"; g.fillText(ABBR[BLACK_COL[lo]], x + 11, y + 20); g.textAlign = "left";
+  });
+  if (m === "PLAY") [["NEXT", 24], ["LOCK", 25], ["AGAIN", 26]].forEach(([t, k], j) => {
+    const x = x0 + 7 * tw + 2, yy = y + j * 24, s = st.held.has(k) ? "held" : lit.get(k) || "";
+    g.fillStyle = col(s === "dim" ? "" : s); rr(x, yy, 34, 21, 4); g.fill();
+    g.textAlign = "center"; g.fillStyle = s && s !== "dim" ? "#fff" : C.fg; g.font = "600 8px Inter, sans-serif"; g.fillText(t, x + 17, yy + 11); g.textAlign = "left";
+  });
+}
+function drawKeys(y, h, lit, labels) {
+  const m = MODES[st.mode], whites = [], fill = { on: C.acc, half: C.half, dim: "#3a4a66" };
+  for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) whites.push(i);
+  const ww = 236 / whites.length;
+  whites.forEach((i, k) => {
+    const x = 2 + k * ww; const s = st.held.has(i) ? C.good : fill[lit.get(i)] || "#cfd5df";
+    g.fillStyle = s; g.fillRect(x, y, ww - 1, h);
+    if (labels) {
+      let t = padDeg(i) >= 0 ? mkDeg(padDeg(i)).label : "";
+      if (m === "PLAY" && (i === 24 || i === 26)) { const w = i === 24 ? "NEXT" : "AGAIN"; vtext(w, x + ww / 2 - .5, y + h - 8 - (w.length - 1) * 8.5, s === "#cfd5df" ? "#1c2029" : "#fff"); t = ""; }   // the owner, 2026-11-20: the last letter at the bottom
+      g.textAlign = "center"; g.fillStyle = s === "#cfd5df" ? "#1c2029" : "#fff"; g.font = "700 7.5px Inter, sans-serif";
+      g.fillText(fit(t, ww), x + ww / 2 - 0.5, y + h - 9); g.textAlign = "left";
+    } else {                                        // the note's name on each white key
+      g.textAlign = "center"; g.fillStyle = s === "#cfd5df" ? "#4a5160" : "#fff"; g.font = "600 7px Inter, sans-serif";
+      g.fillText(pcName(LOW + i + tShift()), x + ww / 2 - 0.5, y + h - 6); g.textAlign = "left";
+    }
+  });
+  for (let i = 0; i < NK; i++) if (isBlack(LOW + i)) {
+    const k = whites.indexOf(i - 1), x = 2 + (k + 1) * ww - ww * 0.32, bw = ww * 0.64, bh = h * 0.58;
+    const s = st.held.has(i) ? C.good : fill[lit.get(i)] === fill.dim ? "#20242c" : fill[lit.get(i)] || "#20242c";
+    g.fillStyle = s; g.fillRect(x, y, bw, bh);
+    if (labels) {
+      let t = BLACK_COL[i] ? ABBR[BLACK_COL[i]] : ""; if (m === "PLAY" && i === 25) { vtext("LOCK", x + bw / 2, y + 6, "#fff"); t = ""; }
+      g.textAlign = "center"; g.fillStyle = "#fff"; g.font = "600 6px Inter, sans-serif"; g.fillText(fit(t, bw + 2), x + bw / 2, y + bh - 7); g.textAlign = "left";
+    }
+  }
+}
+function vtext(t, x, y, col) { g.textAlign = "center"; g.fillStyle = col; g.font = "700 7px Inter, sans-serif"; [...t].forEach((c, k) => g.fillText(c, x, y + k * 8.5)); g.textAlign = "left"; }
+function progNums(pr) {
+  if (pr.name === "None") return "all 7 chords, no order";
+  if (pr.name === "Mine") return "the pads you just played";
+  if (pr.name === "Follow bass") return "the chord on the bass note";
+  if (pr.name === "Follow melody") return "the chord with the melody note";
+  return pr.steps.map(st0 => {
+    const ch = stepChord(st0, pr);
+    let suf = st0.c && st0.c !== "none" ? st0.c : st0.sym || "";
+    if (suf.startsWith("m") && !suf.startsWith("maj")) suf = suf.slice(1);
+    if (suf === "dim" || suf === "°") suf = "";
+    return ch.num.replace("°", "") + (ch.num.includes("°") ? "°" : "") + suf;
+  }).join(" ");
+}
+function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function fit(s, w) { s = String(s ?? ""); while (s.length > 1 && g.measureText(s).width > w) s = s.slice(0, -1); return s; }
+(function loop() { draw(); requestAnimationFrame(loop); })();
+})();
+</script>

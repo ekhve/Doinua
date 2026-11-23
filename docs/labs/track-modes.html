@@ -1,0 +1,138 @@
+<title>Track Modes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: one column; two big grids (today, proposed) of 4 tracks x 3 modes, each cell the four knobs. */
+:root {
+  --bg: #f5f6f8; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #dce0e6;
+  --accent: #2f6fde; --accent-soft: #e7eefc; --warn: #b5541c; --warn-soft: #fbece3; --good: #1f8a4c;
+  --chords: #2f6fde; --bass: #c0791b; --melody: #1f8a4c; --drums: #a63d8f;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1217; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a;
+  --accent: #6ea1ff; --accent-soft: #1a2638; --warn: #f0995e; --warn-soft: #2e1f16; --good: #4cc27f;
+  --chords: #6ea1ff; --bass: #e3a24a; --melody: #4cc27f; --drums: #d77cc2; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1217; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a;
+  --accent: #6ea1ff; --accent-soft: #1a2638; --warn: #f0995e; --warn-soft: #2e1f16; --good: #4cc27f;
+  --chords: #6ea1ff; --bass: #e3a24a; --melody: #4cc27f; --drums: #d77cc2; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); }
+.wrap { max-width: 1060px; margin: 0 auto; padding-block: 30px 60px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; } h2 { font-size: 1.3rem; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); }
+h3 { font-size: 1rem; margin-top: 18px; }
+p, li { max-width: 70ch; }
+.lead { color: var(--muted); margin-top: 6px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-top: 18px; }
+.scroll { overflow-x: auto; margin-top: 14px; }
+.grid { display: grid; grid-template-columns: 92px repeat(3, minmax(230px, 1fr)); gap: 8px; min-width: 820px; }
+.hd { font: 600 .74rem/1 var(--body); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 6px 4px; }
+.tr { font: 700 .9rem/1.2 var(--display); padding: 10px 4px; }
+.tr.c { color: var(--chords); } .tr.b { color: var(--bass); } .tr.m { color: var(--melody); } .tr.d { color: var(--drums); }
+.cell { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font-size: .82rem; min-width: 0; }
+.cell .what { color: var(--muted); margin-bottom: 6px; }
+.k { display: grid; grid-template-columns: 26px 1fr; gap: 2px 6px; }
+.k span:nth-child(odd) { font-weight: 600; color: var(--muted); }
+.odd { background: var(--warn-soft); border-radius: 3px; padding: 0 3px; color: var(--warn); }
+.new { background: var(--accent-soft); border-radius: 3px; padding: 0 3px; color: var(--accent); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .84rem; color: var(--muted); margin-top: 8px; }
+table { border-collapse: collapse; width: 100%; min-width: 680px; font-size: .88rem; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font: 600 .74rem/1.3 var(--body); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.ladder { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.step { flex: 1 1 160px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--panel); min-width: 0; }
+.step b { font-family: var(--display); font-size: 1rem; display: block; }
+.step small { color: var(--muted); }
+.dec { margin-top: 14px; }
+.dec li { margin: 6px 0; }
+</style>
+
+<div class="wrap">
+  <h1>Track Modes</h1>
+  <p class="lead">PLAY, IDEAS and AUTO on each of the four tracks, today and as one pattern. Written 2026-11-18 from the firmware's manual.</p>
+
+  <div class="box">
+    <p><b>What is uneven today.</b> Three tracks share one pattern: PLAY you play, IDEAS a style's part falls onto the keys to learn, AUTO a pad plays a pattern. The chords track breaks it. Its IDEAS builds a chord with four knobs, and its AUTO is a one-finger chord pad. The HELP steps also differ (2 on chords, 4 on bass and melody, none on drums), and so do the knobs: FEEL is K3 on bass and melody but K4 on drums, SPEED is missing on bass, and the drums' PLAY knobs edit the sound.</p>
+    <p><b>Proposal.</b> One sentence per mode, the same knob in the same place on every track, and one ladder of HELP steps. Every track then reads the same way. The music each track plays doesn't change.</p>
+  </div>
+
+  <h2>Today</h2>
+  <div class="legend"><span><span class="odd">orange</span> breaks the pattern of the other tracks</span></div>
+  <div class="scroll"><div class="grid">
+    <div></div><div class="hd">PLAY</div><div class="hd">IDEAS</div><div class="hd">AUTO</div>
+
+    <div class="tr c">CHORDS</div>
+    <div class="cell"><div class="what">Keys play notes; it names the chord</div><div class="k"><span>K1</span><span>HELP <span class="odd">Free · Key only</span></span><span>K2</span><span class="odd">—</span><span>K3</span><span class="odd">—</span><span>K4</span><span class="odd">—</span></div></div>
+    <div class="cell"><div class="what"><span class="odd">Build a chord, then play its lit keys</span>; SELECT walks AUTO's progression</div><div class="k"><span>K1</span><span class="odd">ROOT</span><span>K2</span><span class="odd">TYPE</span><span>K3</span><span class="odd">COLOUR</span><span>K4</span><span class="odd">VOICING</span></div></div>
+    <div class="cell"><div class="what"><span class="odd">White keys = the key's chords, one finger</span>; black keys add colour; NEXT, AGAIN</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>PROGRESSION</span><span>K3</span><span class="odd">VOICING</span><span>K4</span><span class="odd">block · strum · arp</span></div></div>
+
+    <div class="tr b">BASS</div>
+    <div class="cell"><div class="what">Keys play the bass, an octave down</div><div class="k"><span>K1</span><span>HELP Free · Key · Key+root · Whites</span><span>K2</span><span>SCALE</span><span>K3</span><span>OUTSIDE</span><span>K4</span><span class="odd">—</span></div></div>
+    <div class="cell"><div class="what">A style's line falls onto the keys</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>LINE</span><span>K3</span><span class="odd">— (no SPEED)</span><span>K4</span><span>HEAR</span></div></div>
+    <div class="cell"><div class="what">Hold a pad: a pattern on that root</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>PATTERN</span><span>K3</span><span>FEEL</span><span>K4</span><span>FOLLOW</span></div></div>
+
+    <div class="tr m">MELODY</div>
+    <div class="cell"><div class="what">Keys play the tune; it names the notes</div><div class="k"><span>K1</span><span>HELP Free · Key · Chord · Whites</span><span>K2</span><span>SCALE</span><span>K3</span><span>OUTSIDE</span><span>K4</span><span>PLUS</span></div></div>
+    <div class="cell"><div class="what">A figure falls onto the keys</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>IDEA</span><span>K3</span><span>SPEED</span><span>K4</span><span>HEAR</span></div></div>
+    <div class="cell"><div class="what">Hold a pad: a phrase on that chord</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>PHRASE</span><span>K3</span><span>FEEL</span><span>K4</span><span>FOLLOW</span></div></div>
+
+    <div class="tr d">DRUMS</div>
+    <div class="cell"><div class="what">Each key a sound; PRESETS the kit</div><div class="k"><span>K1</span><span>REPEAT</span><span>K2</span><span class="odd">TUNE (sound edit)</span><span>K3</span><span class="odd">DECAY (sound edit)</span><span>K4</span><span class="odd">FX (sound edit)</span></div></div>
+    <div class="cell"><div class="what">A style's beat falls onto the keys</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>BEAT</span><span>K3</span><span>SPEED</span><span>K4</span><span>HEAR</span></div></div>
+    <div class="cell"><div class="what">Hold a key: a whole beat</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>FILLS</span><span>K3</span><span class="odd">GHOSTS</span><span>K4</span><span class="odd">FEEL (K3 elsewhere)</span></div></div>
+  </div></div>
+
+  <h2>Proposed: one pattern</h2>
+  <div class="box">
+    <p><b>PLAY: you play, the FM-1 helps.</b> K1 HELP · K2 SCALE · K3 OUTSIDE · K4 PLUS</p>
+    <p><b>IDEAS: learn a style's part.</b> It falls onto the keys and you play it. K1 STYLE · K2 IDEA (SELECT: another) · K3 SPEED · K4 HEAR</p>
+    <p><b>AUTO: one finger does more.</b> The white keys are pads. K1 STYLE · K2 PATTERN (SELECT: another) · K3 FEEL · K4 FOLLOW</p>
+  </div>
+  <div class="legend"><span><span class="new">blue</span> changes from today</span></div>
+  <div class="scroll"><div class="grid">
+    <div></div><div class="hd">PLAY</div><div class="hd">IDEAS</div><div class="hd">AUTO</div>
+
+    <div class="tr c">CHORDS</div>
+    <div class="cell"><div class="what">Keys play notes; it names the chord</div><div class="k"><span>K1</span><span>HELP <span class="new">Free · Key · Chord · Whites</span></span><span>K2</span><span class="new">SCALE</span><span>K3</span><span class="new">OUTSIDE</span><span>K4</span><span class="new">PLUS: hold · +bass</span></span></div></div>
+    <div class="cell"><div class="what"><span class="new">A style's progression falls onto the keys</span>, each chord with its colour (Dm9, G13)</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span class="new">IDEA (progression)</span><span>K3</span><span class="new">SPEED</span><span>K4</span><span class="new">HEAR</span></div></div>
+    <div class="cell"><div class="what">The chord pad, as today: one finger a chord, black keys colour, NEXT, AGAIN</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>PATTERN (progression)</span><span>K3</span><span class="new">FEEL: block · strum · arp</span><span>K4</span><span class="new">VOICING</span></div></div>
+
+    <div class="tr b">BASS</div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>HELP Free · Key · <span class="new">Chord</span> · Whites</span><span>K2</span><span>SCALE</span><span>K3</span><span>OUTSIDE</span><span>K4</span><span class="new">PLUS: oct · 5th</span></div></div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>IDEA (line)</span><span>K3</span><span class="new">SPEED</span><span>K4</span><span>HEAR</span></div></div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>PATTERN</span><span>K3</span><span>FEEL</span><span>K4</span><span>FOLLOW</span></div></div>
+
+    <div class="tr m">MELODY</div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>HELP Free · Key · Chord · Whites</span><span>K2</span><span>SCALE</span><span>K3</span><span>OUTSIDE</span><span>K4</span><span>PLUS</span></div></div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>IDEA</span><span>K3</span><span>SPEED</span><span>K4</span><span>HEAR</span></div></div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>PATTERN (phrase)</span><span>K3</span><span>FEEL</span><span>K4</span><span>FOLLOW</span></div></div>
+
+    <div class="tr d">DRUMS</div>
+    <div class="cell"><div class="what">Each key a sound; PRESETS the kit</div><div class="k"><span>K1</span><span>HELP <span class="new">Free · Map</span></span><span>K2</span><span>— <small>(no scale)</small></span><span>K3</span><span>—</span><span>K4</span><span class="new">PLUS: REPEAT</span></div></div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>IDEA (beat)</span><span>K3</span><span>SPEED</span><span>K4</span><span>HEAR</span></div></div>
+    <div class="cell"><div class="what">As today</div><div class="k"><span>K1</span><span>STYLE</span><span>K2</span><span>PATTERN (beat)</span><span>K3</span><span class="new">FEEL</span><span>K4</span><span class="new">FOLLOW: fills 4 · 8</span></div></div>
+  </div></div>
+  <p style="font-size:.88rem;color:var(--muted)">Drums: TUNE, DECAY and FX of a pad move to the sound pages (EDIT), which are being designed now. GHOSTS joins FEEL as a choice (straight, ghosts, more ghosts). On PLAY, K2 and K3 stay empty, because a drum has no scale.</p>
+
+  <h2>One HELP ladder</h2>
+  <p>The same four steps on every track with notes. Each step helps more than the one before.</p>
+  <div class="ladder">
+    <div class="step"><b>Free</b><small>Only what you hold lights. No help.</small></div>
+    <div class="step"><b>Key</b><small>The scale dim, its tonic breathing.</small></div>
+    <div class="step"><b>Chord</b><small>While the song plays, the safe notes now light full. Chords: the next chord's keys. Bass: the root (today's "Key+root"). Melody: the chord's notes.</small></div>
+    <div class="step"><b>Whites</b><small>The white keys play only the scale, so nothing can sound wrong.</small></div>
+  </div>
+  <p style="font-size:.88rem;color:var(--muted)">Drums have two steps: Free, and Map (each kind of sound lit in its colour: kicks red, snares amber, hats teal).</p>
+
+  <h2>Choices for you</h2>
+  <ul class="dec">
+    <li><b>1 · The pattern itself.</b> PLAY you play, IDEAS learn, AUTO one finger, with the same knob in the same place. Yes, or change it?</li>
+    <li><b>2 · CHORDS · IDEAS becomes "learn a style's progression"</b>, like the other tracks. Today's chord builder (root, type, colour, voicing on the knobs) would go. Its job is still covered: IDEAS shows each chord with its colour on the keys, AUTO's black keys add colours, and PLAY names whatever you build by hand. Or keep the builder as a choice at the end of IDEA's list ("Build").</li>
+    <li><b>3 · PLUS on every track</b>: chords hold (latch) or +bass (the root below), bass octave or fifth, drums repeat. Melody's stays as it is.</li>
+    <li><b>4 · The drums' TUNE, DECAY and FX move to EDIT</b> (the sound pages), so PLAY is for playing on every track.</li>
+    <li><b>5 · SPEED on bass IDEAS too</b>, and FOLLOW on drums AUTO as the fills.</li>
+  </ul>
+  <p>Once you've answered, I'll update the Controls Map and the manual, then write the changes as requirements for your approval before building. Your recorded songs aren't touched.</p>
+</div>

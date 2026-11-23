@@ -1,0 +1,616 @@
+<title>Sampler Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: your phone (the sound coming in over USB), then the FM-1 panel (screen, knobs, buttons, keys), then how to try it and the questions. */
+:root {
+  --bg: #eceef2; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #d6dae1;
+  --dev: #23262c; --dev-edge: #31353d; --btn: #3a3f48; --btn-fg: #e9edf3; --acc: #4d8dff; --accd: #1d3a6e; --rec: #ef5b5b; --good: #2fa866;
+  --wk: #d7dbe3; --bk: #1b1e24; --phone: #1a1d23;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; --good: #3ccf7a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; --good: #3ccf7a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 22px 50px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
+.lead { color: var(--muted); margin: 4px 0 14px; max-width: 80ch; }
+.start { font: 600 .9rem var(--body); padding: 7px 14px; border-radius: 8px; border: 0; background: var(--acc); color: #fff; cursor: pointer; }
+.phone { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }
+.phone .tag { font: 600 .72rem var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.phone select, .phone button { font: 500 .85rem var(--body); padding: 6px 10px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+.phone button.on { background: var(--good); color: #fff; border-color: var(--good); }
+.phone .lvl { width: 120px; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.phone .lvl i { display: block; height: 100%; width: 0; background: var(--good); }
+.dev { background: var(--dev); border: 1px solid var(--dev-edge); border-radius: 18px; padding: 16px; color: var(--btn-fg); overflow-x: auto; }
+.top { display: grid; grid-template-columns: auto 1fr; gap: 18px; min-width: 800px; }
+.screen { width: 384px; height: 384px; background: #0a0d13; border-radius: 6px; }
+.controls { display: grid; gap: 12px; align-content: start; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.knob { width: 80px; text-align: center; font-size: .7rem; color: #aab2bf; user-select: none; }
+.knob .dial { width: 54px; height: 54px; margin: 0 auto 4px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #5a606b, #2a2e35); border: 2px solid #4a4f58; position: relative; cursor: ns-resize; touch-action: none; }
+.knob .dial::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 14px; margin-left: -1.5px; background: #e9edf3; border-radius: 2px; transform-origin: 50% 21px; transform: rotate(var(--a, 0deg)); }
+.knob .b { display: flex; gap: 4px; justify-content: center; margin-top: 2px; }
+.knob button, .btn { font: 600 .72rem var(--body); background: var(--btn); color: var(--btn-fg); border: 1px solid #4a505a; border-radius: 6px; padding: 6px 9px; cursor: pointer; user-select: none; touch-action: none; }
+.knob button { padding: 2px 8px; }
+.btn.on { background: var(--accd); border-color: var(--acc); }
+.btn.rec.on { background: #5a1f22; border-color: var(--rec); }
+.btn:focus-visible, .knob button:focus-visible, .phone button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.keys { position: relative; height: 150px; margin-top: 16px; min-width: 800px; user-select: none; touch-action: none; }
+.k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; font: 600 .6rem var(--body); padding-bottom: 6px; box-sizing: border-box; }
+.k.w { background: var(--wk); color: #555c68; height: 150px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); color: #8a909b; height: 92px; z-index: 2; border: 1px solid #000; cursor: default; }
+.k .lab { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: .56rem; }
+.k.dim { box-shadow: inset 0 0 0 150px rgba(215,124,194,.22); }
+.k.on { box-shadow: inset 0 0 0 150px rgba(215,124,194,.85); color: #fff; }
+.k.wr { box-shadow: inset 0 0 0 150px rgba(239,91,91,.28); }
+.k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.9) !important; color: #fff; }
+.hint { font-size: .8rem; color: #c3cad5; max-width: 470px; min-height: 3.2em; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 12px; margin-top: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font: 600 1rem var(--display); }
+.card li { margin: 4px 0; font-size: .87rem; }
+.card ul, .card ol { padding-left: 18px; margin: 4px 0; }
+.card p { margin: 4px 0; font-size: .87rem; }
+.card table { border-collapse: collapse; font-size: .84rem; width: 100%; font-variant-numeric: tabular-nums; }
+.card td, .card th { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+.q { border-color: var(--acc); }
+.drop { border: 2px dashed var(--line); border-radius: 8px; padding: 10px; text-align: center; color: var(--muted); font-size: .85rem; margin-top: 6px; }
+.drop.over { border-color: var(--acc); color: var(--fg); }
+#loadInfo { font-size: .82rem; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="wrap">
+  <h1>Sampler Lab</h1>
+  <p class="lead">Version 1, from your answers of 2026-11-20. Your <b>phone</b> plays into the FM-1 over USB; on the <b>DRUMS</b> track you record it, chop it onto the pads, shape each pad and save the pads as one of your own kits. Press <b>Start sound</b>. An example is loaded: a take of the drum break, already chopped into <b>MY KIT 1</b>. Recordings go through the same 4-bit ADPCM the FM-1 would store, so what you hear is the real quality.</p>
+
+  <div class="phone" role="group" aria-label="Your phone, playing into the FM-1 over USB">
+    <button class="start" id="start">Start sound</button>
+    <span class="tag">Your phone (USB in)</span>
+    <select id="src" aria-label="What the phone plays"></select>
+    <button id="phplay">▶ Play on the phone</button>
+    <span class="lvl" aria-hidden="true"><i id="phlvl"></i></span>
+    <span class="tag" id="phstate">stopped</span>
+  </div>
+
+  <div class="dev">
+    <div class="top">
+      <canvas class="screen" id="scr" width="240" height="240" aria-label="The FM-1 screen"></canvas>
+      <div class="controls">
+        <div class="row" id="knobs"></div>
+        <div class="row">
+          <button class="btn" id="selL">SELECT ◀</button>
+          <button class="btn" id="selR">SELECT ▶</button>
+          <button class="btn" id="play">PLAY</button>
+          <button class="btn rec" id="rec" title="Tap: record or write. Hold on the DRUMS page and press a key: record onto that pad">REC</button>
+          <button class="btn" id="edit" title="Tap: the next sampler page. Hold + a key: clear that pad">EDIT</button>
+          <button class="btn" id="save" title="Hold">SAVE (hold)</button>
+          <button class="btn" id="home">HOME</button>
+          <button class="btn" id="glo" title="Tap: GLO · USB AUDIO">GLO</button>
+        </div>
+        <div class="hint" id="hint"></div>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+
+  <div class="notes">
+    <div class="card"><h3>How to try it</h3><ol>
+      <li><b>A kick in five seconds.</b> On the DRUMS page with MY KIT 2 picked (SELECT), play the <i>808 kick</i> on the phone, then hold <b>REC</b> and hold a white key: it records while you hold the key (2 s at most), cuts the silence before the sound and puts it on that pad.</li>
+      <li><b>Chop a loop.</b> EDIT opens the sampler pages: <b>TAKE → CHOP → PAD → KIT</b> (EDIT again goes round; HOME back to DRUMS). On TAKE, play the break on the phone and tap REC to start and stop (10 s at most). On CHOP, K4 SLICES picks <i>by hits</i> or 4/8/16 equal parts; K1 and K2 set the part of the take to use; PLAY hears it. Turn <b>REC on</b> and press a key: the slices go onto the pads from that key up. REC off: the keys only play, as on STEPS.</li>
+      <li><b>Shape a pad.</b> PAD shows the last pad you pressed: K1 TUNE, K2 ATTACK, K3 DECAY, K4 LEVEL. EDIT held + a key clears a pad.</li>
+      <li><b>Keep it.</b> KIT: K1 picks MY KIT 1, 2 or 3; SAVE held saves the pads there (it asks first if the kit has sounds). Then the take can go: on TAKE, SAVE held throws the selected take away and frees its RAM.</li>
+      <li><b>GLO</b> opens the USB AUDIO settings; with IN at <i>off</i> nothing records.</li>
+    </ol></div>
+    <div class="card"><h3>What fits</h3>
+      <table>
+        <tr><th></th><th>Where</th><th>How much</th></tr>
+        <tr><td>Takes (this session)</td><td>RAM, gone at power-off</td><td>11 s in all, one take 10 s at most</td></tr>
+        <tr><td>One pad, recorded with REC + key</td><td>RAM until saved</td><td>2 s at most</td></tr>
+        <tr><td>MY KIT 1, 2, 3</td><td>Flash, kept</td><td>7 s each, 16 pads (the white keys)</td></tr>
+      </table>
+      <p>Sound is stored as 4-bit IMA ADPCM at 22 kHz, about 11 KB a second, the format Felucca uses for its own user samples. The kits sit in the flash area you chose (option B, 0xA0000 to 0xDC000): 240 KB, exactly Felucca's three 80 KB sample slots.</p>
+      <p>The kits play straight from flash, as Felucca's do, so a kit costs no RAM. That is what makes two kits at once possible.</p>
+    </div>
+    <div class="card"><h3>GLO · USB AUDIO</h3>
+      <table>
+        <tr><th>Setting</th><th>Choices</th></tr>
+        <tr><td><b>OUT</b> (FM-1 → phone, computer, MPC)</td><td><i>mix</i>: stereo, what you hear · <i>4 tracks</i>: each track on its own pair, to record stems</td></tr>
+        <tr><td><b>IN</b> (phone → FM-1)</td><td><i>off</i> · <i>hear</i>: it plays through the FM-1, to jam along, and the sampler can record it · <i>sampler</i>: you only hear it while recording</td></tr>
+        <tr><td><b>IN LEVEL</b></td><td>−12 to +12 dB, so a quiet phone still records loud enough; the meter on TAKE shows it</td></tr>
+      </table>
+      <p>USB audio goes both ways at once, as in Melodee, so there is no in/out switch.</p>
+    </div>
+    <div class="card"><h3>The web sample loader</h3>
+      <p>A page you open on your computer, with the FM-1 plugged in by USB. Drop a WAV or MP3: it is made mono, 22 kHz and ADPCM, and sent to the FM-1 as a take (or straight onto a kit), over the same USB MIDI messages Felucca's editor uses for its sample slots. Try it here: the file becomes a take on the TAKE page.</p>
+      <div class="drop" id="drop">Drop an audio file here, or <label style="text-decoration:underline;cursor:pointer">choose one<input type="file" id="file" accept="audio/*" hidden></label></div>
+      <div id="loadInfo"></div>
+    </div>
+    <div class="card q"><h3>Questions for you</h3><ol>
+      <li><b>Three kits of 7 s or four of 5 s?</b> I recommend <b>three of 7 s</b>: the same size and format as Felucca's sample slots in the same place, so a kit survives a firmware switch and Felucca's editor can fill it. Four kits would make each 5.3 s, and only our own loader would work.</li>
+      <li><b>REC held + a key</b> on the DRUMS page to record one pad: keep it? (It is the fastest way to a kick, and it never touches your takes.)</li>
+      <li><b>Two kits at once (the mini-MPC):</b> let another track (CHORDS or MELODY) switch to a SAMPLES template that plays a second MY KIT on its white keys. Kits cost no RAM; the limit is voices (12 shared). Want it?</li>
+      <li><b>More per pad?</b> Today: tune, attack, decay, level. Candidates: <i>reverse</i>, <i>choke</i> (a closed hat stops the open one), <i>loop while held</i>. Which ones?</li>
+    </ol></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const SR = 22050, LOW = 53, NK = 27, isBlack = n => [1,3,6,8,10].includes(n % 12);
+const RAM_S = 11, TAKE_MAX = 10, QUICK_MAX = 2, KIT_S = 7, NPAD = 16;
+const WHITES = []; for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) WHITES.push(i);
+const padOfKey = i => WHITES.indexOf(i);
+const NOTE = n => ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][n % 12] + Math.floor(n / 12 - 1);
+const padName = p => "PAD " + (p + 1) + " · " + NOTE(LOW + WHITES[p]);
+const PCKEYS = "asdfghjkl;zxcvbn";
+
+// ------------------------------------------------------------------ sounds (made here, at 22 kHz)
+function mk(sec, f) { const n = Math.round(sec * SR), a = new Float32Array(n); f(a, n); return a; }
+let seed = 7; const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x3fffffff - 1;
+const lp = (a, k) => { let y = 0; for (let i = 0; i < a.length; i++) { y += k * (a[i] - y); a[i] = y; } return a; };
+const kick = () => mk(.45, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR, f = 45 + 110 * Math.exp(-t / .03); ph += 2 * Math.PI * f / SR; a[i] = Math.sin(ph) * Math.exp(-t / .16) * .95 + (i < 40 ? rnd() * .3 : 0); } });
+const snare = () => mk(.3, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * 190 / SR; a[i] = rnd() * .55 * Math.exp(-t / .09) + Math.sin(ph) * .45 * Math.exp(-t / .05); } });
+const hat = d => mk(d * 3, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const r = rnd(), t = i / SR; a[i] = (r - p) * .32 * Math.exp(-t / d); p = r; } });
+const clap = () => mk(.35, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const t = i / SR, r = rnd(), b = t < .03 ? (Math.floor(t / .01) % 2 ? .3 : 1) : Math.exp(-(t - .03) / .1); a[i] = (r - p * .5) * .5 * b; p = r; } });
+const tom = () => mk(.4, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * (85 + 40 * Math.exp(-t / .05)) / SR; a[i] = Math.sin(ph) * .8 * Math.exp(-t / .14); } });
+const rim = () => mk(.08, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * 1700 / SR; a[i] = Math.sin(ph) * .5 * Math.exp(-t / .012) + (i < 20 ? rnd() * .5 : 0); } });
+const shaker = () => mk(.15, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const t = i / SR, r = rnd(); a[i] = (r - p) * .25 * Math.min(1, t / .02) * Math.exp(-t / .05); p = r; } });
+const stab = () => mk(1.2, (a, n) => { const fs = [261.6, 329.6, 392, 493.9]; for (let i = 0; i < n; i++) { const t = i / SR; let s = 0; fs.forEach(f => s += ((t * f) % 1) * 2 - 1); a[i] = s * .16 * Math.exp(-t / .45); } lp(a, .18); });
+function mix(dst, src, at, g = 1) { for (let i = 0; i < src.length && at + i < dst.length; i++) dst[at + i] += src[i] * g; }
+function brk() {                                   // two bars of a 95 BPM break
+  const s16 = 60 / 95 / 4, a = new Float32Array(Math.round(32 * s16 * SR)), K = kick(), S = snare(), H = hat(.035), O = hat(.18);
+  const at = i => Math.round(i * s16 * SR);
+  [0, 6, 10, 16, 19, 26].forEach(i => mix(a, K, at(i)));
+  [4, 12, 20, 28].forEach(i => mix(a, S, at(i))); [15, 30].forEach(i => mix(a, S, at(i), .35));
+  for (let i = 0; i < 32; i += 2) mix(a, i === 14 || i === 30 ? O : H, at(i), i % 4 ? .6 : 1);
+  return lp(a, .7);
+}
+const SOURCES = [["Drum break, 95 BPM (2 bars)", brk()], ["808 kick", kick()], ["Clap", clap()], ["Chord stab", stab()]];
+
+// IMA ADPCM, encoded and decoded: what the FM-1 keeps is what you hear
+const STEP = [7,8,9,10,11,12,13,14,16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552,1707,1878,2066,2272,2499,2749,3024,3327,3660,4026,4428,4871,5358,5894,6484,7132,7845,8630,9493,10442,11487,12635,13899,15289,16818,18500,20350,22385,24623,27086,29794,32767];
+const IDX = [-1,-1,-1,-1,2,4,6,8];
+function adpcm(x) {
+  const y = new Float32Array(x.length); let pred = 0, idx = 0;
+  for (let i = 0; i < x.length; i++) {
+    const s = Math.max(-32768, Math.min(32767, Math.round(x[i] * 32767))), st = STEP[idx];
+    let d = s - pred, code = 0; if (d < 0) { code = 8; d = -d; }
+    let dq = st >> 3; if (d >= st) { code |= 4; d -= st; dq += st; } if (d >= st >> 1) { code |= 2; d -= st >> 1; dq += st >> 1; } if (d >= st >> 2) { code |= 1; dq += st >> 2; }
+    pred = Math.max(-32768, Math.min(32767, pred + (code & 8 ? -dq : dq)));
+    idx = Math.max(0, Math.min(88, idx + IDX[code & 7])); y[i] = pred / 32767;
+  }
+  return y;
+}
+SOURCES.forEach(s => s[1].forEach((v, i, a) => a[i] = Math.max(-1, Math.min(1, v))));
+
+// ------------------------------------------------------------------ the model
+const pad = (d) => ({ d, tune: 0, att: 0, dec: 9, lvl: 8 });          // dec index into DECS (9 = none), lvl 0..10
+const DECS = [.02, .04, .07, .1, .15, .25, .4, .7, 1.2, Infinity];
+const ATTS = [0, 2, 5, 10, 20, 40, 80, 150];
+const FACT = [kick(), snare(), hat(.035), hat(.18), clap(), tom(), rim(), shaker()].map(adpcm);
+const kits = [{ name: "FACTORY 808", fixed: true, pads: Array.from({ length: NPAD }, (_, i) => FACT[i] ? pad(FACT[i]) : null) }];
+for (let k = 1; k <= 3; k++) kits.push({ name: "MY KIT " + k, pads: Array(NPAD).fill(null), saved: null, dirty: false });
+const takes = [];                                  // { name, d (ADPCM'd), from }
+let takeN = 0, quickN = 0;
+const len = a => a.length / SR;
+const kitSec = k => kits[k].pads.reduce((s, p) => s + (p ? len(p.d) : 0), 0);
+const savedSec = k => kits[k].saved ? kits[k].saved.reduce((s, p) => s + (p ? len(p.d) : 0), 0) : 0;
+const ramSec = () => takes.reduce((s, t) => s + len(t.d), 0) + kits.slice(1).reduce((s, k) => s + (k.dirty ? k.pads.reduce((q, p) => q + (p && p.quick ? len(p.d) : 0), 0) : 0), 0);
+const clonePads = ps => ps.map(p => p ? { ...p } : null);
+
+// onsets, as Felucca's SLICE AUTO finds them: per hop of 32 samples, the peak of the first difference and the plain peak
+function onsets(d, s, e) {
+  const H = 32, out = [s]; let fd = 0, fp = 0, md = 0, mp = 0, last = -1e9; const kd = Math.exp(-1 / 16), kp = Math.exp(-1 / 64), hops = [];
+  for (let h = s; h + H <= e; h += H) { let pd = 0, pp = 0; for (let i = h; i < h + H; i++) { pd = Math.max(pd, Math.abs(d[i] - (d[i - 1] || 0))); pp = Math.max(pp, Math.abs(d[i])); } hops.push([h, pd, pp]); md = Math.max(md, pd); mp = Math.max(mp, pp); }
+  for (const [h, pd, pp] of hops) {
+    if (((pd > 1.75 * fd && pd > md / 12) || (pp > 1.75 * fp && pp > mp / 8)) && h - last > .05 * SR && h - s > .05 * SR) { out.push(Math.max(s, h - H)); last = h; }
+    fd = Math.max(pd, fd * kd); fp = Math.max(pp, fp * kp);
+  }
+  return out.slice(0, 32);
+}
+
+// the example: take 1 is the break, chopped by hits into MY KIT 1 (saved)
+function addTake(d, from) { const t = { name: "TAKE " + (++takeN), d, from }; takes.push(t); return t; }
+const ex = addTake(adpcm(SOURCES[0][1]), "phone, the break");
+{ const o = onsets(ex.d, 0, ex.d.length); o.slice(0, 8).forEach((s, j) => { kits[1].pads[j] = pad(ex.d.slice(s, j + 1 < o.length ? o[j + 1] : ex.d.length)); }); kits[1].saved = clonePads(kits[1].pads); }
+
+const st = { page: "drums", kit: 1, tk: 0, recOn: false, recHeld: false, editHeld: false, editUsed: false, padSel: 0,
+  chop: { s: 0, e: ex.d.length, zoom: 0, mode: 1 }, slot: 1, ask: 0, usb: { out: 0, in: 1, lvl: 0, thr: 1 },
+  rec: null, quick: null, prev: null, msg: "", msgT: 0, held: new Map(), phone: { on: false, src: 0, t0: 0 } };
+const SLMODES = ["off", "by hits", "4", "8", "16"];
+const flash = m => { st.msg = m; st.msgT = performance.now(); };
+
+// ------------------------------------------------------------------ audio
+let ac = null, master, phoneGain, phoneNode = null, an;
+function startAudio() {
+  if (ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = .8; master.connect(ac.destination);
+  phoneGain = ac.createGain(); an = ac.createAnalyser(); an.fftSize = 512; an.connect(phoneGain); phoneGain.connect(master);
+  $("start").textContent = "Sound on"; routePhone();
+}
+function buf(d) { const b = ac.createBuffer(1, Math.max(1, d.length), SR); b.copyToChannel(d, 0); return b; }
+function playPad(p, k) {
+  if (!ac || !p) return; const s = ac.createBufferSource(), g = ac.createGain(), T = ac.currentTime + .005;
+  s.buffer = buf(p.d); s.playbackRate.value = Math.pow(2, p.tune / 12);
+  const lv = p.lvl / 10, at = ATTS[p.att] / 1000, dc = DECS[p.dec];
+  g.gain.setValueAtTime(at ? 0 : lv, T); if (at) g.gain.linearRampToValueAtTime(lv, T + at);
+  if (isFinite(dc)) g.gain.setTargetAtTime(0, T + at, dc / 3);
+  s.connect(g); g.connect(master); s.start(T);
+}
+function playRaw(d, s, e) { if (!ac) return; const n = ac.createBufferSource(); n.buffer = buf(d.slice(s, e)); n.connect(master); n.start(); st.prev = { t0: ac.currentTime, s, e }; n.onended = () => st.prev = null; }
+function routePhone() { if (!ac) return; const hear = st.usb.in === 1 || (st.usb.in === 2 && st.rec); phoneGain.gain.setTargetAtTime(st.usb.in === 0 ? 0 : hear ? Math.pow(10, st.usb.lvl / 20) : 0, ac.currentTime, .01); }
+function phoneData() { return SOURCES[st.phone.src][1]; }
+function phonePos() { const d = phoneData(); return Math.floor(((ac.currentTime - st.phone.t0) * SR) % d.length); }
+function phoneToggle() {
+  startAudio();
+  if (st.phone.on) { phoneNode.stop(); phoneNode = null; st.phone.on = false; if (st.rec) stopRec(); }
+  else { phoneNode = ac.createBufferSource(); phoneNode.buffer = buf(phoneData()); phoneNode.loop = true; phoneNode.connect(an); st.phone.t0 = ac.currentTime + .02; phoneNode.start(st.phone.t0); st.phone.on = true; }
+  $("phplay").textContent = st.phone.on ? "■ Stop the phone" : "▶ Play on the phone"; $("phplay").classList.toggle("on", st.phone.on);
+  $("phstate").textContent = st.phone.on ? "playing into USB" : "stopped";
+}
+// what came in between two moments, at the IN LEVEL, as the FM-1 keeps it
+function captured(t0, t1) {
+  const d = phoneData(), g = Math.pow(10, st.usb.lvl / 20), p0 = Math.floor(((t0 - st.phone.t0) * SR)), n = Math.max(0, Math.floor((t1 - t0) * SR)), a = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const q = p0 + i; a[i] = q < 0 ? 0 : Math.max(-1, Math.min(1, d[q % d.length] * g)); }
+  return a;
+}
+function trimLead(a) { let i = 0; const th = .04; while (i < a.length && Math.abs(a[i]) < th) i++; return a.slice(Math.max(0, i - 40)); }
+function canRecord() {
+  if (st.usb.in === 0) { flash("USB IN is off: GLO, then K2 IN"); return false; }
+  if (!st.phone.on) { flash("Nothing comes in: play something on the phone"); return false; }
+  return true;
+}
+function startRec() {
+  if (!canRecord()) return; const free = RAM_S - ramSec();
+  if (free < .3) { flash("RAM full: hold SAVE on a take to free it"); return; }
+  st.rec = { t0: ac.currentTime, max: Math.min(TAKE_MAX, free) }; routePhone();
+}
+function stopRec() {
+  if (!st.rec) return; let a = captured(st.rec.t0, Math.min(ac.currentTime, st.rec.t0 + st.rec.max)); st.rec = null; routePhone();
+  if (st.usb.thr) a = trimLead(a);
+  if (a.length < SR * .05) { flash("Nothing heard: the take was not kept"); return; }
+  addTake(adpcm(a), "phone, " + SOURCES[st.phone.src][0].split(",")[0].toLowerCase()); st.tk = takes.length - 1;
+  st.chop = { s: 0, e: takes[st.tk].d.length, zoom: 0, mode: st.chop.mode };
+  flash(takes[st.tk].name + ": " + len(takes[st.tk].d).toFixed(1) + " s");
+}
+function quickStart(p) {
+  if (kits[st.kit].fixed) { flash("Pick MY KIT 1-3 (SELECT) to record a pad"); return; }
+  if (!canRecord()) return; st.quick = { p, t0: ac.currentTime }; routePhone();
+}
+function quickStop() {
+  const q = st.quick; if (!q) return; st.quick = null;
+  let a = trimLead(captured(q.t0, Math.min(ac.currentTime, q.t0 + QUICK_MAX)));
+  if (a.length < SR * .03) { flash("Nothing heard on " + padName(q.p)); return; }
+  if (kitSec(st.kit) - (kits[st.kit].pads[q.p] ? len(kits[st.kit].pads[q.p].d) : 0) + len(a) > KIT_S) { flash(kits[st.kit].name + " is full (7 s)"); return; }
+  const P = pad(adpcm(a)); P.quick = true; kits[st.kit].pads[q.p] = P; kits[st.kit].dirty = true; st.padSel = q.p;
+  flash(padName(q.p) + ": " + len(a).toFixed(2) + " s · SAVE held keeps it"); playPad(P);
+}
+
+// ------------------------------------------------------------------ controls
+const $ = id => document.getElementById(id);
+const kit = () => kits[st.kit], take = () => takes[st.tk];
+function slices() {
+  const t = take(); if (!t) return [];
+  const { s, e, mode } = st.chop;
+  if (mode === 0) return [[s, e]];
+  const starts = mode === 1 ? onsets(t.d, s, e) : Array.from({ length: +SLMODES[mode] }, (_, k) => Math.round(s + k * (e - s) / +SLMODES[mode]));
+  return starts.map((a, j) => [a, j + 1 < starts.length ? starts[j + 1] : e]);
+}
+function assign(p0) {
+  const t = take(); if (!t) { flash("No take: record one on TAKE"); return; }
+  if (kit().fixed) { flash("Pick MY KIT 1-3 to put sounds on pads"); return; }
+  const sl = slices(); let n = 0;
+  for (let j = 0; j < sl.length && p0 + j < NPAD; j++) {
+    const d = t.d.slice(sl[j][0], sl[j][1]), old = kit().pads[p0 + j];
+    if (kitSec(st.kit) - (old ? len(old.d) : 0) + len(d) > KIT_S) { flash(kit().name + " is full (7 s): " + n + " pads placed"); break; }
+    kit().pads[p0 + j] = pad(d); n++;
+  }
+  if (n) { kit().dirty = true; st.padSel = p0; flash(n === 1 ? "On " + padName(p0) : n + " slices on pads " + (p0 + 1) + "-" + (p0 + n)); playPad(kit().pads[p0]); }
+}
+function press(i) {
+  startAudio(); const p = padOfKey(i); if (p < 0) return;
+  st.held.set(i, 1);
+  if (st.editHeld && st.page !== "drums" && !kit().fixed) { st.editUsed = true; if (kit().pads[p]) { kit().pads[p] = null; kit().dirty = true; flash(padName(p) + " cleared"); } return; }
+  if (st.page === "drums" && st.recHeld) { quickStart(p); return; }
+  if (st.page === "chop" && st.recOn) { assign(p); return; }
+  st.padSel = p; playPad(kit().pads[p]);
+  if (!kit().pads[p] && st.page !== "kit") flash(padName(p) + " is empty");
+}
+function release(i) { st.held.delete(i); if (st.quick && padOfKey(i) === st.quick.p) quickStop(); }
+function knob(k, d) {
+  startAudio(); const P = st.page;
+  if (P === "drums") { if (k === 0) selKit(d); return; }
+  if (P === "take") {
+    if (k === 0 && takes.length) { st.tk = (st.tk + d + takes.length) % takes.length; st.chop = { s: 0, e: take().d.length, zoom: 0, mode: st.chop.mode }; }
+    if (k === 1) { st.usb.lvl = Math.max(-12, Math.min(12, st.usb.lvl + d)); routePhone(); }
+    if (k === 2) st.usb.thr = d > 0 ? 1 : 0;
+    return;
+  }
+  if (P === "chop") {
+    const t = take(); if (!t) return; const L = t.d.length, step = Math.max(32, Math.round(L / 200 / Math.pow(2, st.chop.zoom)));
+    if (k === 0) { st.chop.s = Math.max(0, Math.min(st.chop.e - 256, st.chop.s + d * step)); }
+    if (k === 1) { st.chop.e = Math.max(st.chop.s + 256, Math.min(L, st.chop.e + d * step)); }
+    if (k === 2) st.chop.zoom = Math.max(0, Math.min(5, st.chop.zoom + d));
+    if (k === 3) st.chop.mode = (st.chop.mode + d + SLMODES.length) % SLMODES.length;
+    return;
+  }
+  if (P === "pad") {
+    const p = kit().pads[st.padSel]; if (!p) { flash(padName(st.padSel) + " is empty"); return; } if (kit().fixed) { flash("The factory kit is fixed: copy it? (later)"); return; }
+    if (k === 0) p.tune = Math.max(-24, Math.min(24, p.tune + d));
+    if (k === 1) p.att = Math.max(0, Math.min(ATTS.length - 1, p.att + d));
+    if (k === 2) p.dec = Math.max(0, Math.min(DECS.length - 1, p.dec + d));
+    if (k === 3) p.lvl = Math.max(0, Math.min(10, p.lvl + d));
+    kit().dirty = true; clearTimeout(knob.t); knob.t = setTimeout(() => playPad(p), 120); return;
+  }
+  if (P === "kit") { if (k === 0) { st.slot = Math.max(1, Math.min(3, st.slot + d)); st.ask = 0; } return; }
+  if (P === "usb") {
+    if (k === 0) st.usb.out = (st.usb.out + d + 2) % 2;
+    if (k === 1) { st.usb.in = (st.usb.in + d + 3) % 3; routePhone(); }
+    if (k === 2) { st.usb.lvl = Math.max(-12, Math.min(12, st.usb.lvl + d)); routePhone(); }
+  }
+}
+function selKit(d) { st.kit = (st.kit + d + kits.length) % kits.length; st.slot = Math.max(1, st.kit); st.ask = 0; flash(kit().name); }
+function editTap() {
+  if (st.page === "usb") { st.page = "drums"; return; }
+  if (kit().fixed) { flash("FACTORY 808 is fixed: pick MY KIT 1-3 (SELECT) to sample"); return; }
+  st.page = { drums: "take", take: "chop", chop: "pad", pad: "kit", kit: "take" }[st.page]; st.ask = 0;
+}
+function saveHeld() {
+  if (st.page === "take") {
+    const t = take(); if (!t) return; takes.splice(st.tk, 1); st.tk = Math.max(0, Math.min(st.tk, takes.length - 1));
+    if (take()) st.chop = { s: 0, e: take().d.length, zoom: 0, mode: st.chop.mode };
+    flash(t.name + " thrown away: " + len(t.d).toFixed(1) + " s of RAM free"); return;
+  }
+  if (st.page === "kit" || st.page === "drums") {
+    if (kit().fixed) { flash("The factory kit is fixed"); return; }
+    const to = st.page === "drums" ? st.kit : st.slot;
+    if ((to !== st.kit && kits[to].saved && kits[to].saved.some(Boolean)) && st.ask !== to) { st.ask = to; flash("MY KIT " + to + " has sounds: hold SAVE again to replace them"); return; }
+    kits[to].pads = clonePads(kit().pads).map(p => p && { ...p, quick: false }); kits[to].saved = clonePads(kits[to].pads); kits[to].dirty = false;
+    if (to === st.kit) kit().pads.forEach(p => p && (p.quick = false)); st.ask = 0;
+    flash("Saved in MY KIT " + to + " · " + kitSec(to).toFixed(1) + " of 7 s"); return;
+  }
+  flash("SAVE held on KIT saves the pads");
+}
+function playBtn() {
+  startAudio();
+  if (st.page === "chop" && take()) { const { s, e } = st.chop; playRaw(take().d, s, e); return; }
+  if (st.page === "take" && take()) { playRaw(take().d, 0, take().d.length); return; }
+  if (st.page === "pad") { playPad(kit().pads[st.padSel]); return; }
+  // DRUMS: the pads in order, an eighth apart: how the chops sound together
+  const ps = kit().pads.map((p, i) => [p, i]).filter(x => x[0]); const e8 = 60 / 95 / 2;
+  ps.slice(0, 8).forEach(([p, i], j) => setTimeout(() => { playPad(p); st.flashKey = i; st.flashKeyT = performance.now(); }, j * e8 * 1000));
+}
+
+// ------------------------------------------------------------------ the panel
+const KNOBS = { drums: ["KIT", "", "", ""], take: ["TAKE", "IN LEVEL", "START", ""], chop: ["START", "END", "ZOOM", "SLICES"], pad: ["TUNE", "ATTACK", "DECAY", "LEVEL"], kit: ["SAVE TO", "", "", ""], usb: ["OUT", "IN", "IN LEVEL", ""] };
+const knobEls = [];
+for (let k = 0; k < 4; k++) {
+  const w = document.createElement("div"); w.className = "knob";
+  w.innerHTML = `<div class="dial" tabindex="0" role="slider" aria-label="Knob ${k + 1}"></div><div class="nm">K${k + 1}</div><div class="b"><button aria-label="Knob ${k + 1} down">−</button><button aria-label="Knob ${k + 1} up">+</button></div>`;
+  const dial = w.querySelector(".dial"); let y0 = null, acc = 0, ang = 0;
+  const turn = d => { ang += d * 12; dial.style.setProperty("--a", ang + "deg"); knob(k, d); };
+  dial.addEventListener("pointerdown", e => { y0 = e.clientY; acc = 0; dial.setPointerCapture(e.pointerId); });
+  dial.addEventListener("pointermove", e => { if (y0 === null) return; acc += y0 - e.clientY; y0 = e.clientY; while (Math.abs(acc) >= 8) { turn(Math.sign(acc)); acc -= 8 * Math.sign(acc); } });
+  dial.addEventListener("pointerup", () => y0 = null);
+  dial.addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  dial.addEventListener("keydown", e => { if (e.key === "ArrowUp" || e.key === "ArrowRight") { turn(1); e.preventDefault(); } if (e.key === "ArrowDown" || e.key === "ArrowLeft") { turn(-1); e.preventDefault(); } });
+  const [m, p] = w.querySelectorAll("button"); m.onclick = () => turn(-1); p.onclick = () => turn(1);
+  $("knobs").appendChild(w); knobEls.push(w.querySelector(".nm"));
+}
+const keyEls = [];
+(function () {
+  const ww = 100 / WHITES.length;
+  for (let i = 0; i < NK; i++) {
+    const el = document.createElement("div"), b = isBlack(LOW + i), wi = b ? WHITES.indexOf(i - 1) : WHITES.indexOf(i);
+    el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .3 : wi * ww) + "%"; el.style.width = (b ? ww * .6 : ww) + "%";
+    el.innerHTML = b ? "" : `<span class="lab">${wi + 1}</span>${PCKEYS[wi] || ""}`;
+    if (!b) {
+      el.addEventListener("pointerdown", e => { e.preventDefault(); el.setPointerCapture(e.pointerId); press(i); });
+      el.addEventListener("pointerup", () => release(i)); el.addEventListener("pointercancel", () => release(i));
+    }
+    $("keys").appendChild(el); keyEls.push(el);
+  }
+})();
+const down = new Set();
+addEventListener("keydown", e => { if (e.target.closest && e.target.closest("select,input,.dial")) return; const p = PCKEYS.indexOf(e.key.toLowerCase()); if (p >= 0 && !down.has(p) && !e.repeat) { down.add(p); press(WHITES[p]); e.preventDefault(); } });
+addEventListener("keyup", e => { const p = PCKEYS.indexOf(e.key.toLowerCase()); if (p >= 0 && down.has(p)) { down.delete(p); release(WHITES[p]); } });
+
+$("start").onclick = startAudio;
+SOURCES.forEach((s, i) => { const o = document.createElement("option"); o.value = i; o.textContent = s[0]; $("src").appendChild(o); });
+$("src").onchange = () => { const was = st.phone.on; if (was) phoneToggle(); st.phone.src = +$("src").value; if (was) phoneToggle(); };
+$("phplay").onclick = phoneToggle;
+$("selL").onclick = () => { startAudio(); if (st.page === "take" || st.page === "chop") knob(0, -1); else selKit(-1); };
+$("selR").onclick = () => { startAudio(); if (st.page === "take" || st.page === "chop") knob(0, 1); else selKit(1); };
+$("play").onclick = playBtn;
+$("home").onclick = () => { st.page = "drums"; st.ask = 0; };
+$("glo").onclick = () => { st.page = st.page === "usb" ? "drums" : "usb"; };
+const recB = $("rec");
+recB.addEventListener("pointerdown", () => { startAudio(); st.recHeld = true; st.recUsed = false; });
+recB.addEventListener("pointerup", () => {
+  st.recHeld = false; if (st.quick) { quickStop(); return; }
+  if (st.page === "take") { st.rec ? stopRec() : startRec(); }
+  else if (st.page === "chop") { st.recOn = !st.recOn; flash(st.recOn ? "REC on: a key takes the slices" : "REC off: keys only play"); }
+  else if (st.page === "drums") flash("Hold REC and hold a key: record onto that pad");
+});
+const editB = $("edit");
+editB.addEventListener("pointerdown", () => { startAudio(); st.editHeld = true; st.editUsed = false; });
+editB.addEventListener("pointerup", () => { st.editHeld = false; if (!st.editUsed) editTap(); });
+let saveT = null; const saveB = $("save");
+saveB.addEventListener("pointerdown", () => { startAudio(); saveT = setTimeout(() => { saveT = null; saveHeld(); }, 600); });
+const saveUp = () => { if (saveT) { clearTimeout(saveT); saveT = null; flash("Hold SAVE (0.6 s)"); } };
+saveB.addEventListener("pointerup", saveUp); saveB.addEventListener("pointerleave", () => { if (saveT) { clearTimeout(saveT); saveT = null; } });
+
+// web loader: a file becomes a take, as the loader page would send it
+async function loadFile(f) {
+  startAudio();
+  try {
+    const raw = await ac.decodeAudioData(await f.arrayBuffer()), n = Math.ceil(raw.duration * SR);
+    const off = new OfflineAudioContext(1, n, SR), s = off.createBufferSource(); s.buffer = raw; s.connect(off.destination); s.start();
+    let a = (await off.startRendering()).getChannelData(0).slice(); const full = a.length / SR;
+    const free = RAM_S - ramSec(); if (full > Math.min(TAKE_MAX, free)) a = a.slice(0, Math.floor(Math.min(TAKE_MAX, free) * SR));
+    if (a.length < SR * .05) { $("loadInfo").textContent = "No room: throw a take away on TAKE (SAVE held) first."; return; }
+    const t = addTake(adpcm(a), "web loader, " + f.name); st.tk = takes.length - 1; st.chop = { s: 0, e: t.d.length, zoom: 0, mode: st.chop.mode };
+    SOURCES.push([f.name, a]); const o = document.createElement("option"); o.value = SOURCES.length - 1; o.textContent = f.name; $("src").appendChild(o);
+    $("loadInfo").textContent = `${f.name}: ${raw.numberOfChannels} ch, ${raw.sampleRate} Hz, ${full.toFixed(1)} s → mono 22 kHz ADPCM, ${(len(a) * 11.025).toFixed(0)} KB` + (len(a) < full - .01 ? `, cut to ${len(a).toFixed(1)} s (a take is 10 s at most, ${RAM_S} s in all)` : "") + `. It is ${t.name} on the TAKE page; the phone can play it too.`;
+    st.page = "take";
+  } catch (e) { $("loadInfo").textContent = "That file could not be read as audio: try a WAV or MP3."; }
+}
+$("file").onchange = e => e.target.files[0] && loadFile(e.target.files[0]);
+const drop = $("drop");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+
+// ------------------------------------------------------------------ the screen
+const g = $("scr").getContext("2d");
+const C = { bg: "#0a0d13", fg: "#e8edf5", mute: "#7f8796", card: "#161b24", acc: "#d77cc2", accd: "#4a2a44", rec: "#ef5b5b", ok: "#3ccf7a", grid: "#1c2230", blue: "#4d8dff" };
+function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function T(s, x, y, size, col, w = 600, al = "left") { g.font = w + " " + size + "px Inter, sans-serif"; g.fillStyle = col; g.textAlign = al; g.textBaseline = "middle"; g.fillText(s, x, y); g.textAlign = "left"; }
+function wave(d, s, e, x, y, w, h, col) {
+  g.fillStyle = col; const n = e - s; if (n <= 0) return;
+  for (let c = 0; c < w; c++) { const a = s + Math.floor(c * n / w), b = s + Math.floor((c + 1) * n / w); let lo = 0, hi = 0; for (let i = a; i < Math.max(a + 1, b); i++) { const v = d[i] || 0; if (v < lo) lo = v; if (v > hi) hi = v; } g.fillRect(x + c, y + h / 2 - hi * h / 2, 1, Math.max(1, (hi - lo) * h / 2)); }
+}
+function meter(x, y, w, label, used, cap, col) {
+  T(label, x, y, 8.5, C.mute, 600); T(used.toFixed(1) + " / " + cap + " s", x + w, y, 8.5, C.fg, 600, "right");
+  g.fillStyle = C.grid; rr(x, y + 7, w, 6, 3); g.fill(); g.fillStyle = used > cap * .9 ? C.rec : col; rr(x, y + 7, Math.max(3, w * Math.min(1, used / cap)), 6, 3); g.fill();
+}
+function knobRow(vals) {
+  const L = KNOBS[st.page];
+  for (let k = 0; k < 4; k++) { if (!L[k]) continue; const x = 4 + k * 58; g.fillStyle = C.card; rr(x, 204, 54, 32, 5); g.fill(); T(L[k], x + 27, 213, 7, C.mute, 600, "center"); T(vals[k], x + 27, 226, 9.5, C.acc, 700, "center"); }
+}
+function top(name) {
+  T("DRUMS", 6, 12, 11, C.acc, 700); T(name, 50, 12, 10, C.mute, 600);
+  const k = kit(); T(k.name + (k.dirty ? " *" : ""), 234, 12, 10, k.dirty ? C.fg : C.mute, 600, "right");
+  g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
+}
+const sec = n => (n / SR).toFixed(2) + " s";
+function draw() {
+  g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240);
+  const P = st.page, k = kit();
+  if (P === "drums") {
+    top("");
+    T(k.name, 120, 40, 16, C.fg, 700, "center");
+    T(k.fixed ? "built in · SELECT: your kits" : kitSec(st.kit).toFixed(1) + " of 7 s · EDIT: the sampler", 120, 58, 8.5, C.mute, 500, "center");
+    for (let p = 0; p < NPAD; p++) {
+      const x = 8 + (p % 4) * 57, y = 70 + Math.floor(p / 4) * 32, pd = k.pads[p];
+      g.fillStyle = st.padSel === p ? C.accd : C.card; rr(x, y, 53, 28, 4); g.fill();
+      T(String(p + 1), x + 4, y + 7, 7, C.mute, 600); if (pd) { wave(pd.d, 0, pd.d.length, x + 4, y + 11, 45, 15, pd.quick ? C.ok : C.acc); }
+      const hk = WHITES[p]; if (st.held.has(hk) || (st.flashKey === p && performance.now() - st.flashKeyT < 150)) { g.strokeStyle = C.ok; g.lineWidth = 1.5; rr(x, y, 53, 28, 4); g.stroke(); }
+    }
+    if (st.quick) { const t = ac.currentTime - st.quick.t0; g.fillStyle = "rgba(10,13,19,.93)"; rr(30, 100, 180, 50, 8); g.fill(); T("● " + padName(st.quick.p), 120, 116, 11, C.rec, 700, "center"); T(Math.min(QUICK_MAX, t).toFixed(1) + " / 2 s · let go to keep it", 120, 134, 9, C.fg, 500, "center"); if (t >= QUICK_MAX) quickStop(); }
+  }
+  if (P === "take") {
+    top("TAKE");
+    if (!takes.length && !st.rec) T("No takes. Play the phone, tap REC.", 120, 70, 9.5, C.mute, 500, "center");
+    takes.slice(Math.max(0, st.tk - 3), Math.max(0, st.tk - 3) + 4).forEach((t, j) => {
+      const i = Math.max(0, st.tk - 3) + j, y = 28 + j * 28, sel = i === st.tk;
+      g.fillStyle = sel ? C.accd : C.card; rr(6, y, 228, 24, 4); g.fill();
+      T(t.name, 12, y + 8, 9, sel ? C.fg : C.mute, 700); T(len(t.d).toFixed(1) + " s", 228, y + 8, 9, C.fg, 600, "right");
+      T(t.from, 12, y + 18, 7, C.mute, 500); wave(t.d, 0, t.d.length, 120, y + 3, 70, 18, sel ? C.acc : "#5b4a63");
+    });
+    if (st.rec) {
+      const t = ac.currentTime - st.rec.t0; if (t >= st.rec.max) stopRec();
+      g.fillStyle = "rgba(10,13,19,.95)"; rr(6, 28, 228, 108, 6); g.fill();
+      T("● REC  " + Math.min(t, st.rec.max).toFixed(1) + " s", 14, 42, 13, C.rec, 700); T("of " + st.rec.max.toFixed(1) + " s", 226, 42, 9, C.mute, 600, "right");
+      const a = captured(st.rec.t0, ac.currentTime); wave(a, 0, a.length, 14, 58, Math.min(212, 212 * t / st.rec.max), 60, C.rec);
+      T("REC again: stop" + (st.usb.thr ? " · silence before the sound is cut" : ""), 14, 128, 8, C.mute, 500);
+    }
+    const lv = an ? (() => { const b = new Float32Array(an.fftSize); an.getFloatTimeDomainData(b); return b.reduce((m, v) => Math.max(m, Math.abs(v)), 0); })() : 0;
+    const inLv = st.phone.on && st.usb.in ? Math.min(1, lv * Math.pow(10, st.usb.lvl / 20)) : 0;
+    T("IN", 6, 148, 8.5, C.mute, 600); g.fillStyle = C.grid; rr(22, 145, 212, 6, 3); g.fill(); g.fillStyle = inLv > .95 ? C.rec : C.ok; rr(22, 145, Math.max(2, 212 * inLv), 6, 3); g.fill();
+    T(st.usb.in === 0 ? "USB IN is off (GLO)" : st.phone.on ? "the phone is playing" : "nothing comes in", 234, 157, 7.5, C.mute, 500, "right");
+    meter(6, 170, 228, "RAM, takes and unsaved pads", ramSec() + (st.rec ? Math.min(ac.currentTime - st.rec.t0, st.rec.max) : 0), RAM_S, C.blue);
+    knobRow([take() ? take().name.replace("TAKE ", "") : "-", (st.usb.lvl > 0 ? "+" : "") + st.usb.lvl + " dB", st.usb.thr ? "on sound" : "at once", ""]);
+  }
+  if (P === "chop") {
+    top("CHOP");
+    const t = take();
+    if (!t) T("No take: record one on TAKE", 120, 100, 9.5, C.mute, 500, "center");
+    else {
+      const L = t.d.length, span = L / Math.pow(2, st.chop.zoom), vs = Math.max(0, Math.min(L - span, st.chop.s - span * .1)), ve = vs + span, X = v => 6 + (v - vs) / span * 228;
+      g.fillStyle = C.card; rr(6, 28, 228, 92, 4); g.fill();
+      g.fillStyle = "rgba(215,124,194,.14)"; g.fillRect(Math.max(6, X(st.chop.s)), 28, Math.max(1, Math.min(234, X(st.chop.e)) - Math.max(6, X(st.chop.s))), 92);
+      wave(t.d, Math.floor(vs), Math.floor(ve), 6, 32, 228, 84, C.acc);
+      const sl = slices();
+      sl.forEach(([a], j) => { const x = X(a); if (x < 6 || x > 234) return; g.fillStyle = j === 0 ? C.fg : "#e8edf599"; g.fillRect(x, 28, 1, 92); T(String(j + 1), x + 2, 33, 7, C.fg, 700); });
+      const xe = X(st.chop.e); if (xe >= 6 && xe <= 234) { g.fillStyle = C.fg; g.fillRect(xe - 1, 28, 1, 92); }
+      if (st.prev) { const x = X(st.prev.s + (ac.currentTime - st.prev.t0) * SR); if (x >= 6 && x <= 234) { g.fillStyle = C.ok; g.fillRect(x, 28, 1.5, 92); } }
+      T(t.name + " · " + sec(st.chop.e - st.chop.s) + " used of " + sec(L), 6, 130, 8.5, C.mute, 600);
+      T(st.chop.mode ? sl.length + " slices" : "one sound", 234, 130, 8.5, C.fg, 700, "right");
+      g.fillStyle = st.recOn ? "#5a1f22" : C.card; rr(6, 140, 228, 24, 4); g.fill();
+      T(st.recOn ? "● REC on: press a key, the slices go on the pads from there up" : "REC off: the keys play. REC on to put slices on pads", 120, 152, 7.6, st.recOn ? C.fg : C.mute, 600, "center");
+      meter(6, 172, 228, k.name + " in flash", kitSec(st.kit), KIT_S, C.acc);
+    }
+    knobRow([t ? sec(st.chop.s) : "-", t ? sec(st.chop.e) : "-", "×" + Math.pow(2, st.chop.zoom), SLMODES[st.chop.mode]]);
+  }
+  if (P === "pad") {
+    top("PAD");
+    const p = k.pads[st.padSel];
+    T(padName(st.padSel), 6, 34, 12, C.fg, 700);
+    if (!p) T("Empty. Press a key to pick a pad.", 120, 100, 9.5, C.mute, 500, "center");
+    else {
+      T(len(p.d).toFixed(2) + " s", 234, 34, 9, C.mute, 600, "right");
+      g.fillStyle = C.card; rr(6, 46, 228, 110, 4); g.fill();
+      wave(p.d, 0, p.d.length, 6, 52, 228, 98, C.acc);
+      // the envelope over the sound, as ATTACK and DECAY shape it
+      const dur = len(p.d), at = ATTS[p.att] / 1000, dc = DECS[p.dec], lv = p.lvl / 10;
+      g.strokeStyle = C.fg; g.lineWidth = 1.5; g.beginPath();
+      for (let c = 0; c <= 228; c++) { const t = c / 228 * dur; const v = (t < at ? t / at : 1) * (isFinite(dc) && t > at ? Math.exp(-(t - at) / (dc / 3)) : 1) * lv; const y = 150 - v * 96; c ? g.lineTo(6 + c, y) : g.moveTo(6 + c, y); }
+      g.stroke();
+      T("EDIT held + key: clear a pad", 6, 168, 8, C.mute, 500);
+    }
+    knobRow(p ? [(p.tune > 0 ? "+" : "") + p.tune + " st", ATTS[p.att] + " ms", isFinite(DECS[p.dec]) ? DECS[p.dec] * 1000 + " ms" : "none", String(p.lvl)] : ["-", "-", "-", "-"]);
+  }
+  if (P === "kit") {
+    top("KIT");
+    T("Save the pads of " + k.name + " to:", 6, 34, 9, C.mute, 600);
+    for (let s = 1; s <= 3; s++) {
+      const y = 44 + (s - 1) * 40, sel = st.slot === s;
+      g.fillStyle = sel ? C.accd : C.card; rr(6, y, 228, 34, 5); g.fill();
+      T("MY KIT " + s, 14, y + 10, 10, sel ? C.fg : C.mute, 700);
+      T(kits[s].saved && kits[s].saved.some(Boolean) ? kits[s].saved.filter(Boolean).length + " pads" : "empty", 226, y + 10, 8.5, C.mute, 600, "right");
+      g.fillStyle = C.grid; rr(14, y + 21, 212, 6, 3); g.fill(); g.fillStyle = C.acc; rr(14, y + 21, Math.max(2, 212 * savedSec(s) / KIT_S), 6, 3); g.fill();
+    }
+    T(st.ask ? "Hold SAVE again to replace MY KIT " + st.ask : "SAVE held: save · " + kitSec(st.kit).toFixed(1) + " of 7 s", 120, 176, 9, st.ask ? C.rec : C.fg, 700, "center");
+    T("Takes stay in RAM until thrown away (TAKE)", 120, 192, 7.5, C.mute, 500, "center");
+    knobRow(["KIT " + st.slot, "", "", ""]);
+  }
+  if (P === "usb") {
+    T("GLO", 6, 12, 11, C.blue, 700); T("SYSTEM · USB AUDIO", 34, 12, 10, C.mute, 600); g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
+    const rows = [["OUT", ["mix", "4 tracks"][st.usb.out], ["stereo, what you hear", "each track on its own pair (stems)"][st.usb.out]],
+      ["IN", ["off", "hear", "sampler"][st.usb.in], ["nothing comes in", "the phone plays through the FM-1", "heard only while recording"][st.usb.in]],
+      ["IN LEVEL", (st.usb.lvl > 0 ? "+" : "") + st.usb.lvl + " dB", "for a quiet or loud phone"]];
+    rows.forEach(([a, b, c], j) => { const y = 32 + j * 46; g.fillStyle = C.card; rr(6, y, 228, 40, 5); g.fill(); T(a, 14, y + 12, 9, C.mute, 700); T(b, 226, y + 12, 11, C.fg, 700, "right"); T(c, 14, y + 29, 8, C.mute, 500); });
+    T("USB audio goes both ways at once", 120, 186, 8, C.mute, 500, "center");
+    knobRow([["mix", "4 trk"][st.usb.out], ["off", "hear", "smpl"][st.usb.in], (st.usb.lvl > 0 ? "+" : "") + st.usb.lvl + " dB", ""]);
+  }
+  if (performance.now() - st.msgT < 1800 && st.msg) { g.fillStyle = "rgba(10,13,19,.95)"; rr(8, 184, 224, 18, 5); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(st.msg, 120, 193, 8, C.fg, 600, "center"); }
+}
+const HINTS = {
+  drums: "DRUMS page. White keys play the pads. SELECT picks the kit. Hold REC and hold a key to record onto that pad (MY KIT 1-3). EDIT: the sampler pages. PLAY: the pads in order.",
+  take: "TAKE. REC starts and stops a take from USB (10 s at most). K1 or SELECT picks a take; PLAY hears it. SAVE held throws the take away.",
+  chop: "CHOP. K1 start, K2 end, K3 zoom, K4 slices. PLAY hears the part. REC on + a key: the slices go on the pads. EDIT held + key clears a pad.",
+  pad: "PAD. Press a key to pick its pad. K1 TUNE, K2 ATTACK, K3 DECAY, K4 LEVEL. EDIT held + key clears a pad.",
+  kit: "KIT. K1 picks MY KIT 1, 2 or 3; SAVE held saves the pads there. HOME: back to DRUMS.",
+  usb: "GLO · USB AUDIO. K1 OUT, K2 IN, K3 IN LEVEL. GLO or HOME: back."
+};
+function frame() {
+  draw();
+  $("hint").textContent = HINTS[st.page];
+  KNOBS[st.page].forEach((n, k) => knobEls[k].textContent = n ? "K" + (k + 1) + " " + n : "K" + (k + 1));
+  recB.classList.toggle("on", !!(st.rec || st.quick || (st.page === "chop" && st.recOn)));
+  for (let i = 0; i < NK; i++) {
+    const el = keyEls[i], p = padOfKey(i); if (p < 0) continue;
+    el.classList.toggle("held", st.held.has(i));
+    el.classList.toggle("on", p === st.padSel && (st.page === "pad"));
+    el.classList.toggle("dim", !!kit().pads[p]);
+    el.classList.toggle("wr", st.page === "chop" && st.recOn);
+  }
+  if (an && st.phone.on) { const b = new Float32Array(an.fftSize); an.getFloatTimeDomainData(b); const m = b.reduce((x, v) => Math.max(x, Math.abs(v)), 0); $("phlvl").style.width = Math.min(100, m * 100) + "%"; } else $("phlvl").style.width = "0";
+  requestAnimationFrame(frame);
+}
+frame();
+})();
+</script>

@@ -1,0 +1,146 @@
+<title>Sound Browser Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: the FM-1 panel (screen, the knobs that matter here, the keys), then how it works and the questions. */
+:root {
+  --bg: #eceef2; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #d6dae1;
+  --dev: #23262c; --dev-edge: #31353d; --btn: #3a3f48; --btn-fg: #e9edf3; --acc: #4d8dff; --accd: #1d3a6e;
+  --wk: #d7dbe3; --bk: #1b1e24;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 22px 50px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; }
+.lead { color: var(--muted); margin: 4px 0 14px; max-width: 80ch; }
+.dev { background: var(--dev); border: 1px solid var(--dev-edge); border-radius: 18px; padding: 16px; color: var(--btn-fg); overflow-x: auto; }
+.top { display: grid; grid-template-columns: auto 1fr; gap: 18px; min-width: 800px; }
+.screen { width: 384px; height: 384px; background: #0a0d13; border-radius: 6px; }
+.controls { display: grid; gap: 10px; align-content: start; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.lab { font-size: .72rem; color: #aab2bf; letter-spacing: .04em; text-transform: uppercase; min-width: 92px; }
+.btn { font: 600 .78rem var(--body); background: var(--btn); color: var(--btn-fg); border: 1px solid #4a505a; border-radius: 6px; padding: 7px 11px; cursor: pointer; user-select: none; }
+.btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.hint { font-size: .8rem; color: #c3cad5; max-width: 470px; }
+.keys { position: relative; height: 120px; margin-top: 14px; min-width: 800px; user-select: none; touch-action: none; }
+.k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; box-sizing: border-box; }
+.k.w { background: var(--wk); height: 120px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); height: 74px; z-index: 2; border: 1px solid #000; }
+.k.held { box-shadow: inset 0 0 0 120px rgba(60,207,122,.9); }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font: 600 1rem var(--display); }
+.card li { margin: 4px 0; font-size: .87rem; }
+.card ul, .card ol { padding-left: 18px; margin: 4px 0; }
+.q { border-color: var(--acc); }
+</style>
+
+<div class="wrap">
+  <h1>Sound Browser Lab</h1>
+  <p class="lead">How you find a sound among your 208 picks, sorted by type. Turn <b>PRESETS</b> on any track page: the sound list opens over the page on the track's type, PRESETS walks the sounds, <b>K1</b> jumps to another type. Play the keys while it is open to hear the sound; it closes by itself 2 seconds after you stop turning or playing, or with HOME. Sounds marked with a dot are the first ones to be built (one of each type); the rest follow engine by engine.</p>
+  <div class="dev">
+    <div class="top">
+      <canvas class="screen" id="scr" width="240" height="240" aria-label="The FM-1 screen"></canvas>
+      <div class="controls">
+        <div class="row"><span class="lab">PRESETS</span><button class="btn" id="pL">◀ turn</button><button class="btn" id="pR">turn ▶</button><span class="hint">the sound (on into the next type at the end)</span></div>
+        <div class="row"><span class="lab">K1</span><button class="btn" id="kL">◀ turn</button><button class="btn" id="kR">turn ▶</button><span class="hint">only while the list is open: the type (otherwise the page's own K1)</span></div>
+        <div class="row"><span class="lab">ALGORITHM</span><button class="btn" id="aL">◀ track</button><button class="btn" id="aR">track ▶</button><span class="hint">each track opens on its own type</span></div>
+        <div class="row"><span class="lab">Buttons</span><button class="btn" id="home">HOME</button><span class="hint">closes the list (the sound chosen stays)</span></div>
+        <div class="hint" id="hint">You can also use the mouse wheel over the screen: it turns PRESETS.</div>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+  <div class="notes">
+    <div class="card"><h3>How it works</h3><ul>
+      <li>The list is the 11 types down the left, the sounds of the type on the right (names only, twelve at a time, sounds that sound alike next to each other), the one chosen lit, its number in the type at the top ("3 / 32").</li>
+      <li>PRESETS turns one sound at a time; past the last sound of a type it goes on to the next type, so turning alone walks through everything.</li>
+      <li>K1 jumps a whole type, back to where you were in it, only while the list is open ("K1 GROUP" under the groups says so); otherwise K1 is the page's own knob.</li>
+      <li>Each track remembers its sound. A new BASS track opens on Bass, MELODY on Lead, CHORDS on Keys, DRUMS on Drums.</li>
+    </ul></div>
+    <div class="card q"><h3>Your answers (2026-11-21)</h3><ol>
+      <li>It closes by itself after 2 s; playing keeps it open, so you can hold a chord and turn PRESETS.</li>
+      <li>Names only, compact, sounds that sound alike together.</li>
+      <li>The first 11 sounds (the dots): yes.</li>
+    </ol></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const DATA = [["Bass", [["PUNCH BASS"], ["DIRTY BASS"], ["BASS"], ["ARP BASS"], ["Bassment"], ["SEQ BASS"], ["MINI BASS"], ["TUBE BASS"], ["Grit Bass"], ["ACID 303"], ["MONO BASS"], ["RUBBER SUB"], ["WOBBLE"], ["WOBBLE 2"], ["SUB BASS"], ["SUB BASS 2"], ["BASS IN FIFTHS"], ["Dub Plate"], ["Bass Clarin"], ["Bass Face"], ["808 SLIDE"], ["Station Bass"], ["WOBBLE 3"], ["808 BOOM"], ["Acid Slide"], ["CZ BASS"], ["FM BASS"], ["Fm Growl"], ["GROWL"], ["Meow Bass"], ["OCTAVE PUMP"], ["Wobble Dub"]]], ["Lead", [["SYNC LEAD"], ["UNISON LD"], ["SOLO LEAD"], ["SYNC LEAD 2"], ["FUZZ LEAD"], ["NUMAN"], ["BIG HOOK"], ["SCREAM LD"], ["MONO SYNC"], ["Sync Screamer"], ["PULSE HERO"], ["OVERDRIVE"], ["EMERSON"], ["HONEY LEAD"], ["G-FUNK LD"], ["Sync Swellpad"], ["ACID LEAD"], ["TITAN"], ["Clarinet"], ["G-FUNK"], ["HOOVER"], ["Lead II"], ["MELLOW MAN"], ["No Whining"], ["Recorder"], ["S&H Computer"], ["SINE SOLO"], ["SQUARE LEAD"], ["SYNC II"], ["SYNC LEAD 3"], ["Square Solo"], ["Sync Punch"], ["TALKBOX"], ["UNISON GLIDE W RES"], ["Velocipeed"]]], ["Keys", [["CLAV SOFT"], ["E.PIANO"], ["HARPSICHORD"], ["Forever Keys"], ["E Piano Tre"], ["EP"], ["KEYS"], ["MALLET KEY"]]], ["Organ", [["Combo Organ"], ["FULL ORGAN"], ["Organ I"], ["Organ II"], ["HAMMOND"]]], ["Pad", [["MIDNIGHT ST"], ["NIGHT SWIM"], ["WARM PAD"], ["LUSH PAD"], ["SLOW STRINGS"], ["HEAVEN"], ["CLOUD PAD"], ["It's a Prophet 5"], ["Moving Stri"], ["SOLINA"], ["SAW WALL"], ["ChorusLayer"], ["Poly McFat"], ["SHIMMER"], ["SUNRISE"], ["Midnight PWM"], ["CLOUD PAD 2"], ["MOONLIGHT"], ["WARM PAD 2"], ["PIZZICATO"], ["MELLOW PULSE"], ["SOUL OOH"], ["NEON PAD"], ["VINTAGE PD"], ["Ripples"], ["SOFT PAD"], ["House Mover"], ["ECLIPSE"], ["Fantastic Five"], ["Frontier Or"], ["PULSE PAD"], ["DREAMER"], ["STRINGS"], ["Sustainer"], ["Born in the 80's"], ["CZ STRING"], ["Celtic Moon"], ["DARK PAD"], ["Duotone"], ["Funky II"], ["GLASS PAD"], ["HAZE"], ["NIGHTDRIVE"], ["NORTHERN SKY"], ["Nice n Smooth"], ["OCTAVE SAWTEETH"], ["Orchestral"], ["Rolling Wah"], ["Strings III"], ["Synth Pad"], ["VOX PAD"], ["Xylophone"]]], ["Strings & voices", [["LUSH STRINGS"], ["MELLOTRON"], ["ALIEN CHOIR"], ["Choir"], ["ENSEMBLE STR"], ["SOLO VIOLIN"], ["STR CLOUD"]]], ["Brass & winds", [["POLY BRASS"], ["BANKS"], ["Regal Movement"], ["ANALOG BRASS"], ["BRASS 2"], ["FRENCH HORN"], ["SAX LEAD"], ["Brass"], ["Brass Swell"], ["DREAM FLUTE"], ["Flutes"], ["SAX BRASS"], ["SYNTH BRASS"], ["TIN WHISTLE"], ["TROMBONE"], ["TRUMPET"], ["WHISTLE"]]], ["Pluck, bell & arp", [["MARIMBA"], ["HARP"], ["PLUCK ARP"], ["SHADOW ARP"], ["GLASS ARP"], ["DREAM ARP"], ["ARP CHORD"], ["RANDOM ARPEGGIATOR"], ["BELL LEAD"], ["CHIME BOX"], ["DARK ARP"], ["I FEEL ARP"], ["Punchy Bells"], ["RIN"], ["Sparkle Ponies"], ["TICK PLK"], ["TRAP PLUCK"]]], ["Chip", [["8-BIT ARP"], ["8BIT ARP"], ["ARP 8BIT"], ["GAME LEAD"], ["NES BASS"]]], ["Effects & drones", [["SPACE DRONE"], ["RISER"], ["RUMBLE"], ["DRONE"], ["RAYGUN"], ["Sweep I"], ["DRONE UNI"], ["FX Sweep"], ["Helicopter"], ["JET SWEEP"], ["LOW DRONE"], ["WIND"], ["SLOW SWEEP"], ["Pluck Sweep"], ["80s Sci Fi Drop"], ["FIFTH DRONE"], ["FX Rise 2"], ["FX Sweep 1"], ["Riser Chord"], ["SIREN"], ["SUB DROP"], ["SWEEP PAD"], ["Slow Sweep Pad"], ["TELEPHONE"], ["WIND RISE"]]], ["Drums", [["USER"], ["Dusty"], ["KIT 80"], ["808 KIT"], ["HIHAT"]]]];
+const SHORT = ["BASS", "LEAD", "KEYS", "ORGAN", "PAD", "STRINGS", "BRASS", "PLUCK", "CHIP", "FX", "DRUMS"];
+const FIRST = new Set(["MINI BASS", "EMERSON", "E.PIANO", "HAMMOND", "DREAMER", "MELLOTRON", "TRUMPET", "PLUCK ARP", "8-BIT ARP", "SPACE DRONE", "Dusty"]);
+const TRACKS = [["CHORDS", 2, "#4d8dff"], ["BASS", 0, "#f2a33c"], ["MELODY", 1, "#3ccf7a"], ["DRUMS", 10, "#d77cc2"]];
+let heldN = 0;
+const st = { trk: 0, open: 0, openT: 0, sel: TRACKS.map(t => [t[1], 0]), pos: DATA.map(() => 0) };
+const $ = id => document.getElementById(id);
+const g = $("scr").getContext("2d");
+const C = { bg: "#0a0d13", fg: "#e8edf5", mute: "#7f8796", card: "#161b24", acc: "#4d8dff", accd: "#1d3a6e", dot: "#3ccf7a" };
+function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function T(s, x, y, size, col, w = 600, al = "left") { g.font = w + " " + size + "px Inter, sans-serif"; g.fillStyle = col; g.textAlign = al; g.textBaseline = "middle"; g.fillText(s, x, y); g.textAlign = "left"; }
+function fit(s, w, size, wt) { g.font = wt + " " + size + "px Inter, sans-serif"; while (s.length > 1 && g.measureText(s).width > w) s = s.slice(0, -1); return s; }
+const cur = () => st.sel[st.trk];
+function turn(d) {
+  let [t, i] = cur(); i += d;
+  while (i < 0) { t = (t + DATA.length - 1) % DATA.length; i += DATA[t][1].length; }
+  while (i >= DATA[t][1].length) { i -= DATA[t][1].length; t = (t + 1) % DATA.length; }
+  st.sel[st.trk] = [t, i]; st.pos[t] = i; open();
+}
+function jump(d) { let [t] = cur(); t = (t + d + DATA.length) % DATA.length; st.sel[st.trk] = [t, Math.min(st.pos[t], DATA[t][1].length - 1)]; open(); }
+function open() { st.open = 1; st.openT = performance.now(); }
+function draw() {
+  if (st.open && heldN > 0) st.openT = performance.now();      // a key held keeps it open
+  if (st.open && performance.now() - st.openT > 2000) st.open = 0;
+  const [tn, tt, tc] = TRACKS[st.trk], [t, i] = cur(), s = DATA[t][1][i];
+  g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240); g.fillStyle = tc; g.fillRect(0, 0, 240, 2);
+  T(tn, 6, 12, 11, C.fg, 600); T("PLAY", 62, 12, 11, C.mute, 600); T("C maj   90", 234, 12, 11, C.mute, 600, "right");
+  g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
+  // the track page underneath: the sound's name where the page shows it
+  T("SOUND", 8, 40, 8, C.mute, 600); T(fit(s[0], 220, 22, 700), 8, 62, 22, C.fg, 700);
+  T(DATA[t][0] + " · " + (i + 1) + " / " + DATA[t][1].length, 8, 86, 10, C.mute, 500);
+  T("(the track's own page, as it is)", 120, 160, 9, "#3a4150", 500, "center");
+  if (!st.open) return;
+  g.fillStyle = "rgba(10,13,19,.7)"; g.fillRect(0, 22, 240, 218);
+  g.fillStyle = "#0e121a"; rr(3, 25, 234, 212, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke();
+  // the types, down the left
+  DATA.forEach((d, k) => { const y = 35 + k * 17, on = k === t; if (on) { g.fillStyle = C.accd; rr(6, y - 8, 64, 16, 4); g.fill(); }
+    T(SHORT[k], 10, y, 8, on ? "#fff" : C.mute, 700); T(String(d[1].length), 66, y, 7.5, on ? "#cfe0ff" : "#4a5263", 600, "right"); });
+  g.fillStyle = "#222936"; g.fillRect(73, 30, 1, 202);
+  g.fillStyle = C.card; rr(6, 223, 64, 11, 3); g.fill(); T("K1 GROUP", 38, 228.5, 7, C.acc, 700, "center");
+  // the sounds of the type, the chosen one in the middle
+  T(DATA[t][0].toUpperCase(), 80, 36, 8.5, C.acc, 700); T((i + 1) + " / " + DATA[t][1].length, 230, 36, 8.5, C.mute, 600, "right");
+  const L = DATA[t][1], ROWS = 12, first = Math.max(0, Math.min(i - 5, L.length - ROWS));
+  for (let r = 0; r < ROWS && first + r < L.length; r++) {     // compact rows; sounds that sound alike sit together
+    const k = first + r, y = 52 + r * 15, on = k === i, it = L[k];
+    if (on) { g.fillStyle = C.acc; rr(77, y - 7, 156, 14, 3); g.fill(); }
+    if (FIRST.has(it[0])) { g.fillStyle = on ? "#fff" : C.dot; g.beginPath(); g.arc(83, y, 2.2, 0, 7); g.fill(); }
+    T(fit(it[0], 136, 9.5, on ? 700 : 500), 89, y, 9.5, on ? "#fff" : C.fg, on ? 700 : 500);
+  }
+  if (first > 0) T("▲", 155, 44, 6.5, C.mute, 700, "center");
+  if (first + ROWS < L.length) T("▼", 155, 233, 6.5, C.mute, 700, "center");
+}
+(function loop() { draw(); requestAnimationFrame(loop); })();
+$("pL").onclick = () => turn(-1); $("pR").onclick = () => turn(1);
+$("kL").onclick = () => { if (st.open) jump(-1); else msg(); }; $("kR").onclick = () => { if (st.open) jump(1); else msg(); };
+function msg() { $("hint").textContent = "K1 is the page's own knob (HELP on CHORDS PLAY) until the list is open: turn PRESETS first."; }
+$("aL").onclick = () => { st.trk = (st.trk + 3) % 4; st.open = 0; }; $("aR").onclick = () => { st.trk = (st.trk + 1) % 4; st.open = 0; };
+$("home").onclick = () => { st.open = 0; };
+$("scr").addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY > 0 ? 1 : -1); }, { passive: false });
+// the keys: a plain tone so you feel the keys keep playing while the list is open (the real sound is the FM-1's)
+let ac = null;
+function tone(n) { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), gg = ac.createGain(), T0 = ac.currentTime;
+  o.type = "triangle"; o.frequency.value = 440 * Math.pow(2, (n - 69) / 12); gg.gain.setValueAtTime(.2, T0); gg.gain.exponentialRampToValueAtTime(.001, T0 + .6); o.connect(gg); gg.connect(ac.destination); o.start(); o.stop(T0 + .7); }
+const LOW = 53, isB = n => [1,3,6,8,10].includes(n % 12), WH = []; for (let i = 0; i < 27; i++) if (!isB(LOW + i)) WH.push(i);
+for (let i = 0; i < 27; i++) {
+  const el = document.createElement("div"), b = isB(LOW + i), wi = b ? WH.indexOf(i - 1) : WH.indexOf(i), ww = 100 / WH.length;
+  el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .3 : wi * ww) + "%"; el.style.width = (b ? ww * .6 : ww) + "%";
+  el.addEventListener("pointerdown", e => { e.preventDefault(); if (!el.classList.contains("held")) heldN++; el.classList.add("held"); tone(LOW + i); if (st.open) st.openT = performance.now(); });
+  ["pointerup", "pointerleave"].forEach(ev => el.addEventListener(ev, () => { if (el.classList.contains("held")) heldN--; el.classList.remove("held"); }));
+  $("keys").appendChild(el);
+}
+})();
+</script>

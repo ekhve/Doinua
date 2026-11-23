@@ -104,6 +104,12 @@ Issue **#1 "Factory status"** is the live list. In order:
 - K-WASUB picks (after the audition page).
 - Drum samples; sampler answers; sampled piano yes/no; logo; Kursaal sketch.
 
+## The labs (screen designs)
+
+`docs/labs/` holds the interactive HTML mock-ups the owner shaped (index: `docs/labs/README.md`). **A lab is the
+contract for its screen** (D-084). The next one to build is `sound-edit-lab.html`. The owner's earlier published
+pages on claude.ai are private to the owner; everything an agent needs is in the repo.
+
 ## Where things are
 
 `fm1kit/include/fm1kit.h` (the API) · `fm1kit/src/` (synth.c voices/mix/reverb, engines.c engine glue, fxbus.c,

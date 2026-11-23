@@ -1,0 +1,615 @@
+<title>Sequencer Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: the FM-1 panel (screen, knobs, buttons, 27 keys), then how to try each view. */
+:root {
+  --bg: #eceef2; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #d6dae1;
+  --dev: #23262c; --dev-edge: #31353d; --btn: #3a3f48; --btn-fg: #e9edf3; --acc: #4d8dff; --accd: #1d3a6e; --rec: #ef5b5b; --good: #3ccf7a;
+  --wk: #d7dbe3; --bk: #1b1e24;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 22px 50px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; }
+.lead { color: var(--muted); margin: 4px 0 14px; max-width: 80ch; }
+.start { font: 600 .9rem var(--body); padding: 7px 14px; border-radius: 8px; border: 0; background: var(--acc); color: #fff; cursor: pointer; margin-bottom: 12px; }
+.dev { background: var(--dev); border: 1px solid var(--dev-edge); border-radius: 18px; padding: 16px; color: var(--btn-fg); overflow-x: auto; }
+.top { display: grid; grid-template-columns: auto 1fr; gap: 18px; min-width: 800px; }
+.screen { width: 384px; height: 384px; background: #0a0d13; border-radius: 6px; }
+.controls { display: grid; gap: 12px; align-content: start; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.knob { width: 74px; text-align: center; font-size: .7rem; color: #aab2bf; user-select: none; }
+.knob .dial { width: 54px; height: 54px; margin: 0 auto 4px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #5a606b, #2a2e35); border: 2px solid #4a4f58; position: relative; cursor: ns-resize; touch-action: none; }
+.knob .dial::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 14px; margin-left: -1.5px; background: #e9edf3; border-radius: 2px; transform-origin: 50% 21px; transform: rotate(var(--a, 0deg)); }
+.knob .b { display: flex; gap: 4px; justify-content: center; margin-top: 2px; }
+.knob button, .btn { font: 600 .72rem var(--body); background: var(--btn); color: var(--btn-fg); border: 1px solid #4a505a; border-radius: 6px; padding: 6px 9px; cursor: pointer; user-select: none; touch-action: none; }
+.knob button { padding: 2px 8px; }
+.btn.on { background: var(--accd); border-color: var(--acc); }
+.btn.rec.on { background: #5a1f22; border-color: var(--rec); }
+.btn:focus-visible, .knob button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.keys { position: relative; height: 150px; margin-top: 16px; min-width: 800px; user-select: none; touch-action: none; }
+.k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; font: 600 .6rem var(--body); padding-bottom: 6px; box-sizing: border-box; }
+.k.w { background: var(--wk); color: #555c68; height: 150px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); color: #8a909b; height: 92px; z-index: 2; border: 1px solid #000; }
+.k .lab { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: .56rem; }
+.k.dim { box-shadow: inset 0 0 0 150px rgba(77,141,255,.16); }
+.k.half { box-shadow: inset 0 0 0 150px rgba(77,141,255,.45); color: #fff; }
+.k.on { box-shadow: inset 0 0 0 150px rgba(77,141,255,.92); color: #fff; }
+.k.fx { box-shadow: inset 0 0 0 150px rgba(242,163,60,.55); color: #fff; }
+.k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.9) !important; color: #fff; }
+.hint { font-size: .78rem; color: #aab2bf; max-width: 470px; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 12px; margin-top: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font: 600 1rem var(--display); }
+.card li { margin: 4px 0; font-size: .87rem; }
+.card ul { padding-left: 18px; margin: 4px 0; }
+</style>
+
+<div class="wrap">
+  <h1>Sequencer Lab</h1>
+  <p class="lead">Version 2, from your answers of 2026-11-19. A <b>sequence</b> is one section of all four tracks; the <b>song</b> is sequences in order. Press <b>Start sound</b>, then <b>PLAY</b>. <b>SEQ</b> steps through the views SONG → SEQUENCE → STEPS → MOTION. A demo song with three sequences is loaded.</p>
+  <button class="start" id="start">Start sound</button> <button class="start" id="newsong" style="background:#5d6573">New song (empty)</button>
+  <div class="dev">
+    <div class="top">
+      <canvas class="screen" id="scr" width="240" height="240" aria-label="The FM-1 screen"></canvas>
+      <div class="controls">
+        <div class="row" id="knobs"></div>
+        <div class="row">
+          <button class="btn" id="seq">SEQ</button>
+          <button class="btn" id="trkL">ALGORITHM ◀</button>
+          <button class="btn" id="trkR">ALGORITHM ▶</button>
+          <button class="btn" id="octD">OCT −</button>
+          <button class="btn" id="octU">OCT +</button>
+          <button class="btn" id="selL">SELECT ◀</button>
+          <button class="btn" id="selR">SELECT ▶</button>
+        </div>
+        <div class="row">
+          <button class="btn" id="play">PLAY</button>
+          <button class="btn rec" id="rec">REC</button>
+          <button class="btn" id="edit" title="Hold">EDIT (hold)</button>
+          <button class="btn" id="save" title="Hold 0.5 s: undo the last take">SAVE (hold)</button>
+          <button class="btn" id="fx" title="Hold for punch-in FX; double-click to keep it open">FX (hold)</button>
+          <button class="btn" id="home">HOME</button>
+          <button class="btn" id="glo" title="Hold: help for this page">GLO (hold)</button>
+        </div>
+        <div class="hint" id="hint"></div>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+  <div class="notes">
+    <div class="card"><h3>SONG</h3><ul>
+      <li>Lit keys are your sequences; dark keys are empty. <b>Stopped:</b> tap a lit key and it goes into the song after the cursor. <b>Playing:</b> it plays next, on the bar; with REC on, the order you play becomes the song.</li>
+      <li><b>Copy:</b> hold a lit key and tap a dark one. <b>Delete:</b> EDIT + the key, then EDIT + the key again within 3 s (the screen asks).</li>
+      <li>K1 cursor, K2 repeats (drawn as dashed copies), K3 move, K4 which sequence the block plays. EDIT tapped removes the block. The song scrolls; the lanes are named by their template.</li>
+      <li><b>New song (empty)</b> above: one empty sequence, 1, in a one-block song.</li>
+    </ul></div>
+    <div class="card"><h3>SEQUENCE</h3><ul>
+      <li>SELECT picks the sequence, ALGORITHM the track. REC while playing records as played; velocity from where you press the key.</li>
+      <li>K1 <b>QUANTIZE</b> (off, 1/4, 1/8, 1/8T, 1/16, 1/16T, 1/32, 1/64), K2 <b>SWING</b> (50–75%), K3 <b>STRENGTH</b> (how far notes move), K4 <b>LENGTH</b>. The grid lines show the quantize; a faint line shows where each note was played. Nothing is lost: turn it back and the timing is yours again.</li>
+      <li>SAVE held: undo the last take. EDIT + REC: clear the track (SAVE held brings it back). EDIT + key while playing: erase that note as it passes.</li>
+    </ul></div>
+    <div class="card"><h3>STEPS</h3><ul>
+      <li>K1 <b>GRID</b> (1/4 … 1/64, triplets too); the view zooms with it, 16 cells around the cursor. K2 <b>STEP</b>, K3 <b>LENGTH</b>, K4 <b>VELOCITY</b>.</li>
+      <li>REC off: the keys only sound. REC on: a key or a chord writes at the cursor. EDIT + key removes.</li>
+    </ul></div>
+    <div class="card"><h3>MOTION and FX</h3><ul>
+      <li>MOTION lists the lanes the track has recorded, then the knobs it could record, in real units (Hz, %, dB, octaves). K1 picks the lane, K2 is its knob: with REC on while playing, turns are recorded; again over it replaces. EDIT tapped clears the lane. In the FM-1 any knob of any page records the same way.</li>
+      <li>FX held (double-click to keep it open): punch-in effects on the white keys, K1 TARGET ALL or one track; recorded with REC on.</li>
+    </ul></div>
+  </div>
+
+<script>
+(() => {
+"use strict";
+const LOW = 53, NK = 27, isBlack = n => [1,3,6,8,10].includes(n % 12);
+const TRK = [
+  { name: "CHORDS", col: "#4d8dff", kind: "keys" }, { name: "BASS", col: "#f2a33c", kind: "bass" },
+  { name: "MELODY", col: "#3ccf7a", kind: "lead" }, { name: "DRUMS", col: "#d77cc2", kind: "drums" }];
+const DRUMS = ["kick", "snare", "hat", "open hat", "clap", "tom", "rim", "shaker", "crash"];
+const WHITES = []; for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) WHITES.push(i);
+const drumOfKey = i => WHITES.indexOf(i);           // white key -> drum sound index
+const SPB = 4;                                       // 16ths a beat
+// ---------------------------------------------------------------- the song model
+// note: { t (in 16ths, as played), d (16ths), n (midi, or drum index), v (0..1), vib (0..1) }
+const seqs = Array.from({ length: 16 }, () => null);
+const newSeq = (bars = 2) => ({ bars, tracks: [[], [], [], []], motion: [{}, {}, {}, {}], fxm: [] });
+function demo() {
+  const A = [57, 60, 64], F = [53, 57, 60], C = [55, 60, 64], G = [55, 59, 62];
+  const s1 = newSeq(2), s2 = newSeq(2), s3 = newSeq(2);
+  [[A, 0], [F, 8], [C, 16], [G, 24]].forEach(([ch, t]) => ch.forEach(n => s1.tracks[0].push({ t: t + 0.08, d: 7.5, n, v: .7, vib: 0 })));
+  [[45, 0], [45, 6], [41, 8], [41, 14], [48, 16], [48, 22], [43, 24], [43, 28]].forEach(([n, t]) => s1.tracks[1].push({ t, d: 3, n, v: .85, vib: 0 }));
+  for (let b = 0; b < 8; b++) { s1.tracks[3].push({ t: b * 4, d: 1, n: b % 2 ? 1 : 0, v: .9, vib: 0 }); s1.tracks[3].push({ t: b * 4 + 2, d: 1, n: 2, v: .5, vib: 0 }); }
+  s2.tracks = s1.tracks.map(t => t.map(x => ({ ...x })));
+  [[76, 0, 3], [74, 4, 2], [72, 6, 2], [74, 8, 6], [72, 16, 3], [71, 20, 2], [72, 22, 8]].forEach(([n, t, d]) => s2.tracks[2].push({ t, d, n, v: .7, vib: t === 22 ? .7 : 0 }));
+  for (let b = 0; b < 16; b++) s2.tracks[3].push({ t: b * 2 + 1, d: 1, n: 2, v: .35, vib: 0 });
+  s2.motion[0].cut = Array.from({ length: 32 }, (_, i) => i / 31);
+  [[A, 0], [F, 16]].forEach(([ch, t]) => ch.forEach(n => s3.tracks[0].push({ t, d: 15, n, v: .6, vib: 0 })));
+  seqs[0] = s1; seqs[1] = s2; seqs[2] = s3;
+}
+demo();
+const song = [{ s: 0, r: 2 }, { s: 1, r: 1 }, { s: 0, r: 1 }, { s: 2, r: 1 }, { s: 1, r: 2 }];
+
+// ---------------------------------------------------------------- state
+const VIEWS = ["SONG", "SEQUENCE", "STEPS", "MOTION"];
+// quantize (SEQUENCE) and the editing grid (STEPS), in 16ths; triplets included
+const QUANTS = [["off", 0], ["1/4", 4], ["1/8", 2], ["1/8T", 4 / 3], ["1/16", 1], ["1/16T", 2 / 3], ["1/32", .5], ["1/64", .25]];
+const GRIDS = QUANTS.slice(1), TARGETS = ["ALL", ...TRK.map(t => t.name)];
+const gridRes = () => GRIDS[st.gi][1];
+// what MOTION can hold: any knob of any page (here eight of them), shown in its own units
+const PARAMS = [
+  { k: "cut", n: "CUTOFF", d: .5, f: v => { const hz = 120 * Math.pow(100, v); return hz >= 1000 ? (hz / 1000).toFixed(1) + " kHz" : Math.round(hz) + " Hz"; } },
+  { k: "res", n: "RESONANCE", d: .1, f: v => Math.round(v * 100) + "%" },
+  { k: "oct", n: "OCTAVE", d: .5, f: v => { const o = Math.round((v - .5) * 4); return (o > 0 ? "+" : "") + o; } },
+  { k: "rev", n: "REVERB", d: .1, f: v => Math.round(v * 100) + "%" },
+  { k: "dly", n: "DELAY", d: 0, f: v => Math.round(v * 100) + "%" },
+  { k: "mod", n: "VIBRATO", d: 0, f: v => Math.round(v * 100) + "%" },
+  { k: "pan", n: "PAN", d: .5, f: v => { const x = Math.round((v - .5) * 200); return x === 0 ? "C" : x < 0 ? "L" + (-x) : "R" + x; } },
+  { k: "lvl", n: "LEVEL", d: .8, f: v => v <= .01 ? "-inf" : (20 * Math.log10(v / .8)).toFixed(1) + " dB" }];
+const FXS = ["stut 1/4", "stut 1/8", "stut 1/16", "stut 1/32", "filter ↓", "filter ↑", "reverb", "delay", "crush"];
+
+const st = {
+  view: 0, trk: 0, cur: 0, songCur: 0, playing: false, rec: false, edit: false, fxHeld: false, fxLatch: false,
+  q: [0, 4, 0, 4], str: [1, 1, 1, 1], swing: [0, 0, 0, 0], vibK: 0, stepPos: 0, gi: 3, target: 0, fxOn: new Set(), lane: 0,
+  live: [0, 1, 2, 3].map(() => Object.fromEntries(PARAMS.map(p => [p.k, p.d]))),   // each track's knob values now
+  delAsk: -1, delT: 0, editUsed: false,
+  held: new Map(), lastTake: null, cleared: null, queued: -1, recSong: false, flash: "", flashT: 0, knobT: 0, knobI: -1
+};
+// ---------------------------------------------------------------- sound: a chain per track (filter, crush, sends)
+let ac = null, master, rev, dly;
+const chain = [];
+function startAudio() {
+  if (ac) return;
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = .3; const comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination);
+  rev = ac.createConvolver(); const len = ac.sampleRate * 2.2, ir = ac.createBuffer(2, len, ac.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+  rev.buffer = ir; rev.connect(master);
+  dly = ac.createDelay(1); dly.delayTime.value = 60 / bpm() * .75; const fb = ac.createGain(); fb.gain.value = .45; dly.connect(fb); fb.connect(dly); dly.connect(master);
+  for (let t = 0; t < 4; t++) {
+    const inp = ac.createGain(), f = ac.createBiquadFilter(), sh = ac.createWaveShaper(), pan = ac.createStereoPanner(), out = ac.createGain(), rs = ac.createGain(), ds = ac.createGain();
+    f.type = "lowpass"; f.frequency.value = 12000; rs.gain.value = .1; ds.gain.value = 0;
+    inp.connect(f); f.connect(sh); sh.connect(pan); pan.connect(out); out.connect(master); out.connect(rs); rs.connect(rev); out.connect(ds); ds.connect(dly);
+    chain.push({ inp, f, sh, pan, out, rs, ds });
+  }
+}
+const crushCurve = (() => { const c = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 128 - 1; c[i] = Math.round(x * 4) / 4; } return c; })();
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function tone(t, n, v, when, dur, vib, octShift) {
+  if (!ac) return null;
+  const T = ac.currentTime + Math.max(0, when), k = TRK[t].kind;
+  if (k === "drums") return drumHit(t, n, v, T);
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = k === "bass" ? "triangle" : k === "lead" ? "square" : "sawtooth";
+  o.frequency.value = hz(n + 12 * octShift);
+  if (vib > 0) { const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = 5.5; lg.gain.value = hz(n) * .012 * vib; l.connect(lg); lg.connect(o.frequency); l.start(T); l.stop(T + (dur || 4) + .5); }
+  const lv = (k === "bass" ? .5 : k === "lead" ? .12 : .16) * v;
+  g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv, T + .01); g.gain.setTargetAtTime(lv * .7, T + .02, .3);
+  o.connect(g); g.connect(chain[t].inp); o.start(T);
+  const h = { o, g, stop: w => { const e = ac.currentTime + Math.max(0, w || 0); g.gain.cancelScheduledValues(e); g.gain.setTargetAtTime(0, e, .06); o.stop(e + .4); } };
+  if (dur) h.stop(when + dur);
+  return h;
+}
+function drumHit(t, n, v, T) {
+  const g = ac.createGain(); g.connect(chain[t].inp);
+  if (n === 0 || n === 5) { const o = ac.createOscillator(); o.frequency.setValueAtTime(n ? 180 : 140, T); o.frequency.exponentialRampToValueAtTime(n ? 80 : 45, T + .15); g.gain.setValueAtTime(v, T); g.gain.exponentialRampToValueAtTime(.001, T + .35); o.connect(g); o.start(T); o.stop(T + .4); }
+  else { const len = n === 3 || n === 8 ? .5 : n === 1 || n === 4 ? .18 : .05; const b = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(); s.buffer = b; f.type = n === 1 || n === 4 || n === 6 ? "bandpass" : "highpass"; f.frequency.value = n === 1 ? 1800 : n === 4 ? 1200 : n === 6 ? 2500 : 7000;
+    g.gain.setValueAtTime(v * (n === 2 || n === 3 ? .35 : .7), T); g.gain.exponentialRampToValueAtTime(.001, T + len); s.connect(f); f.connect(g); s.start(T); }
+  return { stop: () => {} };
+}
+// ---------------------------------------------------------------- the clock
+const bpm = () => 96;
+const s16 = () => 60 / bpm() / SPB;
+let timer = null, next16 = 0, pos16 = 0, startT = 0, songIdx = 0, songRep = 0, seqStart = 0;
+const curSeq = () => seqs[st.cur] || (seqs[st.cur] = newSeq());
+const seqLen = s => s.bars * 16;
+const used = i => !!(seqs[i] && (seqs[i].tracks.some(t => t.length) || Object.keys(seqs[i].motion.reduce((a, m) => Object.assign(a, m), {})).length));
+function playToggle() {
+  startAudio(); ac.resume();
+  st.playing = !st.playing;
+  if (st.playing) {
+    pos16 = 0; next16 = ac.currentTime + .06; startT = next16; seqStart = 0;
+    if (st.view === 0 && song.length) { songIdx = Math.min(st.songCur, song.length - 1); songRep = 0; st.cur = song[songIdx].s; }
+    if (st.view === 0 && st.rec) { song.length = 0; st.recSong = true; song.push({ s: st.cur, r: 1 }); songIdx = 0; }
+    timer = setInterval(sched, 20);
+  } else { clearInterval(timer); stopRec(); st.recSong = false; st.queued = -1; }
+}
+const playheadInSeq = () => st.playing && ac ? pos16 - seqStart + Math.min(0, (ac.currentTime - next16) / s16()) : -1;
+function sched() {
+  while (next16 < ac.currentTime + .1) {
+    const s = curSeq(), L = seqLen(s), local = pos16 - seqStart;
+    if (local >= L) {                          // the end of the sequence: the next one (song, queue) or round again
+      seqStart = pos16;
+      if (st.queued >= 0) { st.cur = st.queued; st.queued = -1; if (st.recSong) { const l = song[song.length - 1]; if (l && l.s === st.cur) l.r++; else song.push({ s: st.cur, r: 1 }); songIdx = song.length - 1; } }
+      else if (st.recSong) song[song.length - 1].r++;
+      else if (st.view === 0 && song.length && !st.recSong) { songRep++; if (songRep >= song[songIdx].r) { songIdx = (songIdx + 1) % song.length; songRep = 0; } st.cur = song[songIdx].s; }
+      if (st.take) st.take.pass++;
+      continue;
+    }
+    const when = next16 - ac.currentTime;
+    if (local % 4 === 0) click(when, local % 16 === 0);
+    playStep(curSeq(), local, when);
+    pos16++; next16 += s16();
+  }
+}
+function click(when, acc) { if (!st.rec) return; const T = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = acc ? 1600 : 1100; g.gain.setValueAtTime(.08, T); g.gain.exponentialRampToValueAtTime(.001, T + .04); o.connect(g); g.connect(master); o.start(T); o.stop(T + .05); }
+// what plays in one 16th: notes starting in it (with GRID and SWING), motion, and the FX punches
+function playStep(s, local, when) {
+  for (let t = 0; t < 4; t++) {
+    const st16 = stutterSrc(t, local);
+    for (const nt of s.tracks[t]) {
+      let at = quant(t, nt.t);
+      if (at >= st16 && at < st16 + 1) {
+        const off = (at - st16 + swingOff(t, st16)) * s16();
+        const ov = motionVal(s, t, "oct", local), oct = isNaN(ov) ? 0 : Math.round((ov - .5) * 4);
+        const mv = motionVal(s, t, "mod", local), vib = Math.max(nt.vib, isNaN(mv) ? 0 : mv);
+        if (!(st.edit && erasing(t, nt))) tone(t, nt.n, nt.v, when + off, nt.d * s16() * (stutterLen(t) ? Math.min(1, stutterLen(t) / nt.d) : 1), vib, TRK[t].kind === "drums" ? 0 : oct);
+      }
+    }
+    for (const pr of PARAMS) if (pr.k !== "oct") { const v = motionVal(s, t, pr.k, local); if (!isNaN(v)) applyMotion(t, pr.k, v, when); }
+  }
+  const fm = s.fxm.filter(e => e.t === local); fm.forEach(e => later(when, () => setFx(e.fx, e.on, e.target, true)));
+}
+const later = (w, f) => setTimeout(f, Math.max(0, w * 1000));
+function quant(t, x) { const g = QUANTS[st.q[t]][1]; if (!g) return x; return x + (Math.round(x / g) * g - x) * st.str[t]; }   // STRENGTH: how far it moves
+function swingOff(t, s16i) { return s16i % 2 ? st.swing[t] * .33 : 0; }
+// stutter: a targeted track replays a slice while its key is held
+let stut = null;
+const stutterLen = t => stut && (stut.target === 0 || stut.target === t + 1) ? stut.len : 0;
+function stutterSrc(t, local) { const l = stutterLen(t); return l ? stut.start + ((local - stut.start) % l + l) % l : local; }
+function motionVal(s, t, k, local) {
+  if (st.liveTurn && st.liveTurn.t === t && st.liveTurn.k === k && performance.now() - st.liveTurn.at < 250) return st.live[t][k];
+  const m = s.motion[t][k]; if (!m) return k === "oct" ? .5 : NaN; return m[Math.floor(local / seqLen(s) * m.length)] ?? NaN;
+}
+function applyMotion(t, k, v, when) {
+  if (!ac) return; const T = ac.currentTime + Math.max(0, when), c = chain[t];
+  if (k === "cut") c.f.frequency.setTargetAtTime(120 * Math.pow(100, v), T, .02);
+  if (k === "res") c.f.Q.setTargetAtTime(.7 + v * 14, T, .02);
+  if (k === "rev") c.rs.gain.setTargetAtTime(v * .8, T, .03);
+  if (k === "dly") c.ds.gain.setTargetAtTime(v * .8, T, .03);
+  if (k === "pan") c.pan.pan.setTargetAtTime((v - .5) * 2, T, .03);
+  if (k === "lvl") c.out.gain.setTargetAtTime(v / .8, T, .03);
+  st.live[t][k] = v;
+}
+const erasing = (t, nt) => t === st.trk && [...st.held.keys()].some(i => noteOfKey(i) === nt.n);
+
+// ---------------------------------------------------------------- FX punches
+function setFx(fx, on, target, fromSeq) {
+  const ts = target === 0 ? [0, 1, 2, 3] : [target - 1];
+  if (fx < 4) { stut = on ? { len: [4, 2, 1, .5][fx], start: Math.floor(Math.max(0, playheadInSeq())), target } : null; }
+  ts.forEach(t => {
+    const c = chain[t]; if (!c) return; const T = ac.currentTime;
+    if (fx === 4) { c.f.type = "lowpass"; c.f.frequency.cancelScheduledValues(T); c.f.frequency.setTargetAtTime(on ? 300 : 12000, T, on ? .25 : .05); }
+    if (fx === 5) { c.f.type = on ? "highpass" : "lowpass"; c.f.frequency.cancelScheduledValues(T); c.f.frequency.setTargetAtTime(on ? 1500 : 12000, T, .2); }
+    if (fx === 6) c.rs.gain.setTargetAtTime(on ? 1.2 : .1, T, .03);
+    if (fx === 7) c.ds.gain.setTargetAtTime(on ? .7 : 0, T, .03);
+    if (fx === 8) c.sh.curve = on ? crushCurve : null;
+  });
+  if (!fromSeq && st.rec && st.playing) curSeq().fxm.push({ t: Math.floor(playheadInSeq()), fx, on, target });
+}
+
+// ---------------------------------------------------------------- recording: takes, undo, clear
+function noteOfKey(i) { return TRK[st.trk].kind === "drums" ? drumOfKey(i) : LOW + i - (TRK[st.trk].kind === "bass" ? 12 : 0) + 12 * (st.oct || 0); }
+function startTake() { st.take = { trk: st.trk, seq: st.cur, notes: [], motion: JSON.stringify(curSeq().motion[st.trk]), pass: 0 }; }
+function stopRec() { if (st.take) st.lastTake = st.take; st.take = null; }
+function undoTake() {
+  if (st.cleared) { const c = st.cleared; seqs[c.seq].tracks[c.trk] = c.notes; seqs[c.seq].motion[c.trk] = c.motion; st.cleared = null; flash("track back"); return; }
+  const tk = st.take && st.take.notes.length ? st.take : st.lastTake;
+  if (!tk) { flash("nothing to undo"); return; }
+  const s = seqs[tk.seq]; s.tracks[tk.trk] = s.tracks[tk.trk].filter(n => !tk.notes.includes(n)); s.motion[tk.trk] = JSON.parse(tk.motion);
+  tk.notes = []; flash("take undone");
+}
+function clearTrack() {
+  const s = curSeq(); st.cleared = { seq: st.cur, trk: st.trk, notes: s.tracks[st.trk], motion: s.motion[st.trk] };
+  s.tracks[st.trk] = []; s.motion[st.trk] = {}; flash(TRK[st.trk].name + " cleared");
+}
+
+// ---------------------------------------------------------------- keys
+const keysEl = document.getElementById("keys"), KB = "zsxdcvgbhnjm,l.;/q2w3er5t6y", keyEls = [];
+(function () {
+  const ww = 100 / WHITES.length;
+  for (let i = 0; i < NK; i++) {
+    const el = document.createElement("div"), b = isBlack(LOW + i), wi = b ? WHITES.indexOf(i - 1) : WHITES.indexOf(i);
+    el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .3 : wi * ww) + "%"; el.style.width = (b ? ww * .6 : ww) + "%";
+    el.innerHTML = `<span class="lab"></span>${KB[i]}`;
+    el.addEventListener("pointerdown", e => { e.preventDefault(); el.setPointerCapture(e.pointerId); const r = el.getBoundingClientRect(); press(i, .35 + .65 * (e.clientY - r.top) / r.height); });
+    el.addEventListener("pointerup", () => release(i)); el.addEventListener("pointercancel", () => release(i));
+    keysEl.appendChild(el); keyEls.push(el);
+  }
+})();
+const down = new Set();
+addEventListener("keydown", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0 && !down.has(i) && !e.repeat) { down.add(i); press(i, .8); e.preventDefault(); } });
+addEventListener("keyup", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0) { down.delete(i); release(i); } });
+
+function press(i, vel) {
+  startAudio();
+  if (st.fxHeld || st.fxLatch) { const f = WHITES.indexOf(i); if (f >= 0 && f < FXS.length) { st.fxOn.add(f); st.held.set(i, { fx: f }); setFx(f, true, st.target); } return; }
+  if (st.view === 0) {                                   // SONG: the keys are the sequences
+    const sq = WHITES.indexOf(i); if (sq < 0 || sq > 15) return;
+    if (st.edit) {                                       // EDIT + a sequence: delete it, after a second press to confirm
+      st.editUsed = true; st.held.set(i, {});
+      if (!used(sq)) return;
+      if (st.delAsk === sq && performance.now() - st.delT < 3000) {
+        seqs[sq] = null; for (let b = song.length - 1; b >= 0; b--) if (song[b].s === sq) song.splice(b, 1);
+        st.songCur = Math.max(0, Math.min(st.songCur, song.length - 1)); st.delAsk = -1; flash("sequence " + (sq + 1) + " deleted");
+        if (st.cur === sq) st.cur = song.length ? song[0].s : 0;
+      } else { st.delAsk = sq; st.delT = performance.now(); }
+      return;
+    }
+    const src = [...st.held.values()].find(r => r.seqKey !== undefined && used(r.seqKey));
+    if (!used(sq)) {                                     // an empty key: a sequence held copies itself there, otherwise nothing
+      if (src) { seqs[sq] = JSON.parse(JSON.stringify(seqs[src.seqKey])); flash((src.seqKey + 1) + " copied to " + (sq + 1)); }
+      else flash("empty: record it on SEQUENCE");
+      st.held.set(i, {}); return;
+    }
+    if (src) { st.held.set(i, {}); return; }
+    if (st.playing) { st.queued = sq; flash("next: " + (sq + 1)); }
+    else { song.splice(song.length ? st.songCur + 1 : 0, 0, { s: sq, r: 1 }); st.songCur = song.length === 1 ? 0 : st.songCur + 1; st.cur = sq; }
+    st.held.set(i, { seqKey: sq }); return;
+  }
+  const n = noteOfKey(i); if (n < 0 && TRK[st.trk].kind === "drums") return;
+  if (st.edit) {                                         // EDIT + key: erase (STEPS: at the cursor; else as the playhead passes)
+    st.editUsed = true;
+    if (st.view === 2) { const s = curSeq(), before = s.tracks[st.trk].length; s.tracks[st.trk] = s.tracks[st.trk].filter(x => !(x.n === n && inCell(x))); flash(s.tracks[st.trk].length < before ? "removed" : "nothing there"); }
+    st.held.set(i, { erase: true }); return;
+  }
+  const h = tone(st.trk, n, vel, 0, 0, st.vibK, 0);
+  let t0 = playheadInSeq(); const L0 = seqLen(curSeq()); if (t0 > L0 - .5) t0 -= L0; if (t0 < 0 && t0 > -.5) t0 = 0;
+  const rec = { h, n, vel, t0, vib: st.vibK };
+  if (st.view === 2 && st.rec) {                         // STEPS: with REC on, write at the cursor; with REC off the key only sounds
+    const s = curSeq(), nt = { t: st.stepPos, d: TRK[st.trk].kind === "drums" ? gridRes() : gridRes() * 2, n, v: vel, vib: 0 };
+    s.tracks[st.trk] = s.tracks[st.trk].filter(x => !(x.n === n && inCell(x))); s.tracks[st.trk].push(nt); rec.step = nt;
+  } else if (st.view === 2) flash("REC to write");
+  st.held.set(i, rec);
+}
+function release(i) {
+  const r = st.held.get(i); if (!r) return; st.held.delete(i);
+  if (r.fx !== undefined) { st.fxOn.delete(r.fx); setFx(r.fx, false, st.target); return; }
+  if (r.h) r.h.stop(0);
+  if (st.rec && st.playing && st.view !== 2 && r.t0 >= 0) {    // the note goes in as played: start, length, velocity, vibrato
+    if (!st.take) startTake();
+    const s = curSeq(), L = seqLen(s); let d = playheadInSeq() - r.t0; if (d <= 0) d += L; if (d > L) d -= L;
+    const nt = { t: r.t0, d: Math.max(.25, d), n: r.n, v: r.vel, vib: Math.max(r.vib, st.vibK) };
+    s.tracks[st.trk].push(nt); st.take.notes.push(nt);
+  }
+}
+// ---------------------------------------------------------------- buttons
+const $ = id => document.getElementById(id);
+$("start").onclick = () => { startAudio(); ac.resume(); $("start").textContent = "Sound on"; };
+$("newsong").onclick = () => { if (st.playing) playToggle(); for (let i = 0; i < 16; i++) seqs[i] = null; seqs[0] = newSeq(2); song.length = 0; song.push({ s: 0, r: 1 }); st.cur = 0; st.songCur = 0; flash("new song: sequence 1"); };
+$("seq").onclick = () => { if (st.home) { st.home = false; st.view = st.prevView; } else st.view = (st.view + 1) % 4; };
+$("home").onclick = () => { if (!st.home) { st.prevView = st.view; st.view = 1; st.home = true; } };   // the track's page: its keys record like SEQUENCE
+$("trkL").onclick = () => { st.trk = (st.trk + 3) % 4; }; $("trkR").onclick = () => { st.trk = (st.trk + 1) % 4; };
+$("selL").onclick = () => select(-1); $("selR").onclick = () => select(1);
+const inCell = x => x.t >= st.stepPos - 1e-6 && x.t < st.stepPos + gridRes() - 1e-6;
+function moveStep(d) { const L = seqLen(curSeq()), r = gridRes(); st.stepPos = ((Math.round(st.stepPos / r) * r + d * r) % L + L) % L; }
+function select(d) {
+  if (st.view === 0) { st.songCur = Math.max(0, Math.min(song.length - 1, st.songCur + d)); return; }
+  const list = [...Array(16).keys()].filter(used); const empty = [...Array(16).keys()].find(i => !used(i)); if (empty !== undefined) list.push(empty); list.sort((a, b) => a - b);
+  const k = list.indexOf(st.cur); st.cur = list[((k < 0 ? 0 : k) + d + list.length) % list.length]; curSeq(); flash("sequence " + (st.cur + 1) + (used(st.cur) ? "" : ": new"));
+}
+$("play").onclick = playToggle;
+$("octD").onclick = () => { st.oct = Math.max(-2, (st.oct || 0) - 1); };
+$("octU").onclick = () => { st.oct = Math.min(2, (st.oct || 0) + 1); };
+$("rec").onclick = () => {
+  if (st.edit) { clearTrack(); return; }                  // EDIT + REC: clear this track, no question (SAVE held brings it back)
+  st.rec = !st.rec; if (st.rec) { startAudio(); if (st.view !== 0) startTake(); } else { stopRec(); st.recSong = false; }
+};
+const hold = (el, down, up) => { el.addEventListener("pointerdown", e => { e.preventDefault(); down(); }); el.addEventListener("pointerup", up); el.addEventListener("pointerleave", up); };
+let editT = 0;
+hold($("glo"), () => { st.help = true; }, () => { st.help = false; });
+hold($("edit"), () => { st.edit = true; st.editUsed = false; editT = performance.now(); }, () => {
+  if (!st.edit) return; st.edit = false;
+  const tap = performance.now() - editT < 300 && !st.editUsed;
+  if (tap && st.view === 0 && song.length) { song.splice(st.songCur, 1); st.songCur = Math.max(0, Math.min(st.songCur, song.length - 1)); flash("block removed"); }
+  if (tap && st.view === 3) { const pr = lanes()[st.lane]; if (pr) { delete curSeq().motion[st.trk][pr.k]; flash(pr.n + " cleared"); } }
+});
+let saveT = null;
+hold($("save"), () => { saveT = setTimeout(() => { undoTake(); saveT = null; }, 500); }, () => { if (saveT) { clearTimeout(saveT); saveT = null; flash("HOLD"); } });
+let fxClick = 0;
+hold($("fx"), () => { st.fxHeld = true; const n = performance.now(); if (n - fxClick < 350) st.fxLatch = !st.fxLatch; fxClick = n; }, () => { st.fxHeld = false; });
+function flash(s) { st.flash = s; st.flashT = performance.now(); }
+
+// ---------------------------------------------------------------- knobs: per view
+function knobDefs() {
+  if (st.fxHeld || st.fxLatch) return [{ n: "TARGET", v: () => TARGETS[st.target], turn: d => { st.target = (st.target + d + 5) % 5; } }, NONE, NONE, NONE];
+  const s = curSeq();
+  if (st.view === 0) return [
+    { n: "CURSOR", v: () => song.length ? String(st.songCur + 1) : "-", turn: d => select(d) },
+    { n: "REPEATS", v: () => song[st.songCur] ? "x" + song[st.songCur].r : "-", turn: d => { const b = song[st.songCur]; if (b) b.r = Math.max(1, Math.min(16, b.r + d)); } },
+    { n: "MOVE", v: () => "◀ ▶", turn: d => { const j = st.songCur + d; if (j < 0 || j >= song.length) return; [song[j], song[st.songCur]] = [song[st.songCur], song[j]]; st.songCur = j; } },
+    { n: "SEQUENCE", v: () => song[st.songCur] ? String(song[st.songCur].s + 1) : "-", turn: d => { const b = song[st.songCur]; if (!b) return;
+      const u = [...Array(16).keys()].filter(used); if (!u.length) return; const k = u.indexOf(b.s); b.s = u[((k < 0 ? 0 : k) + d + u.length) % u.length]; } }];
+  if (st.view === 1) return [
+    { n: "QUANTIZE", v: () => QUANTS[st.q[st.trk]][0], turn: d => { st.q[st.trk] = Math.max(0, Math.min(QUANTS.length - 1, st.q[st.trk] + d)); } },
+    { n: "SWING", v: () => Math.round(50 + st.swing[st.trk] * 25) + "%", turn: d => { st.swing[st.trk] = Math.max(0, Math.min(1, st.swing[st.trk] + d * .08)); } },
+    { n: "STRENGTH", v: () => Math.round(st.str[st.trk] * 100) + "%", turn: d => { st.str[st.trk] = Math.max(0, Math.min(1, st.str[st.trk] + d * .1)); } },
+    { n: "LENGTH", v: () => s.bars + " bar" + (s.bars > 1 ? "s" : ""), turn: d => { s.bars = Math.max(1, Math.min(8, s.bars + d)); } }];
+  if (st.view === 2) { const at = () => s.tracks[st.trk].filter(inCell);
+    return [
+      { n: "GRID", v: () => GRIDS[st.gi][0], turn: d => { st.gi = Math.max(0, Math.min(GRIDS.length - 1, st.gi + d)); const r = gridRes(); st.stepPos = Math.round(st.stepPos / r) * r; } },
+      { n: "STEP", v: () => stepName(), turn: d => moveStep(d) },
+      { n: "LENGTH", v: () => at()[0] ? (Math.round(at()[0].d / gridRes() * 10) / 10) + " × " + GRIDS[st.gi][0] : "-", turn: d => at().forEach(x => x.d = Math.max(gridRes(), Math.min(64, x.d + d * gridRes()))) },
+      { n: "VELOCITY", v: () => at()[0] ? Math.round(at()[0].v * 127) : "-", turn: d => at().forEach(x => x.v = Math.max(.05, Math.min(1, x.v + d * .04))) }]; }
+  const L0 = lanes(), cur = () => L0[Math.min(st.lane, L0.length - 1)];
+  return [
+    { n: "LANE", v: () => (st.lane + 1) + " / " + L0.length, turn: d => { st.lane = Math.max(0, Math.min(L0.length - 1, st.lane + d)); } },
+    { n: cur().n, v: () => cur().f(st.live[st.trk][cur().k]), turn: d => motionTurn(cur(), d) },
+    NONE, NONE];
+}
+const NONE = { n: "—", v: () => "", turn: () => {} };
+// MOTION's lanes: what this track has recorded first, then the other knobs it could record
+const lanes = () => { const m = curSeq().motion[st.trk]; return [...PARAMS.filter(p => m[p.k]), ...PARAMS.filter(p => !m[p.k])]; };
+function motionTurn(pr, d) {
+  const k = pr.k, s = curSeq(), t = st.trk;
+  if (st.edit) { st.editUsed = true; delete s.motion[t][k]; flash(pr.n + " cleared"); return; }      // EDIT + turn: clear that lane
+  const v = Math.max(0, Math.min(1, st.live[t][k] + d * .04)); st.live[t][k] = v; st.liveTurn = { t, k, at: performance.now() };
+  if (k !== "oct") applyMotion(t, k, v, 0);
+  if (st.rec && st.playing) {                            // recorded where the playhead is; turning again replaces
+    if (!st.take) startTake();
+    const N = 64, m = s.motion[t][k] || (s.motion[t][k] = Array(N).fill(NaN)), i = Math.floor(playheadInSeq() / seqLen(s) * N);
+    for (let x = i; x < i + 2 && x < N; x++) m[x] = v;
+  }
+}
+const knobsEl = $("knobs"), ang = [0, 0, 0, 0];
+for (let idx = 0; idx < 4; idx++) {
+  const w = document.createElement("div"); w.className = "knob";
+  w.innerHTML = `<div class="dial" aria-label="K${idx + 1}"></div>K${idx + 1}<div class="b"><button aria-label="K${idx + 1} down">−</button><button aria-label="K${idx + 1} up">+</button></div>`;
+  const dial = w.querySelector(".dial"); let y0 = null, acc = 0;
+  const turn = d => { knobDefs()[idx].turn(d); ang[idx] = (ang[idx] + d * 20) % 360; dial.style.setProperty("--a", ang[idx] + "deg"); st.knobT = performance.now(); st.knobI = idx; };
+  dial.addEventListener("pointerdown", e => { y0 = e.clientY; acc = 0; dial.setPointerCapture(e.pointerId); });
+  dial.addEventListener("pointermove", e => { if (y0 === null) return; acc += y0 - e.clientY; y0 = e.clientY; while (Math.abs(acc) > 10) { turn(Math.sign(acc)); acc -= 10 * Math.sign(acc); } });
+  dial.addEventListener("pointerup", () => { y0 = null; });
+  dial.addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  const [bm, bp] = w.querySelectorAll("button"); bm.onclick = () => turn(-1); bp.onclick = () => turn(1);
+  knobsEl.appendChild(w);
+}
+
+// ---------------------------------------------------------------- screen and lights, every frame
+const g = $("scr").getContext("2d");
+const C = { bg: "#0a0d13", fg: "#e8edf5", mute: "#7f8796", card: "#161b24", acc: "#4d8dff", accd: "#1d3a6e", rec: "#ef5b5b", fx: "#f2a33c", grid: "#1c2230" };
+function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function T(s, x, y, size, col, w = 600, al = "left") { g.font = w + " " + size + "px Inter, sans-serif"; g.fillStyle = col; g.textAlign = al; g.textBaseline = "middle"; g.fillText(s, x, y); g.textAlign = "left"; }
+// HOME: a stand-in for the track's own page (MELODY · PLAY and the rest): the sequence it records into is on its top line
+function drawHome() {
+  const tr = TRK[st.trk];
+  T(tr.name, 6, 12, 11, tr.col, 700); T("PLAY", 72, 12, 10, C.mute, 500);
+  T((st.rec ? "● " : "") + "SEQ " + (st.cur + 1) + (st.playing ? " ▶" : ""), 234, 12, 10, st.rec ? C.rec : C.acc, 700, "right");
+  g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
+  ["HELP", "SCALE", "OUTSIDE", "PLUS"].forEach((n, i) => { const x = 4 + i * 58; g.fillStyle = C.card; rr(x, 26, 54, 28, 5); g.fill(); T(n, x + 27, 34, 7, C.mute, 500, "center"); T(["Key", "M penta", "play", "off"][i], x + 27, 46, 9.5, C.acc, 600, "center"); });
+  T("(the " + tr.name + " page, as it is today)", 120, 120, 9, C.mute, 500, "center");
+  T("REC here records into sequence " + (st.cur + 1), 120, 138, 9, C.mute, 500, "center");
+  T("SEQ: back to the sequencer", 120, 154, 9, C.mute, 500, "center");
+}
+// GLO held: what every control does on this page
+const HELP = [
+  ["SONG", "Lit key: add after the cursor", "Playing: it plays next", "Hold a key + empty key: copy", "EDIT + key twice: delete", "EDIT tap: remove the block", "K1 cursor  K2 repeats", "K3 move  K4 sequence", "SEQ next page · HOME track"],
+  ["SEQUENCE", "REC + play: record as played", "SAVE held: undo the take", "EDIT + REC: clear the track", "EDIT + key: erase as it passes", "SELECT sequence  ALGO track", "K1 quantize  K2 swing", "K3 strength  K4 length", "SEQ next page · HOME track"],
+  ["STEPS", "REC off: keys only sound", "REC on: keys write at the cursor", "EDIT + lit key: remove it", "K1 grid  K2 step", "K3 length  K4 velocity", "SELECT sequence  ALGO track", "", "SEQ next page · HOME track"],
+  ["MOTION", "K1 lane  K2 its knob", "REC + play + turn: record", "Turn again: replace", "EDIT tap: clear the lane", "Any knob of any page records", "SELECT sequence  ALGO track", "", "SEQ next page · HOME track"]];
+function drawHelp() {
+  const h = st.home ? ["TRACK PAGE", "Keys play the track", "REC + PLAY: record into SEQ " + (st.cur + 1), "SAVE held: undo the take", "SEQ: the sequencer", "", "", "", ""] : HELP[st.view];
+  g.fillStyle = "rgba(10,13,19,.97)"; rr(4, 22, 232, 214, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke();
+  T("GLO · " + h[0], 12, 34, 10, C.acc, 700);
+  h.slice(1).forEach((l, i) => T(l, 12, 54 + i * 21, 9.5, C.fg, 500));
+}
+function draw() {
+  const s = curSeq(), L = seqLen(s), ph = playheadInSeq(), fxOpen = st.fxHeld || st.fxLatch;
+  g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240); g.fillStyle = TRK[st.trk].col; g.fillRect(0, 0, 240, 2);
+  if (st.home) { drawHome(); if (st.help) drawHelp(); return; }
+  T(VIEWS[st.view], 6, 12, 11, C.fg); T(st.view === 0 ? "" : "SEQ " + (st.cur + 1) + "  " + TRK[st.trk].name, 72, 12, 10, C.mute, 500);
+  const octS = (st.view === 1 || st.view === 2) && TRK[st.trk].kind !== "drums" ? "   Oct " + ((st.oct || 0) > 0 ? "+" : "") + (st.oct || 0) : "";   // where the keys play notes (the owner, 2026-11-21)
+  T((st.rec ? "● " : "") + bpm() + octS + (st.playing ? " ▶" : ""), 234, 12, 10, st.rec ? C.rec : C.mute, 600, "right");
+  const kd = knobDefs(), recent = performance.now() - st.knobT < 900;
+  kd.forEach((k, i) => { const x = 4 + i * 58; g.fillStyle = recent && st.knobI === i ? C.accd : C.card; rr(x, 22, 54, 28, 5); g.fill(); T(k.n, x + 27, 30, 7, C.mute, 500, "center"); T(String(k.v()), x + 27, 42, 9.5, k.n === "—" ? C.mute : C.acc, 600, "center"); });
+  const Y = 56;
+  if (fxOpen) {                                            // the FX layer: the effects on the keys and the target
+    T("FX  ·  " + TARGETS[st.target], 8, Y + 10, 13, C.fx, 700);
+    FXS.forEach((f, i) => { const x = 6 + (i % 3) * 77, y = Y + 26 + Math.floor(i / 3) * 34, on = st.fxOn.has(i); g.fillStyle = on ? C.fx : C.card; rr(x, y, 72, 28, 5); g.fill(); T(f, x + 36, y + 14, 9.5, on ? "#111" : C.fg, 600, "center"); });
+    T("keys F3… hold an effect; K1 TARGET", 8, Y + 136, 8.5, C.mute, 500);
+  } else if (st.view === 0) {                              // SONG: blocks a bar wide each, repeats as dashed copies, scrolled to the cursor
+    const LX = 30, W = 204, bars = song.reduce((a, bk) => a + (seqs[bk.s] ? seqs[bk.s].bars : 2) * bk.r, 0) || 1;
+    const BW = Math.max(6, Math.min(48, W / bars));          // big while the song is short, 6 px a bar (and scrolling) when long
+    let x = 0; const pos = song.map(bk => { const w = (seqs[bk.s] ? seqs[bk.s].bars : 2) * bk.r * BW; const r = { x, w }; x += w; return r; });
+    const cb = pos[st.songCur] || { x: 0, w: 0 }, scroll = Math.max(0, Math.min(Math.max(0, x - W), cb.x + cb.w - W + 20));
+    g.save(); g.beginPath(); g.rect(LX, Y, W + 2, 82); g.clip();
+    song.forEach((bk, i) => {
+      const { x: bx, w } = pos[i], X = LX + bx - scroll, on = i === st.songCur, pl = st.playing && i === songIdx && !st.recSong, one = w / bk.r;
+      if (X + w < LX || X > LX + W) return;
+      g.fillStyle = pl ? C.acc : on ? C.accd : C.card; rr(X + 1, Y + 2, w - 2, 22, 4); g.fill(); if (on) { g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); }
+      for (let r = 0; r < bk.r; r++) {
+        T(String(bk.s + 1), X + r * one + one / 2, Y + 13, r ? 8 : 10, r ? "rgba(255,255,255,.45)" : "#fff", 700, "center");
+        if (r) { g.setLineDash([2, 2]); g.strokeStyle = "rgba(255,255,255,.35)"; g.beginPath(); g.moveTo(X + r * one, Y + 4); g.lineTo(X + r * one, Y + 82); g.stroke(); g.setLineDash([]); }
+      }
+      for (let t = 0; t < 4; t++) { const has = seqs[bk.s] && seqs[bk.s].tracks[t].length; g.fillStyle = has ? TRK[t].col : C.grid; g.globalAlpha = has ? .8 : 1; g.fillRect(X + 1, Y + 30 + t * 13, w - 2, 9); g.globalAlpha = 1; }
+    });
+    g.restore();
+    TRK.forEach((tr, t) => T(tr.name.slice(0, 5), 4, Y + 34.5 + t * 13, 7, tr.col, 700));      // the legend: each lane is a track, by its template
+    if (scroll > 0) T("◀", LX - 2, Y + 13, 8, C.mute, 700, "right");
+    if (x - scroll > W) T("▶", 236, Y + 13, 8, C.mute, 700, "right");
+    const ask = st.delAsk >= 0 && performance.now() - st.delT < 3000;
+    if (ask) { }                                           // the delete question: a pop-up over the song (drawn last, below)
+    else if (st.playing && (st.queued >= 0 || st.recSong)) T(st.queued >= 0 ? "next: " + (st.queued + 1) : "● recording the song", 8, Y + 95, 9, st.recSong ? C.rec : C.acc, 600);
+    for (let i = 0; i < 16; i++) {                          // the sequence keys, two rows of eight: lit when they hold something
+      const x0 = 6 + (i % 8) * 28.6, y0 = Y + 108 + Math.floor(i / 8) * 22, u = used(i), cur = i === st.cur;
+      g.fillStyle = cur && u ? C.acc : u ? "#2a4f8f" : "#11151d"; rr(x0, y0, 26, 18, 3); g.fill();
+      T(String(i + 1), x0 + 13, y0 + 9, 8.5, u ? "#fff" : "#3a4150", 700, "center");
+    }
+  } else {                                                 // SEQUENCE, STEPS, MOTION: the sequence, a lane per track
+    const top = Y + (st.view === 2 ? 12 : 2), H = st.view === 3 ? 52 : st.view === 2 ? 120 : 130, rowH = H / 4;
+    // the window: the whole sequence, or on STEPS 16 cells of the grid around the cursor (the zoom follows GRID)
+    let ws = 0, we = L;
+    if (st.view === 2) { ws = Math.floor(st.stepPos / 16) * 16; we = ws + 16; }
+    const X = t16 => 6 + 228 * (t16 - ws) / (we - ws);
+    const lineRes = st.view === 2 ? gridRes() : QUANTS[st.q[st.trk]][1];
+    if (st.view === 2) {                                  // the beat the cursor is in, divided by GRID; the other beats plain
+      const bs = Math.floor(st.stepPos / 4) * 4; g.fillStyle = "rgba(77,141,255,.08)"; g.fillRect(X(bs), top, 228 / 4, H);
+      for (let b0 = bs; b0 < bs + 4 - 1e-6; b0 += lineRes) { g.fillStyle = "#2a3550"; g.fillRect(X(b0), top, 1, H); }
+      for (let k = 0; k < 4; k++) T("beat " + (k + 1), X(ws + 4 * k) + 3, top - 6, 7.5, "#8a96ad", 700);
+    } else if (lineRes && 228 * lineRes / (we - ws) >= 2.5) for (let b0 = ws; b0 <= we + 1e-6; b0 += lineRes) { g.fillStyle = "#161c28"; g.fillRect(X(b0), top, 1, H); }
+    for (let b0 = Math.ceil(ws / 4) * 4; b0 <= we; b0 += 4) { g.fillStyle = b0 % 16 === 0 ? "#34405a" : "#232b3c"; g.fillRect(X(b0), top, 1, H); }
+    g.save(); g.beginPath(); g.rect(6, top, 228, H); g.clip();
+    for (let t = 0; t < 4; t++) {
+      const y0 = top + t * rowH; g.fillStyle = t === st.trk ? "rgba(77,141,255,.07)" : "transparent"; g.fillRect(6, y0, 228, rowH);
+      const ns = s.tracks[t], lo = Math.min(...ns.map(n => n.n), 99), hi = Math.max(...ns.map(n => n.n), 0), span = Math.max(6, hi - lo);
+      ns.forEach(n => {
+        const q = quant(t, n.t); if (q + n.d < ws || q >= we) return;
+        const x = X(q), w = Math.max(1.5, 228 * n.d / (we - ws)), yy = y0 + rowH - 4 - (rowH - 8) * (n.n - lo) / span;
+        if (st.view === 1 && Math.abs(q - n.t) > .01) { g.globalAlpha = .22; g.fillStyle = TRK[t].col; g.fillRect(X(n.t), yy - 1, w, 2); }   // where it was played
+        g.globalAlpha = .35 + .65 * n.v; g.fillStyle = TRK[t].col; g.fillRect(x, yy - 1.5, w, 3); g.globalAlpha = 1;
+      });
+      T(TRK[t].name[0], 9, y0 + 7, 7, t === st.trk ? "#fff" : C.mute, 700);
+    }
+    g.restore();
+    s.fxm.filter(e => e.on && e.t >= ws && e.t < we).forEach(e => { g.fillStyle = C.fx; g.fillRect(X(e.t), top + H - 2, 3, 3); });
+    if (st.view === 2) { g.fillStyle = "rgba(255,255,255,.2)"; g.fillRect(X(st.stepPos), top, Math.max(1.5, 228 * gridRes() / (we - ws)), H); T("BAR " + (Math.floor(ws / 16) + 1) + " of " + (L / 16), 234, top + H + 9, 8, "#fff", 700, "right"); }
+    if (ph >= ws && ph < we) { g.fillStyle = "#fff"; g.fillRect(X(ph), top, 1.5, H); }
+    if (st.view === 3) {                                   // MOTION: the lanes this track has, then what it could have
+      const ls = lanes(), first = Math.max(0, Math.min(st.lane - 2, ls.length - 5));
+      ls.slice(first, first + 5).forEach((pr, j) => {
+        const i = first + j, y0 = top + H + 6 + j * 22, m = s.motion[st.trk][pr.k], sel = i === st.lane;
+        g.fillStyle = sel ? C.accd : "transparent"; rr(4, y0 - 2, 232, 21, 4); g.fill();
+        T(pr.n, 8, y0 + 5, 7, m ? "#fff" : C.mute, 700); T(pr.f(st.live[st.trk][pr.k]), 8, y0 + 13.5, 7, sel ? C.acc : C.mute, 600);
+        g.fillStyle = C.card; g.fillRect(62, y0, 172, 17);
+        if (m) { g.strokeStyle = TRK[st.trk].col; g.lineWidth = 1.5; g.beginPath(); let pen = false; m.forEach((v, k) => { if (isNaN(v)) { pen = false; return; } const x = 62 + 172 * k / m.length, y = y0 + 16 - 15 * v; pen ? g.lineTo(x, y) : g.moveTo(x, y); pen = true; }); g.stroke(); }
+        else T("not recorded", 68, y0 + 8.5, 7.5, "#3a4150", 500);
+      });
+    } else if (st.view === 2) {
+      const at = s.tracks[st.trk].filter(inCell).map(x => TRK[st.trk].kind === "drums" ? DRUMS[x.n] : name(x.n)).join(" ");
+      T((st.rec ? "" : "REC to write · ") + (at || "empty"), 8, top + H + 9, 9, st.rec ? C.mute : C.rec, 500);
+    }
+  }
+  if (!fxOpen && st.view === 0 && st.delAsk >= 0 && performance.now() - st.delT < 3000) {   // the owner, 2026-11-20: a pop-up, for attention
+    g.fillStyle = "rgba(10,13,19,.6)"; g.fillRect(0, 22, 240, 218);
+    g.fillStyle = C.rec; rr(14, 82, 212, 52, 8); g.fill();
+    T("Delete sequence " + (st.delAsk + 1) + "?", 120, 101, 13, "#fff", 700, "center");
+    T("EDIT + " + (st.delAsk + 1) + " again: delete", 120, 121, 9.5, "#fff", 600, "center");
+  }
+  if (st.help) drawHelp();
+  if (performance.now() - st.flashT < 1100 && st.flash) { g.font = "600 10px Inter"; const w = g.measureText(st.flash).width + 16; g.fillStyle = C.accd; rr(120 - w / 2, 214, w, 20, 6); g.fill(); T(st.flash, 120, 224, 10, "#fff", 600, "center"); }
+  // the panel's lights and labels
+  keyEls.forEach((el, i) => {
+    let cls = "", lab = "";
+    if (fxOpen) { const f = WHITES.indexOf(i); if (f >= 0 && f < FXS.length) { lab = FXS[f]; cls = st.fxOn.has(f) ? "on" : "fx"; } }
+    else if (st.view === 0) { const q = WHITES.indexOf(i); if (q >= 0 && q < 16) { lab = String(q + 1); cls = !used(q) ? "" : q === st.cur || st.queued === q ? "on" : "half"; } }
+    else if (TRK[st.trk].kind === "drums") { const d = drumOfKey(i); if (d >= 0 && d < DRUMS.length) { lab = DRUMS[d]; cls = "dim"; } }
+    if (!fxOpen && st.view === 2 && curSeq().tracks[st.trk].some(x => inCell(x) && x.n === noteOfKey(i))) cls = "on";
+    ["dim", "half", "on", "fx"].forEach(c => el.classList.toggle(c, c === cls));
+    el.classList.toggle("held", st.held.has(i)); el.querySelector(".lab").textContent = lab;
+  });
+  $("play").classList.toggle("on", st.playing); $("rec").classList.toggle("on", st.rec); $("edit").classList.toggle("on", st.edit);
+  $("fx").classList.toggle("on", fxOpen); $("seq").textContent = "SEQ · " + VIEWS[st.view];
+  $("hint").textContent = ["SONG: lit keys are sequences. Stopped: tap to add. Playing: tap to play next. Hold one + tap an empty key: copy. EDIT + key twice: delete.",
+    "SEQUENCE: REC and play the track live. SAVE held undoes the take; EDIT + REC clears the track.",
+    "STEPS: keys sound; with REC on they write at the cursor. K1 GRID (the zoom follows), K2 STEP. EDIT + key removes.",
+    "MOTION: K1 picks a lane, K2 is its knob: with REC on while playing, turns are recorded. EDIT tapped clears the lane."][st.view];
+}
+const stepName = () => { const q = st.stepPos % 16, beat = Math.floor(q / 4 + 1e-6), per = Math.round(4 / gridRes()), k = Math.round((q - beat * 4) / gridRes()); return "beat " + (beat + 1) + (per > 1 ? " · " + (k + 1) + "/" + per : ""); };
+const name = n => ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][n % 12] + Math.floor(n / 12 - 1);
+(function loop() { draw(); requestAnimationFrame(loop); })();
+})();
+</script>

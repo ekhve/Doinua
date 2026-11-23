@@ -1,0 +1,204 @@
+<title>Sequencer Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; wide tables scroll inside their own box. A dark FM-1 screen strip names each use case. */
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --fg: #15181d; --muted: #5b6370; --line: #dde1e7;
+  --accent: #2f6fde; --accent-soft: #e6eefc; --good: #1f8a4c; --part: #b7791f; --none: #b03a3a;
+  --screen: #0b0f16; --screen-fg: #e7ecf3;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1217; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a;
+  --accent: #6ea1ff; --accent-soft: #1a2638; --good: #4cc27f; --part: #e0a84a; --none: #ee7b7b;
+  --screen: #05070b; --screen-fg: #e7ecf3; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1217; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a;
+  --accent: #6ea1ff; --accent-soft: #1a2638; --good: #4cc27f; --part: #e0a84a; --none: #ee7b7b;
+  --screen: #05070b; --screen-fg: #e7ecf3; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.35rem; margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.05rem; margin-top: 22px; }
+p, li { max-width: 68ch; }
+.lead { color: var(--muted); font-size: 1.02rem; margin-top: 8px; }
+.eyebrow { font: 600 .72rem/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.answer { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-top: 22px; }
+.answer p { margin: .4em 0; }
+code, .mono { font-family: var(--mono); font-size: .86em; }
+.tbl { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 860px; font-size: .86rem; }
+th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+th { font: 600 .74rem/1.3 var(--body); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: var(--bg); position: sticky; top: 0; }
+tr:last-child td { border-bottom: 0; }
+td.fw { font-weight: 600; white-space: nowrap; }
+tr.ours td { background: var(--accent-soft); }
+.m { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+.y { background: var(--good); } .p { background: var(--part); } .n { background: transparent; border: 2px solid var(--none); width: 6px; height: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; color: var(--muted); font-size: .84rem; margin-top: 10px; }
+.uc { display: grid; grid-template-columns: 150px 1fr; gap: 16px; margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.uc .scr { background: var(--screen); color: var(--screen-fg); border-radius: 6px; padding: 10px; font: 500 .74rem/1.35 var(--mono); align-self: start; }
+.uc .scr b { display: block; font-size: 1rem; font-family: var(--display); margin-bottom: 4px; }
+.uc > div:last-child { min-width: 0; }
+.uc p { margin: .3em 0; }
+.who { color: var(--muted); font-size: .85rem; }
+.best { margin-top: 6px; font-size: .9rem; }
+.best b { color: var(--accent); }
+.dec { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-top: 16px; }
+.dec h3 { margin-top: 0; }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }
+.opt { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: .9rem; min-width: 0; }
+.opt.rec { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt h4 { margin: 0 0 4px; font: 600 .92rem/1.3 var(--display); }
+.opt .tag { font: 600 .68rem/1 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.opt ul { margin: 4px 0 0; padding-left: 18px; }
+.plus { color: var(--good); } .minus { color: var(--none); }
+.src { color: var(--muted); font-size: .82rem; margin-top: 30px; }
+@media (max-width: 560px) { .uc { grid-template-columns: 1fr; } h1 { font-size: 1.6rem; } }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">fm1-scales · sequencer · 2026-11-18</div>
+  <h1>Sequencer Study</h1>
+  <p class="lead">What a full sequencer has to do for us, how eight other FM-1 firmwares do it, and the six choices that are yours before the mock-up.</p>
+
+  <div class="answer">
+    <p><b>In short.</b> Melodee is the closest prior art to what you described: it keeps what you play as played, records live in patterns and arranges them into a song. It also records knob moves into a pattern, and it can keep what you just played even if REC was off. SLOOP has the best live song gestures: play sections on the next bar, chain them, and record the song while you play it. Felucca has the deepest step editing.</p>
+    <p>My recommendation:</p>
+    <ul>
+      <li>Keep our "as played" notes.</li>
+      <li>Add <b>patterns per track</b> and a <b>song of sections</b>, which you can arrange by hand (Melodee's grid) or by playing (SLOOP).</li>
+      <li>Add <b>motion</b> recorded from any page while REC is on.</li>
+      <li>Add a <b>steps view</b> where you can draw notes, chords and hits.</li>
+    </ul>
+    <p>The one thing that can't wait is somewhere to keep songs. Today a song is lost at power-off.</p>
+  </div>
+
+  <h2>1 · What it has to do: the use cases</h2>
+  <p>These come from your words of 2026-11-18 and from the use cases you already approved (UC-00, UC-04, UC-13). <b>Q-1 to Q-8</b> are proposals to confirm.</p>
+
+  <div class="uc"><div class="scr"><b>SONG</b>A A B A C</div><div>
+    <p><b>Q-1 · Make a whole song from parts.</b> A loop becomes the verse, a changed copy becomes the chorus, and a few more make a bridge and an ending. They line up into a song that plays from start to end.</p>
+    <p class="who">You: "a full sequencer to be able to create a song. Like different sections."</p></div></div>
+
+  <div class="uc"><div class="scr"><b>REC ●</b>overdub · bar 3/4</div><div>
+    <p><b>Q-2 · Record live, again and again.</b> The loop goes round. Each pass adds to the track (overdub) and keeps the timing as played (UC-00). The grid only changes how it plays back.</p>
+    <p class="who">You: "I like to record live." Built today for one loop of up to 8 bars.</p></div></div>
+
+  <div class="uc"><div class="scr"><b>ERASE</b>EDIT + C4 held</div><div>
+    <p><b>Q-3 · Erase live.</b> Hold a key while the loop passes and that note is gone. SAVE held undoes it (UC-13).</p>
+    <p class="who">You: "erase live." Built today (ST-41): EDIT and the key held.</p></div></div>
+
+  <div class="uc"><div class="scr"><b>STEPS</b>▮▯▯▯ ▮▯▮▯ ▮▯▯▯ ▮▮▯▯</div><div>
+    <p><b>Q-4 · Draw by hand.</b> Put a note, a chord, a kick or a snare on a chosen step, change its length or velocity, and take it away again, with no need to play it in time.</p>
+    <p class="who">You: "sometimes I want to go and draw a note, chord or kick/drum into a specific part manually." Not built.</p></div></div>
+
+  <div class="uc"><div class="scr"><b>MOTION</b>CUTOFF ╱╲╱ · OCT ▔▁▔</div><div>
+    <p><b>Q-5 · Record any knob from any page.</b> While REC is on, a cutoff sweep, an octave jump, mod, vibrato or a Kaoss pair move becomes part of the pattern and plays back each time.</p>
+    <p class="who">You: "I can imagine myself recording from any screen"; "automations ... like octave shifts, vibratos". Not built.</p></div></div>
+
+  <div class="uc"><div class="scr"><b>LIVE</b>next: B ▸ on the bar</div><div>
+    <p><b>Q-6 · Perform the song.</b> While it plays, choose the next section and it starts on the next bar, in time. Optionally, what you play becomes the song.</p>
+    <p class="who">From SLOOP and Melodee. It suits the FM-1, a small instrument played live. To confirm.</p></div></div>
+
+  <div class="uc"><div class="scr"><b>KEEP</b>that! · last 2 bars</div><div>
+    <p><b>Q-7 · Keep what I just played.</b> You played something good with REC off. One gesture puts the last bars into the track.</p>
+    <p class="who">Melodee's "Take Taker" and Tessera's capture. Kind to beginners and children, who forget REC. To confirm.</p></div></div>
+
+  <div class="uc"><div class="scr"><b>SAVED</b>song 3 · DUSTY</div><div>
+    <p><b>Q-8 · Keep my songs.</b> A song survives power-off. A few of them are kept, and you can load an old one and carry on.</p>
+    <p class="who">Story #26, open. Today a recorded song is lost at power-off: only the settings are stored (1 KB).</p></div></div>
+
+  <h2>2 · How the others do it</h2>
+  <p>Read from each firmware's current manual or source (Felucca 1.8.2 wiki, SLOOP 2.8.3 guide, Melodee 1.6 manual, OberVave 3.5, Tessera, fmini-1, CoralFlower, ChoralRoot), on 2026-11-18.</p>
+  <div class="legend"><span><span class="m y"></span>has it</span><span><span class="m p"></span>partly</span><span><span class="m n"></span>no</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Firmware</th><th>Notes kept as</th><th>Patterns</th><th>Song</th><th>Live rec · overdub</th><th>Erase live</th><th>Draw by hand</th><th>Motion (knobs)</th><th>Keep what I played</th><th>Songs saved</th></tr></thead>
+    <tbody>
+      <tr class="ours"><td class="fw">fm1-scales today</td><td>As played (ticks), grid and feel only on playback</td><td><span class="m n"></span>one loop, 1–8 bars, 128 notes a track</td><td><span class="m n"></span></td><td><span class="m y"></span>count-in</td><td><span class="m y"></span>EDIT + key held</td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m n"></span>lost at power-off</td></tr>
+      <tr><td class="fw">Felucca</td><td>64 steps a track; chords, ties, accent, slide, chance, ratchets, conditions; nudge keeps your timing</td><td><span class="m p"></span>4 project slots A–D</td><td><span class="m y"></span>16 sections, each picks a slot per track or a rest, with repeats; timeline</td><td><span class="m y"></span>overdub, count-in</td><td><span class="m p"></span>clear lanes (SEQ tools)</td><td><span class="m y"></span>piano roll, drum grid, step record, step locks</td><td><span class="m y"></span>per step, 128 records; one AUTOMATION list</td><td><span class="m n"></span></td><td><span class="m y"></span>4 projects</td></tr>
+      <tr><td class="fw">SLOOP</td><td>Steps, as heard (latency taken back); QUANT off gives nudge</td><td><span class="m p"></span>4 sections A–D, each all 4 tracks</td><td><span class="m y"></span>16 steps of sections, 1–64 bars; <b>chain live</b>; <b>record the song as you play</b></td><td><span class="m y"></span>overdub; free take sets the tempo</td><td><span class="m y"></span>EDIT + key as the playhead passes</td><td><span class="m y"></span>steps, piano roll, step sheet</td><td><span class="m p"></span>step locks</td><td><span class="m n"></span></td><td><span class="m p"></span>one song</td></tr>
+      <tr><td class="fw">Melodee</td><td>Steps and timed notes side by side; QNT at the end of a take, OFF by default</td><td><span class="m y"></span>16 per track, up to 64 steps</td><td><span class="m y"></span>64 sections; blocks span sections; rests; a sound per block; jam log becomes the song</td><td><span class="m y"></span>one armed track; waits for the loop</td><td><span class="m y"></span>EDIT held: erase pass</td><td><span class="m y"></span>piano roll, ranges, note sheet</td><td><span class="m y"></span>knobs while armed; MOTION lanes; 64 events</td><td><span class="m y"></span>Take Taker: REC held keeps the last bars</td><td><span class="m y"></span>32 projects</td></tr>
+      <tr><td class="fw">OberVave</td><td>256 steps a track; chord ≤4; QUANT per track or as played (nudge)</td><td><span class="m y"></span>8 slots, each the whole set with sounds and mix</td><td><span class="m p"></span>tracks launch on the bar, like clips</td><td><span class="m y"></span>REC on every page</td><td><span class="m y"></span>EDIT: as the playhead passes</td><td><span class="m y"></span>steps, long notes, ratchet, chance</td><td><span class="m y"></span>4 knobs a track while REC</td><td><span class="m n"></span></td><td><span class="m y"></span>8 slots, saved by hand</td></tr>
+      <tr><td class="fw">Tessera</td><td>64 steps plus recorded notes (Melodee's model)</td><td><span class="m y"></span>8 per track</td><td><span class="m y"></span>16 sections, a pattern per track, repeats; JAM log; plus generative song forms</td><td><span class="m y"></span></td><td><span class="m y"></span>EDIT held</td><td><span class="m y"></span>NOTES, step sheet</td><td><span class="m y"></span>in the pattern</td><td><span class="m y"></span>REC held: capture or print</td><td><span class="m y"></span>projects</td></tr>
+      <tr><td class="fw">CoralFlower</td><td>Takes into a pattern</td><td><span class="m y"></span>8 (chords, bass, drums, layer)</td><td><span class="m y"></span>a song of patterns</td><td><span class="m p"></span>REC into a new pattern after a count-in</td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m y"></span></td></tr>
+      <tr><td class="fw">ChoralRoot</td><td>Looper of chords</td><td><span class="m y"></span>10 loop slots</td><td><span class="m n"></span></td><td><span class="m y"></span>5 modes: overwrite, advance, overdub, replace, step</td><td><span class="m p"></span>replace mode</td><td><span class="m p"></span>step mode</td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m y"></span>10 slots</td></tr>
+      <tr><td class="fw">fmini-1</td><td>64 steps of single notes, in order</td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m p"></span>step record only</td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m n"></span></td><td><span class="m p"></span>with the preset</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>What stands out</h3>
+  <ul>
+    <li><b>Everyone separates patterns from the song.</b> A pattern is one track's loop. The song says which pattern each track plays in each section. SLOOP alone saves all four tracks together as a section (A–D), which is simpler but means you can't reuse one drum pattern under two different chord parts.</li>
+    <li><b>"As played" is now common.</b> Melodee keeps recorded notes with their timing beside the steps. Felucca, SLOOP and OberVave store the offset from the grid as a nudge. Our notes-as-played model is already right; it needs a steps view on top.</li>
+    <li><b>Erasing live is the same everywhere:</b> hold EDIT and a key while the playhead passes, as on the MPC. Ours matches it.</li>
+    <li><b>Motion is recorded as you turn, while REC is on</b> (Melodee, OberVave), and edited afterwards as lanes (Melodee's MOTION, Felucca's AUTOMATION list). Every firmware caps it with a shared pool of events (64 in Melodee, 128 in Felucca).</li>
+    <li><b>The live song gestures are SLOOP's:</b> pick a section and it starts on the next bar, chain a few, and "record the song as you play it". Melodee does the same quietly: while you jam, each loop is logged, and one hold turns the log into the song.</li>
+    <li><b>Storage decides the size.</b> Melodee shares 1,024 timed notes across a whole project. The FM-1's flash allows a few songs, not dozens, without touching the other firmwares' areas. That is a low-level question for me to settle from prior art (CLAUDE.md), and I'll tell you what I decide.</li>
+  </ul>
+
+  <h2>3 · Each use case and what to take from where</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Use case</th><th>We have</th><th>Best prior art</th><th>Proposed for us</th></tr></thead>
+    <tbody>
+      <tr><td class="fw">Q-1 Song from parts</td><td>One loop</td><td>Melodee's song grid: a row per section, a pattern or a rest per track, repeats</td><td>Patterns per track. A SONG view as a grid you edit with the four knobs. A new section starts as a copy of the one playing.</td></tr>
+      <tr><td class="fw">Q-2 Record live</td><td>Overdub on one loop, count-in, grid and feel on playback</td><td>Melodee: waits for the loop and keeps the timing</td><td>Keep ours, applied to the pattern playing on that track.</td></tr>
+      <tr><td class="fw">Q-3 Erase live</td><td>EDIT + key held, SAVE held undo</td><td>Same everywhere</td><td>Keep. Add a whole-pattern clear on the pattern's sheet.</td></tr>
+      <tr><td class="fw">Q-4 Draw by hand</td><td>—</td><td>Felucca's drum grid (white keys are steps) and piano roll; OberVave's tap a key = a step</td><td>STEPS view: on drums the 16 white keys are the steps and ALGORITHM picks the sound. On the other tracks, a step takes the key or chord held. K1–K4 for step, note, length, velocity.</td></tr>
+      <tr><td class="fw">Q-5 Motion from any page</td><td>—</td><td>Melodee (knobs while armed, MOTION lanes); OberVave</td><td>With REC on, any knob on any page records into the pattern: sound, FX, PERFORM pairs, octave, mod. A MOTION view shows and clears each lane.</td></tr>
+      <tr><td class="fw">Q-6 Perform the song</td><td>—</td><td>SLOOP: next section on the bar, chains, record the song as you play</td><td>On SONG while playing, choose the next section: it starts on the bar. "Record the song" captures the order you played.</td></tr>
+      <tr><td class="fw">Q-7 Keep what I played</td><td>—</td><td>Melodee's Take Taker; Tessera's capture</td><td>REC held with REC off keeps the last 1, 2 or 4 bars. Needs a pass-through buffer of what was played.</td></tr>
+      <tr><td class="fw">Q-8 Keep songs</td><td>Settings only (1 KB)</td><td>Melodee: one pool for all projects; Felucca: 4 projects, autosave when stopped and idle</td><td>A song area in our own flash region, sized from prior art. Autosave when stopped. A few song slots.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>4 · Choices that are yours</h2>
+  <p>These change what a child or a producer sees, hears or keeps, so they wait for you. Where I suggest an option, its box is outlined.</p>
+
+  <div class="dec"><h3>A · What a section holds</h3><div class="opts">
+    <div class="opt rec"><span class="tag">Suggested</span><h4>A pattern per track</h4>Each section picks a pattern, or a rest, for each track (Melodee, Felucca, Tessera).<ul><li class="plus">The same drums under a new chorus</li><li class="plus">A track can rest</li><li class="minus">A grid of 4 tracks × sections to show</li></ul></div>
+    <div class="opt"><h4>The whole set</h4>A section is all four tracks at once, A–D (SLOOP).<ul><li class="plus">Simplest: save the loop as B</li><li class="minus">Reusing a part means copying it</li></ul></div>
+  </div></div>
+
+  <div class="dec"><h3>B · How a song is made</h3><div class="opts">
+    <div class="opt rec"><span class="tag">Suggested</span><h4>Both, playing first</h4>Play sections live and the order is kept (SLOOP, Melodee's jam log), then fix it on the grid by hand.<ul><li class="plus">Feels like playing, not data entry</li><li class="minus">Two ways to learn</li></ul></div>
+    <div class="opt"><h4>Only by hand</h4>The SONG grid alone (Felucca).<ul><li class="plus">One way, easy to explain</li><li class="minus">Slower, and less fun on a small screen</li></ul></div>
+  </div></div>
+
+  <div class="dec"><h3>C · How many and how long</h3><div class="opts">
+    <div class="opt rec"><span class="tag">Suggested</span><h4>8 patterns a track, 16 sections</h4>Patterns of 1–8 bars, as today. 16 sections, each with repeats. About 4 saved songs.<ul><li class="plus">Fits a short song for a child or a full track</li><li class="minus">The final numbers follow the flash we can use</li></ul></div>
+    <div class="opt"><h4>16 patterns, 64 sections</h4>Melodee's size.<ul><li class="plus">Room for long songs</li><li class="minus">Fewer saved songs; more to scroll</li></ul></div>
+  </div></div>
+
+  <div class="dec"><h3>D · Motion</h3><div class="opts">
+    <div class="opt rec"><span class="tag">Suggested</span><h4>Every knob, from any page, while REC</h4>Includes octave, mod, PERFORM pairs and FX. One pool per song. A MOTION view to see and clear lanes.<ul><li class="plus">What you asked for</li><li class="minus">A full pool needs a clear message</li></ul></div>
+    <div class="opt"><h4>A chosen few</h4>Only cutoff, mod and octave.<ul><li class="plus">Smaller, simpler</li><li class="minus">Less expressive</li></ul></div>
+  </div></div>
+
+  <div class="dec"><h3>E · Drawing steps</h3><div class="opts">
+    <div class="opt rec"><span class="tag">Suggested</span><h4>Keys are the steps</h4>On STEPS the 16 white keys are 16 steps: tap one to set it or clear it. On drums ALGORITHM picks the sound. On other tracks a step takes the key or chord held. Your played notes stay as played; drawn ones sit on the grid.<ul><li class="plus">Hands-on, like a drum machine</li><li class="minus">The keys stop playing notes on that view</li></ul></div>
+    <div class="opt"><h4>Cursor and knobs only</h4>A piano roll edited with K1–K4.<ul><li class="plus">The keys keep playing</li><li class="minus">Slower to draw a beat</li></ul></div>
+  </div></div>
+
+  <div class="dec"><h3>F · Keep what I just played</h3><div class="opts">
+    <div class="opt rec"><span class="tag">Suggested</span><h4>Yes</h4>REC held while not recording keeps the last bars.<ul><li class="plus">Nothing good is lost, even without REC</li><li class="minus">REC held has to mean only this</li></ul></div>
+    <div class="opt"><h4>Not now</h4>Later, if it is missed.<ul><li class="plus">One thing less to build</li></ul></div>
+  </div></div>
+
+  <h2>5 · Next</h2>
+  <ul>
+    <li><b>You:</b> confirm Q-1 to Q-8 (or change them) and choose A to F.</li>
+    <li><b>Me:</b> turn the Sequencer Lab into a full mock-up with SONG, PATTERNS, STEPS, MOTION and the live gestures, on the navigation you approved (D-072), so you can try it before anything is built.</li>
+    <li><b>Me, decide and tell:</b> the song storage (flash area, slots, autosave), from Felucca's and Melodee's prior art, recorded as a D-nnn.</li>
+    <li><b>Then:</b> stories, requirements and scenarios for your approval, and the build.</li>
+  </ul>
+
+  <p class="src">Sources: Felucca wiki (Features, Controls, Menu), SLOOP 2.8.3 Complete Guide (in Synthesthetic's docs/upstream-sloop), Melodee 1.6 manual, OberVave README, Tessera MANUAL, CoralFlower and ChoralRootFM1 READMEs, and the fmini-1 manual, cloned 2026-11-18. fm1-scales: fm1kit.h (kit_song_t: 8 bars, 128 notes a track), USE_CASES.md, STORIES.md.</p>
+</div>

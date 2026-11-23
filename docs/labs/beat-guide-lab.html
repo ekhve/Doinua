@@ -1,0 +1,1460 @@
+<meta charset="utf-8">
+<title>Beat Guide Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the FM-1's 240x240 screen and its 27 keys, its encoders and buttons beside; one look on purpose: a dim
+   studio at night, the four tracks' colours the brightest things (drums amber, bass violet, chords teal, melody pink). */
+:root {
+  --bg: #111522;
+  --panel: #1c2236;
+  --ink: #f1efe8;
+  --muted: #a3abc6;
+  --accent: #ffb547;      /* the guide's colour */
+  --key-w: #ecebf2;
+  --key-b: #252a44;
+  --display: "Press Start 2P", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px; }
+.wrap { max-width: 820px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-family: var(--display); font-size: 17px; letter-spacing: .04em; margin: 0; color: var(--accent); line-height: 1.5; }
+p.lead { margin: 0; color: var(--muted); max-width: 68ch; line-height: 1.55; }
+.device { background: var(--panel); border-radius: 18px; padding: 16px; display: grid; gap: 14px; box-shadow: 0 0 0 2px #2c3554 inset; }
+.top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+canvas#screen { width: min(480px, 100%); aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; background: #000; border: 3px solid #0a0d18; max-width: 100%; }
+.side { display: grid; gap: 7px; flex: 1; min-width: 230px; }
+.row { display: grid; grid-template-columns: 58px 1fr; gap: 8px; align-items: center; background: #161c30; border-radius: 10px; padding: 6px 8px; }
+.row .btns { display: flex; gap: 4px; }
+.row button, .btn { border: 2px solid #3a4572; background: radial-gradient(#36416f, #1a203b); color: var(--ink); font: 10px var(--display); cursor: pointer; border-radius: 8px; }
+.row .btns button { width: 26px; height: 34px; padding: 0; }
+.row .lab { font: 8px var(--display); color: var(--muted); letter-spacing: .05em; }
+.row .val { font-weight: 600; font-size: 13px; margin-top: 3px; }
+.btnrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { padding: 9px 10px; }
+.btn.play { background: #2e7d4f; border-color: #4fc07f; }
+.btn.rec { background: #8a2a2a; border-color: #e05a5a; }
+.btn.off { opacity: .35; }
+.btn.held { background: #4a5276; border-color: var(--accent); }
+.btn.rec.on { background: #e03a3a; box-shadow: 0 0 10px #ff6a6a; }
+.btn.aux { background: #22283f; border-color: #4a5276; font-size: 9px; }
+button:focus-visible, .key:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.keys { position: relative; height: 120px; overflow-x: auto; }
+.keys-inner { position: relative; height: 100%; min-width: 540px; }
+.key { position: absolute; top: 0; border: 1px solid #0a0d18; border-radius: 0 0 6px 6px; cursor: pointer; padding: 0 0 4px; display: flex; align-items: flex-end; justify-content: center; font: 7px var(--display); color: #6a6f90; }
+.key.w { background: var(--key-w); height: 100%; z-index: 1; }
+.key.b { background: var(--key-b); height: 60%; z-index: 2; color: #8b86b8; }
+.key.dim { box-shadow: 0 0 0 3px var(--glow, #fff) inset; }
+.key.on { box-shadow: 0 0 14px 5px var(--glow, #fff) inset, 0 0 12px 2px var(--glow, #fff); }
+.key.down { filter: brightness(.8); }
+.notes { color: var(--muted); font-size: 13px; line-height: 1.55; display: grid; gap: 6px; max-width: 74ch; }
+.notes b { color: var(--ink); }
+.guide { background: #1a2034; border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; border-left: 4px solid var(--accent); }
+.guide .where { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font: 8px var(--display); color: var(--muted); letter-spacing: .05em; align-items: center; }
+.guide .dots { display: flex; gap: 4px; }
+.guide .dots i { width: 9px; height: 9px; border-radius: 50%; background: #2c3554; display: block; }
+.guide .dots i.done { background: #4fc07f; } .guide .dots i.cur { background: var(--accent); }
+.guide .say { font-size: 15px; line-height: 1.5; margin: 0; }
+.guide .more { font-size: 13px; line-height: 1.5; margin: 0; color: var(--muted); }
+.guide .todo { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: space-between; background: #11162a; border-radius: 10px; padding: 10px 12px; }
+.guide .todo .what { font-size: 14px; line-height: 1.45; flex: 1; min-width: 200px; }
+.guide .todo .what b { color: var(--accent); font: 9px var(--display); letter-spacing: .05em; display: block; margin-bottom: 4px; }
+.guide .todo.ok .what b { color: #7fe08a; }
+.guide .nav { display: flex; gap: 6px; }
+.btn.next { background: #2c3554; border-color: #4a5276; }
+.guide .todo.ok #g-next { background: #2e7d4f; border-color: #4fc07f; }
+.note { display: grid; gap: 6px; border-top: 1px solid #2c3554; padding-top: 10px; }
+.note label { font: 8px var(--display); color: var(--muted); letter-spacing: .05em; }
+.note textarea { font: 14px var(--body); color: var(--ink); background: #11162a; border: 1px solid #3a4572; border-radius: 8px; padding: 8px; resize: vertical; min-height: 44px; }
+.note textarea:focus-visible { outline: 2px solid var(--accent); }
+.note .row2 { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.pulse { animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,181,71,0); } 50% { box-shadow: 0 0 0 4px rgba(255,181,71,.9), 0 0 14px 4px rgba(255,181,71,.5); } }
+.row.pulse { animation: pulserow 1.1s ease-in-out infinite; }
+@keyframes pulserow { 0%, 100% { background: #161c30; } 50% { background: #3a3220; } }
+.keys.pulse { border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { .key.on { box-shadow: 0 0 0 4px var(--glow, #fff) inset; } .pulse, .row.pulse { animation: none; outline: 3px solid var(--accent); } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&family=Inter+Tight:wght@500;600;700&display=swap">
+
+<div class="wrap">
+  <h1>Beat guide: lessons 1–9, and practice</h1>
+  <p class="lead">A sketch of the guided mode for grown-ups who never made a beat, and of how it hands you over to the firmware. Lesson 1 takes a song apart with the mixer: tracks, drums, styles, tempo, key. Lesson 2 finds the tempo with your hands, then builds a beat on it. Lesson 3 is groove: shape a stiff beat into a human one with the knobs. Lesson 4 is keys and chords: why some notes sound good together and others don't, how a key and a progression are chosen. Lesson 5 is chord colours: 7, 9, sus and more, voicings, strum and arp. Lesson 6 is the bass, lesson 7 the melody, each with a song of its own. Lesson 8 tries three ways to start a song; lesson 9 records your own. Then two practice games: scales and chords, with the lights, for stars.</p>
+  <div class="guide" id="guide" aria-live="polite">
+    <div class="where"><span id="g-where"></span><span class="dots" id="g-dots"></span></div>
+    <p class="say" id="g-say"></p>
+    <p class="more" id="g-more"></p>
+    <div class="todo" id="g-todo"><div class="what"><b id="g-head">DO THIS</b><span id="g-do"></span></div>
+      <div class="nav"><button class="btn next" id="g-back" aria-label="Previous step">‹ BACK</button><button class="btn next" id="g-next">NEXT ›</button></div></div>
+    <div class="note">
+      <label for="g-note">YOUR CORRECTION FOR THIS STEP (CLAUDE READS THESE)</label>
+      <textarea id="g-note" rows="2" placeholder="What should change on this step: the words, the sound, the task, the screen…"></textarea>
+      <div class="row2"><button class="btn next" id="g-save">Save note</button><span id="g-saved" aria-live="polite"></span></div>
+    </div>
+  </div>
+  <div class="device">
+    <div class="top">
+      <canvas id="screen" width="240" height="240" aria-label="The guided mode's screen: the lesson's words, the sequencer, the mixer"></canvas>
+      <div class="side">
+        <div class="btnrow">
+          <button class="btn play" id="play">▶ PLAY</button>
+          <button class="btn rec" id="rec">● REC</button>
+          <button class="btn aux" id="home" aria-label="HOME: the lessons">HOME</button>
+          <button class="btn aux" id="edit" aria-label="EDIT, hold: erase">EDIT</button>
+          <button class="btn aux" id="octd" aria-label="OCT minus: key down">OCT−</button>
+          <button class="btn aux" id="octu" aria-label="OCT plus: key up">OCT+</button>
+          <button class="btn aux" id="scl" aria-label="SCL: the track's pages">SCL</button>
+          <button class="btn aux" id="glo" aria-label="GLO: tap the song page, hold for help">GLO</button>
+          <button class="btn aux" id="save" aria-label="SAVE: undo">SAVE</button>
+        </div>
+        <div class="row"><div class="btns"><button data-k="sel" data-d="-1" aria-label="SELECT back">‹</button><button data-k="sel" data-d="1" aria-label="SELECT next">›</button></div><div><div class="lab">SELECT · STEP</div><div class="val" id="v-sel"></div></div></div>
+        <div class="row"><div class="btns"><button data-k="alg" data-d="-1" aria-label="ALGORITHM down">‹</button><button data-k="alg" data-d="1" aria-label="ALGORITHM up">›</button></div><div><div class="lab">ALGORITHM · TEMPO</div><div class="val" id="v-alg"></div></div></div>
+        <div class="row"><div class="btns"><button data-k="pre" data-d="-1" aria-label="PRESETS down">‹</button><button data-k="pre" data-d="1" aria-label="PRESETS up">›</button></div><div><div class="lab">PRESETS · DRUM STYLE</div><div class="val" id="v-pre"></div></div></div>
+        <div class="row"><div class="btns"><button data-k="k0" data-d="-1" aria-label="K1 down">‹</button><button data-k="k0" data-d="1" aria-label="K1 up">›</button></div><div><div class="lab">K1 · DRUMS VOLUME</div><div class="val" id="v-k0"></div></div></div>
+        <div class="row"><div class="btns"><button data-k="k1" data-d="-1" aria-label="K2 down">‹</button><button data-k="k1" data-d="1" aria-label="K2 up">›</button></div><div><div class="lab">K2 · BASS VOLUME</div><div class="val" id="v-k1"></div></div></div>
+        <div class="row"><div class="btns"><button data-k="k2" data-d="-1" aria-label="K3 down">‹</button><button data-k="k2" data-d="1" aria-label="K3 up">›</button></div><div><div class="lab">K3 · CHORDS VOLUME</div><div class="val" id="v-k2"></div></div></div>
+        <div class="row"><div class="btns"><button data-k="k3" data-d="-1" aria-label="K4 down">‹</button><button data-k="k3" data-d="1" aria-label="K4 up">›</button></div><div><div class="lab">K4 · MELODY VOLUME</div><div class="val" id="v-k3"></div></div></div>
+        <div class="btnrow"><button class="btn aux" id="show">Show me</button><button class="btn aux" id="clear">Clear drums</button></div>
+      </div>
+    </div>
+    <div class="keys"><div class="keys-inner" id="keys"></div></div>
+  </div>
+  <div class="notes">
+    <div><b>Try it:</b> follow the box above: it says what to do, the control to use glows, and a ✓ shows when you did it; then <b>NEXT ›</b> (SELECT › on the FM-1). The keys: tap them, or the computer keys <b>A S D F G H J K L</b> (white, from C4) and <b>W E T Y U O P</b> (black); the drums are always the three lit keys side by side, KICK, SNARE, HAT (also <b>Z X C</b>), and for tapping the tempo any key (or the space bar) will do.</div>
+    <div><b>The controls keep one meaning everywhere:</b> K1–K4 the mixer (drums, bass, chords, melody), ALGORITHM the tempo, PRESETS the drums and the style, OCT− / OCT+ the key, SELECT the step, HOME (a tap) the list of lessons. in lesson 3 K1–K4 and PRESETS shape the groove instead (the screen shows them); REC records drums, from lesson 2; EDIT held with a drum key erases it (Shift on a computer keyboard), as in the Producer mode. <i>Show me</i> and <i>Clear drums</i> stand in for a held button on the FM-1.</div>
+    <div><b>The song</b> is our own: two chords, Am7 and Fmaj7, on a Wurlitzer electric piano, one per bar, struck again just before the bar ends (in the last bar that hit is already the next chord: a push); a bass guitar on two notes an octave apart, and a note that leads into the next chord; a sparse hook on a harp, with an echo; real drums with ghost notes, a little swing and human timing. Your own MIDI can replace it.</div>
+    <div><b>The sounds</b> are recordings: the hip-hop kick, snare and hat are the owner's own; the other drums from Sample Pi (the Sonic Pi samples, CC0; on a drum bus with a little saturation), the bass guitar by D. Smolken / Karoryfer (CC0), the harp from the Versilian Community Sample Library (CC0), the Wurlitzer EP200 by Greg Sullivan (CC BY 3.0), all as collected at github.com/danigb/samples. On the FM-1 the sounds would be its own engines and drum kits, so this lab sounds better than the device will.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ================= the song: A minor, Am7 | Fmaj7 | Am7 | Fmaj7, 4 bars of 16 steps ================= */
+const NAMES = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const TRACK = [{ name: "DRUMS", col: "#ffb547" }, { name: "BASS", col: "#a98bff" }, { name: "CHORDS", col: "#45d6c2" }, { name: "MELODY", col: "#ff7ab8" }];
+const CH = { Am: { name: "Am", root: 9, minor: true, notes: [57, 60, 64, 67] }, F: { name: "F", root: 5, notes: [53, 57, 60, 64] } };   /* Am7, Fmaj7: two chords */
+const SONG_BARS = [CH.Am, CH.F, CH.Am, CH.F];
+let BARS = SONG_BARS;
+/* a chord of the key (A minor), from its degree: take a note, skip one, take one, skip one, take one */
+const SC = [0, 2, 3, 5, 7, 8, 10], ROMAN = ["i", "ii°", "III", "iv", "v", "VI", "VII"];
+const SONG6 = [[0, "7"], [3, "7"], [5, "maj7"], [4, "7"]];             /* lesson 6's song: Am7 Dm7 Fmaj7 Em7 */
+const SONG5 = [[3, "9"], [6, "13"], [2, "maj7"], [0, "9"]];             /* lesson 5's song: Dm9 G13 Cmaj7 Am9 */
+const PADKEYS = [53, 55, 57, 59, 60, 62, 64];                             /* the chord pad's white keys: i..VII, and an octave up */
+const padDeg = (n) => PADKEYS.indexOf(n) >= 0 ? PADKEYS.indexOf(n) : PADKEYS.indexOf(n - 12);
+const PROGS = [
+  { name: "Am F C G", degs: [0, 5, 2, 6], feel: "the pop one, emotional: it is everywhere" }, { name: "Am G F G", degs: [0, 6, 5, 6], feel: "epic and rising, a film chorus" },
+  { name: "Am Dm Em Am", degs: [0, 3, 4, 0], feel: "dark and classic: all minor" }, { name: "F G Am Am", degs: [5, 6, 0, 0], feel: "it lifts you home" },
+  { name: "C G Am F", degs: [2, 6, 0, 5], feel: "the same family from C: bright, happy" }, { name: "Dm G C Am", degs: [3, 6, 2, 0], feel: "smooth, a little jazzy" }];
+function mkChord(deg) {
+  const pc = (k) => SC[(deg + k) % 7] + 12 * Math.floor((deg + k) / 7), third = (SC[(deg + 2) % 7] - SC[deg] + 12) % 12, fifth = (SC[(deg + 4) % 7] - SC[deg] + 12) % 12;
+  const triad = [0, 2, 4].map((k) => 57 + pc(k)).map((n) => (n > 69 ? n - 12 : n)), notes = [...new Set(triad)].sort((a, b) => a - b);
+  if (notes[0] + 12 <= 72) notes.push(notes[0] + 12);                  /* the lowest note again an octave up: fuller */
+  return { name: "", root: (9 + SC[deg]) % 12, minor: third === 3, dim: fifth === 6, deg, notes, spell: [0, 2, 4].map((k) => (9 + SC[(deg + k) % 7]) % 12) };
+}
+/* a colour: what it adds to the chord (semitones above its root), as the FM-1's chord pad does */
+const COLOURS = { sus2: { feel: "open, airy" }, sus4: { feel: "suspended: it wants to come back" }, "7": { feel: "bluesy: it wants to move on" }, maj7: { feel: "dreamy, soft" },
+  "9": { feel: "lush: neo soul, R&B" }, "11": { feel: "floating, modern" }, "13": { feel: "rich and jazzy" }, add9: { feel: "bright and open: pop" }, "6": { feel: "sweet, old-school" }, "/3": { feel: "the 3rd in the bass: smoother, it walks" } };
+const COLKEYS = { 54: "sus2", 56: "sus4", 58: "7", 61: "maj7", 63: "9", 66: "11", 68: "13", 70: "add9", 73: "6", 75: "/3" };   /* the black keys, as on the FM-1 */
+const COLSHORT = { sus2: "s2", sus4: "s4", "7": "7", maj7: "M7", "9": "9", "11": "11", "13": "13", add9: "a9", "6": "6", "/3": "/3" };
+function colourChord(deg, col) {
+  const base = mkChord(deg); if (!col) return base;
+  let r = 57 + SC[deg]; if (r > 62) r -= 12;
+  const t3 = base.minor || base.dim ? 3 : 4, t5 = base.dim ? 6 : 7, add = { "7": [10], maj7: [11], "9": [10, 14], "11": [10, 14, 17], "13": [10, 14, 21], add9: [14], "6": [9] }[col] || [];
+  let notes = [r, r + (col === "sus2" ? 2 : col === "sus4" ? 5 : t3), r + t5, ...add.map((x) => r + x)];
+  if (col === "/3") notes = [r + t3 - 12, r, r + t5, r + 12];
+  const q = base.dim ? "dim" : base.minor ? "m" : "", root = NAMES[(base.root + S.key + 12) % 12];
+  const suffix = col === "sus2" || col === "sus4" ? col : col === "7" ? (base.dim ? "m7♭5" : q + "7") : col === "maj7" ? (q ? q + "(maj7)" : "maj7")
+    : col === "add9" ? (q ? q + "(add9)" : "add9") : col === "/3" ? q + "/" + NAMES[(base.root + t3 + S.key + 12) % 12] : (q === "dim" ? "m" : q) + col;
+  return { ...base, notes: notes.sort((a, b) => a - b), col, fullName: root + suffix };
+}
+function setProg(degs) { BARS = degs ? [0, 1, 2, 3].map((b) => { const x = degs[b % degs.length]; return Array.isArray(x) ? colourChord(x[0], x[1]) : mkChord(x); }) : SONG_BARS; }
+/* lesson 5: the voicing (K1) and the way it is played (K2) */
+const VOICES = ["Root", "Inv 1", "Inv 2", "Open", "Wide"], PLAYS = ["Block", "Strum", "Arp"];
+function voiced(notes) {
+  const n = [...notes].sort((a, b) => a - b), v = S.lesson === 4 ? S.voice : 0;
+  if (v === 1) n.push(n.shift() + 12); else if (v === 2) { n.push(n.shift() + 12); n.push(n.shift() + 12); }
+  else if (v === 3 && n.length > 2) { const r = n.shift(); const second = n.shift(); return [r - 12, ...n, second + 12].sort((a, b) => a - b); }
+  else if (v === 4) n.unshift(n[0] - 12);
+  return n.sort((a, b) => a - b);
+}
+const degOf = (n) => SC.indexOf(((n - 57 - S.key) % 12 + 12) % 12);   /* the key's degree of a note, or -1 */
+/* the electric piano: one chord a bar, held; struck again on the "and" of 4, just before the bar ends. In the last bar
+   that hit is already the next chord (Am), early, and rings into the next bar: a push. */
+const COMP_HOLD = 13.5, COMP_LATE = 15, PUSH_BAR = 3;
+const chordAt = (bar, step) => step >= COMP_LATE && bar === PUSH_BAR ? BARS[(bar + 1) % 4] : BARS[bar];
+const chordName = (ch) => ch.fullName || NAMES[(ch.root + S.key + 12) % 12] + (ch.dim ? "dim" : ch.minor ? "m" : "");
+/* the bass: root and octave in a syncopated rhythm, and a note leading to the next chord (G into F, E back to A) */
+const BASS = [
+  [[1, 33, 3], [4, 33, 1], [6, 45, 1], [8, 33, 2], [11, 33, 1], [12, 45, 1], [14, 31, 2]],
+  [[1, 29, 3], [4, 29, 1], [6, 41, 1], [8, 29, 2], [11, 29, 1], [12, 41, 1], [14, 28, 2]]];
+const BASS_L = 5, MEL_L = 6;
+const BASSPATS = ["Root", "Pulse", "Octaves", "Approach", "Tresillo", "Boogie"];
+const bassRoot = (ch) => { let r = 33 + ((ch.root - 9 + 12) % 12); if (r > 38) r -= 12; return r; };
+function bassPattern(bar) {                                             /* lesson 6: the band's bass, as PRESETS picks */
+  const ch = BARS[bar], r = bassRoot(ch), nr = bassRoot(BARS[(bar + 1) % 4]), t3 = ch.minor || ch.dim ? 3 : 4;
+  return [[[1, r, 14]], [1, 3, 5, 7, 9, 11, 13, 15].map((st) => [st, r, 1.6]), [1, 3, 5, 7, 9, 11, 13, 15].map((st, i) => [st, i % 2 ? r + 12 : r, 1.6]),
+    [[1, r, 3], [4, r, 1], [6, r + 12, 1], [8, r, 2], [11, r, 1], [12, r + 12, 1], [14, r, 1.5], [16, nr - 1, 1]],
+    [[1, r, 3], [4, r, 3], [7, r, 2], [9, r, 3], [12, r, 3], [15, r + 12, 2]],
+    [[1, r, 2], [3, r + t3, 2], [5, r + 7, 2], [7, r + 9, 2], [9, r + 12, 2], [11, r + 9, 2], [13, r + 7, 2], [15, r + t3, 2]]][S.bassPat || 0];
+}
+let MELODY_NOW = null;
+const RHY = [[1, 2], [4, 3], [7, 3], [11, 2], [13, 3]];                  /* lesson 7: one rhythm, a bar long */
+function genMel(v, bars = [0, 1, 2, 3]) {                                /* 0: one note; 1: the chord's own notes; 2: up and down the scale */
+  const out = [];
+  for (const b of bars) { const ch = BARS[b], tones = ch.notes.map((n) => { let x = n; while (x < 64) x += 12; while (x > 79) x -= 12; return x; }).sort((a, c) => a - c);
+    RHY.forEach(([st, len], i) => { let n = 69;
+      if (v === 1) n = tones[[0, 1, 2, 1, 0][i] % tones.length];
+      if (v === 2) { const sc = [64, 65, 67, 69, 71, 72, 74, 76]; n = sc[[3, 4, 5, 4, 2][i] + (b % 2 ? -1 : 0)] || 69; }
+      out.push([b, st, n, len]); }); }
+  return out;
+}                                                  /* a lesson's own melody, or the first song's */
+const melNow = () => S.lesson === MAKE ? [...S.song.mel].map(([i, n]) => [Math.floor(i / 16), (i % 16) + 1, n, 2]) : MELODY_NOW || MELODY;
+const WAYS = 7, MAKE = 8;
+const recL = () => S.lesson === 1 || S.lesson === MAKE;
+const bassOf = (bar) => {
+  if (S.lesson === MAKE) return [...S.song.bass].filter(([i]) => Math.floor(i / 16) === bar).map(([i, n]) => [(i % 16) + 1, n, 2]);
+  if (S.lesson === WAYS && S.waysBass === false) return [];
+  if (S.lesson === BASS_L && S.bassBand !== false) return bassPattern(bar);
+  if (BARS === SONG_BARS) return BASS[bar % 2];
+  let r = 33 + ((BARS[bar].root - 9 + 12) % 12); if (r > 38) r -= 12;      /* a progression of your own: root and octave */
+  return [[1, r, 3], [4, r, 1], [6, r + 12, 1], [8, r, 2], [11, r, 1], [12, r + 12, 1], [14, r, 2]];
+};
+/* the hook on a harp: sparse, with room around it; a call (bars 1-2) and its answer (bars 3-4) */
+const MELODY = [
+  [0, 3, 76, 2], [0, 5, 74, 2], [0, 7, 72, 8],
+  [1, 3, 69, 2], [1, 5, 72, 10],
+  [2, 3, 76, 2], [2, 5, 74, 2], [2, 7, 76, 2], [2, 9, 79, 8],
+  [3, 5, 76, 2], [3, 7, 74, 2], [3, 9, 72, 8]];
+/* the drum styles, one bar: [step, velocity]; o = open hat; tips for the screen */
+/* the first three are the same genre at the same speed: other drum parts for the same song (lesson 1, step 8) */
+const LOFI = 3, REGGAETON = 5;
+const H8 = [[1, .9], [3, .5], [5, .85], [7, .5], [9, .9], [11, .5], [13, .85], [15, .5]];
+const STYLES = [
+  { name: "Hip-hop 1", genre: "Hip-hop", bpm: 88, kit: "hiphop", swing: 0.56, k: [[1, 1], [11, .9]], s: [[5, .85], [13, .85]], g: [], h: H8, o: [],
+    tip: "kick on 1 and the 'and' of 3, snare on 2 and 4, hats in 8ths. 85–95 BPM" },
+  { name: "Hip-hop 2", genre: "Hip-hop", bpm: 88, kit: "hiphop", swing: 0.56, k: [[1, 1], [4, .6], [8, .55], [11, .9]], s: [[5, .85], [13, .85]], g: [[10, .16], [16, .14]],
+    h: [[1, .8], [2, .25], [3, .5], [4, .25], [5, .75], [6, .25], [7, .5], [8, .25], [9, .8], [10, .25], [11, .5], [12, .25], [13, .75], [14, .25], [15, .45]], o: [[16, .3]],
+    tip: "busier: extra kicks, 16th hats, ghost notes, an open hat" },
+  { name: "Half-time", genre: "Hip-hop", bpm: 88, kit: "hiphop", swing: 0.56, k: [[1, 1], [8, .6], [10, .8]], s: [[9, .9]], g: [], h: H8, o: [],
+    tip: "the snare once a bar, on 3: slow and heavy" },
+  { name: "Lo-fi", genre: "Lo-fi", bpm: 76, kit: "soft", swing: 0.62, k: [[1, .9], [11, .8]], s: [[5, .8], [13, .8]], g: [[10, .2]], h: [[1, .6], [3, .35], [5, .6], [7, .35], [9, .6], [11, .35], [13, .6], [15, .35]], o: [],
+    tip: "hip-hop slowed down, soft drums, heavy swing. 70–85 BPM" },
+  { name: "House", genre: "House", bpm: 122, kit: "house", swing: 0.5, k: [[1, .85], [5, .85], [9, .85], [13, .85]], s: [[5, .55], [13, .55]], g: [], h: [[3, .5], [7, .5], [11, .5], [15, .5]], o: [],
+    tip: "four on the floor: a kick on every beat, a clap on 2 and 4, a thin hat between the kicks. Little else. 118–125 BPM" },
+  { name: "Reggaeton", genre: "Reggaeton", bpm: 94, kit: "dembow", swing: 0.5, k: [[1, .9], [5, .85], [9, .9], [13, .85]], s: [[4, .75], [7, .8], [12, .75], [15, .8]], g: [], h: [[1, .3], [3, .22], [5, .3], [7, .22], [9, .3], [11, .22], [13, .3], [15, .22]], o: [],
+    tip: "the dembow: a kick on every beat and a snare in 3 + 3 + 2 (boom-ch-boom-chick). 88–100 BPM" },
+  { name: "Trap", genre: "Trap", bpm: 140, kit: "trap", swing: 0.5, k: [[1, 1], [11, .9]], s: [[9, 1]], g: [], h: [[1, .8], [3, .5], [5, .8], [7, .5], [9, .8], [11, .5], [13, .8], [15, .6]], o: [], roll: 15,
+    tip: "snare only on 3 (half time), a simple kick, fast hats with a roll. 130–150 BPM" },
+];
+/* ================= the lessons ================= */
+/* each step: t, the screen's words (short); more, the guide box's extra; go, what to do now (a function: it can count);
+   ctl, the controls that glow; task, when it is done. A step with no task is read-and-go-on. */
+const vol = (k) => S.vol[k];
+const L = [
+  { title: "WHAT'S IN A BEAT", pages: [
+    { t: "This beat has 4 tracks: DRUMS, BASS, CHORDS, MELODY. For now only the chords sound.", more: "The mixer at the bottom of the screen shows the four tracks: how loud each is set (the bar) and how loud it is playing (the meter).",
+      enter: () => setMix([0, 0, 8, 0]), go: () => "Press ▶ PLAY.", ctl: ["play"], task: () => S.playing },
+    { t: "The knobs K1–K4 are a MIXER: each one is the volume of one track. K1 is the drums.", more: "On the FM-1 you turn the knob; here, press › next to K1 a few times.",
+      go: () => `Turn K1 up to 6 or more (now ${vol(0)}).`, ctl: ["k0"], task: () => vol(0) >= 6 },
+    { t: "K2 is the bass: it locks to the kick and makes you nod.", more: "Two notes an octave apart, in a rhythm, and one note leading into the next chord. Simple, and that is enough.",
+      go: () => `Turn K2 up to 6 or more (now ${vol(1)}).`, ctl: ["k1"], task: () => vol(1) >= 6 },
+    { t: "K4 is the melody: the part you would hum.", more: "A short call in bars 1–2 and its answer in bars 3–4, with space around it.",
+      go: () => `Turn K4 up to 6 or more (now ${vol(3)}).`, ctl: ["k3"], task: () => vol(3) >= 6 },
+    { t: "Now take the chords out. Hear how thin and empty it gets?", more: "Taking a track out and putting it back is the fastest way to hear what it does.",
+      go: () => `Turn K3 all the way down to 0 (now ${vol(2)}).`, ctl: ["k2"], task: () => vol(2) === 0 },
+    { t: "Bring them back. Chords are the colour: Am sounds sad, F warm.", more: "One chord a bar, held, and hit again just before the bar ends. In the last bar that hit is already the next chord, a little early: a push. You can see it on the CHORD row.",
+      go: () => `Turn K3 back up to 6 or more (now ${vol(2)}).`, ctl: ["k2"], task: () => vol(2) >= 6 },
+    { t: "Just the drums now: a KICK (low, the weight), a SNARE (the crack), HATS (the ticking).", more: "On its own, each bar: the kick, then the snare, then the hats, then all three together. Or press one of the three lit keys to hear only that drum: KICK, SNARE, HAT, side by side.",
+      highlightDrums: true, enter: () => { setMix([8, 0, 0, 0]); S.solo = null; S.soloSeen = new Set(); },
+      go: () => !S.playing ? "Press ▶ PLAY." : `Press the three lit keys, KICK, SNARE, HAT, to hear each on its own (${S.soloSeen.size}/3).`, ctl: () => S.playing ? ["keys"] : ["play"], task: () => S.soloSeen.size >= 3,
+      ok: () => "That's a drum kit: weight, crack, ticking." },
+    { t: "PRESETS changes the DRUMS: same song, same speed.", more: "Watch where the kick and the snare land in each: a few hits moved and the song feels different.",
+      grooves: true, enter: () => { S.style = 0; S.bpm = 88; S.grooveSeen = new Set([0]); setMix([8, 7, 8, 6]); S.solo = null; },
+      go: () => `PRESETS: try the 3 drum parts (${S.grooveSeen.size}/3). Now: ${style().name}.`, ctl: ["pre"], task: () => S.grooveSeen.size >= 3 },
+    { t: "A STYLE is the drums AND the speed: every style has its own.", more: "The kick and snare pattern and the speed together are most of what makes hip-hop sound like hip-hop, or house like house.",
+      style: true, enter: () => { S.genreSeen = new Set([style().genre]); },
+      go: () => `Try 3 styles with PRESETS (${Math.min(3, S.genreSeen.size)}/3).`, ctl: ["pre"], task: () => S.genreSeen.size >= 3 },
+    { t: "BPM, beats per minute, is the song's SPEED.", more: "Every style has a home speed: hip-hop around 90, house around 120. Too slow drags, too fast rushes.",
+      go: () => S.bpmMoved ? `${S.bpm} BPM. Try slower and faster.` : "Turn ALGORITHM to make it slower or faster.", ctl: ["alg"], task: () => S.bpmMoved, ok: () => `${S.bpm} BPM. Try it slower and faster.` },
+    { t: "Every song has a KEY: a home note and a family of notes that fit. Ours is A minor.", more: "The bright keys are HOME, the A: a tune feels finished when it lands there. The dim keys are the rest of the family: A minor is A B C D E F G, 7 notes. Every chord and the melody of this song are made of them.",
+      ring: true, enter: () => { S.style = LOFI; S.bpm = style().bpm; setMix([0, 0, 8, 0]); S.homeHit = false; S.keyPresses = 0; },
+      go: () => !S.playing ? "Press ▶ PLAY." : !S.homeHit ? "Press a bright key: HOME, the A. It sounds settled." : `Now the dim keys: the family (${Math.min(3, S.keyPresses)}/3).`,
+      ctl: () => S.playing ? ["keys"] : ["play"], task: () => S.homeHit && S.keyPresses >= 3, ok: () => "Home, and its family." },
+    { t: "Now the whole band. OCT− / OCT+ move the song to another key: every note up or down together.", more: "Same song, another home note: it sounds the same, only higher or lower.",
+      ring: true, enter: () => setMix([6, 6, 8, 6]),
+      go: () => !S.keyMoved ? "Press OCT+ or OCT−." : S.key !== 0 ? `Now ${chordName(CH.Am)} minor. Bring it back to A: press OCT until the screen says A MIN.` : "Back in A.", ctl: ["octd", "octu"], task: () => S.keyMoved && S.key === 0 },
+    { t: "Melody out: now YOU play it. The LIT keys are the song's key: they all work with it.", more: "The lit keys are the 7 notes of A minor. The dark black keys are outside the key: each is a half step from a note of the song, and two notes that close rub against each other: a sour sound. Try one to hear it.",
+      lit: true, enter: () => { setMix([6, 6, 8, 0]); S.litCount = 0; S.out = null; },
+      go: () => !S.playing ? "Press ▶ PLAY." : `Play the LIT keys: short notes, some long, some silence (${Math.min(12, S.litCount)}/12).`,
+      ctl: () => S.playing ? ["keys"] : ["play"], task: () => S.litCount >= 12, ok: () => "That's a melody of your own. Keep playing as long as you like." },
+    { t: "Now do your own thing: pick a style, a speed, a mix, and play a melody on top.", more: "Anything goes. When you are ready, lesson 2 finds the tempo with your hands.", lit: true, free: true, done: true,
+      go: () => "Style, speed, mix, melody: yours. NEXT › for lesson 2.", ctl: ["pre", "alg", "keys"] },
+  ]},
+  { title: "TEMPO, YOUR FIRST BEAT", pages: [
+    { t: "Just a click now: one per beat, 4 beats a bar (the first one higher).", more: "Feeling the beat is the first skill: everything else sits on it.", metro: 84,
+      go: () => `Tap any key (or the space bar) with each click: ${Math.min(8, S.taps.good)}/8 in time.`, ctl: ["keys"], task: () => S.taps.good >= 8 },
+    { t: "Faster: 116 BPM. Stay with it. Early or late, the screen tells you.", more: "Most people rush at first: listen, then tap.", metro: 116,
+      go: () => `Tap with the click: ${Math.min(8, S.taps.good)}/8 in time.`, ctl: ["keys"], task: () => S.taps.good >= 8 },
+    { t: "Now YOUR tempo: tap at the speed you like. The band will play at it.", more: "Tap 4 times or more, steadily. Stop for 3 seconds to start over.", tapTempo: true,
+      go: () => S.tapped ? `${S.bpm} BPM: the band plays at your speed.` : "Tap any key 4 times or more, steadily.", ctl: ["keys"], task: () => S.tapped },
+    { t: "Now you build a beat with three drums: KICK, SNARE, HAT, the three lit keys side by side.", more: "To learn, we record slowly, at 80 BPM; at the end it plays at your tempo. Only the outlined squares take a hit, so nothing goes wrong: a hit elsewhere flashes red and is not kept. Later you record freely, and learn to erase.",
+      rec: "k", need: [], intro: true, enter: () => { S.myBpm = S.bpm; S.bpm = 80; }, go: () => "Try the three keys, then NEXT ›.", ctl: ["keys"] },
+    { t: "The KICK on beats 1 and 3: the outlined squares.", more: "Your hits snap to the nearest square. Stuck? Show me puts them in.", rec: "k", need: [1, 9], enter: () => { S.bpm = 80; },
+      go: () => !S.recording ? "Press ● REC." : `Play the KICK key (lit) on beats 1 and 3: ${[1, 9].filter((s) => S.rec.k.has(s)).length}/2.`, ctl: () => S.recording ? ["keys", "show"] : ["rec"], task: () => [1, 9].every((s) => S.rec.k.has(s)) },
+    { t: "The SNARE on beats 2 and 4: the backbeat.", more: "The kick and the snare answer each other: boom, crack, boom, crack.", rec: "s", need: [5, 13],
+      go: () => !S.recording ? "Press ● REC." : `Play the SNARE key (lit) on beats 2 and 4: ${[5, 13].filter((s) => S.rec.s.has(s)).length}/2.`, ctl: () => S.recording ? ["keys", "show"] : ["rec"], task: () => [5, 13].every((s) => S.rec.s.has(s)) },
+    { t: "HATS: twice as fast as the beat, on every half beat.", more: "The hats keep time between the kick and the snare.", rec: "h", need: [1, 3, 5, 7, 9, 11, 13, 15],
+      go: () => !S.recording ? "Press ● REC." : `Play the HAT key (lit) on the half beats: ${Math.min(6, S.rec.h.size)}/6.`, ctl: () => S.recording ? ["keys", "show"] : ["rec"], task: () => S.rec.h.size >= 6 },
+    { t: "Now record freely: any drum, anywhere. A hit in the wrong place? Hold EDIT and that drum's key: it is erased.", more: "Here every hit is kept, mistakes too. To erase, hold EDIT and the drum's key while the beat plays: its hits vanish as the line passes them; let go when they are gone. To start a drum over: on the FM-1 hold REC and press OCT+ (here, Clear drums). SAVE undoes the last thing you did.",
+      rec: "h", need: [], erase: true, go: () => S.erased ? "Erased. Play it again where it belongs, then NEXT ›." : !S.playing ? "Press ▶ PLAY." : !S.recording ? "Press ● REC and add a few hits, anywhere." : "Then hold EDIT (or Shift) and a drum key until one of its hits vanishes.",
+      ctl: () => S.playing ? ["edit", "keys"] : ["play"], task: () => S.erased > 0, enter: () => { S.erased = 0; } },
+    { t: "That's your beat, with the band, at your tempo. It sounds a bit stiff? That's lesson 3.", more: "", done: true, enter: () => { S.bpm = S.myBpm; },
+      go: () => S.recording ? "Press ● REC to stop recording." : "Press NEXT › for lesson 3.", ctl: () => S.recording ? ["rec"] : [], task: () => !S.recording },
+  ]},
+  { title: "GROOVE", pages: [
+    { t: "Only the drums, on a rigid grid: every hit on the line, all the same loudness. A computer.", more: "In this lesson the knobs shape the feel: K1 ACCENT, K2 GHOSTS, K3 SWING, K4 POCKET; at the end PRESETS plays real grooves. All at zero now. On the grid, taller is louder and a hit off its line is early or late (the moves are drawn 2.5 times larger, so you can see them).",
+      enter: () => { S.groove = { acc: 0, ghost: 0, swing: 50, pocket: 0, human: 0 }; setMix([9, 0, 0, 0]); }, go: () => "Press ▶ PLAY and listen.", ctl: ["play"], task: () => S.playing },
+    { t: "VELOCITY: how hard each hit is. Listen to the hats: now all the same, like a machine.", more: "K1 ACCENT: from every hit the same (0) to a drummer's strong-medium-weak (10): loud on the beat, medium between, soft on the quick ones. The bars on the HATS row get tall and short.",
+      go: () => `Turn K1 ACCENT all the way up (now ${S.groove.acc}), then down again: hear the hats breathe.`, ctl: ["k0"], task: () => S.groove.acc >= 8 },
+    { t: "GHOST NOTES: very quiet extra SNARE hits between the loud ones. You feel them more than hear them.", more: "K2 GHOSTS: the small bars on the SNARE row. Too loud and they stop being ghosts.",
+      go: () => `Turn K2 GHOSTS up (now ${S.groove.ghost}).`, ctl: ["k1"], task: () => S.groove.ghost >= 4 },
+    { t: "SWING: every second hat a little late. Tick-tick-tick-tick becomes ti-tick, ti-tick: the bounce.", more: "K3 SWING: 50% is straight; 58% is a hip-hop bounce; 66% and up is almost a shuffle. Watch the HATS row: every second bar moves right, away from its line.",
+      go: () => `Turn K3 SWING to 60% or more (now ${S.groove.swing}%).`, ctl: ["k2"], task: () => S.groove.swing >= 60 },
+    { t: "The POCKET: every drum sits in its own place around the beat. The snare a hair late, the hats a hair early.", more: "K4 POCKET: 0 is all on the line; turning it up lays the snare back (up to 30 thousandths of a second late) and pushes the hats a little ahead, while the kick stays on the beat. Watch the SNARE move right and the HATS move left.",
+      go: () => `Turn K4 POCKET up (now ${S.groove.pocket} / 10).`, ctl: ["k3"], task: () => S.groove.pocket >= 5 },
+    { t: "Real grooves: PRESETS plays them.", more: "Watch the grid as you switch: where the kick lands, where the snare moves, how far things sit off the line.",
+      grooves3: true, enter: () => { setMix([9, 6, 0, 0]); S.gp = 0; S.gpSeen = new Set([0]); applyGroove(); }, go: () => `PRESETS: try the grooves (${S.gpSeen.size}/4). Now: ${GROOVES[S.gp].name}.`,
+      ctl: ["pre"], task: () => S.gpSeen.size >= 4, ok: () => "Turn the knobs on any of them and hear it change." },
+    { t: "A FILL: the last bar changes, so everyone knows the loop is turning. Listen to bar 4.", more: "The snare rolls in 16ths, louder and louder, into the top of the loop, where a cymbal (here an open hat) marks bar 1. The bars under the grid show where you are.",
+      fill: true, enter: () => { setMix([9, 6, 0, 0]); S.gp = null; S.groove = { acc: 8, ghost: 4, swing: 56, pocket: 3, human: 0 }; S.bpm = 88; }, go: () => "Listen for the roll in bar 4, two or three times. Then NEXT ›." },
+    { t: "ROLLS: the hats get faster at the end of a bar. A drum machine does it with REPEAT.", more: "PRESETS: off (8ths), 1/16, 1/32 (very fast, a trap roll) or triplets (three in the space of two: a skip). The roll comes in bars 2 and 4, on the last beat.",
+      rolls: true, enter: () => { S.roll = 0; S.rollSeen = new Set([0]); }, go: () => `PRESETS: try the rolls (${S.rollSeen.size}/4). Now: ${ROLLS[S.roll]}.`, ctl: ["pre"], task: () => S.rollSeen.size >= 4 },
+    { t: "AS PLAYED or ON THE GRID: play the hats yourself, then let the grid tidy them up.", more: "Play the HAT key (or any key) along with the kick and snare: your hits are kept where you played them. PRESETS GRID: as played, 1/16 or 1/8 moves each to the nearest place. Your playing is kept: back to 'as played' and it is yours again.",
+      gridPage: true, enter: () => { S.played = []; S.grid = 0; S.gridSeen = new Set([0]); }, go: () => S.played.length < 8 ? `Play 8 hats or more with the beat (${S.played.length}/8).` : `PRESETS: GRID ${GRIDS[S.grid]}. Try 1/16 and back (${S.gridSeen.size}/3).`,
+      ctl: () => S.played.length < 8 ? ["keys"] : ["pre"], task: () => S.played.length >= 8 && S.gridSeen.size >= 3 },
+    { t: "Groove is timing and loudness.", more: "Next: what makes notes and chords sound good together.", done: true, grooves3: true,
+      enter: () => setMix([9, 7, 7, 0]), go: () => `Yours: ACCENT ${S.groove.acc}, GHOSTS ${S.groove.ghost}, SWING ${S.groove.swing}%, POCKET ${S.groove.pocket}. NEXT › for lesson 4.` },
+  ]},
+  { title: "KEYS AND CHORDS", pages: [
+    { t: "A KEY is a family of 7 notes. Ours is A minor: A B C D E F G, the lit keys. The brightest is HOME, the A.", more: "Played in order from A up to the next A, the family is a SCALE. HOME is where it feels finished.",
+      keys: "scale", enter: () => { S.playing = false; setMix([6, 6, 8, 0]); S.k4.scale = 0; }, go: () => `Play the lit keys from HOME up to the next HOME (${Math.min(8, S.k4.scale)}/8).`, ctl: ["keys"], task: () => S.k4.scale >= 8 },
+    { t: "Keys outside the family sound sour against it: here, the dark black keys.", more: "Why: an outside note sits a half step from a family note, so close that the two rub, a wobble you can hear. Family notes sit further apart and blend.",
+      keys: "scale", enter: () => { setMix([0, 0, 8, 0]); if (!S.playing) start(); S.k4.outHit = false; S.k4.inAfter = false; },
+      go: () => !S.k4.outHit ? "Press a dark black key over the chords: sour." : "Now a lit key: it blends.", ctl: ["keys"], task: () => S.k4.outHit && S.k4.inAfter },
+    { t: "CHORDS come from the family: take a note, skip one, take one, skip one, take one. On A: A, C, E = Am.", more: "Here every lit key plays the chord built on it. Some are minor (sad), some major (bright), and B's is diminished (tense). The screen names each.",
+      keys: "chords", enter: () => { S.playing = false; S.k4.chords = new Set(); }, go: () => `Press lit keys: each plays its chord (${Math.min(5, S.k4.chords.size)}/5 different).`, ctl: ["keys"], task: () => S.k4.chords.size >= 5 },
+    { t: "Chords have TYPES, each with a feeling. MAJOR sounds bright, MINOR sad or cool, DIMINISHED tense.", more: "In A minor, C F G are major, Am Dm Em are minor, and B's chord is diminished. The difference is one note: the middle one, a little higher (major) or lower (minor).",
+      keys: "chords", enter: () => { S.playing = false; S.k4.types = new Set(); }, go: () => `Press a major chord (C, F or G), a minor one (A, D or E) and B's (${S.k4.types.size}/3).`, ctl: ["keys"], task: () => S.k4.types.size >= 3 },
+    { t: "Minor or major: the same 7 white keys. With HOME on A it is A minor; with HOME on C, C major.", more: "Choosing the key is choosing the mood. A minor: dark, cool, emotional. C major: bright, happy. Same notes, same chords: only where the song feels at home changes.",
+      keys: "home", majmin: true, enter: () => { S.mm = 0; S.mmSeen = new Set([0]); setProg([0, 5, 2, 6]); S.style = REGGAETON; S.bpm = style().bpm; setMix([7, 7, 8, 0]); if (!S.playing) start(); },
+      go: () => `PRESETS: ${S.mm ? "C MAJOR (C G Am F)" : "A MINOR (Am F C G)"}. Try both (${S.mmSeen.size}/2).`, ctl: ["pre"], task: () => S.mmSeen.size >= 2 },
+    { t: "A PROGRESSION is a few chords of the family in a loop. Each one has its own feeling.", more: "PRESETS steps through some of the most used ones. The bright key is the chord playing now.",
+      keys: "root", progs: true, enter: () => { S.prog = 0; S.progSeen = new Set([0]); setProg(PROGS[0].degs); S.mm = 0; }, go: () => `PRESETS: ${PROGS[S.prog].name}: ${PROGS[S.prog].feel}. (${Math.min(4, S.progSeen.size)}/4)`, ctl: ["pre"], task: () => S.progSeen.size >= 4 },
+    { t: "Now YOU play the chords: the band plays drums and bass. Press the bright key when the chord changes.", more: "One finger, one chord: the key plays the chord built on it. Land on the bright one as the bar starts. PRESETS still changes the progression.",
+      keys: "play", progs: true, enter: () => { setMix([7, 7, 0, 0]); S.k4.along = 0; if (!S.playing) start(); }, go: () => !S.playing ? "Press ▶ PLAY." : `Play the bright key on each change (${Math.min(8, S.k4.along)}/8).`, ctl: () => S.playing ? ["keys"] : ["play"], task: () => S.k4.along >= 8 },
+    { pick: true, t: "Pick your own: press 4 lit keys, one after the other. The band plays your progression.", more: "Start on HOME (Am) and it will feel like a song. Any 4 work: they are all one family. Press 4 more to try another.",
+      keys: "chords", enter: () => { S.k4.pick = []; S.k4.picked = 0; S.style = REGGAETON; S.bpm = style().bpm; if (!S.playing) start(); },
+      go: () => `Press 4 lit keys (${S.k4.pick.length}/4)${S.k4.picked ? `. Playing: ${BARS.map(chordName).join(" ")}` : ""}.`, ctl: ["keys"], task: () => S.k4.picked > 0, ok: () => `Your progression: ${BARS.map(chordName).join(" ")}. Press 4 more keys to try another.` },
+    { t: "A melody over the chords: the chord's own notes are the safest (bright); the rest of the family pass between them (dim).", more: "Land on a bright key when the chord changes and it sounds right; the dim ones move you along; the dark ones are outside.",
+      keys: "tones", enter: () => { setMix([7, 7, 8, 0]); S.style = REGGAETON; S.bpm = style().bpm; if (!S.playing) start(); S.k4.mel = 0; }, go: () => !S.playing ? "Press ▶ PLAY." : `Play a melody (${Math.min(16, S.k4.mel)}/16).`, ctl: () => S.playing ? ["keys"] : ["play"], task: () => S.k4.mel >= 16 },
+    { t: "Key, scale, chords, progression, melody: that's how songs pick their notes.", more: "Next: chord colours.", done: true, keys: "tones", go: () => "Press NEXT › for lesson 5: chord colours." },
+  ]},
+  { title: "CHORD COLOURS", pages: [
+    { t: "The FM-1's CHORD PAD: one finger, one chord. The white keys from F3 are the key's 7 chords, in order.", more: "F3 Am, G3 Bdim, A3 C, B3 Dm, C4 Em, D4 F, E4 G; and again an octave up from F4. It is the same layout as the chord pad in the FM-1's studio, so what you learn here works there.",
+      keys: "pad", enter: () => { S.playing = false; S.col = null; S.voice = 0; S.playSt = 0; S.k5 = { pads: new Set(), cols: new Set(), with7: 0, along: 0 }; setProg(null); },
+      go: () => `Play some pads (${Math.min(4, S.k5.pads.size)}/4 different).`, ctl: ["keys"], task: () => S.k5.pads.size >= 4 },
+    { t: "COLOURS: the black keys add a note to the chord. Tap 7, then a chord pad: Am becomes Am7.", more: "A colour stays on until you tap it again (on the FM-1 you hold it, or hold it and tap AUTO to lock it). The 7 adds the note a step below the next root: it makes a chord richer and wants to move on.",
+      keys: "pad", go: () => S.col !== "7" ? "Tap the black key marked 7 (A#3)." : `Now play chord pads with it (${Math.min(2, S.k5.with7)}/2).`, ctl: ["keys"], task: () => S.k5.with7 >= 2 },
+    { t: "Every colour has a feeling. Try them on one chord, then on others.", more: "sus2 open, sus4 suspended, 7 bluesy, maj7 dreamy, 9 lush, 11 floating, 13 jazzy, add9 bright, 6 sweet, /3 the 3rd in the bass. The screen names each chord.",
+      keys: "pad", go: () => `Try colours (${Math.min(5, S.k5.cols.size)}/5). Tap a colour again to switch it off.`, ctl: ["keys"], task: () => S.k5.cols.size >= 5 },
+    { t: "A song in colour: Dm9, G13, Cmaj7, Am9. The same four chords as triads sound plain; with colours, neo soul.", more: "PRESETS switches PLAIN and COLOUR. A new song for this lesson: a slow, swung lo-fi beat, so the colours can ring.",
+      keys: "pad", colsong: true, enter: () => { S.style = LOFI; S.bpm = 74; S.plain = false; S.plainSeen = new Set([0]); setProg(SONG5); setMix([6, 7, 8, 0]); if (!S.playing) start(); },
+      go: () => `PRESETS: ${S.plain ? "PLAIN (Dm G C Am)" : "COLOUR (Dm9 G13 Cmaj7 Am9)"}. Try both (${S.plainSeen.size}/2).`, ctl: ["pre"], task: () => S.plainSeen.size >= 2 },
+    { t: "VOICING: the same notes, in another order. K1 turns it: root, inversions, open, wide.", more: "An inversion puts another note at the bottom: smoother between chords. Open spreads the notes: no mud. Wide adds the root an octave down: big.",
+      keys: "pad", go: () => `Turn K1 VOICE (now ${VOICES[S.voice]}). Try 3.`, ctl: ["k0"], task: () => (S.k5.voices || new Set()).size >= 3 },
+    { t: "PLAY: all at once (block), one after another, quickly (strum), or one at a time in rhythm (arp). K2.", more: "Block is a piano hit; strum is a guitar; arp is a harp or a synth. Same chords, another instrument feel.",
+      keys: "pad", go: () => `Turn K2 PLAY (now ${PLAYS[S.playSt]}). Try all 3.`, ctl: ["k1"], task: () => (S.k5.plays || new Set()).size >= 3 },
+    { t: "Your turn: the band plays drums and bass, you play the chords. The bright pad is the next chord; its colour is lit too.", more: "Tap the lit colour first if it changes, then the pad as the bar starts. The colour is a bonus: the pad alone is right too.",
+      keys: "pad", along5: true, enter: () => { setMix([6, 7, 0, 0]); setProg(SONG5); if (!S.playing) start(); S.k5.along = 0; }, go: () => !S.playing ? "Press ▶ PLAY." : `Play the bright pad on each chord (${Math.min(8, S.k5.along)}/8).`, ctl: () => S.playing ? ["keys"] : ["play"], task: () => S.k5.along >= 8 },
+    { t: "Chord types and colours, voicings, block, strum, arp: the chords' whole toolbox.", more: "Next: the bass.", done: true, keys: "pad", go: () => "Press NEXT › for lesson 6: the bass." },
+  ]},
+  { title: "THE BASS", pages: [
+    { t: "The BASS holds the song up. Its safest note: the chord's ROOT, the note the chord is named after.", more: "A new song: Am7, Dm7, Fmaj7, Em7 on a busy hip-hop beat. The keys now play the bass (two octaves down). The bright keys are the root of the chord playing now: A, then D, F, E.",
+      bassk: "root", enter: () => { S.style = 1; S.bpm = 90; setProg(SONG6); S.bassBand = false; setMix([7, 0, 6, 0]); S.k6 = { roots: 0, locked: 0, notes: 0, pats: new Set([0]) }; if (!S.playing) start(); },
+      go: () => !S.playing ? "Press ▶ PLAY." : `Play the bright root when the chord changes (${Math.min(8, S.k6.roots)}/8).`, ctl: () => S.playing ? ["keys"] : ["play"], task: () => S.k6.roots >= 8 },
+    { t: "LOCK WITH THE KICK: play the root at the same moment as the kick. Bass and kick become one big, low hit.", more: "Watch the KICK row: when its square lights, play. It is the most important trick in a beat: the low end moves together.",
+      bassk: "root", enter: () => { S.k6.locked = 0; }, go: () => `Play the root together with the kick (${Math.min(8, S.k6.locked)}/8 locked).`, ctl: ["keys"], task: () => S.k6.locked >= 8 },
+    { t: "OCTAVES: the root, then the same note higher. Low-high, low-high: the bounce of disco and house.", more: "The two bright keys of each colour are the same note, an octave apart. Alternate them.",
+      bassk: "oct", go: () => `Bounce between the two bright keys (${Math.min(16, S.k6.notes)}/16).`, enter: () => { S.k6.notes = 0; }, ctl: ["keys"], task: () => S.k6.notes >= 16 },
+    { t: "PATTERNS: the band's bass player now plays. PRESETS: root, pulse, octaves, approach, tresillo, boogie.", more: "Approach: one note just before the change, leading into the next root. Tresillo: 3 + 3 + 2, Latin and reggaeton. Boogie: up the chord and back, rock and roll. The BASS row shows each.",
+      bassk: "root", enter: () => { S.bassBand = true; S.bassPat = 0; setMix([7, 8, 6, 0]); }, go: () => `PRESETS: ${BASSPATS[S.bassPat]}. Try them (${Math.min(4, S.k6.pats.size)}/4).`, ctl: ["pre"], task: () => S.k6.pats.size >= 4 },
+    { t: "Your bass: the band plays drums and chords. Roots on the change, with the kick, an octave, a note leading into the next chord.", more: "Simple is good: one root per bar, played with the kick, already works. Then add.",
+      bassk: "root", enter: () => { S.bassBand = false; setMix([7, 0, 6, 0]); S.k6.notes = 0; }, go: () => `Play your bass line (${Math.min(24, S.k6.notes)}/24 notes).`, ctl: ["keys"], task: () => S.k6.notes >= 24 },
+    { t: "Root, kick, octaves, patterns: the bass.", more: "Next: the melody.", done: true, bassk: "root", go: () => "Press NEXT › for lesson 7: the melody." },
+  ]},
+  { title: "THE MELODY", pages: [
+    { t: "The MELODY is the part you sing. Its safest notes: the chord's own (bright). The rest of the family passes between them (dim).", more: "A new song: F, G, Am, Em, four on the floor. Land on a bright key when the chord changes and it sounds right.",
+      keys: "tones", melk: true, enter: () => { S.style = 4; S.bpm = 116; setProg([5, 6, 0, 4]); MELODY_NOW = []; setMix([6, 7, 7, 0]); S.k7 = { mel: 0, pent: 0, vers: new Set([0]), answers: 0, harm: new Set([0]), notes: 0 }; S.harm = 0; if (!S.playing) start(); },
+      go: () => `Play a melody on the bright and dim keys (${Math.min(12, S.k7.mel)}/12).`, ctl: ["keys"], task: () => S.k7.mel >= 12 },
+    { t: "PENTATONIC: 5 notes of the family, A C D E G, with no clashing pairs. Play anything on them: it never sounds wrong.", more: "It is the scale of blues, rock solos, folk songs all over the world. On the FM-1's melody page, HELP Key lights it first.",
+      keys: "pent", melk: true, go: () => `Play freely on the lit keys (${Math.min(16, S.k7.pent)}/16).`, ctl: ["keys"], task: () => S.k7.pent >= 16 },
+    { t: "RHYTHM FIRST: a melody is mostly rhythm. Here is one rhythm on one note; PRESETS keeps the rhythm and changes the notes.", more: "1: one note. 2: the chord's own notes. 3: up and down the scale. Same rhythm, three melodies: find a rhythm you like first, then the notes.",
+      keys: "tones", melk: true, rhythm: true, enter: () => { S.melV = 0; MELODY_NOW = genMel(0); setMix([6, 7, 6, 8]); }, go: () => `PRESETS: version ${S.melV + 1} of 3 (${S.k7.vers.size}/3).`, ctl: ["pre"], task: () => S.k7.vers.size >= 3 },
+    { t: "CALL AND ANSWER: the band plays a short phrase (bars 1 and 3), you answer it (bars 2 and 4).", more: "An answer can copy the rhythm of the call with other notes, or end on HOME to close it. The screen says YOUR TURN.",
+      keys: "tones", melk: true, call: true, enter: () => { MELODY_NOW = genMel(1, [0, 2]); setMix([6, 7, 6, 8]); S.k7.answers = 0; S.ansBars = new Set(); }, go: () => `Answer in bars 2 and 4 (${Math.min(4, S.k7.answers)}/4 answers).`, ctl: ["keys"], task: () => S.k7.answers >= 4 },
+    { t: "A SECOND VOICE: PRESETS adds a note a 3rd above everything you play, or an ECHO. Instant richness.", more: "A 3rd above, in the key: two voices in harmony. Echo: two softer repeats, as the FM-1's PLUS does.",
+      keys: "tones", melk: true, enter: () => { MELODY_NOW = []; S.harm = 0; }, go: () => `PRESETS: ${["off", "a 3rd above", "echo"][S.harm]}. Try both and play (${Math.min(8, S.k7.notes)}/8).`, ctl: ["pre", "keys"], task: () => S.k7.harm.size >= 3 && S.k7.notes >= 8 },
+    { t: "Chord notes, pentatonic, rhythm, call and answer, a second voice: the melody's toolbox.", more: "Next: ways to start a song.", done: true, keys: "tones", melk: true, go: () => "Press NEXT › for lesson 8: ways to start." },
+  ]},
+  { title: "WAYS TO START", pages: [
+    { t: "There is no right order. Beatmakers start from a beat, songwriters from chords, singers from a tune. Try all three.", more: "Three short routes, nothing recorded: just to feel how a song can grow from each place. Lesson 9 then records your own.", go: () => "Press NEXT › for the first: beat first." },
+    { t: "BEAT FIRST. Pick a groove: PRESETS. Only drums: find one that makes you nod.", more: "Most hip-hop and electronic tracks start here: a beat that feels good on its own.",
+      ways: "groove", enter: () => { S.style = 0; S.bpm = 88; setMix([8, 0, 0, 0]); S.waysSeen = new Set([0]); setProg([0, 0, 0, 0]); S.waysBass = false; if (!S.playing) start(); },
+      go: () => `PRESETS: ${style().name}. Try a few (${Math.min(3, S.waysSeen.size)}/3).`, ctl: ["pre"], task: () => S.waysSeen.size >= 3 },
+    { t: "A bass note: play low notes over your beat until one feels like home.", more: "The keys play the bass. Most feel restless; one feels settled: that is the key's home. Here it is A (bright).",
+      ways: "bass", enter: () => { S.waysN = 0; }, go: () => `Play low notes, find home (${Math.min(10, S.waysN)}/10).`, ctl: ["keys"], task: () => S.waysN >= 10 },
+    { t: "Now chords on top: one finger on the chord pad (white keys from F3). The bass follows your chord.", more: "Each chord you press becomes the chord of the song, and the band's bass plays its root. Change chord every bar or two.",
+      ways: "pad", enter: () => { S.waysN = 0; S.waysBass = true; setMix([8, 8, 0, 0]); }, go: () => `Play chords over your beat (${Math.min(6, S.waysN)}/6).`, ctl: ["keys"], task: () => S.waysN >= 6 },
+    { t: "CHORDS FIRST. Pick a mood and a progression: PRESETS. Only chords.", more: "Songwriters start here: a few chords that already tell the story.",
+      ways: "prog", enter: () => { S.prog = 0; S.progSeen = new Set([0]); setProg(PROGS[0].degs); S.waysBass = true; setMix([0, 0, 8, 0]); S.style = 3; S.bpm = 80; if (!S.playing) start(); },
+      go: () => `PRESETS: ${PROGS[S.prog].name}: ${PROGS[S.prog].feel} (${Math.min(2, S.progSeen.size)}/2).`, ctl: ["pre"], task: () => S.progSeen.size >= 2 },
+    { t: "Hum over it, then find it on the keys: the chord's notes are bright.", more: "Sing first, then look for the notes. A melody from chords tends to land on their notes.",
+      ways: "tones", enter: () => { S.waysN = 0; }, go: () => `Play a melody over your chords (${Math.min(12, S.waysN)}/12).`, ctl: ["keys"], task: () => S.waysN >= 12 },
+    { t: "Now drums under it: PRESETS picks the style. The same chords become another song.", more: "Try a slow one and a fast one: the chords stay, the mood changes.",
+      ways: "style", enter: () => { setMix([7, 7, 8, 0]); S.waysSeen = new Set([S.style]); }, go: () => `PRESETS: ${style().name} (${Math.min(2, S.waysSeen.size)}/2).`, ctl: ["pre"], task: () => S.waysSeen.size >= 2 },
+    { t: "MELODY FIRST. Play a short tune, 4 to 8 notes, on the lit keys. No band.", more: "Singers and whistlers start here. Keep it short and simple: it will repeat.",
+      ways: "tune", enter: () => { S.playing = false; S.tune = []; }, go: () => `Play your tune (${S.tune.length}/4 or more). Press a note again to start over after 8.`, ctl: ["keys"], task: () => S.tune.length >= 4 },
+    { t: "Which chords fit your tune? The bright pads are the chords that hold most of its notes. Press 2 to 4 of them.", more: "Each pad plays its chord, then your tune over it. A chord that holds your notes makes them sound right.",
+      ways: "fit", enter: () => { S.fitPick = []; }, go: () => `Press bright pads (${S.fitPick.length}/2 or more).`, ctl: ["keys"], task: () => S.fitPick.length >= 2 },
+    { t: "Now the band: your tune is the melody, over your chords, with drums and bass. PRESETS: the style.", more: "From a few notes to a song. That is the melody-first way.",
+      ways: "style", enter: () => { setProg(S.fitPick.length ? S.fitPick : [0, 5, 2, 6]); MELODY_NOW = tuneMelody(); S.waysBass = true; setMix([7, 7, 7, 8]); S.waysSeen = new Set([S.style]); if (!S.playing) start(); },
+      go: () => `PRESETS: ${style().name} (${Math.min(2, S.waysSeen.size)}/2).`, ctl: ["pre"], task: () => S.waysSeen.size >= 2 },
+    { t: "Beat first, chords first, melody first: three ways into a song. Use whichever starts you.", more: "Next: make your own beat, recorded.", done: true, go: () => "Press NEXT › for lesson 9: make your own beat." },
+  ]},
+  { title: "MAKE YOUR OWN BEAT", pages: [
+    { t: "Your own song, 4 bars: drums, chords, bass, melody, recorded one by one. First: a style and a tempo.", more: "PRESETS picks the style: its drum sounds and the hints you will see. ALGORITHM sets the tempo. The style's beat plays softly as a guide; it goes when you record.",
+      make: "style", enter: () => { S.userDrums = false; S.rec = { k: new Set(), s: new Set(), h: new Set() }; S.song = { bass: new Map(), mel: new Map() }; S.style = 0; S.bpm = 88; setProg([0, 5, 2, 6]); setMix([5, 0, 0, 0]); if (!S.playing) start(); },
+      go: () => `PRESETS: ${style().name} · ALGORITHM: ${S.bpm} BPM. Then NEXT ›.`, ctl: ["pre", "alg"] },
+    { t: "The KICK. Press REC and play the KICK key. The outlined squares are the style's kicks: a hint, not a rule.", rec: "k", need: [], hint: true, more: "Every hit is kept where it lands (snapped to the nearest 16th). A mistake? Hold EDIT and the key while it passes. The click helps while recording.",
+      enter: () => { makeHint("k"); S.userDrums = true; setMix([8, 0, 0, 0]); }, go: () => !S.recording ? "Press ● REC." : `Play kicks (${S.rec.k.size} in).`, ctl: () => S.recording ? ["keys"] : ["rec"], task: () => S.rec.k.size >= 2 },
+    { t: "The SNARE: the backbeat, or anywhere you like.", rec: "s", need: [], hint: true, more: "Outlined: where the style puts it.",
+      enter: () => makeHint("s"), go: () => !S.recording ? "Press ● REC." : `Play snares (${S.rec.s.size} in).`, ctl: () => S.recording ? ["keys"] : ["rec"], task: () => S.rec.s.size >= 1 },
+    { t: "The HATS: the ticking that keeps it moving.", rec: "h", need: [], hint: true, more: "Steady 8ths are a good start; then a few extra for a skip.",
+      enter: () => makeHint("h"), go: () => !S.recording ? "Press ● REC." : `Play hats (${S.rec.h.size} in).`, ctl: () => S.recording ? ["keys"] : ["rec"], task: () => S.rec.h.size >= 4 },
+    { t: "The CHORDS: press 4 pads, one for each bar. The band plays them.", more: "The chord pad from lesson 5: white keys from F3 are the key's 7 chords. Start on Am to feel at home. Press 4 more to change them.",
+      make: "chords", enter: () => { S.recording = false; S.makePick = []; S.makeChords = 0; setMix([8, 0, 7, 0]); }, go: () => `Press 4 pads (${S.makePick.length}/4). Now: ${BARS.map(chordName).join(" ")}.`, ctl: ["keys"], task: () => S.makeChords > 0 },
+    { t: "The BASS: press REC and play roots (bright) with the kick. Notes snap to the nearest 16th.", recBass: true, more: "One root a bar is already a bass line. Add an octave or a note before the change. EDIT and a key erases.",
+      make: "bass", enter: () => { setMix([8, 8, 7, 0]); }, go: () => !S.recording ? "Press ● REC." : `Play your bass (${S.song.bass.size} notes in).`, ctl: () => S.recording ? ["keys"] : ["rec"], task: () => S.song.bass.size >= 4 },
+    { t: "The MELODY: press REC and play over it all. Bright keys are the chord's notes.", recMel: true, more: "Short and simple, with space: a call and an answer. EDIT and a key erases a note.",
+      make: "mel", enter: () => { setMix([8, 8, 7, 8]); }, go: () => !S.recording ? "Press ● REC." : `Play your melody (${S.song.mel.size} notes in).`, ctl: () => S.recording ? ["keys"] : ["rec"], task: () => S.song.mel.size >= 6 },
+    { t: "Mix it: K1 to K4, the four tracks' volumes. Then listen: this is your song.", more: "Turn the drums up or down, the bass under the kick, the melody on top. Your first song.",
+      make: "mix", enter: () => { S.recording = false; }, go: () => "Mix with K1–K4, and listen. Then NEXT ›.", ctl: ["k0", "k1", "k2", "k3"] },
+    { t: "Your own beat: drums, chords, bass, melody. Made by you.", more: "On the FM-1 the studio (Producer) is where you would keep building it: more bars, more sounds.", done: true, go: () => "Practice games next: scales and chords." },
+  ]},
+  { title: "PRACTICE: SCALES", practice: true, pages: [
+    { t: "Practice: play a scale with the lights, then from memory. Every level gives up to 3 stars: no mistakes, 3 stars.", more: "Follow: the next key is bright. Memory: only HOME is lit; find the way yourself. After two misses on one note, a hint lights it. When a level is done, its first note plays it again.",
+      go: () => "Press NEXT › to start." },
+    { t: "A MINOR, follow the lights: from HOME up to the next HOME.", drill: { type: "scale", home: 57, iv: [0, 2, 3, 5, 7, 8, 10], mode: "follow", name: "A minor" } },
+    { t: "A MINOR from memory: only HOME is lit. The same 8 keys, all white.", drill: { type: "scale", home: 57, iv: [0, 2, 3, 5, 7, 8, 10], mode: "memory", name: "A minor" } },
+    { t: "A MINOR up AND down, from memory: up to the next HOME, and back.", drill: { type: "scale", home: 57, iv: [0, 2, 3, 5, 7, 8, 10], mode: "memory", updown: true, name: "A minor, up and down" } },
+    { t: "A MINOR PENTATONIC, follow: 5 notes, A C D E G. The always-safe one.", drill: { type: "scale", home: 57, iv: [0, 3, 5, 7, 10], mode: "follow", name: "A minor pentatonic" } },
+    { t: "A MINOR PENTATONIC from memory: skip B and F.", drill: { type: "scale", home: 57, iv: [0, 3, 5, 7, 10], mode: "memory", name: "A minor pentatonic" } },
+    { t: "C MAJOR from memory: the same white keys, HOME on C. Bright.", drill: { type: "scale", home: 60, iv: [0, 2, 4, 5, 7, 9, 11], mode: "memory", name: "C major" } },
+    { t: "E MINOR, follow: a new key, with one black key in it (F♯).", drill: { type: "scale", home: 64, iv: [0, 2, 3, 5, 7, 8, 10], mode: "follow", name: "E minor" } },
+    { t: "E MINOR from memory: all white but F♯.", drill: { type: "scale", home: 64, iv: [0, 2, 3, 5, 7, 8, 10], mode: "memory", name: "E minor" } },
+    { t: "D MINOR, follow: all white but B♭.", drill: { type: "scale", home: 62, iv: [0, 2, 3, 5, 7, 8, 10], mode: "follow", name: "D minor" } },
+    { t: "D MINOR from memory.", drill: { type: "scale", home: 62, iv: [0, 2, 3, 5, 7, 8, 10], mode: "memory", name: "D minor" } },
+    { t: "Bonus, THE BLUES: A C D E♭ E G. The E♭ is the 'blue note': sour on purpose.", drill: { type: "scale", home: 57, iv: [0, 3, 5, 6, 7, 10], mode: "follow", updown: true, name: "A blues" } },
+    { t: "Scales: done. Come back any time to beat your stars.", done: true, go: () => `Stars: ${starTotal("PRACTICE: SCALES")} of ${starMax("PRACTICE: SCALES")}.` },
+  ]},
+  { title: "PRACTICE: CHORDS", practice: true, pages: [
+    { t: "Practice chords: find them on the keys, name them by ear, remember a progression. Stars for few mistakes.", more: "A chord's three notes can be pressed one after another, in any order and any octave.", go: () => "Press NEXT › to start." },
+    { t: "FIND THE CHORD, with the lights: the screen names a chord and lights its 3 notes. Press them.", drill: { type: "find", lit: true, n: 6 } },
+    { t: "FIND THE CHORD by its name: no lights now. A chord is a note, skip one, take one, skip one, take one.", drill: { type: "find", lit: false, n: 6 } },
+    { t: "WHICH CHORD? Listen: the FM-1 plays Am, C, F or G. Press its root (the lit keys). PRESETS plays it again.", drill: { type: "ear", n: 8 } },
+    { t: "SIMON SAYS: the FM-1 plays a progression, lighting each chord's root. Play it back. It grows by one each time.", drill: { type: "simon", goal: 5 } },
+    { t: "Chords: done. Come back any time to beat your stars.", done: true, go: () => `Stars: ${starTotal("PRACTICE: CHORDS")} of ${starMax("PRACTICE: CHORDS")}.` },
+  ]},
+];
+
+/* ================= sound: recorded instruments (public-domain and CC-BY samples, see the notes), a small studio ================= */
+const FILES = ["own_kick", "own_snare", "own_hat", "drum_heavy_kick", "sn_zome", "bd_fat", "bd_klub", "bd_tek", "bd_808", "sn_generic", "drum_snare_soft", "elec_hi_snare", "sn_dolf", "perc_snap",
+  "drum_cymbal_closed", "drum_cymbal_open", "drum_cymbal_pedal", "bass_a1", "bass_a2", "bass_a3", "bass_c2", "bass_eb2", "bass_eb3", "bass_g2", "bass_gb2",
+  "wurli_a2", "wurli_eb3", "wurli_ab3", "wurli_db4", "wurli_gb4", "wurli_b4", "harp_D4", "harp_F4", "harp_A4", "harp_C5", "harp_E5", "harp_G5"];
+const BUF = {}, ONSET = {}; let loaded = 0, loadFailed = false;
+/* where the sound really starts: the encoder leaves a little silence before it, and drums must land on the beat */
+function onset(b) { const d = b.getChannelData(0); let pk = 0; for (let i = 0; i < d.length; i++) pk = Math.max(pk, Math.abs(d[i]));
+  for (let i = 0; i < d.length; i++) if (Math.abs(d[i]) > pk * 0.04) return Math.max(0, i / b.sampleRate - 0.001); return 0; }
+const KITS = {                                                           /* each style's drums; lay: a second sound under the snare */
+  hiphop: { k: "own_kick", s: "own_snare", g: "own_snare", h: "own_hat", o: "drum_cymbal_open" },   /* the owner's own kick, snare and hat */
+  soft: { k: "bd_fat", s: "drum_snare_soft", g: "drum_snare_soft", h: "drum_cymbal_pedal", o: "drum_cymbal_open" },
+  house: { k: "bd_tek", s: "perc_snap", g: "drum_snare_soft", h: "drum_cymbal_closed", o: "drum_cymbal_open", thin: true },   /* thin: hats high-passed and cut short */
+  dembow: { k: "bd_tek", s: "elec_hi_snare", lay: ["perc_snap", 0.2], g: "drum_snare_soft", h: "drum_cymbal_closed", o: "drum_cymbal_open" },
+  trap: { k: "bd_808", s: "sn_dolf", lay: ["perc_snap", 0.35], g: "drum_snare_soft", h: "drum_cymbal_closed", o: "drum_cymbal_open" },
+};
+/* what MIDI note each pitched sample is (the bass files are named an octave above what they sound; measured) */
+const BASS_S = [["bass_a1", 21], ["bass_c2", 24], ["bass_eb2", 27], ["bass_gb2", 30], ["bass_g2", 31], ["bass_a2", 33], ["bass_eb3", 39], ["bass_a3", 45]];
+const WURLI_S = [["wurli_a2", 45], ["wurli_eb3", 51], ["wurli_ab3", 56], ["wurli_db4", 61], ["wurli_gb4", 66], ["wurli_b4", 71]];
+const HARP_S = [["harp_D4", 62], ["harp_F4", 65], ["harp_A4", 69], ["harp_C5", 72], ["harp_E5", 76], ["harp_G5", 79]];
+function nearest(set, n) { let best = set[0]; for (const x of set) if (Math.abs(x[1] - n) < Math.abs(best[1] - n)) best = x; return best; }
+let ac = null, master = null, trk = [], verb = null, dly = null, hatHP = null, snBus = null, youTrk = null, youBass = null;
+function power() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.2;
+    master = ac.createGain(); master.gain.value = 0.95; comp.connect(master); master.connect(ac.destination);
+    const bus = ac.createGain(); bus.connect(comp);
+    const cv = ac.createConvolver(), len = Math.floor(ac.sampleRate * 2.0), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.5); }
+    cv.buffer = ir; verb = ac.createGain(); const wet = ac.createGain(); wet.gain.value = 0.3; verb.connect(cv); cv.connect(wet); wet.connect(bus);
+    dly = ac.createGain(); const d1 = ac.createDelay(1), fb = ac.createGain(), dl = ac.createBiquadFilter(), dw = ac.createGain();
+    d1.delayTime.value = 60 / 88 * 0.75; fb.gain.value = 0.28; dl.type = "lowpass"; dl.frequency.value = 2600; dw.gain.value = 0.25;
+    dly.connect(d1); d1.connect(dl); dl.connect(fb); fb.connect(d1); dl.connect(dw); dw.connect(bus);
+    /* each track: its volume (the mixer), then its share of the room and the echo, after the volume: a track turned down is silent */
+    const SENDS = [[0.12, 0], [0, 0], [0.35, 0], [0.3, 0.5]];
+    /* the drums go through a bus that glues them: a touch of tape-like saturation, the harsh top rolled off */
+    const sh = ac.createWaveShaper(), curve = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; curve[i] = Math.tanh(1.8 * x) / Math.tanh(1.8); }
+    sh.curve = curve; const dlp = ac.createBiquadFilter(); dlp.type = "lowpass"; dlp.frequency.value = 11000; dlp.Q.value = 0.5;
+    const dsh = ac.createGain(); dsh.gain.value = 0.8; sh.connect(dlp); dlp.connect(dsh); dsh.connect(bus);
+    trk = TRACK.map((_, i) => { const g = ac.createGain(); g.gain.value = S.vol[i] / 10; g.connect(i === 0 ? sh : bus);
+      const [rv, dv] = SENDS[i]; if (rv) { const x = ac.createGain(); x.gain.value = rv; g.connect(x); x.connect(verb); } if (dv) { const x = ac.createGain(); x.gain.value = dv; g.connect(x); x.connect(dly); } return g; });
+    /* the round snare: squeezed hard (fast attack, the tail brought up), the crack rolled off, the body kept */
+    { const c = ac.createDynamicsCompressor(); c.threshold.value = -30; c.knee.value = 6; c.ratio.value = 8; c.attack.value = 0.002; c.release.value = 0.14;
+      const mk = ac.createGain(); mk.gain.value = 2.4; const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 5200; lp.Q.value = 0.4;
+      const body = ac.createBiquadFilter(); body.type = "peaking"; body.frequency.value = 200; body.gain.value = 3; body.Q.value = 1;
+      snBus = ac.createGain(); snBus.connect(c); c.connect(mk); mk.connect(body); body.connect(lp); lp.connect(trk[0]); }
+    hatHP = ac.createBiquadFilter(); hatHP.type = "highpass"; hatHP.frequency.value = 7500; hatHP.connect(trk[0]);
+    /* what you play on the keys has its own channel: the melody knob does not silence you */
+    youTrk = ac.createGain(); youTrk.gain.value = 0.9; youTrk.connect(bus);
+    youBass = ac.createGain(); youBass.gain.value = 0.9; youBass.connect(bus);   /* the bass you play: dry, its own channel */
+    { const x = ac.createGain(); x.gain.value = 0.3; youTrk.connect(x); x.connect(verb); const y = ac.createGain(); y.gain.value = 0.35; youTrk.connect(y); y.connect(dly); }
+    FILES.forEach((f) => fetch(`samples/${f}.mp4`).then((r) => { if (!r.ok) throw new Error(f); return r.arrayBuffer(); }).then((a) => ac.decodeAudioData(a)).then((b) => { BUF[f] = b; ONSET[f] = onset(b); loaded++; }).catch(() => { loadFailed = true; }));
+  }
+  if (ac.state === "suspended") ac.resume();
+}
+function play1(name, t, gain, dest, rate = 1, len = 0, fadeLen = 0.08) {   /* one sample, at a level, through a track; cut after len if given */
+  const b = BUF[name]; if (!b) return false;
+  const src = ac.createBufferSource(), g = ac.createGain(); src.buffer = b; src.playbackRate.value = rate;
+  g.gain.setValueAtTime(gain, t); if (len) { g.gain.setValueAtTime(gain, t + len); g.gain.exponentialRampToValueAtTime(0.0001, t + len + fadeLen); }
+  src.connect(g); g.connect(dest); src.start(t, ONSET[name] || 0); if (len) src.stop(t + len + fadeLen + 0.02);
+  return true;
+}
+const kitNow = () => KITS[PR.on ? PR_KITS[PR.kit][1] : S.userDrums ? (S.lesson === MAKE ? style().kit : "hiphop") : S.lesson === GROOVE && page().grooves3 && S.gp != null ? GROOVES[S.gp].kit : S.lesson === GROOVE ? "hiphop" : style().kit];
+function drum(dr, t, v, wobble = 0) {                                   /* a drum hit: louder is also a touch brighter and higher */
+  const kit = kitNow(), name = kit[dr] || kit.h, rate = 1 + (v - 0.8) * 0.03 + wobble, hat = dr === "h" || dr === "o", thin = kit.thin && hat;
+  if (!play1(name, t, Math.pow(v, 1.4) * (hat ? (thin ? 0.4 : 0.55) : dr === "k" ? 1.0 : 0.85), thin ? hatHP : kit.round && dr === "s" ? snBus : trk[0], thin ? rate * 1.08 : rate, thin ? 0.035 : 0, 0.03)) synthDrum(dr, t, v);
+  if (dr === "s" && kit.lay) play1(kit.lay[0], t + 0.002, Math.pow(v, 1.4) * kit.lay[1], kit.round ? snBus : trk[0], rate);
+}
+function ding() { if (!ac) return; [1568, 2093].forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i * 0.09; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.08, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4); }); }
+function click(t, acc) { const o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.value = acc ? 1800 : 1200; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.35, t + 0.001); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.06); }
+function bassNote(n, t, len, v = 1, dest = trk[1]) { const [f, m] = nearest(BASS_S, n); if (!play1(f, t, 0.9 * v, dest, Math.pow(2, (n - m) / 12), len, 0.06)) synthTone(n, t, len, dest, "sawtooth", 0.25); }
+function chord(notes, t, len, v = 1, dest = trk[2]) {
+  if (S.lesson === 4) { notes = voiced(notes); const ps = S.playSt;                 /* lesson 5: voiced, and block, strum or arp */
+    if (ps === 2) { const e = stepDur() * 2; notes.forEach((n, i) => { const [f, m] = nearest(WURLI_S, n); for (let r = 0; r * notes.length * e < len; r++) play1(f, t + (i + r * notes.length) * e, 0.32 * v, dest, Math.pow(2, (n - m) / 12), e * 0.9, 0.12); }); return; }
+    if (ps === 1) { notes.forEach((n, i) => { const [f, m] = nearest(WURLI_S, n); play1(f, t + i * 0.045, 0.32 * v, dest, Math.pow(2, (n - m) / 12), len, 0.25); }); return; } }
+  notes.forEach((n, i) => { const [f, m] = nearest(WURLI_S, n); if (!play1(f, t + i * 0.008, 0.32 * v, dest, Math.pow(2, (n - m) / 12), len, 0.25)) synthTone(n, t, len, dest, "triangle", 0.05); }); }
+function melNote(n, t, len, v = 1, dest = trk[3]) { const [f, m] = nearest(HARP_S, n); if (!play1(f, t, 0.75 * v, dest, Math.pow(2, (n - m) / 12), Math.max(len, 0.6), 0.5)) synthTone(n, t, len, dest, "triangle", 0.15); }
+/* stand-ins while the samples load, or if they cannot */
+function synthTone(n, t, len, dest, type, lv) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = 440 * Math.pow(2, (n - 69) / 12); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(lv, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + len + 0.1); o.connect(g); g.connect(dest); o.start(t); o.stop(t + len + 0.15); }
+function synthDrum(dr, t, v) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = dr === "k" ? 60 : dr === "h" || dr === "o" ? 6000 : 200; g.gain.setValueAtTime(0.4 * v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (dr === "k" ? 0.3 : 0.08)); o.connect(g); g.connect(trk[0]); o.start(t); o.stop(t + 0.35); }
+
+/* ================= state ================= */
+const S = { lesson: 0, page: 0, playing: false, bpm: 88, style: 0, key: 0, vol: [0, 0, 8, 0], styleSeen: new Set([0]), bpmMoved: false, keyMoved: false,
+  recording: false, rec: { k: new Set(), s: new Set(), h: new Set() }, userDrums: false, meter: [0, 0, 0, 0], flash: {}, stars: [0, 0, 0], t: 0,
+  metro: 0, taps: { good: 0, list: [] }, tapTimes: [], tapped: false, abPhase: 0, keyPresses: 0, jamCount: 0, jam: [], pushed: false, modes: false, modeSel: 1, held: new Set(), editHeld: false, erased: 0, menu: false, menuSel: 0, note: null, grooveSeen: new Set([0]), genreSeen: new Set(["Hip-hop"]), litCount: 0, out: null, song: { bass: new Map(), mel: new Map() }, tune: [], kickT: [], bassPat: 0, harm: 0, played: [], grid: 0, roll: 0, voice: 0, playSt: 0, col: null, mm: 0, prog: 0, solo: null, soloSeen: new Set(), homeHit: false, myBpm: 88, flashBad: {},
+  groove: { acc: 0, ghost: 0, swing: 50, pocket: 0, human: 0 }, k4: { scale: 0, outHit: false, inAfter: false, chords: new Set(), along: 0, pick: [], picked: 0, mel: 0 }, info: null };
+const page = () => { const p = L[S.lesson].pages[S.page]; if (p.drill && !p.go) { p.task = () => !!(S.pz && S.pz.done); p.go = () => drillGo(p); p.ctl = ["keys"]; } return p; };
+function drillGo(p) { const d = p.drill, Z = S.pz; if (!Z) return "";
+  if (Z.done) return `${"★".repeat(Z.stars)} ${Z.mistakes ? Z.mistakes + " mistakes" : "no mistakes"}. Again, or NEXT ›.`;
+  if (d.type === "scale") return d.mode === "follow" ? `Play the bright key (${Z.idx}/${Z.seq.length}).` : `From memory: next note ${Z.idx + 1} of ${Z.seq.length}.`;
+  if (d.type === "find") return `Find ${Z.targets[Z.idx].name}: press its 3 notes (${Z.got.size}/3).`;
+  if (d.type === "ear") return `Which chord was it? Press its root (round ${Z.round + 1}/${d.n}). PRESETS: hear it again.`;
+  return ac && ac.currentTime < (Z.listenUntil || 0) ? "Listen and watch the keys…" : `Your turn: play the ${Z.len} chords back (${Z.pos}/${Z.len}).`; }
+const isDone = (p) => (p.drill ? !!(S.pz && S.pz.done) : p.task ? p.task() : true);
+const ctlOf = (p) => (typeof p.ctl === "function" ? p.ctl() : p.ctl || []);
+const style = () => STYLES[S.style];
+function setMix(v) { v.forEach((x, i) => setVol(i, x)); }
+/* the feel: how a hit is played. swing: where the off-8ths sit (0.5 straight); pocket: the snare late (s); acc: loud and
+   soft (0 all the same); ghost: quiet snares between; human: small differences. In the groove lesson, the knobs set it. */
+const GROOVE = 2, KEYS = 3, STUDIO = 99;   /* the studio lesson comes later */
+function feelNow() {
+  if (S.lesson === GROOVE) { const f = S.groove, pk = f.pocket;              /* POCKET: the snare later, the hats a little earlier, the kick on the beat */
+    return { swing: f.swing / 100, pocket: { k: 0, s: 0.003 * pk, g: 0.003 * pk, h: -0.0012 * pk, o: -0.0012 * pk }, acc: f.acc / 10, ghost: f.ghost / 10, human: [0, 1, 2.5][f.human] }; }
+  return { swing: style().swing, pocket: { k: 0, s: 0.009, g: 0.009, h: 0, o: 0 }, acc: 1, ghost: 1, human: S.userDrums ? 0 : 0.6 };
+}
+const GHOSTS = [[7, .5], [10, .7], [16, .6]];
+/* the groove lesson's beat: hats in 16ths (strong on the beat, medium between, weak on the 16ths), so accents and swing
+   can be heard; "full" (the drummer's groove) changes the kick every other bar and opens the hat at the end */
+const H16 = Array.from({ length: 16 }, (_, i) => [i + 1, i % 4 === 0 ? 1 : i % 2 === 0 ? 0.55 : 0.26]);
+const GK = [[[1, 1], [11, .9]], [[1, 1], [8, .55], [11, .9]], [[1, 1], [11, .9]], [[1, 1], [4, .5], [11, .9], [12, .6]]];
+const ROLLS = ["off", "1/16", "1/32", "triplets"], GRIDS = ["as played", "1/16", "1/8"];
+function applyGroove() { const gr = GROOVES[S.gp]; S.groove = { ...gr.set, human: 0 }; S.bpm = gr.bpm; }
+function grooveHits(step, bar) {
+  const fl = feelNow(), full = page().full, out = [], acc = (flat, v) => flat + (v - flat) * fl.acc;
+  if (page().grooves3 && S.gp != null) { const gr = GROOVES[S.gp];   /* an example groove, with its own small pushes and pulls */
+    for (const dr of ["k", "s", "g", "h", "o"]) for (const [st, v, ms = 0, dbl = 0] of gr[dr]) if (st === step) out.push([dr, dr === "g" ? v * (0.4 + fl.ghost) : acc(0.7, v), 1, ms / 1000, dbl]);
+    return out; }
+  const pg = page();
+  if (pg.fill && bar === 3 && step >= 13) {                             /* the fill: a snare roll into the top */
+    if (step === 13) out.push(["k", 1]); out.push(["s", [0.4, 0.55, 0.72, 0.95][step - 13], 1]); return out.map((x) => x.length > 2 ? x : [...x, 1]); }
+  if (pg.fill && bar === 0 && step === 1) out.push(["o", 0.7]);
+  (full ? GK[bar] : GK[0]).forEach(([s, v]) => s === step && out.push(["k", acc(0.95, v)]));
+  [[5, 1], [13, 1]].forEach(([s, v]) => s === step && out.push(["s", v]));
+  if (fl.ghost > 0) GHOSTS.forEach(([s, v]) => s === step && out.push(["g", (0.08 + 0.22 * fl.ghost) * v]));
+  if (pg.gridPage) return out.map((x) => [...x, 1]);                     /* your own hats, as played: in the sequencer */
+  if (pg.rolls) {                                                       /* 8ths; in bars 2 and 4 the last beat rolls */
+    const rollNow = bar % 2 === 1 && step >= 13 && S.roll > 0;
+    if (rollNow) { if (S.roll === 3 && step % 2 === 0) return out.map((x) => [...x, 1]); out.push(["h", acc(0.7, 0.5 + 0.1 * (step - 12)), 1, 0, S.roll === 1 ? 0 : S.roll === 2 ? 1 : "t"]); }
+    else if (step % 2 === 1) out.push(["h", acc(0.7, step % 4 === 1 ? 1 : 0.55)]);
+    return out.map((x) => x.length > 2 ? x : [...x, 1]); }
+  H16.forEach(([s, v]) => { if (s !== step) return; if (full && bar === 3 && s === 15) out.push(["o", 0.5]); else if (!(full && bar === 3 && s === 16)) out.push(["h", acc(0.7, v)]); });
+  return out.map((x) => [...x, 1]);
+}
+const G16 = (on, mid, soft) => Array.from({ length: 16 }, (_, i) => [i + 1, i % 4 === 0 ? on : i % 2 === 0 ? mid : soft]);
+const GROOVES = [
+  { name: "Dilla", short: "hats swung hard, the snare late, kicks a little off: drunk, but in the pocket.", kit: "hiphop", bpm: 86, set: { acc: 10, ghost: 5, swing: 62, pocket: 8 },
+    tip: "the J Dilla feel: hats swung hard, the snare late, the kicks a little off on purpose, early and late. Drunk, but in the pocket.",
+    k: [[1, 1, -6], [4, .55, 14], [8, .7, 10], [11, .95, -8], [12, .5, 18]], s: [[5, 1, 12], [13, 1, 16]], g: [[10, .25, 6], [16, .2, 10]], h: G16(.9, .5, .3).map(([st, v], i) => [st, v, [0, 6, -4, 10, 2, 8, -6, 12, 0, 4, -2, 9, 3, 7, -5, 11][i]]), o: [] },
+  { name: "Double hats", short: "some hats doubled, ti-ti: a skip in the beat.", kit: "hiphop", bpm: 90, set: { acc: 10, ghost: 3, swing: 54, pocket: 3 },
+    tip: "hats in 8ths, and some doubled: two quick hits (ti-ti) where one would be. It gives the beat a skip, as in modern hip-hop and trap.",
+    k: [[1, 1], [8, .6], [11, .9]], s: [[5, 1], [13, 1]], g: [], h: [[1, .9], [3, .55], [4, .45, 0, 1], [5, .85], [7, .55], [9, .9], [11, .55], [12, .45, 0, 1], [13, .85], [15, .55], [16, .5, 0, 1]], o: [] },
+  { name: "Four on the floor", short: "a kick on every beat, an open hat between: tss.", kit: "house", bpm: 120, set: { acc: 10, ghost: 0, swing: 52, pocket: 0 },
+    tip: "a kick on every beat, 1 2 3 4: house, disco, funk, techno. A clap on 2 and 4, an open hat between the kicks: tss, tss.",
+    k: [[1, .95], [5, .95], [9, .95], [13, .95]], s: [[5, .7], [13, .7]], g: [], h: G16(.35, 0, .2).filter(([, v]) => v > 0), o: [[3, .45], [7, .45], [11, .45], [15, .45]] },
+  { name: "Reggaeton", short: "the snare moves off 2 and 4, into 3 + 3 + 2.", kit: "dembow", bpm: 94, set: { acc: 10, ghost: 0, swing: 50, pocket: 0 },
+    tip: "the dembow: a kick on every beat, and the snare moves off 2 and 4, into 3 + 3 + 2: boom, ch-boom, chick. Watch the SNARE row: it is not where hip-hop puts it.",
+    k: [[1, .9], [5, .85], [9, .9], [13, .85]], s: [[4, .8], [7, .85], [12, .8], [15, .85]], g: [], h: G16(.35, .25, 0).filter(([, v]) => v > 0), o: [] },
+];
+const humanT = (i, dr, h) => (rnd(i * 7 + dr.charCodeAt(0)) - 0.5) * 0.02 * h;      /* the same small differences for the sound and the screen */
+const humanV = (i, dr, h) => Math.max(0.15, 1 + (rnd(i * 13 + dr.charCodeAt(0)) - 0.5) * 0.4 * h);
+/* which rows of the sequencer the step is about (the others dimmed); null: all */
+function focusRows(p) {
+  const D = ["k", "s", "h"], c = ctlOf(p), L0 = S.lesson;
+  if (p.highlightDrums || p.grooves || p.style || p.grooves3 || L0 === GROOVE) return D;
+  if (L0 === 0) { if (c.includes("k0")) return D; if (c.includes("k1")) return [1]; if (c.includes("k2")) return [2]; if (c.includes("k3")) return [3]; if (p.ring || p.lit) return [3]; return null; }
+  if (L0 === 1 && p.rec) return p.erase || p.intro ? D : [p.rec];
+  if (L0 === KEYS) return ["tones", "scale"].includes(p.keys) ? [3] : [2];
+  if (L0 === 4) return [2];
+  if (L0 === BASS_L) return [1];
+  if (L0 === MEL_L) return [3];
+  if (L0 === WAYS) return p.ways === "groove" || p.ways === "style" ? D : p.ways === "bass" ? [1] : ["pad", "prog", "fit"].includes(p.ways) ? [2] : [3];
+  if (L0 === MAKE) return p.rec ? [p.rec] : p.recBass ? [1] : p.recMel ? [3] : p.make === "chords" ? [2] : null;
+  return null;
+}
+function soloNow(bar) { return S.solo || ["k", "s", "h", null][bar % 4]; }   /* the key you pressed; or each in turn, then all */
+function drumHits(step, bar) {                                       /* [drum, velocity, extra delay s] on a step (1..16) */
+  if (S.lesson === GROOVE && !S.userDrums) return grooveHits(step, bar);
+  const st = style(), out = [];
+  if (S.userDrums) {
+    for (const d of ["k", "s", "h"]) if (S.rec[d].has(step)) out.push([d, d === "h" ? ((step - 1) % 4 === 0 ? 0.9 : 0.55) : 1]);
+    return out;
+  }
+  const p = page(), fl = feelNow(), mix = (flat, v) => flat + (v - flat) * fl.acc;   /* ACCENT 0: every hit the same */
+  st.k.forEach(([s, v]) => s === step && out.push(["k", mix(0.9, v)]));
+  st.s.forEach(([s, v]) => s === step && out.push(["s", mix(0.9, v)]));
+  if (S.lesson === GROOVE) { if (fl.ghost > 0) GHOSTS.forEach(([s, v]) => s === step && out.push(["g", (0.1 + 0.2 * fl.ghost) * v])); }
+  else st.g.forEach(([s, v]) => s === step && out.push(["g", v]));
+  st.h.forEach(([s, v]) => s === step && out.push(["h", mix(0.7, v)]));
+  st.o.forEach(([s, v]) => s === step && out.push(["o", v]));
+  const solo = p.highlightDrums ? soloNow(bar) : null;                  /* one drum alone: the others silent */
+  return out.filter((x) => !solo || x[0] === solo || (solo === "s" && x[0] === "g") || (solo === "h" && x[0] === "o")).map((x) => [...x, 1]);
+}
+/* ================= the sequencer: a look-ahead scheduler ================= */
+let nextT = 0, nextStep = 0, loopStart = 0;
+const visual = [];
+function stepDur() { return 60 / S.bpm / 4; }
+function rnd(seed) { const x = Math.sin(seed * 12.9898) * 43758.5453; return x - Math.floor(x); }
+function schedule() {
+  if (!ac) return;
+  const p = page();
+  if (S.metro && !S.playing) { while (nextT < ac.currentTime + 0.12) { click(nextT, nextStep % 4 === 0); visual.push([nextT, nextStep]); nextT += 60 / S.metro; nextStep++; } return; }
+  if (!S.playing) return;
+  while (nextT < ac.currentTime + 0.12) {
+    const i = nextStep % 64, bar = Math.floor(i / 16), step = (i % 16) + 1, d = stepDur(), fl = feelNow(), st = style();
+    const swing = (step % 2 === 0) ? (fl.swing - 0.5) * 2 * d : 0, base = nextT + swing;
+    if (PR.on) { prStep(i, step, base, d); visual.push([nextT, i]); nextT += d; nextStep++; continue; }
+    if (S.editHeld && S.lesson === MAKE && (p.recBass || p.recMel)) { const map = p.recBass ? S.song.bass : S.song.mel;
+      if (map.has(i) && [...S.held].some((n) => (p.recBass ? n - 24 : n) === map.get(i))) { map.delete(i); S.erased++; } }
+    if (S.editHeld && recL()) for (const dd of ["k", "s", "h"]) if (S.held.has(DRUMKEY[dd]) && S.rec[dd].has(step)) {   /* erase, just before it sounds */
+      S.rec[dd].delete(step); S.erased++; S.flash[dd + step] = 0.4; S.erasedFlash = { d: dd, s: step, t: S.t }; }
+    for (const [dr, v, mute, ms = 0, dbl = 0] of drumHits(step, bar)) {
+      let t = base + ms, vel = v * (mute ?? 1);
+      if (dbl === "t") { drum(dr, t + 2 * d / 3, vel * 0.8); drum(dr, t + 4 * d / 3, vel * 0.9); }   /* triplets: three in the space of two */
+      else if (dbl) drum(dr, t + d / 2 + (fl.pocket[dr] || 0), vel * 0.75);      /* a doubled hat: a second, quicker hit */
+      t += fl.pocket[dr] || 0;
+      if (fl.human) { t += humanT(i, dr, fl.human); vel *= humanV(i, dr, fl.human); }
+      drum(dr, t, vel, (rnd(i * 31 + dr.charCodeAt(0)) - 0.5) * 0.01 * fl.human);
+      if (dr === "k") { S.kickT.push(t); if (S.kickT.length > 16) S.kickT.shift(); }
+      if (dr === "h" && st.roll === step && !S.userDrums) { drum("h", t + d / 3, vel * 0.6); drum("h", t + 2 * d / 3, vel * 0.75); }
+      bumpMeter(0, t, vel);
+    }
+    if ((S.userDrums || S.recording) && (step - 1) % 4 === 0 && (S.lesson === 1 || (S.lesson === MAKE && S.recording))) click(nextT, step === 1);
+    if (S.lesson === GROOVE && p.gridPage) for (const ph of S.played) {   /* your hats: as played, or moved to the grid */
+      const g2 = [0, 1, 2][S.grid], q = g2 ? (Math.round(ph / g2) * g2) % 16 : ph;
+      if (Math.floor(q + 1e-6) === step - 1) { drum("h", nextT + (q - (step - 1)) * d, 0.8); bumpMeter(0, nextT, 0.8); } }
+    const tr = S.key;
+    for (const [s2, n, len] of bassOf(bar)) if (s2 === step) { bassNote(n + tr, base, d * len * 0.92); bumpMeter(1, base, 1); }
+    if (step === 1 && !S.pushed) { chord(BARS[bar].notes.map((n) => n + tr), base, d * COMP_HOLD, 0.85); bumpMeter(2, base, 0.85); }
+    if (step === 1) S.pushed = false;
+    if (step === COMP_LATE) { const push = bar === PUSH_BAR, ch = chordAt(bar, step);   /* the late hit: the same chord, or the next one early */
+      chord(ch.notes.map((n) => n + tr), base, d * (push ? 2 + COMP_HOLD : 1.6), push ? 0.75 : 0.55); bumpMeter(2, base, 0.6); S.pushed = push; }
+    for (const [b, s2, n, len] of melNow()) if (b === bar && s2 === step) { melNote(n + tr, base, d * len); bumpMeter(3, base, 1); }
+    visual.push([nextT, i]);
+    nextT += d; nextStep++;
+  }
+}
+const meterEv = [];
+function bumpMeter(k, t, v) { meterEv.push([t, k, v * S.vol[k] / 10]); }
+setInterval(schedule, 25);
+function start() { S.playing = true; S.pushed = false; nextT = ac.currentTime + 0.06; nextStep = 0; loopStart = nextT; visual.length = 0; }
+function play() { power(); if (S.playing) { S.playing = false; return; } S.metro = 0; start(); }
+
+/* ================= the keys ================= */
+const LO = 53, HI = 79, DRUMKEY = { k: 60, s: 62, h: 64 };              /* three keys side by side in the middle: KICK, SNARE, HAT */
+const DRUMCOL = { k: "#ff6b6b", s: "#ffb547", h: "#45d6c2" };
+const drumOf = (n) => (n === DRUMKEY.k ? "k" : n === DRUMKEY.s ? "s" : n === DRUMKEY.h ? "h" : null);
+function scaleHas(n) { return [0, 2, 3, 5, 7, 8, 10].includes(((n - 57 - S.key) % 12 + 12) % 12); }
+const snap = (n) => { while (!scaleHas(n)) n--; return n; };          /* scale lock: a key outside the song's key plays the scale note below it */
+function chordNow() { const pi = curPos(); return pi < 0 ? BARS[0] : chordAt(Math.floor(pi / 16), (pi % 16) + 1); }
+function pressKey(n) {
+  power();
+  const p = page(), now = ac.currentTime;
+  if (PR.on) { prPress(n); return; }                                  /* the studio */
+  if (page().drill) { drillKey(page(), n, ac.currentTime); return; }    /* the practice games */
+  if (p.metro) {                                                     /* tapping with the click: how far from the beat */
+    const bd = 60 / S.metro, ph = (now - (nextT - nextStep * bd)) / bd, err = (ph - Math.round(ph)) * bd;
+    const ok = Math.abs(err) < 0.06; if (ok) S.taps.good++; S.taps.list.push({ err, t: S.t }); if (S.taps.list.length > 8) S.taps.list.shift();
+    drum("h", now, 0.8); return;
+  }
+  if (p.tapTempo) {
+    S.tapTimes.push(now); S.tapTimes = S.tapTimes.filter((t) => now - t < 3);
+    drum("h", now, 0.8);
+    if (S.tapTimes.length >= 4) { const iv = []; for (let i = 1; i < S.tapTimes.length; i++) iv.push(S.tapTimes[i] - S.tapTimes[i - 1]); const avg = iv.reduce((a, b) => a + b, 0) / iv.length;
+      S.bpm = Math.max(60, Math.min(160, Math.round(60 / avg))); S.tapped = true; S.userDrums = true; if (!S.playing) start(); }
+    return;
+  }
+  if (p.highlightDrums) { const d = drumOf(n); if (d) { drum(d, now, 1); S.solo = d; S.soloSeen.add(d); return; } }   /* one drum on its own */
+  if (recL() && p.rec) {
+    const d = drumOf(n);
+    if (d && S.editHeld) return;                                       /* EDIT held: the key chooses what to erase, it does not play */
+    if (d) { drum(d, now, 1); bumpMeter(0, now, 1);
+      if (S.recording && S.playing) { const pos = (now - loopStart) / stepDur(); const st = ((Math.round(pos) % 16) + 16) % 16 + 1;
+        if (!p.hint && p.need.length && (d !== p.rec || !p.need.includes(st))) S.flashBad[d + st] = 0.5;   /* not an outlined square: not kept */
+        else { S.rec[d].add(st); S.flash[d + st] = 0.4; } }
+      return; }
+  }
+  if (S.lesson === KEYS) { keysLesson(p, n, now); return; }
+  if (S.lesson === 4) { colourLesson(p, n, now); return; }
+  if (S.lesson === BASS_L) { bassLesson(p, n, now); return; }
+  if (S.lesson === WAYS && p.ways) { waysLesson(p, n, now); return; }
+  if (S.lesson === MAKE && p.make) { makeLesson(p, n, now); return; }
+  if (S.lesson === MEL_L) { melLesson(p, n, now); return; }
+  if (S.lesson === GROOVE && p.gridPage) { drum("h", now, 0.85); if (S.playing) { const pos = (((now - loopStart) / stepDur()) % 16 + 16) % 16; S.played.push(pos); if (S.played.length > 24) S.played.shift(); } return; }
+  melNote(n, now, 0.8, 1, youTrk);                                     /* your notes: their own channel, heard whatever the melody knob says */
+  if (p.ring && scaleHas(n)) { if ((n - 57 - S.key) % 12 === 0) S.homeHit = true; else S.keyPresses++; }
+  if ((p.ring || p.lit) && !scaleHas(n)) S.out = { n, t: S.t };           /* outside the key: say why it sounds sour */
+  if (p.lit) { if (scaleHas(n)) S.litCount++; const pi = curPos(); if (pi >= 0) S.jam.push({ i: pi, n, t: S.t, out: !scaleHas(n) }); if (S.jam.length > 40) S.jam.shift(); }
+}
+
+/* lesson 4: the keys as a scale, as chords, as the chord now, as its notes */
+function keysLesson(p, n, now) {
+  const dg = degOf(n), inKey = dg >= 0;
+  if (!inKey) { melNote(n, now, 0.8, 1, youTrk); S.out = { n, t: S.t }; if (p.keys === "scale") S.k4.outHit = true; return; }
+  if (p.keys === "scale") { melNote(n, now, 0.8, 1, youTrk); S.k4.scale++; if (S.k4.outHit) S.k4.inAfter = true; return; }
+  if (p.keys === "chords") {                                           /* one finger: the chord built on the key */
+    const ch = mkChord(dg); chord(ch.notes.map((x) => x + S.key), now, 1.3, 0.9, youTrk); S.k4.chords.add(dg);
+    if (S.k4.types) S.k4.types.add(ch.dim ? "dim" : ch.minor ? "minor" : "major");
+    if (S.k4.types && !p.pick && !(S.page === 2)) S.info = { s: `${chordName(ch)}: ${ch.dim ? "diminished, tense" : ch.minor ? "minor, sad or cool" : "major, bright"}`, t: S.t };
+    else
+    S.info = { s: `${chordName(ch)} (${ROMAN[dg]}): ${ch.spell.map((x) => NAMES[(x + S.key + 12) % 12]).join(" ")}`, t: S.t };
+    if (p.pick) { S.k4.pick.push(dg); if (S.k4.pick.length === 4) { setProg(S.k4.pick); S.k4.pick = []; S.k4.picked++; if (!S.playing) start(); } }
+    return;
+  }
+  melNote(n, now, 0.8, 1, youTrk);
+  if (p.keys === "play") { const ch = mkChord(dg); chord(ch.notes.map((x) => x + S.key), now, stepDur() * 14, 0.9, youTrk);   /* one finger, one chord */
+    if (dg === chordNow().deg) { S.k4.along++; S.info = { s: "✓ " + chordName(ch), t: S.t }; } else S.info = { s: chordName(ch) + ": now it is " + chordName(chordNow()), t: S.t }; return; }
+  if (p.keys === "root") { if (dg === chordNow().deg || (chordNow().deg === undefined && dg === 0)) { S.k4.along++; S.info = { s: "✓ " + chordName(chordNow()), t: S.t }; } return; }
+  if (p.keys === "tones") { S.k4.mel++; const pi = curPos(); if (pi >= 0) S.jam.push({ i: pi, n, t: S.t, out: false }); }
+}
+/* lesson 5: the chord pad, the colours on the black keys */
+function colourLesson(p, n, now) {
+  if (COLKEYS[n]) { S.col = S.col === COLKEYS[n] ? null : COLKEYS[n]; if (S.col) S.info = { s: `${S.col}: ${COLOURS[S.col].feel}`, t: S.t }; return; }
+  const dg = padDeg(n); if (dg < 0) return;
+  const ch = colourChord(dg, S.col); chord(ch.notes.map((x) => x + S.key), now, p.along5 ? stepDur() * 14 : 1.5, 0.9, youTrk);
+  S.k5.pads.add(dg); if (S.col) S.k5.cols.add(S.col); if (S.col === "7") S.k5.with7++;
+  S.info = { s: `${chordName(ch)}${S.col ? ": " + COLOURS[S.col].feel : ""}`, t: S.t };
+  if (p.along5 && dg === chordNow().deg) { S.k5.along++; S.info = { s: "✓ " + chordName(ch), t: S.t }; }
+}
+/* lesson 8: three ways to start */
+function tuneMelody() { const out = []; S.tune.slice(0, 8).forEach((n, i) => { out.push([0, 1 + i * 2, n, 2]); out.push([2, 1 + i * 2, n, 2]); }); return out; }
+function fitScores() { const pcs = S.tune.map((n) => ((n - S.key) % 12 + 12) % 12); return [0, 1, 2, 3, 4, 5, 6].map((dg) => { const sp = mkChord(dg).spell; return pcs.filter((x) => sp.includes(x)).length; }); }
+function waysLesson(p, n, now) {
+  const w = p.ways;
+  if (w === "bass") { bassNote(n - 24, now, 0.4, 1, youBass); S.waysN++; S.info = { s: NAMES[n % 12] + ((n - 57 - S.key) % 12 === 0 ? ": home!" : ""), t: S.t }; return; }
+  if (w === "pad" || w === "fit") { const dg = padDeg(n); if (dg < 0) return; const ch = mkChord(dg); chord(ch.notes.map((x) => x + S.key), now, 1.6, 0.9, youTrk); S.waysN++;
+    S.info = { s: chordName(ch), t: S.t };
+    if (w === "pad") setProg([dg, dg, dg, dg]);
+    if (w === "fit") { if (S.fitPick.length < 4) S.fitPick.push(dg); S.tune.slice(0, 8).forEach((x, i) => melNote(x, now + 0.35 + i * 0.28, 0.3, 0.8, youTrk)); }
+    return; }
+  if (w === "tune") { melNote(n, now, 0.5, 1, youTrk); if (S.tune.length >= 8) S.tune = []; S.tune.push(n); if (!scaleHas(n)) S.out = { n, t: S.t }; return; }
+  melNote(n, now, 0.6, 1, youTrk); S.waysN++; if (!scaleHas(n)) S.out = { n, t: S.t };
+}
+/* lesson 9: the hints, the chords, the bass and the melody you record */
+function makeHint(d) { const p = page(), st = style(); p.need = (st[d] || []).map((x) => x[0]); if (d === "h" && !p.need.length) p.need = [1, 3, 5, 7, 9, 11, 13, 15]; }
+function makeLesson(p, n, now) {
+  if (p.make === "chords") { const dg = padDeg(n); if (dg < 0) return; const ch = mkChord(dg); chord(ch.notes.map((x) => x + S.key), now, 1.2, 0.9, youTrk);
+    S.makePick.push(dg); if (S.makePick.length === 4) { setProg(S.makePick); S.makePick = []; S.makeChords++; } return; }
+  const bass = p.make === "bass", m = bass ? n - 24 : n;
+  if (S.editHeld) return;
+  if (bass) bassNote(m, now, 0.35, 1, youBass); else melNote(m, now, 0.5, 1, youTrk);
+  if (!scaleHas(n)) S.out = { n, t: S.t };
+  if (S.recording && S.playing) { const i = ((Math.round((now - loopStart) / stepDur()) % 64) + 64) % 64; (bass ? S.song.bass : S.song.mel).set(i, m); }
+}
+/* lesson 6: the keys play the bass */
+function bassLesson(p, n, now) {
+  const m = n - 24; bassNote(m, now, 0.35, 1, youBass); S.k6.notes++;
+  const ch = chordNow(), isRoot = ((n - S.key) % 12 + 12) % 12 === (ch.root + 12) % 12;
+  if (isRoot) { const pi = curPos(); if (pi >= 0 && (pi % 16) < 3) S.k6.roots++;
+    if (S.kickT.some((t) => Math.abs(now - t) < 0.08)) { S.k6.locked++; S.info = { s: "✓ locked with the kick", t: S.t }; } }
+  if (!scaleHas(n)) S.out = { n, t: S.t };
+}
+/* lesson 7: the keys play the melody; a 3rd above, or an echo */
+function melLesson(p, n, now) {
+  melNote(n, now, 0.6, 1, youTrk); S.k7.mel++; if (p.keys === "pent" && [0, 3, 5, 7, 10].includes(((n - 57 - S.key) % 12 + 12) % 12)) S.k7.pent++;
+  if (!scaleHas(n)) S.out = { n, t: S.t };
+  if (S.harm === 1 && scaleHas(n)) { let u = n + 1; let k = 0; while (k < 2) { if (scaleHas(u)) k++; if (k < 2) u++; } melNote(u, now + 0.005, 0.6, 0.7, youTrk); }
+  if (S.harm === 2) { const e = 60 / S.bpm * 0.75; melNote(n, now + e, 0.5, 0.45, youTrk); melNote(n, now + 2 * e, 0.5, 0.25, youTrk); }
+  if (S.harm) S.k7.notes++;
+  const pi = curPos(); if (pi >= 0) { S.jam.push({ i: pi, n, t: S.t, out: !scaleHas(n) }); if (S.jam.length > 40) S.jam.shift();
+    if (p.call && Math.floor(pi / 16) % 2 === 1) { const key = Math.floor(S.t / (stepDur() * 16)); S.ansN = (S.ansKey === key ? S.ansN : 0) + 1; S.ansKey = key; if (S.ansN === 3) S.k7.answers++; } }
+}
+/* the practice games: scales with the lights or from memory; chords to find, to hear, to remember */
+const EAR = [{ name: "Am", root: 57, notes: [57, 60, 64] }, { name: "C", root: 60, notes: [60, 64, 67] }, { name: "F", root: 65, notes: [65, 69, 72] }, { name: "G", root: 67, notes: [67, 71, 74] }];
+const FIND = [{ name: "Am", pcs: [9, 0, 4], at: [57, 60, 64] }, { name: "C", pcs: [0, 4, 7], at: [60, 64, 67] }, { name: "Dm", pcs: [2, 5, 9], at: [62, 65, 69] },
+  { name: "Em", pcs: [4, 7, 11], at: [64, 67, 71] }, { name: "F", pcs: [5, 9, 0], at: [65, 69, 72] }, { name: "G", pcs: [7, 11, 2], at: [67, 71, 74] }];
+const shuffle = (a, seed) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(rnd(seed + i * 7.1) * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+function initDrill(p) {
+  const d = p.drill, Z = S.pz = { idx: 0, mistakes: 0, miss: 0, done: false, stars: 0, flashBad: null, okT: -9, round: 0 };
+  S.playing = false;
+  if (d.type === "scale") { const up = [...d.iv.map((x) => d.home + x), d.home + 12]; Z.seq = d.updown ? [...up, ...up.slice(0, -1).reverse()] : up; }
+  if (d.type === "find") { Z.targets = shuffle(FIND, S.t * 13 + 1).slice(0, d.n); Z.got = new Set(); }
+  if (d.type === "ear") { Z.order = Array.from({ length: d.n }, (_, i) => Math.floor(rnd(S.t * 3 + i * 11.3) * 4)); setTimeout(() => earPlay(), 500); }
+  if (d.type === "simon") { Z.seq = Array.from({ length: 8 }, (_, i) => Math.floor(rnd(S.t * 5 + i * 9.7) * 4)); Z.len = 2; Z.pos = 0; setTimeout(() => simonPlay(), 600); }
+}
+function earPlay() { power(); const Z = S.pz; if (!Z || Z.done) return; const c = EAR[Z.order[Z.round]]; chord(c.notes, ac.currentTime + 0.05, 1.4, 0.9, youTrk); }
+function simonPlay() { power(); const Z = S.pz; Z.show = []; Z.pos = 0; const t0 = ac.currentTime + 0.1, gap = 0.75;
+  for (let i = 0; i < Z.len; i++) { const c = EAR[Z.seq[i]]; chord(c.notes, t0 + i * gap, gap * 0.9, 0.9, youTrk); Z.show.push([t0 + i * gap, t0 + (i + 1) * gap - 0.05, c.root]); }
+  Z.listenUntil = t0 + Z.len * gap; }
+function drillFinish() { const Z = S.pz; Z.done = true; Z.stars = Z.mistakes === 0 ? 3 : Z.mistakes <= 2 ? 2 : 1;
+  const key = L[S.lesson].title + ":" + S.page; S.best = S.best || {}; S.best[key] = Math.max(S.best[key] || 0, Z.stars); ding(); }
+function starTotal(title) { let n = 0; for (const k in (S.best || {})) if (k.startsWith(title + ":")) n += S.best[k]; return n; }
+function starMax(title) { const l = L.find((x) => x.title === title); return l.pages.filter((p) => p.drill).length * 3; }
+function drillKey(p, n, now) {
+  const d = p.drill, Z = S.pz;
+  if (d.type === "scale") { melNote(n, now, 0.6, 1, youTrk);
+    if (Z.done) { if (n === Z.seq[0]) { initDrill(p); Z.idx = 1; S.pz.idx = 1; } return; }
+    if (n === Z.seq[Z.idx]) { Z.idx++; Z.miss = 0; Z.okT = S.t; if (Z.idx >= Z.seq.length) drillFinish(); }
+    else { Z.mistakes++; Z.miss++; Z.flashBad = { n, t: S.t }; }
+    return; }
+  if (d.type === "find") { melNote(n, now, 0.5, 0.8, youTrk); if (Z.done) return;
+    const tg = Z.targets[Z.idx], pc = ((n % 12) + 12) % 12;
+    if (tg.pcs.includes(pc)) { Z.got.add(pc); if (Z.got.size === 3) { chord(tg.at, now + 0.05, 1.2, 0.9, youTrk); Z.idx++; Z.got = new Set(); Z.miss = 0; Z.okT = S.t; if (Z.idx >= Z.targets.length) drillFinish(); } }
+    else { Z.mistakes++; Z.miss++; Z.flashBad = { n, t: S.t }; }
+    return; }
+  if (d.type === "ear") { if (Z.done) return; const c = EAR[Z.order[Z.round]];
+    if (n % 12 === c.root % 12) { Z.round++; Z.okT = S.t; S.info = { s: "✓ " + c.name, t: S.t }; if (Z.round >= d.n) drillFinish(); else setTimeout(() => earPlay(), 700); }
+    else if (EAR.some((e) => e.root % 12 === n % 12)) { Z.mistakes++; Z.flashBad = { n, t: S.t }; S.info = { s: "✗ it was " + c.name + ": listen again", t: S.t }; setTimeout(() => earPlay(), 600); }
+    return; }
+  if (d.type === "simon") { if (Z.done || ac.currentTime < (Z.listenUntil || 0)) return; const want = EAR[Z.seq[Z.pos]];
+    const e = EAR.find((x) => x.root % 12 === n % 12); if (!e) return; chord(e.notes, now, 0.6, 0.9, youTrk);
+    if (e === want) { Z.pos++; if (Z.pos >= Z.len) { Z.okT = S.t; if (Z.len >= d.goal) drillFinish(); else { Z.len++; setTimeout(() => simonPlay(), 900); } } }
+    else { Z.mistakes++; Z.flashBad = { n, t: S.t }; S.info = { s: "✗ again: listen", t: S.t }; setTimeout(() => simonPlay(), 900); }
+  }
+}
+function drillLights(p, on, dim) {
+  const d = p.drill, Z = S.pz; if (!Z) return;
+  if (d.type === "scale") { if (Z.done) { on.add(Z.seq[0]); return; } const next = Z.seq[Z.idx];
+    if (d.mode === "follow") { on.add(next); for (const x of Z.seq) if (x !== next) dim.add(x); }
+    else { on.add(d.home); if (Z.miss >= 2) dim.add(next); } }
+  if (d.type === "find" && !Z.done) { const tg = Z.targets[Z.idx]; if (d.lit || Z.miss >= 2) for (const x of tg.at) (Z.got.has(x % 12) ? dim : on).add(x); }
+  if (d.type === "ear") for (const e of EAR) on.add(e.root);
+  if (d.type === "simon") { const t = ac ? ac.currentTime : 0; for (const e of EAR) dim.add(e.root); for (const [a, b, r] of Z.show || []) if (t >= a && t < b) on.add(r); }
+}
+function drawDrill(p) {
+  const d = p.drill, Z = S.pz; if (!Z) return;
+  const y0 = 108; R(10, y0 - 6, 220, 84, "#161c30");
+  const head = d.type === "scale" ? `${d.name.toUpperCase()} · ${d.mode === "follow" ? "FOLLOW" : "MEMORY"}` : d.type === "find" ? (d.lit ? "FIND THE CHORD" : "BY NAME") : d.type === "ear" ? "WHICH CHORD?" : "SIMON SAYS";
+  px(head, 120, y0 + 8, 6, "#ffb547", "center");
+  if (Z.done) { px("★".repeat(Z.stars) + "☆".repeat(3 - Z.stars), 120, y0 + 42, 18, "#ffd84a", "center"); px(Z.mistakes ? `${Z.mistakes} MISTAKE${Z.mistakes > 1 ? "S" : ""}` : "NO MISTAKES!", 120, y0 + 62, 6, "#c9cde0", "center");
+    px(d.type === "scale" ? "ITS FIRST NOTE: AGAIN · NEXT ›: ON" : "NEXT › TO GO ON", 120, y0 + 74, 4, "#7c84a8", "center"); return; }
+  if (d.type === "scale") { const n = Z.seq.length, w = Math.min(22, 200 / n);
+    Z.seq.forEach((x, i) => { const xx = 120 - (n * w) / 2 + i * w; R(xx + 1, y0 + 22, w - 3, 22, i < Z.idx ? "#2e7d4f" : i === Z.idx ? "#3a4266" : "#20283f");
+      if (i < Z.idx || d.mode === "follow") px(NAMES[x % 12].replace("♯", "#").replace("♭", "b"), xx + w / 2 - 1, y0 + 37, 5, "#ffffff", "center"); else if (i === Z.idx) px("?", xx + w / 2 - 1, y0 + 37, 6, "#ffb547", "center"); });
+    px(`${Z.idx}/${n}`, 120, y0 + 62, 6, "#c9cde0", "center"); }
+  if (d.type === "find") { const tg = Z.targets[Z.idx]; px(tg.name, 120, y0 + 46, 22, "#ffffff", "center"); px(`${[...Z.got].length}/3 NOTES · ${Z.idx + 1} OF ${Z.targets.length}`, 120, y0 + 66, 5, "#c9cde0", "center"); }
+  if (d.type === "ear") { px("?", 120, y0 + 46, 22, "#ffffff", "center"); px(`ROUND ${Z.round + 1} OF ${d.n} · AM C F G`, 120, y0 + 66, 5, "#c9cde0", "center"); }
+  if (d.type === "simon") { const listen = ac && ac.currentTime < (Z.listenUntil || 0); px(listen ? "LISTEN…" : "YOUR TURN", 120, y0 + 40, 10, listen ? "#a3abc6" : "#7fe08a", "center");
+    px(`${Z.len} CHORDS · ${Z.pos}/${Z.len}`, 120, y0 + 62, 6, "#c9cde0", "center"); }
+  px(`MISTAKES: ${Z.mistakes}`, 120, y0 + 76, 4, Z.mistakes ? "#ff9a9a" : "#7c84a8", "center");
+}
+/* ================= the screen ================= */
+const cv = document.getElementById("screen"), g = cv.getContext("2d");
+const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+function px(s, x, y, size, c, align = "left") { g.font = `600 ${Math.round(size * 1.55 + 1)}px "Inter Tight", Inter, sans-serif`; g.textAlign = align; g.fillStyle = c; g.fillText(s, x, y); g.textAlign = "left"; }
+function infoBar(s, y, bg, fg) {                                           /* text on a coloured bar, bold, up to the width of the screen */
+  g.font = "bold 11.5px Inter, system-ui, sans-serif"; const words = s.split(" "), lines = []; let line = "";
+  for (const wd of words) { const tst = line ? line + " " + wd : wd; if (g.measureText(tst).width > 222) { lines.push(line); line = wd; } else line = tst; }
+  if (line) lines.push(line);
+  R(3, y, 234, lines.length * 14 + 5, bg); g.fillStyle = fg; lines.forEach((l, i) => g.fillText(l, 9, y + 13 + i * 14)); return y + lines.length * 14 + 5;
+}
+function wrapClip(s, x, y, w, lh, c, size, maxLines) {                  /* at most maxLines lines; the last one ends in … */
+  g.font = `500 ${size}px "Inter Tight", Inter, sans-serif`; const words = s.split(" "), lines = []; let line = "";
+  for (const wd of words) { const tst = line ? line + " " + wd : wd; if (g.measureText(tst).width > w && line) { lines.push(line); line = wd; } else line = tst; }
+  if (line) lines.push(line);
+  if (lines.length > maxLines) { lines.length = maxLines; let l = lines[maxLines - 1]; while (g.measureText(l + "…").width > w && l.includes(" ")) l = l.slice(0, l.lastIndexOf(" ")); lines[maxLines - 1] = l + "…"; }
+  g.fillStyle = c; lines.forEach((l, i) => g.fillText(l, x, y + i * lh)); return y + (lines.length - 1) * lh;
+}
+function wrap(s, x, y, w, lh, c, size = 11, weight = 500) {
+  g.font = `${weight} ${size}px "Inter Tight", Inter, system-ui, sans-serif`; g.fillStyle = c; const words = s.split(" "); let line = "", yy = y;
+  for (const wd of words) { const tst = line ? line + " " + wd : wd; if (g.measureText(tst).width > w) { g.fillText(line, x, yy); line = wd; yy += lh; } else line = tst; }
+  if (line) g.fillText(line, x, yy); return yy;
+}
+const NOTE_COL = ["#ff4d4d", "#ff7a59", "#ff9f1c", "#ffbf47", "#ffe14d", "#5ed36b", "#38c9a4", "#2ec4f0", "#4d8cff", "#8a6bff", "#c26bff", "#ff6bc6"];
+function curPos() { let idx = -1; if ((S.playing || S.metro) && ac) for (let i = visual.length - 1; i >= 0; i--) if (visual[i][0] <= ac.currentTime) { idx = visual[i][1]; break; } return idx; }
+function draw() {
+  if (PR.on) { drawProducer(); return; }
+  const p = page(), Lz = L[S.lesson];
+  R(0, 0, 240, 240, "#0b0e18");
+  /* layout E (#98): the lesson and step, small; what to do, the largest text, with its colour; the step's words; the sequencer; one line for the step's control */
+  wrap(`${S.lesson + 1} · ${Lz.title}`, 8, 13, 200, 12, "#8f97b3", 10, 600); wrap(`${S.page + 1} / ${Lz.pages.length}`, 200, 13, 40, 12, "#8f97b3", 10, 600);
+  const done = isDone(p);
+  const outNow = S.out && S.t - S.out.t < 2 && (p.ring || p.lit || p.keys || S.lesson === BASS_L || S.lesson === MEL_L);
+  const noteNow = S.note && S.t - S.note.t < 3, infoNow = S.info && S.t - S.info.t < 1.6;
+  let big, detail = "";
+  if (infoNow) big = S.info.s;
+  else if (noteNow) big = S.note.s;
+  else if (outNow) { big = `✗ ${NAMES[S.out.n % 12]}: not in ${NAMES[(9 + S.key + 12) % 12]} minor`; detail = "it rubs: stay on the lit keys"; }
+  else if (p.task && !done) { const g0 = p.go(), mm = g0.match(/^(.*?)\s*\(([^)]*)\)\.?\s*(.*)$/); if (mm) { big = mm[1].replace(/[.:]$/, ""); detail = (mm[2] + (mm[3] ? ". " + mm[3] : "")); } else big = g0; }
+  else if (p.done) { big = (S.stars[S.lesson] ? "★ " : "") + "Lesson done"; detail = p.go(); }
+  else { big = "✓ " + (p.task ? "Done!" : "Listen"); detail = p.task ? (p.ok ? p.ok() : "") + " SELECT › next step" : p.go(); }
+  const col = infoNow ? "#45d6c2" : outNow || noteNow ? "#ff6464" : p.task && !done ? "#ffb547" : "#4fc07f";
+  /* the instruction: 24 px if it fits on a line, else 16 px on two */
+  g.font = '700 24px "Inter Tight", Inter, sans-serif'; const fits = g.measureText(big).width <= 222;
+  const by = fits ? wrap(big, 12, 42, 222, 26, col, 24, 700) : wrap(big, 12, 38, 222, 18, col, 16, 700);
+  R(0, 22, 4, by - 16, col);
+  let ty = by + 4;
+  const extra = p.grooves3 && S.gp != null ? GROOVES[S.gp].name + ": " + GROOVES[S.gp].short : p.style ? style().name + ": " + style().tip.replace(/\. [\d–]+ BPM$/, ".") : "";
+  const words = [detail && detail[0].toUpperCase() + detail.slice(1).replace(/\.?$/, "."), p.t, extra].filter(Boolean).join(" ");
+  if (p.metro || p.drill || L[S.lesson].practice) ty = wrap(words, 12, ty + 15, 220, 15, "#9aa3bb", 13);
+  else { ty = wrapClip(words, 12, ty + 15, 220, 15, "#9aa3bb", 13, Math.max(1, Math.floor((112 - ty) / 15))); }
+  S.screenBottom = ty;
+  if (ac && loaded < FILES.length) px(loadFailed ? "SOUNDS: STAND-INS" : `LOADING SOUNDS ${loaded}/${FILES.length}`, 120, 236, 5, "#a3abc6", "center");
+  if (p.metro) { drawMetro(); drawMixer(); return; }
+  if (p.drill) { drawDrill(p); return; }
+  if (L[S.lesson].practice) { R(10, 100, 220, 84, "#161c30"); px("★ " + starTotal(L[S.lesson].title) + " / " + starMax(L[S.lesson].title), 120, 150, 14, "#ffd84a", "center"); return; }
+  const keyName = NAMES[(9 + S.key + 12) % 12] + " MIN";
+  wrap(`${S.bpm} BPM · ${keyName} · ${(S.lesson === GROOVE ? (p.grooves3 && S.gp != null ? GROOVES[S.gp].name : "GROOVE") : style().name).toUpperCase()}`, 8, 201, 200, 12, "#8f97b3", 10, 600);
+  const gx = 42, gy = 118, cw = 12, rh = 12, focus = focusRows(p);
+  const pi = curPos(), bar = pi >= 0 ? Math.floor(pi / 16) : 0, cur = pi >= 0 ? pi % 16 : -1, fl = feelNow(), st = style(), d = stepDur();
+  const rows = [["KICK", "k"], ["SNARE", "s"], ["HATS", "h"], ["BASS", 1], ["CHORD", 2], ["MELODY", 3]];
+  rows.forEach(([nm, id], r) => {
+    const y = gy + r * rh, ti = r < 3 ? 0 : id, col = TRACK[ti].col, muted = S.vol[ti] === 0;
+    const hl = (p.highlightDrums && r < 3 ? (!soloNow(bar) || soloNow(bar) === id) : true) && (!focus || focus.includes(id));
+    const lit = hl && (!muted || (focus && focus.includes(id)));      /* the step's rows stay lit, even silent */
+    wrap(nm, 4, y + 9, 40, 12, lit ? col : "#4a5068", 10, 600);
+    for (let s = 1; s <= 16; s++) { const x = gx + (s - 1) * cw; R(x, y, cw - 1, rh - 1, s - 1 === cur ? "#3a4266" : (s - 1) % 4 === 0 ? "#20283f" : "#181e32"); }
+    const c = lit ? (muted ? col + "99" : col) : "#3b4256";
+    if (r < 3) {                                                     /* drums: height is loudness, a shift off the line is early or late */
+      for (let s = 1; s <= 16; s++) for (const [dr, v, , ms = 0, dbl = 0] of drumHits(s, bar)) {
+        if (!(dr === id || (id === "s" && dr === "g") || (id === "h" && dr === "o"))) continue;
+        const ii = bar * 16 + s - 1; let off = ((s % 2 === 0) ? (fl.swing - 0.5) * 2 * d : 0) + (fl.pocket[dr] || 0) + ms, vv = v;
+        if (fl.human) { off += humanT(ii, dr, fl.human); vv = v * humanV(ii, dr, fl.human); }
+        const zoom = S.lesson === GROOVE ? 2.5 : 1;                     /* the groove lesson draws the moves larger */
+        const x = gx + (s - 1) * cw + 1 + (off / d) * cw * zoom, h = Math.max(2, (rh - 4) * Math.min(1, vv));
+        if (S.lesson === GROOVE && Math.abs(off) > 0.002) R(gx + (s - 1) * cw + 1, y + rh - 3, 1, 2, "#7c84a8");   /* where the grid would put it */
+        if (dbl === "t") { for (let k = 0; k < 3; k++) R(x + k * cw * 2 / 3, y + rh - 2 - h, cw / 3, h, c); }
+        else { R(x, y + rh - 2 - h, dbl ? (cw - 3) / 2 - 1 : cw - 3, h, dr === "o" ? "#ffe0a0" : c);
+          if (dbl) R(x + (cw - 3) / 2 + 1, y + rh - 2 - h * 0.75, (cw - 3) / 2 - 1, h * 0.75, c); }
+        if (s - 1 === cur && !muted) R(x, y + rh - 2 - h, cw - 3, h, "#ffffff");
+        if (S.flash[dr + s] > 0) R(gx + (s - 1) * cw, y, cw - 1, rh - 1, "#ffffff");
+      }
+      for (let s = 1; s <= 16; s++) if (S.flashBad[id + s] > 0) R(gx + (s - 1) * cw, y, cw - 1, rh - 1, "#ff5a5a");
+      if (id === "h" && S.lesson === GROOVE && p.gridPage) for (const ph of S.played) {   /* your hats: where you played them, or snapped */
+        const g2 = [0, 1, 2][S.grid], q = g2 ? (Math.round(ph / g2) * g2) % 16 : ph; R(gx + q * cw + 1, y + 2, cw - 4, rh - 5, S.grid ? "#ffb547" : "#ffffff"); }
+      if (p.rec === id) for (const s of p.need) if (!S.rec[id].has(s)) { g.strokeStyle = "#ffb547"; g.lineWidth = 1; g.strokeRect(gx + (s - 1) * cw + 0.5, y + 0.5, cw - 2, rh - 2); }
+    } else if (r === 3) { for (const [s2, n, len] of bassOf(bar)) { const x = gx + (s2 - 1) * cw + 1; R(x, y + 2 + (n % 12 === 9 || n % 12 === 5 ? (n > 50 ? 0 : 4) : 2), cw * len - 3, 5, c); } }
+    else if (r === 4) {                                               /* one chord held; the late hit (the next chord in the last bar: a push) */
+      R(gx + 1, y + 2, cw * COMP_HOLD - 3, rh - 5, c);
+      wrap(chordName(BARS[bar]), gx + 4, y + 9, 120, 12, "#0b0e18", 10, 700);
+      const late = chordAt(bar, COMP_LATE), push = late !== BARS[bar];
+      R(gx + (COMP_LATE - 1) * cw + 1, y + 2, cw * 2 - 3, rh - 5, push ? "#ffffff" : c);
+      if (push) wrap(chordName(late), gx + (COMP_LATE - 1) * cw + 2, y + 9, 30, 12, "#0b0e18", 9, 700);
+    }
+    else if ((p.lit || p.keys === "tones" || p.keys === "pent") && !(p.rhythm || p.call)) {                                                  /* your notes, where you played them; they fade over a loop */
+      for (const j of S.jam) { const age = S.t - j.t, life = 64 * d; if (age > life || Math.floor(j.i / 16) !== bar) continue;
+        const x = gx + (j.i % 16) * cw + 2, a = 1 - age / life; g.globalAlpha = 0.35 + 0.65 * a; R(x - 1, y + Math.max(0, Math.min(7, (84 - j.n) / 3)), cw - 2, 5, j.out ? "#ff5a5a" : a > 0.85 ? "#ffffff" : "#ff7ab8"); g.globalAlpha = 1; }
+      if (vol(3) === 0) px("YOU", gx + 16 * cw - 2, y + 9, 4, "#ff7ab8", "right");
+    }
+    else for (const [b, s2, n, len] of melNow()) if (b === bar) { const x = gx + (s2 - 1) * cw + 1; R(x, y + 2 + (79 - n) / 3, cw * len - 3, 3, c); }
+    if (r >= 3 && cur >= 0 && !muted) R(gx + cur * cw, y, 1, rh - 1, "#ffffff");
+  });
+  for (let b = 0; b < 4; b++) R(gx + b * 48, gy + 6 * rh + 1, 46, 2, b === bar ? "#ffb547" : "#2a3150");
+  if (p.call && bar % 2 === 1 && S.playing) { R(170, 192, 66, 12, "#2e7d4f"); wrap("YOUR TURN", 175, 202, 80, 12, "#ffffff", 10, 700); }
+  if (S.recording) { R(186, 192, 50, 12, "#e03a3a"); wrap("● REC", 192, 202, 60, 12, "#ffffff", 10, 700); }
+  drawMixer();
+}
+function drawMetro() {                                               /* the click: four beat lamps, and where each tap fell */
+  const pi = curPos(), beat = pi >= 0 ? pi % 4 : -1;
+  px(`${S.metro} BPM`, 120, 104, 8, "#ffffff", "center");
+  for (let b = 0; b < 4; b++) { const x = 48 + b * 40; R(x, 116, 30, 22, b === beat ? (b === 0 ? "#ffb547" : "#ffffff") : "#252c46"); px(String(b + 1), x + 15, 131, 7, b === beat ? "#0e1220" : "#7c84a8", "center"); }
+  R(20, 152, 200, 1, "#4a5276"); R(120, 146, 1, 13, "#7fe08a"); px("EARLY", 22, 168, 5, "#a3abc6"); px("LATE", 218, 168, 5, "#a3abc6", "right");
+  S.taps.list.forEach((tp, i) => { const x = 120 + Math.max(-95, Math.min(95, tp.err * 1000)), a = i === S.taps.list.length - 1; R(x - 1, 146, 3, 13, a ? (Math.abs(tp.err) < 0.06 ? "#7fe08a" : "#ff7a7a") : "#7c84a8"); });
+  const lastTap = S.taps.list[S.taps.list.length - 1];
+  if (lastTap && S.t - lastTap.t < 1) px(Math.abs(lastTap.err) < 0.03 ? "ON TIME!" : Math.abs(lastTap.err) < 0.06 ? "CLOSE" : lastTap.err < 0 ? "EARLY" : "LATE", 120, 182, 7, Math.abs(lastTap.err) < 0.06 ? "#7fe08a" : "#ff9a7a", "center");
+  px(`${Math.min(8, S.taps.good)}/8`, 236, 182, 6, "#a3abc6", "right");
+}
+function drawMenu() {                                                 /* the lessons: where you are, what is done */
+  R(0, 15, 240, 225, "#0e1220"); px("LESSONS", 120, 36, 9, "#ffb547", "center");
+  L.forEach((l, i) => { const y = 46 + i * 38, sel = i === S.menuSel;
+    R(10, y, 220, 34, sel ? "#2c3554" : "#161c30"); if (sel) R(10, y, 3, 34, "#ffb547");
+    px(`${i + 1}`, 24, y + 24, 10, sel ? "#ffb547" : "#7c84a8", "center");
+    px(l.title, 40, y + 16, 6, sel ? "#ffffff" : "#c9cde0"); px(`${l.pages.length} STEPS`, 40, y + 30, 5, "#7c84a8");
+    px(S.stars[i] ? "★ DONE" : i === S.lesson ? "HERE" : "", 222, y + 30, 5, S.stars[i] ? "#ffd84a" : "#7fe08a", "right"); });
+  px("SELECT: CHOOSE    HOME: OPEN", 120, 210, 5, "#a3abc6", "center");
+}
+function drawMixer() {                                                 /* layout E's last line: the knobs the step uses, or the chord now and next */
+  const y = 208, p = page(), c = ctlOf(p);
+  R(0, y, 240, 32, "#151a2b");
+  const cell = (i, k, lab, val, col, on) => { const x = 4 + i * 59; if (on) R(x, y + 29, 55, 2, col);
+    wrap(k, x + 2, y + 13, 20, 12, on ? "#f1efe8" : "#8f97b3", 13, 600); wrap(lab, x + 22, y + 11, 40, 12, col, 9, 700); wrap(val, x + 22, y + 24, 40, 12, "#f1efe8", 12, 600); };
+  if (S.lesson === GROOVE) { const G = S.groove; [["ACCENT", `${G.acc}`], ["GHOSTS", `${G.ghost}`], ["SWING", `${G.swing}%`], ["POCKET", `${G.pocket}`]].forEach(([l, v], i) => cell(i, "K" + (i + 1), l, v, "#ffb547", c.includes("k" + i))); return; }
+  if (S.lesson === 4) { [["VOICE", VOICES[S.voice]], ["PLAY", PLAYS[S.playSt]], ["COLOUR", S.col || "–"], ["CHORDS", String(S.vol[2])]].forEach(([l, v], i) => cell(i, i < 2 ? "K" + (i + 1) : i === 3 ? "K3" : "", l, v, "#45d6c2", c.includes("k" + i))); return; }
+  const chordStep = (S.lesson === KEYS && ["root", "play", "home"].includes(p.keys)) || (S.lesson === 4 && (p.along5 || p.colsong));
+  if (chordStep && S.playing) { const pi = curPos(), bar = pi >= 0 ? Math.floor(pi / 16) : 0;
+    wrap("NOW", 10, y + 20, 30, 12, "#8f97b3", 10, 600); wrap(chordName(chordNow()), 40, y + 22, 90, 16, "#45d6c2", 16, 700);
+    wrap("NEXT", 136, y + 20, 30, 12, "#8f97b3", 10, 600); wrap(chordName(BARS[(bar + 1) % 4]), 170, y + 22, 70, 16, "#5a6280", 16, 700); return; }
+  TRACK.forEach((t, i) => { const x = 4 + i * 59, v = S.vol[i], on = c.includes("k" + i);
+    if (on) R(x, y + 29, 55, 2, isDone(p) ? "#4fc07f" : "#ffb547");
+    wrap("K" + (i + 1), x + 2, y + 14, 20, 12, on ? "#f1efe8" : "#8f97b3", 13, 600);
+    R(x + 22, y + 6, 30, 5, "#0a0d16"); R(x + 22, y + 6, 3 * v, 5, v ? t.col : "#30364c");
+    const m = S.meter[i]; R(x + 22, y + 13, 30 * Math.min(1, m), 2, "#7fe08a");
+    wrap(t.name, x + 22, y + 26, 40, 12, v ? t.col : "#4a5068", 9, 700); });
+}
+
+/* ================= lesson 4: the studio (a small Producer mode, the FM-1's own controls, D-nnn / #94) =================
+   A simplified copy of the Producer mode as the manual describes it: ALGORITHM the track, SCL its pages (PLAY, IDEAS,
+   AUTO), PRESETS the sound, REC + PLAY records, EDIT + key erases, SAVE undoes, GLO the song page (held: help),
+   HOME held the modes. Chords AUTO and drums AUTO are played for real; the rest shows its knobs. */
+const PR_TRACKS = [{ name: "CHORDS", col: "#45d6c2" }, { name: "BASS", col: "#a98bff" }, { name: "MELODY", col: "#ff7ab8" }, { name: "DRUMS", col: "#ffb547" }];
+const PR_PAGES = ["PLAY", "IDEAS", "AUTO"], MODES = [{ name: "Producer", col: "#4d8cff" }, { name: "Guided", col: "#ffb547" }, { name: "Game", col: "#ff7ab8" }];
+const PR_KITS = [["Dusty", "soft"], ["808", "trap"], ["Live", "hiphop"], ["Latin", "dembow"]];
+const PR_SOUNDS = [["Wurli", "Rhodes", "Pad"], ["Finger bass", "Sub", "Synth bass"], ["Harp", "Bell", "Lead"], null];
+/* the knob cards: [label, values] for each track and page; the song page last */
+const PR_KNOBS = {
+  "0.0": [["HELP", ["Key", "Free"]]], "0.1": [["ROOT", ["Am", "C", "Dm", "F", "G"]], ["TYPE", ["m", "maj", "sus2"]], ["COLOR", ["–", "7", "maj7", "9"]], ["VOICE", ["Root", "Inv 1", "Open"]]],
+  "0.2": [["STYLE", ["Hip hop", "Pop", "Neo soul", "Free"]], ["PROG", ["i-VI-VII", "i-iv-v"]], ["VOICE", ["Root", "Inv 1", "Open", "Wide"]], ["PLAY", ["Block", "Strum", "Arp"]]],
+  "1.0": [["HELP", ["Key", "Free", "Key+root", "Whites"]], ["SCALE", ["minor", "pentatonic", "dorian"]], ["OUTSIDE", ["play", "soft", "mute"]]], "1.1": [["STYLE", ["Boom bap", "Funk"]]], "1.2": [["STYLE", ["Boom bap", "Funk"]]],
+  "2.0": [["HELP", ["Key", "Free", "Whites"]], ["SCALE", ["minor", "pentatonic", "blues"]], ["OUTSIDE", ["play", "soft", "mute"]]], "2.1": [["STYLE", ["Hook", "Riff"]]], "2.2": [["STYLE", ["Hook", "Riff"]]],
+  "3.0": [["REPEAT", ["off", "1/8", "1/16", "1/32"]], ["TUNE", ["0", "+2", "-2"]], ["DECAY", ["100%", "50%", "200%"]], ["FX", ["Punch", "MPC", "Lofi", "Tape"]]],
+  "3.1": [["STYLE", ["Boom bap", "Dilla", "Trap"]], ["BEAT", ["main", "busy", "fill"]], ["SPEED", ["100%", "75%", "50%"]], ["HEAR", ["listen", "on", "off"]]],
+  "3.2": [["STYLE", ["Boom bap", "Dilla", "Half-time"]], ["FILLS", ["off", "4 bars", "8 bars"]], ["GHOSTS", ["soft", "off", "more"]], ["FEEL", ["Straight", "Swing 55", "Laid back"]]],
+};
+const PR_HELP = {
+  "0.0": "CHORDS · PLAY: play notes, the screen names the chord you hold.", "0.1": "CHORDS · IDEAS: build a chord with K1-K4; SELECT walks the ideas.",
+  "0.2": "CHORDS · AUTO: one finger, a whole chord. White keys F3-E4: the key's 7 chords. Black keys: colours.",
+  "1.0": "BASS · PLAY: the keys play the bass an octave down. K1 HELP lights the safe notes.", "1.1": "BASS · IDEAS: learn a style's bassline (not in this lab).", "1.2": "BASS · AUTO: one finger, a whole bassline (not in this lab).",
+  "2.0": "MELODY · PLAY: play a tune over the chords.", "2.1": "MELODY · IDEAS: learn a figure (not in this lab).", "2.2": "MELODY · AUTO: hold a pad, a phrase plays (not in this lab).",
+  "3.0": "DRUMS · PLAY: every key is its own drum. K4 FX: punch, MPC, lofi, tape.", "3.1": "DRUMS · IDEAS: a style's beat falls onto the keys; play it (not in this lab).",
+  "3.2": "DRUMS · AUTO: hold a pad, a whole beat plays: F3 main, G3 busy, A3 fill, B3 break, C4 drop. REC records it.",
+  song: "THE SONG: K1 the key, K2 the tempo, K3 the length. SCL: TRACKS, CLICK, MIDI, SYSTEM.",
+};
+const PADS = [53, 55, 57, 59, 60];                                        /* drums AUTO: F3 main, G3 busy, A3 fill, B3 break, C4 drop */
+const PAD_NAMES = ["main", "busy", "fill", "break", "drop"];
+const PAD_BEATS = [STYLES[0], STYLES[1],
+  { k: [[1, 1], [11, .9]], s: [[5, .85], [13, .9], [14, .6], [15, .75], [16, .9]], g: [], h: H8.slice(0, 6), o: [] },
+  { k: [[1, 1]], s: [], g: [], h: H8, o: [[15, .4]] }, STYLES[2]];
+const CHORD_PADS = [53, 55, 57, 59, 60, 62, 64];                         /* chords AUTO: F3..E4 the key's 7 chords (and an octave up) */
+const PR = { on: false, track: 0, pages: [0, 0, 0, 0], glo: false, help: false, rec: false, kit: 2, sound: [0, 0, 0], knob: {}, last: "", lastT: -9,
+  chords: new Map(), drums: new Map(), undo: [], seenTracks: new Set(), seenPages: new Set(), pads: 0, fixed: 0, tempoMoved: false, helpSeen: false, padStarted: false, editSnap: false };
+const prPage = () => PR.pages[PR.track], prKey = () => `${PR.track}.${prPage()}`;
+function diatonic(deg) {                                                   /* the key's chord on a degree: [name, notes] */
+  const sc = [0, 2, 3, 5, 7, 8, 10], root = 57 + S.key, d = deg % 7;
+  const pc = (k) => sc[(d + k) % 7] + 12 * Math.floor((d + k) / 7);
+  const notes = [0, 2, 4].map((k) => root + pc(k)).map((n) => (n > 70 ? n - 12 : n));
+  const third = (sc[(d + 2) % 7] - sc[d] + 12) % 12, fifth = (sc[(d + 4) % 7] - sc[d] + 12) % 12;
+  return [NAMES[(9 + S.key + sc[d] + 12) % 12] + (fifth === 6 ? "dim" : third === 3 ? "m" : ""), notes.sort((a, b) => a - b)];
+}
+const curStep = () => { const pi = curPos(); return pi < 0 ? -1 : pi; };
+function prSnap() { PR.undo.push({ chords: new Map(PR.chords), drums: new Map(PR.drums) }); if (PR.undo.length > 4) PR.undo.shift(); }
+function prPress(n) {
+  const now = ac.currentTime, t = PR.track, pg = prPage();
+  if (t === 0 && pg === 2) {                                               /* a chord pad */
+    const i = CHORD_PADS.indexOf(n) >= 0 ? CHORD_PADS.indexOf(n) : CHORD_PADS.indexOf(n - 12);
+    if (i < 0) return;
+    if (S.editHeld) return;                                                 /* EDIT held: the key chooses what to erase */
+    const [nm, notes] = diatonic(i); chord(notes, now, 1.4, 0.85); PR.last = nm; PR.lastT = S.t; PR.pads++;
+    if (PR.rec && S.playing) { const st = curStep(); if (st >= 0) PR.chords.set(Math.round(st) % 64, i); }
+    return;
+  }
+  if (t === 3 && pg === 2) {                                               /* a beat pad: held, the beat plays */
+    const i = PADS.indexOf(n); if (i < 0 || S.editHeld) return;
+    PR.last = PAD_NAMES[i]; PR.lastT = S.t; if (!S.playing) { start(); PR.padStarted = true; }
+    return;
+  }
+  if (t === 3) { const d = n < 57 ? "k" : n < 62 ? "s" : "h"; drum(d, now, 1); PR.last = d === "k" ? "kick1" : d === "s" ? "snare1" : "hat1"; PR.lastT = S.t; return; }
+  if (t === 1) { bassNote(n - 12, now, 0.6); PR.last = NAMES[n % 12] + (Math.floor(n / 12) - 2); PR.lastT = S.t; return; }
+  if (t === 0) chord([n], now, 0.8, 1); else melNote(n, now, 0.8, 1, youTrk);
+  PR.last = NAMES[n % 12] + (Math.floor(n / 12) - 1); PR.lastT = S.t;
+}
+function prStep(i, step, base, d) {                                        /* the song as recorded, plus a pad held */
+  if (S.editHeld) {                                                         /* erase what the held key recorded, just before it sounds */
+    for (const n of S.held) { const ci = CHORD_PADS.indexOf(n) >= 0 ? CHORD_PADS.indexOf(n) : CHORD_PADS.indexOf(n - 12), di = PADS.indexOf(n);
+      if (PR.track === 0 && ci >= 0 && PR.chords.get(i) === ci) { if (!PR.editSnap) { prSnap(); PR.editSnap = true; } PR.chords.delete(i); PR.fixed++; }
+      if (PR.track === 3 && di >= 0 && PR.drums.get(i) === di) { if (!PR.editSnap) { prSnap(); PR.editSnap = true; } PR.drums.delete(i); PR.fixed++; } }
+  }
+  if (PR.chords.has(i)) { let len = 1; while (len < 32 && !PR.chords.has((i + len) % 64)) len++;
+    chord(diatonic(PR.chords.get(i))[1].map((n) => n), base, d * len * 0.95, 0.8); }
+  let beat = PR.drums.has(i) ? PR.drums.get(i) : -1;
+  if (PR.track === 3 && prPage() === 2) for (const n of S.held) { const di = PADS.indexOf(n); if (di >= 0 && !S.editHeld) { beat = di; if (PR.rec) PR.drums.set(i, di); } }
+  if (beat >= 0) { const b = PAD_BEATS[beat];
+    for (const [dr, list] of [["k", b.k], ["s", b.s], ["g", b.g], ["h", b.h], ["o", b.o]]) for (const [s2, v] of list) if (s2 === step) { drum(dr, base, v); bumpMeter(0, base, v); } }
+  if (PR.rec && (step - 1) % 4 === 0) click(base, step === 1);              /* CLICK: Rec, as the firmware starts */
+}
+function prKnob(k, d) {
+  if (PR.glo) {                                                             /* the song page */
+    if (k === 0) { S.key = Math.max(-6, Math.min(6, S.key + d)); }
+    if (k === 1) { S.bpm = Math.max(40, Math.min(240, S.bpm + d * 2)); PR.tempoMoved = true; }
+    return;
+  }
+  const cards = PR_KNOBS[prKey()] || [], c = cards[k]; if (!c) return;
+  const key = prKey() + "." + k; PR.knob[key] = ((PR.knob[key] || 0) + d + c[1].length) % c[1].length;
+}
+function prCards() {
+  if (PR.glo) return [["KEY", NAMES[(9 + S.key + 12) % 12] + " min"], ["TEMPO", `${S.bpm}`], ["LENGTH", "4 bars"], ["METER", "4/4"]];
+  return [0, 1, 2, 3].map((k) => { const c = (PR_KNOBS[prKey()] || [])[k]; return c ? [c[0], c[1][PR.knob[prKey() + "." + k] || 0]] : ["", ""]; });
+}
+function drawProducer() {
+  const t = PR_TRACKS[PR.track], cur = curPos();
+  R(0, 0, 240, 240, "#0b0e18"); R(0, 0, 240, 2, MODES[0].col);
+  if (PR.glo) px("SONG", 6, 14, 7, "#ffffff"); else { px(t.name, 6, 14, 7, t.col); px("· " + PR_PAGES[prPage()], 6 + t.name.length * 7 + 4, 14, 6, "#c9cde0"); }
+  px(`${NAMES[(9 + S.key + 12) % 12]}m  ${S.bpm}`, 234, 14, 6, "#c9cde0", "right");
+  if (PR.rec) { g.fillStyle = "#ff4d4d"; g.beginPath(); g.arc(150, 10, 3.5, 0, 7); g.fill(); }
+  /* the loop: 4 bars, what is recorded, the playhead */
+  const ly = 22; R(6, ly, 228, 12, "#161c30"); for (let b = 1; b < 4; b++) R(6 + b * 57, ly, 1, 12, "#2c3554");
+  for (const [i] of PR.chords) R(6 + i * 228 / 64, ly + 1, 3, 5, PR_TRACKS[0].col);
+  for (const [i] of PR.drums) R(6 + i * 228 / 64, ly + 7, 3, 4, PR_TRACKS[3].col);
+  if (cur >= 0 && S.playing) R(6 + (cur % 64) * 228 / 64, ly - 1, 2, 14, "#ffffff");
+  if (PR.glo) { px(`${NAMES[(9 + S.key + 12) % 12]} MINOR`, 120, 80, 14, "#ffffff", "center"); px(`${S.bpm} BPM · 4 BARS · 4/4`, 120, 104, 7, "#a3abc6", "center");
+    px("SCL: TRACKS  CLICK  MIDI  SYSTEM", 120, 124, 5, "#7c84a8", "center"); }
+  else {
+    const fresh = S.t - PR.lastT < 2.5;
+    px(fresh ? PR.last : PR.track === 3 && prPage() === 2 ? "hold a pad" : PR.track === 0 && prPage() === 2 ? "play a pad" : "play", 120, 84, fresh ? 18 : 9, fresh ? "#ffffff" : "#5a6080", "center");
+    if (PR.track === 0 && prPage() === 2 && fresh) { const i = ["Am", "Bdim", "C", "Dm", "Em", "F", "G"].indexOf(PR.last); if (i >= 0) px(["i", "ii°", "III", "iv", "v", "VI", "VII"][i], 120, 104, 7, "#45d6c2", "center"); }
+    if (prPage() === 1 || (prPage() === 2 && (PR.track === 1 || PR.track === 2))) px("(not in this lab)", 120, 120, 5, "#5a6080", "center");
+  }
+  /* the guide's line (the lesson is on top of the studio) */
+  wrap("▶ " + page().go(), 6, 150, 228, 11, isDone(page()) && page().task ? "#7fe08a" : "#ffb547", 9);
+  prCards().forEach(([lab, val], k) => { const x = 4 + k * 59; R(x, 192, 55, 44, "#161c30");
+    px("K" + (k + 1), x + 4, 203, 5, "#7c84a8"); px(lab, x + 4, 216, 5, PR.glo ? "#ffffff" : t.col); px(String(val), x + 4, 230, 6, "#ffffff"); });
+  if (PR.help) { R(10, 40, 220, 100, "#1c2236"); R(10, 40, 220, 2, MODES[0].col); px("HELP", 18, 56, 6, MODES[0].col);
+    wrap(PR.glo ? PR_HELP.song : PR_HELP[prKey()], 18, 72, 204, 12, "#f1efe8", 10); px("LET GO OF GLO: BACK", 120, 134, 5, "#7c84a8", "center"); }
+}
+function drawModes() {
+  R(0, 15, 240, 225, "#0e1220"); px("MODES", 120, 40, 9, "#ffffff", "center");
+  MODES.forEach((m, i) => { const y = 60 + i * 42, sel = i === S.modeSel; R(14, y, 212, 34, sel ? "#2c3554" : "#161c30"); R(14, y, 4, 34, m.col);
+    px(m.name.toUpperCase(), 30, y + 21, 8, sel ? "#ffffff" : "#a3abc6"); px(["the studio", "the lessons", "the games"][i], 220, y + 21, 5, "#7c84a8", "right"); });
+  px("SELECT: CHOOSE    HOME: OK", 120, 206, 5, "#a3abc6", "center");
+}
+function prLights(on, dim) {
+  if (PR.glo) return;
+  if (PR.track === 0 && prPage() === 2) for (const n of CHORD_PADS) { dim.add(n); dim.add(n + 12); if (n === 53 || n === 62) on.add(n); }   /* i and VI: our song's Am and F */
+  else if (PR.track === 3 && prPage() === 2) for (const n of PADS) (S.held.has(n) ? on : dim).add(n);
+  else if (PR.track !== 3) for (let n = LO; n <= HI; n++) if (scaleHas(n)) ((n - 57 - S.key) % 12 === 0 ? on : dim).add(n);
+}
+function prLabel(n) {
+  if (PR.glo) return "";
+  if (PR.track === 0 && prPage() === 2) { const i = CHORD_PADS.indexOf(n) >= 0 ? CHORD_PADS.indexOf(n) : CHORD_PADS.indexOf(n - 12); return i >= 0 ? diatonic(i)[0] : ""; }
+  if (PR.track === 3 && prPage() === 2) { const i = PADS.indexOf(n); return i >= 0 ? PAD_NAMES[i].toUpperCase() : ""; }
+  return n % 12 === 0 ? "C" + (Math.floor(n / 12) - 1) : "";
+}
+
+/* ================= the loop and the controls ================= */
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; S.t += dt;
+  if (ac) for (let i = meterEv.length - 1; i >= 0; i--) if (meterEv[i][0] <= ac.currentTime) { const [, k, v] = meterEv[i]; S.meter[k] = Math.max(S.meter[k], v); meterEv.splice(i, 1); }
+  for (let k = 0; k < 4; k++) S.meter[k] = Math.max(0, S.meter[k] - dt * 2.2);
+  for (const k in S.flash) S.flash[k] -= dt;
+  for (const k in S.flashBad) S.flashBad[k] -= dt;
+  const p = page(); if (p.done && isDone(p) && !S.stars[S.lesson]) S.stars[S.lesson] = 1;
+  if (p.task && isDone(p) && !S.wasDone) { ding(); S.doneAt = S.t; } S.wasDone = isDone(p);
+  if (PR.on && S.lesson === STUDIO && p.task && !p.done && isDone(p) && S.doneAt != null && S.t - S.doneAt > 1.6) { S.doneAt = null; turnPage(1); }   /* in the studio, the lesson moves on by itself */
+  if (PR.padStarted && !PADS.some((n) => S.held.has(n))) { S.playing = false; PR.padStarted = false; }   /* let go of the pad: it stops */
+  if (!S.editHeld) PR.editSnap = false;
+  draw(); if (S.modes) drawModes(); else if (S.menu) drawMenu(); lights(); labels(); guide();
+  requestAnimationFrame(frame);
+}
+function enterPage() {
+  setTimeout(fillNote, 0);
+  const p = page(); S.wasDone = true; S.note = null; S.doneAt = null;
+  if (p.enter) p.enter();
+  if (p.drill) { power(); initDrill(p); }
+  if (p.metro) { power(); S.playing = false; S.metro = p.metro; S.taps = { good: 0, list: [] }; nextT = ac.currentTime + 0.1; nextStep = 0; visual.length = 0; } else S.metro = 0;
+  if (p.tapTempo) { S.tapTimes = []; S.tapped = false; S.userDrums = true; S.rec = { k: new Set(), s: new Set(), h: new Set() }; S.style = 0; setMix([8, 7, 6, 6]); }
+  if (S.lesson === GROOVE) { S.userDrums = false; S.recording = false; S.style = 0; if (!p.grooves3) S.bpm = 88; if (S.page < 6 && !p.enter) setMix([9, 0, 0, 0]); }
+  if (S.lesson === 0 && S.page > 0 && !S.userDrums) {}
+  if (S.lesson === 0) { S.userDrums = false; S.recording = false; }
+  if (S.lesson !== STUDIO) PR.on = false; S.modes = false;
+  if (![KEYS, 4, BASS_L, MEL_L, WAYS, MAKE].includes(S.lesson)) setProg(null);
+  if (S.lesson !== MEL_L && !(S.lesson === WAYS && p.ways === "style" && S.page > 6)) MELODY_NOW = null;
+  if (S.lesson !== WAYS) S.waysBass = undefined;
+  if (S.lesson !== 4) { S.col = null; S.voice = 0; S.playSt = 0; }
+  if (S.lesson === 4 && !S.k5) S.k5 = { pads: new Set(), cols: new Set(), with7: 0, along: 0 };
+}
+/* the owner's notes, one a step, kept in the page's database for Claude to read (lesson n, step m: "L1-S2") */
+let notesDb = null, NOTES = {}, noteFor = "";
+const noteId = () => `L${S.lesson + 1}-S${S.page + 1}`;
+function fillNote() {
+  const ta = document.getElementById("g-note"), id = noteId();
+  if (noteFor !== id || document.activeElement !== ta) { ta.value = (NOTES[id] && NOTES[id].text) || ""; noteFor = id; }
+  const n = Object.values(NOTES).filter((x) => x && x.text).length;
+  document.getElementById("g-saved").textContent = !notesDb ? "Notes need this page open on claude.ai, signed in." : NOTES[id] && NOTES[id].text ? `Saved. ${n} note${n === 1 ? "" : "s"} in all.` : `${n} note${n === 1 ? "" : "s"} saved in all.`;
+}
+(async () => {
+  try {
+    const db = window.claude && window.claude.use ? await window.claude.use("db") : null;
+    if (!db) { fillNote(); document.getElementById("g-save").disabled = true; return; }
+    notesDb = db;
+    db.collection("notes").onSnapshot((snap) => { NOTES = {}; snap.docs.forEach((d) => { NOTES[d.id] = d.data(); }); fillNote(); },
+      () => { document.getElementById("g-saved").textContent = "The notes could not be loaded; your typing stays here."; });
+  } catch (_) { fillNote(); }
+})();
+document.getElementById("g-save").addEventListener("click", async () => {
+  if (!notesDb) return;
+  const id = noteId(), text = document.getElementById("g-note").value.trim(), out = document.getElementById("g-saved");
+  out.textContent = "Saving…";
+  try {
+    if (!text) await notesDb.collection("notes").doc(id).delete();
+    else await notesDb.collection("notes").doc(id).set({ text, lesson: S.lesson + 1, step: S.page + 1, title: L[S.lesson].title, words: page().t, at: Date.now() });
+    out.textContent = text ? "Saved. Claude can read it now." : "Note removed.";
+  } catch (e) { out.textContent = "Not saved: " + ((e && e.message) || "the notes are read-only for you") + ". Copy your text before leaving."; }
+});
+function turnPage(d) {
+  power(); S.page += d;
+  if (S.page >= L[S.lesson].pages.length) { S.lesson = (S.lesson + 1) % L.length; S.page = 0; }
+  if (S.page < 0) { S.lesson = (S.lesson + L.length - 1) % L.length; S.page = L[S.lesson].pages.length - 1; }
+  enterPage();
+}
+document.getElementById("g-next").addEventListener("click", () => { if (S.menu) openLesson(S.menuSel); else turnPage(1); });
+document.getElementById("g-back").addEventListener("click", () => { if (S.menu) S.menu = false; else turnPage(-1); });
+/* the guide box: where you are, what this step says, what to do now; the control to use glows */
+function guide() {
+  const p = page(), done = isDone(p), Lz = L[S.lesson];
+  const set = (id, v) => { const el = document.getElementById(id); if (el.textContent !== v) el.textContent = v; };
+  if (S.menu) {
+    set("g-where", "THE LESSONS"); set("g-say", "Choose a lesson: turn SELECT to it, then press HOME to open it.");
+    set("g-more", "You can come here from any step: tap HOME. On the FM-1, holding HOME is still the modes (Producer, Guided, Game).");
+    document.getElementById("g-more").style.color = ""; set("g-head", "DO THIS"); set("g-do", `Lesson ${S.menuSel + 1}, ${L[S.menuSel].title.toLowerCase()}: HOME to open it.`);
+    document.getElementById("g-todo").classList.remove("ok");
+    document.querySelectorAll(".row").forEach((r) => r.classList.toggle("pulse", r.querySelector("button").dataset.k === "sel"));
+    for (const id of ["play", "rec", "octd", "octu", "show", "edit"]) document.getElementById(id).classList.remove("pulse");
+    document.getElementById("home").classList.add("pulse"); document.getElementById("g-next").classList.remove("pulse"); return;
+  }
+  set("g-where", `LESSON ${S.lesson + 1}: ${Lz.title} · STEP ${S.page + 1} OF ${Lz.pages.length}`);
+  const dots = Lz.pages.map((_, i) => `<i class="${i < S.page ? "done" : i === S.page ? "cur" : ""}"></i>`).join("");
+  const de = document.getElementById("g-dots"); if (de.dataset.v !== dots) { de.innerHTML = dots; de.dataset.v = dots; }
+  set("g-say", p.t + (p.grooves3 && S.gp != null ? ` ${GROOVES[S.gp].name}: ${GROOVES[S.gp].tip}` : "") + (p.style || p.grooves ? ` ${style().name}: ${style().tip}.` : "")); const outNow = S.out && S.t - S.out.t < 2.5 && (p.ring || p.lit || p.keys);
+  const noteNow = S.note && S.t - S.note.t < 3;
+  set("g-more", noteNow ? S.note.s : outNow ? `✗ ${NAMES[S.out.n % 12]} is not in the key: it sits a half step from a note of the song, and the two rub. Stay on the lit keys.` : p.more || "");
+  document.getElementById("g-more").style.color = outNow || noteNow ? "#ff9a9a" : "";
+  const waiting = p.task && !done;
+  set("g-head", waiting ? "DO THIS" : p.task ? "✓ DONE" : p.done ? (S.lesson < L.length - 1 ? "LESSON DONE" : "THE END") : "LISTEN, THEN GO ON");
+  set("g-do", waiting || p.done || !p.task ? p.go() : (p.ok ? p.ok() : "Well done.") + (PR.on && S.lesson === STUDIO ? " The next step comes by itself." : " Press NEXT › for the next step."));
+  document.getElementById("g-todo").classList.toggle("ok", !waiting);
+  const glow = new Set(waiting ? ctlOf(p) : ["next"]);
+  document.querySelectorAll(".row").forEach((r) => { const k = r.querySelector("button").dataset.k; r.classList.toggle("pulse", glow.has(k) || (k === "sel" && glow.has("next"))); });
+  for (const id of ["play", "rec", "octd", "octu", "show", "edit", "home", "scl", "glo", "save"]) document.getElementById(id).classList.toggle("pulse", glow.has(id));
+  document.getElementById("g-next").classList.toggle("pulse", glow.has("next"));
+  document.getElementById("keys").parentElement.classList.toggle("pulse", glow.has("keys"));
+}
+function setVol(k, v) { S.vol[k] = Math.max(0, Math.min(10, v)); if (trk[k]) trk[k].gain.setTargetAtTime(S.vol[k] / 10, ac.currentTime, 0.02); }
+document.querySelectorAll(".row button").forEach((b) => b.addEventListener("click", () => {
+  power(); const d = +b.dataset.d, k = b.dataset.k;
+  if (S.modes && k === "sel") { S.modeSel = (S.modeSel + d + 3) % 3; return; }
+  if (PR.on && k === "alg") { PR.track = (PR.track + d + 4) % 4; PR.seenTracks.add(PR.track); PR.glo = false; return; }
+  if (PR.on && k === "pre") { if (PR.track === 3) { PR.kit = (PR.kit + d + 4) % 4; PR.last = PR_KITS[PR.kit][0]; } else { const l = PR_SOUNDS[PR.track]; PR.sound[PR.track] = (PR.sound[PR.track] + d + l.length) % l.length; PR.last = l[PR.sound[PR.track]]; } PR.lastT = S.t; return; }
+  if (PR.on && k[0] === "k") { prKnob(+k[1], d); return; }
+  if (PR.on && k === "sel") { if (PR.track === 0 && prPage() === 1) { const [nm, notes] = diatonic(((PR.idea = ((PR.idea || 0) + d + 4) % 4), [0, 5, 2, 6][PR.idea])); chord(notes, ac.currentTime, 1.2, 0.85); PR.last = nm; PR.lastT = S.t; }
+    else S.note = { s: "In the studio SELECT walks the chord ideas (CHORDS · IDEAS). The lesson moves on by itself when you've done a step.", t: S.t }; return; }
+  if (S.lesson === GROOVE && !S.menu && (k[0] === "k" || k === "pre")) { const G = S.groove;
+    if (k === "k0") G.acc = Math.max(0, Math.min(10, G.acc + d)); if (k === "k1") G.ghost = Math.max(0, Math.min(10, G.ghost + d));
+    if (k === "k2") G.swing = Math.max(50, Math.min(70, G.swing + d * 2)); if (k === "k3") G.pocket = Math.max(0, Math.min(10, G.pocket + d));
+    if (k === "pre" && page().grooves3) { S.gp = ((S.gp ?? 0) + d + GROOVES.length) % GROOVES.length; S.gpSeen.add(S.gp); applyGroove(); }
+    if (k === "pre" && page().rolls) { S.roll = (S.roll + d + 4) % 4; S.rollSeen.add(S.roll); }
+    if (k === "pre" && page().gridPage) { S.grid = (S.grid + d + 3) % 3; S.gridSeen.add(S.grid); }
+    return; }
+  if (page().drill && k === "pre") { if (page().drill.type === "ear") earPlay(); if (page().drill.type === "simon") simonPlay(); return; }
+  if ((S.lesson === WAYS || S.lesson === MAKE) && k === "pre") { const pg = page();
+    if (pg.ways === "prog") { S.prog = (S.prog + d + PROGS.length) % PROGS.length; S.progSeen.add(S.prog); setProg(PROGS[S.prog].degs); return; }
+    if (pg.ways === "groove" || pg.ways === "style" || pg.make === "style") { S.style = (S.style + d + STYLES.length) % STYLES.length; S.bpm = style().bpm; if (S.waysSeen) S.waysSeen.add(S.style); return; }
+    return; }
+  if (S.lesson === BASS_L && k === "pre" && page().bassk && S.bassBand) { S.bassPat = (S.bassPat + d + BASSPATS.length) % BASSPATS.length; S.k6.pats.add(S.bassPat); return; }
+  if (S.lesson === MEL_L && k === "pre") {
+    if (page().rhythm) { S.melV = (S.melV + d + 3) % 3; S.k7.vers.add(S.melV); MELODY_NOW = genMel(S.melV); }
+    else { S.harm = (S.harm + d + 3) % 3; S.k7.harm.add(S.harm); }
+    return; }
+  if (S.lesson === 4 && (k === "k0" || k === "k1" || k === "pre")) {
+    if (k === "k0") { S.voice = (S.voice + d + VOICES.length) % VOICES.length; (S.k5.voices = S.k5.voices || new Set()).add(S.voice); }
+    if (k === "k1") { S.playSt = (S.playSt + d + PLAYS.length) % PLAYS.length; (S.k5.plays = S.k5.plays || new Set()).add(S.playSt); }
+    if (k === "pre" && page().colsong) { S.plain = !S.plain; S.plainSeen.add(S.plain ? 1 : 0); setProg(S.plain ? SONG5.map((x) => x[0]) : SONG5); }
+    return; }
+  if (S.lesson === KEYS && k === "pre" && (page().majmin || page().progs)) {
+    if (page().majmin) { S.mm = 1 - S.mm; S.mmSeen.add(S.mm); setProg(S.mm ? [2, 6, 0, 5] : [0, 5, 2, 6]); }
+    else { S.prog = (S.prog + d + PROGS.length) % PROGS.length; S.progSeen.add(S.prog); setProg(PROGS[S.prog].degs); }
+    return; }
+  if (k === "sel") { if (S.menu) S.menuSel = (S.menuSel + d + L.length) % L.length; else turnPage(d); }
+  if (k === "alg") { S.bpm = Math.max(60, Math.min(180, S.bpm + d * 2)); S.bpmMoved = true; }
+  if (k === "pre") {
+    if (page().grooves) { S.style = (S.style + d + 3) % 3; S.grooveSeen.add(S.style); }   /* the same song and speed, another drum part */
+    else if (page().style) { const heads = STYLES.map((x, i) => i).filter((i) => !i || STYLES[i].genre !== STYLES[i - 1].genre);   /* one of each style */
+      const at = heads.findIndex((i) => STYLES[i].genre === style().genre); S.style = heads[(at + d + heads.length) % heads.length]; S.bpm = style().bpm; S.genreSeen.add(style().genre); }
+    else { S.style = (S.style + d + STYLES.length) % STYLES.length; S.bpm = style().bpm; S.genreSeen.add(style().genre); }   /* a style: drums and speed */
+    S.styleSeen.add(S.style); if (S.lesson === 1) S.userDrums = false;
+  }
+  if (k[0] === "k") setVol(+k[1], S.vol[+k[1]] + d);
+}));
+document.getElementById("play").addEventListener("click", () => { if (S.menu) openLesson(S.menuSel); else play(); });
+/* HOME (a tap): the lessons. SELECT chooses one, HOME again opens it. (HOME held stays the FM-1's modes.) */
+function openLesson(i) { S.menu = false; S.lesson = i; S.page = 0; enterPage(); }
+/* a button with a tap and a hold (HOME, GLO): held past half a second, it is a hold */
+function tapHold(id, onTap, onHold, onRelease) {
+  const el = document.getElementById(id); let tm = null, held = false, down = false;
+  el.addEventListener("pointerdown", (e) => { e.preventDefault(); power(); down = true; held = false; tm = setTimeout(() => { held = true; onHold(); }, 450); });
+  const up = () => { if (!down) return; down = false; clearTimeout(tm); if (held) onRelease && onRelease(); else onTap(); };
+  el.addEventListener("pointerup", up); el.addEventListener("pointerleave", up); el.addEventListener("pointercancel", up);
+  el.addEventListener("click", (e) => { if (e.detail === 0) onTap(); });   /* the keyboard's Enter */
+}
+function chooseMode(m) {
+  S.modes = false;
+  if (m === 0) S.note = { s: "The studio (Producer) is on the FM-1; its lesson comes later.", t: S.t };
+  else if (m === 1) { PR.on = false; S.playing = false; S.menu = true; S.menuSel = S.lesson; }
+  else S.note = { s: "The games are on the FM-1 (Unicorn, Hiru Damatxo, Aldapeko Sagarra, the Night Train): not in this lab.", t: S.t };
+}
+tapHold("home", () => { if (S.modes) chooseMode(S.modeSel); else if (PR.on) S.note = { s: "In the studio, hold HOME for the modes.", t: S.t }; else if (S.menu) openLesson(S.menuSel); else { S.menu = true; S.menuSel = S.lesson; } },
+  () => { S.modes = true; S.menu = false; S.modeSel = PR.on ? 0 : 1; });
+tapHold("glo", () => { if (PR.on) PR.glo = !PR.glo; else S.note = { s: "GLO is the studio's song page: lesson 4.", t: S.t }; },
+  () => { if (PR.on) { PR.help = true; PR.helpSeen = true; } }, () => { PR.help = false; });
+document.getElementById("scl").addEventListener("click", () => { power(); if (!PR.on) { S.note = { s: "SCL turns the studio's pages: lesson 4.", t: S.t }; return; }
+  if (PR.glo) return; PR.pages[PR.track] = (PR.pages[PR.track] + 1) % 3; PR.seenPages.add(PR.pages[PR.track]); });
+document.getElementById("save").addEventListener("click", () => { power(); if (!PR.on) { S.note = { s: "SAVE undoes in the studio: lesson 4.", t: S.t }; return; }
+  const u = PR.undo.pop(); if (u) { PR.chords = u.chords; PR.drums = u.drums; PR.fixed++; PR.last = "undo"; PR.lastT = S.t; } });
+const recOk = () => PR.on || (!S.menu && ((S.lesson === 1 && S.page >= 3) || (S.lesson === MAKE && (page().rec || page().recBass || page().recMel))));              /* REC records drums, and only where lesson 2 builds the beat */
+document.getElementById("rec").addEventListener("click", () => { power();
+  if (!recOk()) { if (!S.recording) { S.note = { s: "REC comes in lesson 2, when you build your own beat. Here, just listen and play.", t: S.t }; return; } }
+  if (PR.on) { PR.rec = !PR.rec; if (PR.rec) prSnap(); return; }         /* the studio: REC arms the track; PLAY starts it */
+  S.recording = !S.recording; S.userDrums = true; if (S.recording && !S.playing) start(); });
+document.getElementById("octd").addEventListener("click", () => { power(); S.key = Math.max(-6, S.key - 1); S.keyMoved = true; });
+document.getElementById("octu").addEventListener("click", () => { power(); S.key = Math.min(6, S.key + 1); S.keyMoved = true; });
+document.getElementById("show").addEventListener("click", () => { power(); const p = page(); if (p.rec) { S.userDrums = true; p.need.forEach((s) => { S.rec[p.rec].add(s); S.flash[p.rec + s] = 0.4; }); if (!S.playing) start(); } });
+document.getElementById("clear").addEventListener("click", () => { S.rec = { k: new Set(), s: new Set(), h: new Set() }; if (recL()) S.userDrums = true; });
+function labels() {
+  document.getElementById("v-sel").textContent = S.menu ? `Lessons: ${S.menuSel + 1} of ${L.length}` : `Lesson ${S.lesson + 1}, step ${S.page + 1} of ${L[S.lesson].pages.length}`;
+  document.getElementById("v-alg").textContent = `${S.metro || S.bpm} BPM`;
+  document.getElementById("v-pre").textContent = style().name;
+  for (let i = 0; i < 4; i++) document.getElementById("v-k" + i).textContent = `${S.vol[i]} / 10`;
+  document.getElementById("play").textContent = S.playing ? "■ STOP" : "▶ PLAY";
+  document.getElementById("rec").classList.toggle("on", S.recording);
+  document.getElementById("rec").classList.toggle("off", !recOk() && !S.recording);
+  document.getElementById("edit").classList.toggle("off", !(PR.on || (recL() && (page().rec || page().recBass || page().recMel))));
+  for (const id of ["scl", "glo", "save"]) document.getElementById(id).classList.toggle("off", !PR.on);
+  /* in the studio the controls are the Producer mode's */
+  const labs = document.querySelectorAll(".row .lab"), cards = PR.on ? prCards() : null;
+  const want = PR.on ? ["SELECT · CHORD IDEAS", "ALGORITHM · TRACK", PR.track === 3 ? "PRESETS · KIT" : "PRESETS · SOUND", ...cards.map((c, k) => `K${k + 1} · ${c[0] || "–"}`)]
+    : S.lesson === BASS_L ? ["SELECT · STEP", "ALGORITHM · TEMPO", "PRESETS · BASS PATTERN", "K1 · DRUMS VOLUME", "K2 · BASS VOLUME", "K3 · CHORDS VOLUME", "K4 · MELODY VOLUME"]
+    : S.lesson === MEL_L ? ["SELECT · STEP", "ALGORITHM · TEMPO", page().rhythm ? "PRESETS · MELODY" : "PRESETS · SECOND VOICE", "K1 · DRUMS VOLUME", "K2 · BASS VOLUME", "K3 · CHORDS VOLUME", "K4 · MELODY VOLUME"]
+    : S.lesson === 4 ? ["SELECT · STEP", "ALGORITHM · TEMPO", "PRESETS · PLAIN / COLOUR", "K1 · VOICE", "K2 · PLAY", "K3 · CHORDS VOLUME", "K4 · –"]
+    : S.lesson === KEYS ? ["SELECT · STEP", "ALGORITHM · TEMPO", "PRESETS · PROGRESSION", "K1 · DRUMS VOLUME", "K2 · BASS VOLUME", "K3 · CHORDS VOLUME", "K4 · MELODY VOLUME"]
+    : S.lesson === GROOVE ? ["SELECT · STEP", "ALGORITHM · TEMPO", page().rolls ? "PRESETS · ROLL" : page().gridPage ? "PRESETS · GRID" : "PRESETS · GROOVE", "K1 · ACCENT", "K2 · GHOSTS", "K3 · SWING", "K4 · POCKET"]
+    : ["SELECT · STEP", "ALGORITHM · TEMPO", "PRESETS · DRUM STYLE", "K1 · DRUMS VOLUME", "K2 · BASS VOLUME", "K3 · CHORDS VOLUME", "K4 · MELODY VOLUME"];
+  labs.forEach((el, i) => { if (el.textContent !== want[i]) el.textContent = want[i]; });
+  if (PR.on) { document.getElementById("v-alg").textContent = PR_TRACKS[PR.track].name + " · " + (PR.glo ? "SONG" : PR_PAGES[prPage()]);
+    document.getElementById("v-pre").textContent = PR.track === 3 ? PR_KITS[PR.kit][0] : PR_SOUNDS[PR.track][PR.sound[PR.track]];
+    cards.forEach((c, k) => { document.getElementById("v-k" + k).textContent = c[1] || "–"; }); }
+  if (S.lesson === KEYS) document.getElementById("v-pre").textContent = BARS.map(chordName).join(" ");
+  if (S.lesson === BASS_L) document.getElementById("v-pre").textContent = S.bassBand ? BASSPATS[S.bassPat] : "you play it";
+  if (S.lesson === MEL_L) document.getElementById("v-pre").textContent = page().rhythm ? `version ${S.melV + 1}` : ["off", "a 3rd above", "echo"][S.harm];
+  if (S.lesson === 4) { document.getElementById("v-pre").textContent = BARS === SONG_BARS ? "–" : BARS.map(chordName).join(" ");
+    document.getElementById("v-k0").textContent = VOICES[S.voice]; document.getElementById("v-k1").textContent = PLAYS[S.playSt]; document.getElementById("v-k3").textContent = "–"; }
+  if (!PR.on && S.lesson === GROOVE) { const G = S.groove, v = [`${G.acc} / 10`, `${G.ghost} / 10`, `${G.swing}%`, `${G.pocket} / 10`];
+    v.forEach((x, k) => { document.getElementById("v-k" + k).textContent = x; }); document.getElementById("v-pre").textContent = page().grooves3 && S.gp != null ? GROOVES[S.gp].name : page().rolls ? "ROLL " + ROLLS[S.roll] : page().gridPage ? "GRID " + GRIDS[S.grid] : "–"; }
+  document.getElementById("edit").classList.toggle("held", S.editHeld);
+}
+const keysEl = document.getElementById("keys"), keyEls = {};
+const isBlack = (n) => [1, 3, 6, 8, 10].includes(n % 12);
+(function buildKeys() {
+  const whites = []; for (let n = LO; n <= HI; n++) if (!isBlack(n)) whites.push(n);
+  const w = 100 / whites.length; let wi = 0;
+  for (let n = LO; n <= HI; n++) {
+    const b = document.createElement("button"); b.className = "key " + (isBlack(n) ? "b" : "w"); b.setAttribute("aria-label", NAMES[n % 12] + (Math.floor(n / 12) - 1));
+    if (isBlack(n)) { b.style.left = `calc(${wi * w}% - ${w * 0.3}%)`; b.style.width = `${w * 0.6}%`; } else { b.style.left = `${wi * w}%`; b.style.width = `${w}%`; wi++; }
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); b.classList.add("down"); S.held.add(n); pressKey(n); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => b.addEventListener(ev, () => S.held.delete(n)));
+    ["pointerup", "pointerleave"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("down")));
+    keysEl.appendChild(b); keyEls[n] = b;
+  }
+})();
+function lights() {
+  const p = page(), on = new Set(), dim = new Set();
+  if (PR.on) prLights(on, dim);
+  else if (p.ring) for (let n = LO; n <= HI; n++) if (scaleHas(n)) ((n - 57 - S.key) % 12 === 0 ? on : dim).add(n);
+  if (!PR.on && p.lit) for (let n = LO; n <= HI; n++) if (scaleHas(n)) on.add(n);      /* the song's key: these work */
+  if ((recL() && p.rec) || p.highlightDrums) for (const d of ["k", "s", "h"]) (p.rec === d || p.erase || p.intro || p.highlightDrums ? on : dim).add(DRUMKEY[d]);
+  if (p.drill) drillLights(p, on, dim);
+  if ((S.lesson === WAYS && p.ways) || (S.lesson === MAKE && p.make)) { const w = p.ways || p.make, ch = chordNow(), tones = ch.notes.map((x) => ((x + S.key) % 12 + 12) % 12);
+    if (w === "pad" || w === "chords") for (const x of [...PADKEYS, ...PADKEYS.map((y) => y + 12)]) dim.add(x);
+    else if (w === "fit") { const sc = fitScores(), top = [...sc].sort((a, b) => b - a)[2]; PADKEYS.forEach((x, dg) => (sc[dg] >= Math.max(1, top) ? on : dim).add(x)); }
+    else if (w === "bass") for (let x = LO; x <= HI; x++) { if (scaleHas(x)) ((x - 57 - S.key) % 12 === 0 ? on : dim).add(x); }
+    else if (w === "tones" || w === "mel" || w === "tune") for (let x = LO; x <= HI; x++) { if (scaleHas(x)) ((w === "tune" ? (x - 57 - S.key) % 12 === 0 : tones.includes(x % 12)) ? on : dim).add(x); }
+    else if (w === "bass" || p.make === "bass") for (let x = LO; x <= HI; x++) if (scaleHas(x)) ((((x - S.key) % 12 + 12) % 12) === (ch.root + 12) % 12 ? on : dim).add(x);
+    if (p.make === "bass") for (let x = LO; x <= HI; x++) if (scaleHas(x)) ((((x - S.key) % 12 + 12) % 12) === (ch.root + 12) % 12 ? on : dim).add(x); }
+  if (S.lesson === BASS_L && p.bassk) { const ch = chordNow();
+    for (let n = LO; n <= HI; n++) if (scaleHas(n)) ((((n - S.key) % 12 + 12) % 12) === (ch.root + 12) % 12 ? on : dim).add(n); }
+  if (S.lesson === MEL_L && p.melk) { const ch = chordNow(), tones = ch.notes.map((x) => ((x + S.key) % 12 + 12) % 12);
+    for (let n = LO; n <= HI; n++) if (scaleHas(n)) { if (p.keys === "pent") { if ([0, 3, 5, 7, 10].includes(((n - 57 - S.key) % 12 + 12) % 12)) on.add(n); } else (tones.includes(n % 12) ? on : dim).add(n); } }
+  if (!PR.on && S.lesson === 4) {
+    const target = p.along5 || p.colsong ? chordNow() : null;
+    for (const n of [...PADKEYS, ...PADKEYS.map((x) => x + 12)]) ((target && padDeg(n) === target.deg) ? on : dim).add(n);
+    for (const k in COLKEYS) ((S.col === COLKEYS[k] || (target && p.along5 && target.col === COLKEYS[k])) ? on : dim).add(+k); }
+  if (!PR.on && S.lesson === KEYS && p.keys) {
+    const ch = chordNow(), tones = ch.notes.map((x) => ((x + S.key) % 12 + 12) % 12);
+    for (let n = LO; n <= HI; n++) if (scaleHas(n)) {
+      if (p.keys === "scale" || p.keys === "chords") ((n - 57 - S.key) % 12 === 0 ? on : dim).add(n);   /* HOME brightest */
+      else if (p.keys === "root" || p.keys === "play") ((((n - S.key) % 12 + 12) % 12) === (ch.root + 12) % 12 ? on : dim).add(n);
+      else if (p.keys === "home") (degOf(n) === (S.mm ? 2 : 0) ? on : dim).add(n);
+      else (tones.includes(((n % 12) + 12) % 12) ? on : dim).add(n); } }
+  Object.entries(keyEls).forEach(([n, el]) => { n = +n;
+    el.classList.toggle("on", on.has(n)); el.classList.toggle("dim", !on.has(n) && dim.has(n));
+    if (p.drill && S.pz && S.pz.flashBad && S.pz.flashBad.n === n && S.t - S.pz.flashBad.t < 0.5) { el.classList.add("on"); el.style.setProperty("--glow", "#ff3b3b"); el.textContent = "✗"; return; }
+    const dk = (recL() && p.rec) || p.highlightDrums ? drumOf(n) : null;
+    el.style.setProperty("--glow", PR.on ? PR_TRACKS[PR.track].col : dk ? DRUMCOL[dk] : NOTE_COL[n % 12]);
+    if (p.drill) { const dd = p.drill; el.style.setProperty("--glow", "#7fe08a"); el.textContent = dd.type === "ear" || dd.type === "simon" ? (EAR.find((e) => e.root === n) || {}).name || ""
+      : dd.type === "scale" && S.pz && n === dd.home && dd.mode === "memory" ? "HOME" : dd.type === "scale" && dd.mode === "follow" && on.has(n) ? NAMES[n % 12] : ""; return; }
+    if (((S.lesson === WAYS && p.ways) || (S.lesson === MAKE && p.make)) && ["pad", "fit", "chords"].includes(p.ways || p.make)) { el.textContent = padDeg(n) >= 0 ? chordName(mkChord(padDeg(n))) : ""; return; }
+    el.textContent = PR.on ? prLabel(n) : S.lesson === BASS_L && p.bassk && on.has(n) ? NAMES[n % 12] : S.lesson === MEL_L && p.keys === "pent" && on.has(n) ? NAMES[n % 12] : S.lesson === 4 ? (COLKEYS[n] ? COLSHORT[COLKEYS[n]] : padDeg(n) >= 0 ? chordName(mkChord(padDeg(n))) : "") : (recL() && p.rec) || p.highlightDrums ? (dk ? { k: "KICK", s: "SNR", h: "HAT" }[dk] : "")
+      : (p.keys === "chords" || p.keys === "play") && scaleHas(n) ? chordName(mkChord(degOf(n))) : p.keys === "home" && degOf(n) === (S.mm ? 2 : 0) ? "HOME"
+      : ((p.ring || p.lit || p.keys) && (n - 57 - S.key) % 12 === 0 ? "HOME" : "");
+  });
+}
+const KB = { a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66, g: 67, y: 68, h: 69, u: 70, j: 71, k: 72, o: 73, l: 74, p: 75, z: 60, x: 62, c: 64, " ": 60 };
+document.addEventListener("keydown", (e) => { if (e.key === "Shift") { S.editHeld = true; return; }
+  if (e.repeat || e.metaKey || e.ctrlKey) return; const n = KB[e.key.toLowerCase()]; if (n === undefined) return; e.preventDefault(); S.held.add(n); pressKey(n); keyEls[n] && keyEls[n].classList.add("down"); });
+document.addEventListener("keyup", (e) => { if (e.key === "Shift") { S.editHeld = false; return; }
+  const n = KB[e.key.toLowerCase()]; if (n !== undefined) { S.held.delete(n); keyEls[n] && keyEls[n].classList.remove("down"); } });
+{ const ed = document.getElementById("edit");                            /* EDIT is held, not tapped */
+  ed.addEventListener("pointerdown", (e) => { e.preventDefault(); S.editHeld = true; });
+  ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => ed.addEventListener(ev, () => { S.editHeld = false; })); }
+try { if (navigator.requestMIDIAccess) navigator.requestMIDIAccess().then((m) => { m.inputs.forEach((i) => { i.onmidimessage = (ev) => { const [st, n, v] = ev.data; if ((st & 0xF0) === 0x90 && v > 0) pressKey(n); }; }); }).catch(() => {}); } catch (_) { /* no MIDI */ }
+enterPage(); requestAnimationFrame(frame);
+</script>

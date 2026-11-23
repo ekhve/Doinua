@@ -1,0 +1,307 @@
+<title>Arp Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: the FM-1 panel (screen, knobs, buttons, 27 keys), then the concept in four cards. */
+:root {
+  --bg: #eceef2; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #d6dae1;
+  --dev: #23262c; --dev-edge: #31353d; --btn: #3a3f48; --btn-fg: #e9edf3; --acc: #4d8dff; --accd: #1d3a6e;
+  --wk: #d7dbe3; --bk: #1b1e24;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 22px 50px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; }
+.lead { color: var(--muted); margin: 4px 0 14px; max-width: 80ch; }
+.start { font: 600 .9rem var(--body); padding: 7px 14px; border-radius: 8px; border: 0; background: var(--acc); color: #fff; cursor: pointer; margin-bottom: 12px; }
+.dev { background: var(--dev); border: 1px solid var(--dev-edge); border-radius: 18px; padding: 16px; color: var(--btn-fg); overflow-x: auto; }
+.top { display: grid; grid-template-columns: auto 1fr; gap: 18px; min-width: 780px; }
+.screen { width: 360px; height: 360px; background: #0a0d13; border-radius: 6px; }
+.controls { display: grid; gap: 12px; align-content: start; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.knob { width: 74px; text-align: center; font-size: .7rem; color: #aab2bf; user-select: none; }
+.knob .dial { width: 54px; height: 54px; margin: 0 auto 4px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #5a606b, #2a2e35); border: 2px solid #4a4f58; position: relative; cursor: ns-resize; touch-action: none; }
+.knob .dial::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 14px; margin-left: -1.5px; background: #e9edf3; border-radius: 2px; transform-origin: 50% 21px; transform: rotate(var(--a, 0deg)); }
+.knob .b { display: flex; gap: 4px; justify-content: center; margin-top: 2px; }
+.knob button, .btn { font: 600 .72rem var(--body); background: var(--btn); color: var(--btn-fg); border: 1px solid #4a505a; border-radius: 6px; padding: 6px 9px; cursor: pointer; user-select: none; touch-action: none; }
+.knob button { padding: 2px 8px; }
+.btn.on { background: var(--accd); border-color: var(--acc); }
+.btn:focus-visible, .knob button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.keys { position: relative; height: 150px; margin-top: 16px; min-width: 780px; user-select: none; touch-action: none; }
+.k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; font: 600 .6rem var(--body); padding-bottom: 6px; box-sizing: border-box; }
+.k.w { background: var(--wk); color: #555c68; height: 150px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); color: #8a909b; height: 92px; z-index: 2; border: 1px solid #000; }
+.k .lab { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: .56rem; }
+.k.half { box-shadow: inset 0 0 0 150px rgba(77,141,255,.45); color: #fff; }
+.k.on { box-shadow: inset 0 0 0 150px rgba(77,141,255,.92); color: #fff; }
+.k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.9) !important; color: #fff; }
+.hint { font-size: .78rem; color: #aab2bf; max-width: 440px; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font: 600 1rem var(--display); }
+.card li { margin: 4px 0; font-size: .87rem; }
+.card ul { padding-left: 18px; margin: 4px 0; }
+</style>
+
+<div class="wrap">
+  <h1>Arp Lab</h1>
+  <p class="lead">A first concept for <b>ARP</b>: one button for every track, which turns what you hold into a pattern in time. On DRUMS it becomes note repeat. Press <b>Start sound</b>, tap <b>ARP</b> to switch it on, then hold some keys.</p>
+  <button class="start" id="start">Start sound</button>
+  <div class="dev">
+    <div class="top">
+      <canvas class="screen" id="scr" width="240" height="240" aria-label="The FM-1 screen"></canvas>
+      <div class="controls">
+        <div class="row" id="knobs"></div>
+        <div class="row">
+          <button class="btn" id="arp" title="Tap: on / off. Double-tap: latch">ARP</button>
+          <button class="btn" id="trkL">ALGORITHM ◀</button>
+          <button class="btn" id="trkR">ALGORITHM ▶</button>
+          <button class="btn" id="selL">SELECT ◀</button>
+          <button class="btn" id="selR">SELECT ▶</button>
+          <button class="btn" id="glo">GLO (hold)</button>
+        </div>
+        <div class="hint">ARP tapped: on and off (its light shows it). ARP double-tapped: LATCH, so the pattern keeps going after you let go, until you hold new keys. SELECT: the rhythm. ALGORITHM: the track.</div>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+  <div class="notes">
+    <div class="card"><h3>What ARP is</h3><ul>
+      <li>One <b>ARP</b> button for every track (the owner's idea): tap it on or off, double-tap for <b>latch</b>.</li>
+      <li>It plays what you hold in time with the song: notes on MELODY and BASS, the chord on CHORDS (a pad of one finger arpeggiates the whole chord), a sound on DRUMS (note repeat).</li>
+      <li>REC records the notes it plays, and they land in the sequence on the top line.</li>
+    </ul></div>
+    <div class="card"><h3>The knobs (ARP page)</h3><ul>
+      <li><b>K1 MODE:</b> up, down, up-down, down-up, as played, random, converge, diverge, pinky (the top note between every note), thumb (the bottom note between), chord (all at once, in rhythm).</li>
+      <li><b>K2 RATE:</b> 1/4, 1/8, 1/8T, 1/16, 1/16T, 1/32, following the tempo and swing.</li>
+      <li><b>K3 OCTAVES:</b> 1 to 4. <b>K4 GATE:</b> short to legato.</li>
+      <li><b>SELECT RHYTHM:</b> straight, or a rhythm with rests and accents (offbeat, 3-3-2, skip, gallop, reggaeton, dotted).</li>
+    </ul></div>
+    <div class="card"><h3>On DRUMS: note repeat</h3><ul>
+      <li>Hold a sound and it repeats at RATE: hat rolls, snare rolls, trap rolls.</li>
+      <li>K1 becomes <b>RAMP</b>: flat, crescendo or fade (the repeats get louder or softer while you hold).</li>
+      <li>Two sounds held: they alternate, as on an MPC.</li>
+    </ul></div>
+    <div class="card"><h3>From the other firmwares</h3><ul>
+      <li><b>Felucca:</b> the most modes (up, down, up-down, random, as played, repeat, converge, diverge, pinky, thumb, walk, chord) and latch. Its ARP is a page plus a layer.</li>
+      <li><b>OberVave:</b> 1–4 octaves, 1/4 to 1/32 with triplets, gate, latch (HOLD), and arps kept with the sound.</li>
+      <li><b>SLOOP:</b> ARP held is note repeat (a roll), recorded as ratchets.</li>
+      <li><b>Ours adds:</b> rhythms with rests and accents, the chord pad feeding it, and note repeat with a ramp on drums.</li>
+    </ul></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const LOW = 53, NK = 27, isBlack = n => [1,3,6,8,10].includes(n % 12);
+const TRK = [{ name: "MELODY", col: "#3ccf7a" }, { name: "CHORDS", col: "#4d8dff" }, { name: "BASS", col: "#f2a33c" }, { name: "DRUMS", col: "#d77cc2" }];
+const MODES = ["up", "down", "up-down", "down-up", "as played", "random", "converge", "diverge", "pinky", "thumb", "chord"];
+const RATES = [["1/4", 4], ["1/8", 2], ["1/8T", 4 / 3], ["1/16", 1], ["1/16T", 2 / 3], ["1/32", .5]];
+const GATES = [.15, .3, .5, .75, 1];
+const RAMPS = ["flat", "crescendo", "fade"];
+// rhythms: 16 steps; 0 a rest, g a ghost (soft), 1 a note, 2 an accent. Many are drum patterns: they work on melodies too
+const RHYTHMS = [
+  ["straight", "1111111111111111"], ["accents", "2111211121112111"], ["hats 2-1", "2g1g2g1g2g1g2g1g"], ["ghost 16ths", "2gg12gg12gg12gg1"],
+  ["offbeat", "0101010101010101"], ["house hats", "0020002000200020"], ["four on the floor", "2000200020002000"], ["half-time", "2000000010000000"],
+  ["3-3-2", "2010012010020100"], ["reggaeton", "2001001020010010"], ["son clave", "2001001000201000"], ["rumba clave", "2001000100201000"],
+  ["bossa", "2001001000100100"], ["afrobeat", "2010011020100110"], ["shuffle", "2g12g12g12g12g12"], ["skip", "2101101121011011"],
+  ["gallop", "2110211021102110"], ["dotted", "2001001001001000"], ["pushes", "1001101001001010"], ["trap roll", "2g1g2g1g2g1g2111"],
+  ["stutter", "2220000022200000"], ["build", "2000200020202222"]];
+const LEVEL = { "0": 0, "g": .35, "1": .72, "2": 1 };
+const DRUMS = ["kick", "snare", "hat", "open hat", "clap", "tom", "rim", "shaker"];
+const PITCHES = ["flat", "rise", "fall"];
+const st = { pitch: 0, popT: -1e9, trk: 0, on: false, latch: false, mode: 0, rate: 3, oct: 1, gate: 2, rhythm: 0, ramp: 0, held: [], latched: [], playing: false, step: 0, lastNote: -1, flashT: 0, flash: "", glo: false, holdT: 0 };
+const WHITES = []; for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) WHITES.push(i);
+const drumsTrk = () => TRK[st.trk].name === "DRUMS";
+// a minor-ish chord for one finger on CHORDS (the pad), so ARP plays the chord
+const chordOf = n => { const pc = n % 12, minor = [2, 4, 9].includes(pc); return [n, n + (minor ? 3 : 4), n + 7]; };
+
+// ---------------------------------------------------------------- sound
+let ac = null, master;
+function startAudio() { if (ac) return; ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = .3; master.connect(ac.destination); }
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function blip(n, vel, dur, when = 0, pitch = 1) {
+  if (!ac) return; const T = ac.currentTime + when;
+  if (drumsTrk()) {
+    const g = ac.createGain(); g.connect(master);
+    if (n === 0 || n === 5) { const o = ac.createOscillator(); o.frequency.setValueAtTime((n ? 180 : 140) * pitch, T); o.frequency.exponentialRampToValueAtTime(45 * pitch, T + .15); g.gain.setValueAtTime(vel, T); g.gain.exponentialRampToValueAtTime(.001, T + .3); o.connect(g); o.start(T); o.stop(T + .35); return; }
+    const len = n === 3 ? .4 : n === 1 || n === 4 ? .15 : .05, b = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(); s.buffer = b; f.type = n === 1 || n === 4 ? "bandpass" : "highpass"; f.frequency.value = (n === 1 ? 1800 : n === 4 ? 1200 : 7000) * pitch;
+    g.gain.setValueAtTime(vel * .6, T); g.gain.exponentialRampToValueAtTime(.001, T + len); s.connect(f); f.connect(g); s.start(T); return;
+  }
+  const o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain(), k = TRK[st.trk].name;
+  o.type = k === "BASS" ? "triangle" : "sawtooth"; o.frequency.value = hz(n - (k === "BASS" ? 12 : 0)); f.type = "lowpass"; f.frequency.value = 1400 + vel * 2600;
+  g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(.2 * vel, T + .005); g.gain.setTargetAtTime(0, T + dur, .03);
+  o.connect(f); f.connect(g); g.connect(master); o.start(T); o.stop(T + dur + .3);
+}
+// ---------------------------------------------------------------- the arp: the order of the notes, then the clock
+function source() {
+  const keys = st.held.length ? st.held : st.latch ? st.latched : [];
+  if (drumsTrk()) return keys.map(i => WHITES.indexOf(i)).filter(d => d >= 0 && d < DRUMS.length);
+  let notes = keys.map(i => LOW + i);
+  if (TRK[st.trk].name === "CHORDS") notes = notes.flatMap(chordOf);
+  return [...new Set(notes)];
+}
+function order(notes) {            // the notes in MODE's order, over OCTAVES
+  if (!notes.length) return [];
+  const asPlayed = notes.slice(), up0 = notes.slice().sort((a, b) => a - b);
+  let up = []; for (let o = 0; o < st.oct; o++) up = up.concat(up0.map(n => n + 12 * o));
+  const down = up.slice().reverse(), m = MODES[st.mode];
+  if (m === "up") return up;
+  if (m === "down") return down;
+  if (m === "up-down") return up.concat(down.slice(1, -1));
+  if (m === "down-up") return down.concat(up.slice(1, -1));
+  if (m === "as played") { let r = []; for (let o = 0; o < st.oct; o++) r = r.concat(asPlayed.map(n => n + 12 * o)); return r; }
+  if (m === "random") return up.slice().sort(() => Math.random() - .5);
+  if (m === "converge") { const r = []; let a = 0, b = up.length - 1; while (a <= b) { r.push(up[a++]); if (a <= b) r.push(up[b--]); } return r; }
+  if (m === "diverge") { const r = []; const mid = Math.floor((up.length - 1) / 2); for (let k = 0; r.length < up.length; k++) { if (mid - k >= 0) r.push(up[mid - k]); if (k && mid + k < up.length) r.push(up[mid + k]); } return r; }
+  if (m === "pinky") { const top = up[up.length - 1], r = []; up.slice(0, -1).forEach(n => r.push(n, top)); return r.length ? r : [top]; }
+  if (m === "thumb") { const bot = up[0], r = []; up.slice(1).forEach(n => r.push(bot, n)); return r.length ? r : [bot]; }
+  return [up];                                            // chord: all at once
+}
+let timer = null, next = 0, idx = 0, tick = 0;
+const bpm = 100, s16 = () => 60 / bpm / 4;
+function run() {
+  startAudio();
+  if (timer) return; next = ac.currentTime + .03; tick = 0; idx = 0;
+  timer = setInterval(() => {
+    const unit = RATES[st.rate][1] * s16();
+    while (next < ac.currentTime + .08) {
+      const seq = order(source()), when = next - ac.currentTime;
+      if (!seq.length || !st.on) { clearInterval(timer); timer = null; st.playing = false; return; }
+      const r = RHYTHMS[st.rhythm][1][tick % 16], swing = tick % 2 ? unit * .12 : 0;
+      if (r !== "0") {
+        const item = seq[idx % seq.length], acc = LEVEL[r], held = (performance.now() - st.holdT) / 1000;
+        let vel = acc;
+        if (drumsTrk()) vel = acc * (st.ramp === 1 ? Math.min(1, .25 + held * .4) : st.ramp === 2 ? Math.max(.12, 1 - held * .35) : 1);
+        const pitch = drumsTrk() ? (st.pitch === 1 ? Math.min(2, 1 + held * .25) : st.pitch === 2 ? Math.max(.5, 1 - held * .15) : 1) : 1;
+        (Array.isArray(item) ? item : [item]).forEach(n => blip(n, vel, unit * GATES[st.gate], when + swing, pitch));
+        const shown = Array.isArray(item) ? item : [item];
+        setTimeout(() => { st.lastNote = shown; st.pulse = performance.now(); }, Math.max(0, (when + swing) * 1000));
+        idx++;
+      }
+      tick++; next += unit;
+    }
+  }, 20);
+  st.playing = true;
+}
+// ---------------------------------------------------------------- keys
+const keysEl = document.getElementById("keys"), KB = "zsxdcvgbhnjm,l.;/q2w3er5t6y", keyEls = [];
+(function () {
+  const ww = 100 / WHITES.length;
+  for (let i = 0; i < NK; i++) {
+    const el = document.createElement("div"), b = isBlack(LOW + i), wi = b ? WHITES.indexOf(i - 1) : WHITES.indexOf(i);
+    el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .3 : wi * ww) + "%"; el.style.width = (b ? ww * .6 : ww) + "%";
+    el.innerHTML = `<span class="lab"></span>${KB[i]}`;
+    el.addEventListener("pointerdown", e => { e.preventDefault(); el.setPointerCapture(e.pointerId); press(i); });
+    el.addEventListener("pointerup", () => release(i)); el.addEventListener("pointercancel", () => release(i));
+    keysEl.appendChild(el); keyEls.push(el);
+  }
+})();
+const down = new Set();
+addEventListener("keydown", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0 && !down.has(i) && !e.repeat) { down.add(i); press(i); e.preventDefault(); } });
+addEventListener("keyup", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0) { down.delete(i); release(i); } });
+function press(i) {
+  startAudio();
+  if (drumsTrk() && (isBlack(LOW + i) || WHITES.indexOf(i) >= DRUMS.length)) return;
+  if (!st.held.length) { st.latched = []; st.holdT = performance.now(); }
+  st.held.push(i);
+  if (st.latch) st.latched = st.held.slice();
+  if (st.on) run(); else blip(drumsTrk() ? WHITES.indexOf(i) : TRK[st.trk].name === "CHORDS" ? LOW + i : LOW + i, .8, .4);
+  if (!st.on && TRK[st.trk].name === "CHORDS") chordOf(LOW + i).slice(1).forEach(n => blip(n, .7, .4));
+}
+function release(i) { st.held = st.held.filter(k => k !== i); }
+// ---------------------------------------------------------------- buttons and knobs
+const $ = id => document.getElementById(id);
+$("start").onclick = () => { startAudio(); ac.resume(); $("start").textContent = "Sound on"; };
+let arpT = 0;
+$("arp").onclick = () => { const n = performance.now(); if (n - arpT < 350) { st.latch = !st.latch; st.on = true; flash(st.latch ? "LATCH" : "latch off"); if (!st.latch) st.latched = []; } else { st.on = !st.on; if (!st.on) st.latched = []; else if (source().length) run(); } arpT = n; };
+$("trkL").onclick = () => { st.trk = (st.trk + 3) % 4; st.held = []; st.latched = []; };
+$("trkR").onclick = () => { st.trk = (st.trk + 1) % 4; st.held = []; st.latched = []; };
+$("selL").onclick = () => { st.rhythm = (st.rhythm + RHYTHMS.length - 1) % RHYTHMS.length; st.popT = performance.now(); };
+$("selR").onclick = () => { st.rhythm = (st.rhythm + 1) % RHYTHMS.length; st.popT = performance.now(); };
+const gb = $("glo"); gb.addEventListener("pointerdown", e => { e.preventDefault(); st.glo = true; }); ["pointerup", "pointerleave"].forEach(ev => gb.addEventListener(ev, () => { st.glo = false; }));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function flash(s) { st.flash = s; st.flashT = performance.now(); }
+function knobDefs() {
+  return [
+    drumsTrk() ? { n: "RAMP", v: () => RAMPS[st.ramp], turn: d => { st.ramp = clamp(st.ramp + d, 0, 2); } } : { n: "MODE", v: () => MODES[st.mode], turn: d => { st.mode = clamp(st.mode + d, 0, MODES.length - 1); idx = 0; } },
+    { n: "RATE", v: () => RATES[st.rate][0], turn: d => { st.rate = clamp(st.rate + d, 0, RATES.length - 1); } },
+    drumsTrk() ? { n: "PITCH", v: () => PITCHES[st.pitch], turn: d => { st.pitch = clamp(st.pitch + d, 0, 2); } } : { n: "OCTAVES", v: () => String(st.oct), turn: d => { st.oct = clamp(st.oct + d, 1, 4); } },
+    { n: "GATE", v: () => Math.round(GATES[st.gate] * 100) + "%", turn: d => { st.gate = clamp(st.gate + d, 0, GATES.length - 1); } }];
+}
+const ang = [0, 0, 0, 0];
+for (let idx2 = 0; idx2 < 4; idx2++) {
+  const w = document.createElement("div"); w.className = "knob";
+  w.innerHTML = `<div class="dial" aria-label="K${idx2 + 1}"></div>K${idx2 + 1}<div class="b"><button aria-label="K${idx2 + 1} down">−</button><button aria-label="K${idx2 + 1} up">+</button></div>`;
+  const dial = w.querySelector(".dial"); let y0 = null, acc = 0;
+  const turn = d => { knobDefs()[idx2].turn(d); ang[idx2] = (ang[idx2] + d * 22) % 360; dial.style.setProperty("--a", ang[idx2] + "deg"); };
+  dial.addEventListener("pointerdown", e => { y0 = e.clientY; acc = 0; dial.setPointerCapture(e.pointerId); });
+  dial.addEventListener("pointermove", e => { if (y0 === null) return; acc += y0 - e.clientY; y0 = e.clientY; while (Math.abs(acc) > 12) { turn(Math.sign(acc)); acc -= 12 * Math.sign(acc); } });
+  dial.addEventListener("pointerup", () => { y0 = null; });
+  dial.addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+  const [bm, bp] = w.querySelectorAll("button"); bm.onclick = () => turn(-1); bp.onclick = () => turn(1);
+  $("knobs").appendChild(w);
+}
+// ---------------------------------------------------------------- screen
+const g = $("scr").getContext("2d");
+const C = { bg: "#0a0d13", fg: "#e8edf5", mute: "#7f8796", card: "#161b24", acc: "#4d8dff", accd: "#1d3a6e" };
+function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function T(s, x, y, size, col, w = 600, al = "left") { g.font = w + " " + size + "px Inter, sans-serif"; g.fillStyle = col; g.textAlign = al; g.textBaseline = "middle"; g.fillText(s, x, y); g.textAlign = "left"; }
+const NN = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"], nm = n => NN[n % 12] + Math.floor(n / 12 - 1);
+function draw() {
+  const tr = TRK[st.trk];
+  g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240); g.fillStyle = tr.col; g.fillRect(0, 0, 240, 2);
+  T(tr.name, 6, 12, 11, C.fg, 700); T("ARP", 62, 12, 10, st.on ? C.acc : C.mute, 700); if (st.latch) T("LATCH", 90, 12, 9, "#f2a33c", 700);
+  T("SEQ 1  100", 234, 12, 10, C.mute, 600, "right");
+  g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
+  knobDefs().forEach((k, i) => { const x = 4 + i * 58; g.fillStyle = C.card; rr(x, 26, 54, 30, 5); g.fill(); T(k.n, x + 27, 34, 7.5, C.mute, 500, "center"); T(String(k.v()), x + 27, 47, 9.5, C.acc, 600, "center"); });
+  // the pattern of the rhythm, 16 cells, the one playing lit
+  const rh = RHYTHMS[st.rhythm][1];
+  T("RHYTHM " + (st.rhythm + 1) + "  " + RHYTHMS[st.rhythm][0], 8, 68, 9, C.fg, 700);
+  for (let k = 0; k < 16; k++) { const x = 6 + k * 14.3, on = st.playing && (tick - 1) % 16 === k, h = 4 + 16 * LEVEL[rh[k]]; g.fillStyle = on ? C.acc : rh[k] === "0" ? "#11151d" : rh[k] === "2" ? "#4d6fae" : rh[k] === "g" ? "#1c2333" : "#2b3650"; rr(x, 98 - h, 12.5, h, 3); g.fill(); }
+  // the notes in order, the one sounding lit
+  const seq = order(source());
+  T(drumsTrk() ? "NOTE REPEAT" : "ORDER  " + MODES[st.mode] + (st.oct > 1 ? "  · " + st.oct + " oct" : ""), 8, 112, 9, C.fg, 700);
+  if (!seq.length) T(st.on ? "hold some keys" : "ARP is off: tap ARP", 120, 160, 11, C.mute, 500, "center");
+  else {
+    const flat = seq.slice(0, 16), w = Math.min(28, 228 / flat.length), last = st.lastNote, cur = (idx - 1 + flat.length) % flat.length;
+    flat.forEach((it, k) => {
+      const ns = Array.isArray(it) ? it : [it], x = 6 + k * w, on = st.playing && k === cur;
+      g.fillStyle = on ? C.acc : C.card; rr(x, 124, w - 3, 60, 4); g.fill();
+      ns.forEach((n, j) => { const label = drumsTrk() ? DRUMS[n].slice(0, 4) : nm(n); T(label, x + (w - 3) / 2, 136 + j * 11, w > 22 ? 8 : 6.5, on ? "#fff" : C.mute, 600, "center"); });
+    });
+  }
+  T(drumsTrk() ? "hold a sound: it repeats at RATE" : "REC: what it plays goes into SEQ 1", 8, 200, 8.5, C.mute, 500);
+  if (st.glo) {
+    g.fillStyle = "rgba(10,13,19,.97)"; rr(4, 22, 232, 214, 8); g.fill(); g.strokeStyle = C.acc; g.stroke();
+    ["GLO · ARP", "ARP tap: on / off", "ARP double-tap: latch", "SELECT: rhythm (menu)   ALGO: track", drumsTrk() ? "K1 RAMP  K2 RATE" : "K1 MODE  K2 RATE", drumsTrk() ? "K3 PITCH  K4 GATE" : "K3 OCTAVES  K4 GATE", "REC records what it plays"].forEach((l, i) => T(l, 12, 36 + i * 22, i ? 9.5 : 10, i ? C.fg : C.acc, i ? 500 : 700));
+  }
+  if (performance.now() - st.popT < 1600) {             // the rhythm menu: number, name and its 16 steps
+    g.fillStyle = "rgba(10,13,19,.97)"; rr(4, 22, 232, 214, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke();
+    T("RHYTHM  " + (st.rhythm + 1) + " / " + RHYTHMS.length, 12, 34, 9, C.mute, 600);
+    for (let r = -3; r <= 3; r++) {
+      const i = st.rhythm + r; if (i < 0 || i >= RHYTHMS.length) continue;
+      const y = 56 + (r + 3) * 25, on = r === 0, pat = RHYTHMS[i][1];
+      if (on) { g.fillStyle = C.accd; rr(8, y - 11, 224, 22, 4); g.fill(); }
+      T(String(i + 1), 14, y, 9, on ? "#fff" : C.mute, 600); T(RHYTHMS[i][0], 32, y, 9.5, on ? "#fff" : C.fg, on ? 700 : 500);
+      for (let k = 0; k < 16; k++) { const h = 2 + 12 * LEVEL[pat[k]]; g.fillStyle = pat[k] === "0" ? "#1a1f2a" : on ? "#9cc0ff" : "#5d6b86"; g.fillRect(130 + k * 6.3, y + 7 - h, 4.5, h); }
+    }
+  }
+  if (performance.now() - st.flashT < 900) { g.fillStyle = C.accd; rr(80, 210, 80, 20, 6); g.fill(); T(st.flash, 120, 220, 10, "#fff", 700, "center"); }
+  // the keys: what is held green, the note sounding lit
+  const sounding = new Set(Array.isArray(st.lastNote) ? st.lastNote : []), fresh = performance.now() - (st.pulse || 0) < 120;
+  keyEls.forEach((el, i) => {
+    el.classList.toggle("held", st.held.includes(i) || (st.latch && !st.held.length && st.latched.includes(i)));
+    el.classList.toggle("on", fresh && !drumsTrk() && [...sounding].some(n => n === LOW + i || (n - LOW - i) % 12 === 0 && n >= LOW + i));
+    el.querySelector(".lab").textContent = drumsTrk() && WHITES.indexOf(i) >= 0 && WHITES.indexOf(i) < DRUMS.length ? DRUMS[WHITES.indexOf(i)] : "";
+  });
+  $("arp").classList.toggle("on", st.on);
+  $("arp").textContent = st.latch ? "ARP · LATCH" : "ARP";
+}
+(function loop() { draw(); requestAnimationFrame(loop); })();
+})();
+</script>

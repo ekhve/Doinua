@@ -1,0 +1,337 @@
+<title>Visual Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: the FM-1 panel (screen, the four knobs, PLAY, the 27 keys), then what each scene is and what to tell me. */
+:root {
+  --bg: #eceef2; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #d6dae1;
+  --dev: #23262c; --dev-edge: #31353d; --btn: #3a3f48; --btn-fg: #e9edf3; --acc: #4d8dff; --accd: #1d3a6e;
+  --wk: #d7dbe3; --bk: #1b1e24;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 22px 50px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; }
+.lead { color: var(--muted); margin: 4px 0 14px; max-width: 80ch; }
+.start { font: 600 .9rem var(--body); padding: 7px 14px; border-radius: 8px; border: 0; background: var(--acc); color: #fff; cursor: pointer; margin-bottom: 12px; }
+.dev { background: var(--dev); border: 1px solid var(--dev-edge); border-radius: 18px; padding: 16px; color: var(--btn-fg); overflow-x: auto; }
+.top { display: grid; grid-template-columns: auto 1fr; gap: 18px; min-width: 800px; }
+.screen { width: 432px; height: 432px; background: #000; border-radius: 6px; image-rendering: pixelated; }
+.controls { display: grid; gap: 10px; align-content: start; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.kn { display: grid; grid-template-columns: 70px auto auto 1fr; gap: 6px; align-items: center; }
+.kn b { font: 600 .72rem var(--body); color: #aab2bf; letter-spacing: .04em; }
+.kn span { font: 600 .9rem var(--display); color: #fff; }
+.btn { font: 600 .78rem var(--body); background: var(--btn); color: var(--btn-fg); border: 1px solid #4a505a; border-radius: 6px; padding: 7px 11px; cursor: pointer; user-select: none; }
+.btn.on { background: var(--accd); border-color: var(--acc); }
+.btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.hint { font-size: .8rem; color: #c3cad5; max-width: 470px; }
+.keys { position: relative; height: 130px; margin-top: 14px; min-width: 800px; user-select: none; touch-action: none; }
+.k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; box-sizing: border-box; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font: 600 .6rem var(--body); color: #555c68; }
+.k.w { background: var(--wk); height: 130px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); height: 80px; z-index: 2; border: 1px solid #000; color: #8a909b; }
+.k.held { box-shadow: inset 0 0 0 130px rgba(255,190,120,.85) !important; color: #fff; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font: 600 1rem var(--display); }
+.card li { margin: 4px 0; font-size: .87rem; }
+.card ul, .card ol { padding-left: 18px; margin: 4px 0; }
+.q { border-color: var(--acc); }
+</style>
+
+<div class="wrap">
+  <h1>Visual Lab</h1>
+  <p class="lead">Sit back and play: the screen answers. Press <b>Start sound</b>, then play the keys (or your computer keyboard: <b>z s x d c v g b h n j m</b> and <b>q 2 w 3 e r 5 t 6 y</b>). <b>PLAY</b> starts a slow lofi loop to play over, or just to watch. K1 changes the scene, K2 what is written over it (chords, the key, note names, or nothing), K3 the sound, K4 the vibe (tape wobble, crackle, rain). Every scene uses only what the FM-1 can draw: rectangles, circles, lines, pixels and its own text, no transparency.</p>
+  <button class="start" id="start">Start sound</button>
+  <div class="dev">
+    <div class="top">
+      <canvas class="screen" id="scr" width="240" height="240" aria-label="The FM-1 screen"></canvas>
+      <div class="controls">
+        <div class="kn"><b>K1 SCENE</b><button class="btn" data-k="0" data-d="-1">−</button><button class="btn" data-k="0" data-d="1">+</button><span id="v0"></span></div>
+        <div class="kn"><b>K2 SHOW</b><button class="btn" data-k="1" data-d="-1">−</button><button class="btn" data-k="1" data-d="1">+</button><span id="v1"></span></div>
+        <div class="kn"><b>K3 SOUND</b><button class="btn" data-k="2" data-d="-1">−</button><button class="btn" data-k="2" data-d="1">+</button><span id="v2"></span></div>
+        <div class="kn"><b>K4 VIBE</b><button class="btn" data-k="3" data-d="-1">−</button><button class="btn" data-k="3" data-d="1">+</button><span id="v3"></span></div>
+        <div class="row"><button class="btn" id="play">PLAY the lofi loop</button><button class="btn" id="oct">OCT +0</button></div>
+        <div class="hint" id="hint"></div>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+  <div class="notes">
+    <div class="card"><h3>The scenes</h3><ul>
+      <li><b>Window</b>: a room at night, rain on the glass. Each note lights a window across the street; chords change the sky's colour. Lofi.</li>
+      <li><b>Bloom</b>: the twelve notes on a circle of fifths. A note blooms where it sits; a chord draws its shape, a triangle or a square, between its notes. The key's home glows in the middle.</li>
+      <li><b>Ripples</b>: every note drops a ring from where its key is; loud notes make wide rings. Calm water when you stop.</li>
+      <li><b>Tape</b>: a cassette, its reels turning with the loop; your notes scroll past on the tape like a piano roll, the VU needle following the loudness.</li>
+      <li><b>Sky</b>: five minutes of playing leaves a constellation. Each note is a star at its pitch, chords join their stars; it slowly fills the night.</li>
+      <li><b>Horizon</b>: a sun and mountains; the mountains grow from the pitches you play, the sun pulses with the beat.</li>
+    </ul></div>
+    <div class="card"><h3>How it could live on the FM-1</h3><ul>
+      <li>A mode of its own ("Just play": pick a sound, play), or one button on any track that swaps the page for the scene while you play or the song plays.</li>
+      <li>The knobs stay the sound's most fun controls (here: SOUND and VIBE); SCENE and SHOW would be one knob each.</li>
+      <li>The chord, the key and the note names come from what we already have (the chord naming, Sketchpad's key from notes).</li>
+    </ul></div>
+    <div class="card q"><h3>Tell me</h3><ol>
+      <li>Which scenes you would keep (one, a few, all)?</li>
+      <li>Its own mode, a button on every track, or both?</li>
+      <li>What it should show over the scene by default: nothing, the chord, the key?</li>
+      <li>Anything to add: your own photo as the window, the scene reacting to the drums only, a clock …</li>
+    </ol></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const LOW = 53, NK = 27, isB = n => [1,3,6,8,10].includes(n % 12);
+const NAMES = ["C","C#","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
+const SCENES = ["Window", "Bloom", "Ripples", "Tape", "Sky", "Horizon"];
+const SHOWS = ["nothing", "chord", "chord + key", "notes"];
+const SOUNDS = ["Lofi keys", "Warm pad", "Glass bell", "Soft pluck"];
+const VIBES = ["clean", "tape", "tape + crackle", "rain"];
+const st = { k: [0, 1, 0, 2], oct: 0, playing: false };
+// ------------------------------------------------------------------ what is sounding: notes with their age, the chord, the key
+const live = new Map();                 // midi -> {t0, vel, off}
+const events = [];                      // recent note-ons {n, vel, t}
+const hist = new Array(12).fill(0);     // the pitch classes heard, decaying: for the key
+let beat = 0, beatT = 0;
+function noteEvent(n, vel) { const t = performance.now(); live.set(n, { t0: t, vel, off: 0 }); events.push({ n, vel, t }); if (events.length > 400) events.shift(); hist[n % 12] += vel; scenes.forEach(s => s.on && s.on(n, vel, t)); }
+function noteEnd(n) { const v = live.get(n); if (v) v.off = performance.now(); }
+const KRUM_MAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88], KRUM_MIN = [6.33, 2.68, 3.52, 5.38, 2.6, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+function keyOf() {                     // Krumhansl's profiles against what was heard
+  let best = [0, 0, -1e9]; const tot = hist.reduce((a, b) => a + b, 0); if (tot < 1) return null;
+  for (let r = 0; r < 12; r++) for (const [m, P] of [[0, KRUM_MAJ], [1, KRUM_MIN]]) { let s = 0; for (let i = 0; i < 12; i++) s += hist[(i + r) % 12] * P[i]; if (s > best[2]) best = [r, m, s]; }
+  return { root: best[0], minor: best[1] };
+}
+const CHORDS = [["", [0, 4, 7]], ["m", [0, 3, 7]], ["7", [0, 4, 7, 10]], ["maj7", [0, 4, 7, 11]], ["m7", [0, 3, 7, 10]], ["dim", [0, 3, 6]], ["sus4", [0, 5, 7]], ["sus2", [0, 2, 7]], ["6", [0, 4, 7, 9]], ["m9", [0, 3, 7, 10, 2]], ["maj9", [0, 4, 7, 11, 2]], ["add9", [0, 4, 7, 2]]];
+function chordOf(notes) {
+  const pcs = [...new Set(notes.map(n => n % 12))]; if (pcs.length < 3) return null;
+  let best = null;
+  for (let r = 0; r < 12; r++) for (const [suf, iv] of CHORDS) {
+    const set = iv.map(i => (r + i) % 12); if (!set.every(p => pcs.includes(p)) && !(set.length >= 4 && set.filter(p => pcs.includes(p)).length === set.length)) continue;
+    if (!pcs.every(p => set.includes(p))) continue;
+    const sc = iv.length * 10 - (r === Math.min(...notes) % 12 ? 0 : 3);
+    if (!best || sc > best.sc) best = { name: NAMES[r] + suf, root: r, sc };
+  }
+  return best;
+}
+const ROMAN = ["I", "bII", "II", "bIII", "III", "IV", "#IV", "V", "bVI", "VI", "bVII", "VII"];
+function numeral(ch, key) { if (!ch || !key) return ""; const d = (ch.root - key.root + 12) % 12; let r = ROMAN[d]; if (/m(?!aj)|dim/.test(ch.name.slice(NAMES[ch.root].length))) r = r.toLowerCase(); return r; }
+
+// ------------------------------------------------------------------ sound
+let ac = null, master, fx, wet, crackleG, rainG, wow;
+function startAudio() {
+  if (ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = .5;
+  const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 5200; master.connect(lp);
+  const comp = ac.createDynamicsCompressor(); lp.connect(comp); comp.connect(ac.destination);
+  const conv = ac.createConvolver(), len = ac.sampleRate * 2.6, ir = ac.createBuffer(2, len, ac.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5); }
+  conv.buffer = ir; wet = ac.createGain(); wet.gain.value = .35; conv.connect(wet); wet.connect(comp);
+  fx = ac.createGain(); fx.connect(master); fx.connect(conv);
+  wow = ac.createOscillator(); wow.frequency.value = .45; const wg = ac.createGain(); wg.gain.value = 0; wow.connect(wg); wow.start(); wow.g = wg;
+  const nb = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), nd = nb.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() < .0009 ? (Math.random() * 2 - 1) : (Math.random() * 2 - 1) * .015;
+  const ns = ac.createBufferSource(); ns.buffer = nb; ns.loop = true; crackleG = ac.createGain(); crackleG.gain.value = 0; const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1200;
+  ns.connect(hp); hp.connect(crackleG); crackleG.connect(comp); ns.start();
+  const rb = ac.createBuffer(1, ac.sampleRate * 3, ac.sampleRate), rd = rb.getChannelData(0); let pr = 0;
+  for (let i = 0; i < rd.length; i++) { pr = pr * .97 + (Math.random() * 2 - 1) * .03; rd[i] = pr * 2; }
+  const rs = ac.createBufferSource(); rs.buffer = rb; rs.loop = true; rainG = ac.createGain(); rainG.gain.value = 0; rs.connect(rainG); rainG.connect(comp); rs.start();
+  applyVibe(); $("start").textContent = "Sound on";
+}
+function applyVibe() { if (!ac) return; const v = st.k[3]; wow.g.gain.setTargetAtTime(v >= 1 ? 9 : 0, ac.currentTime, .1); crackleG.gain.setTargetAtTime(v >= 2 ? .5 : 0, ac.currentTime, .1); rainG.gain.setTargetAtTime(v === 3 ? .35 : 0, ac.currentTime, .2); }
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function voice(n, vel, when = 0, dur = 0) {
+  if (!ac) return null; const T = ac.currentTime + when, s = st.k[2], g = ac.createGain(), out = ac.createBiquadFilter(), oscs = [];
+  out.type = "lowpass"; out.frequency.value = s === 1 ? 1400 : s === 2 ? 7000 : 2600; g.connect(out); out.connect(fx);
+  const add = (type, f, a, det = 0) => { const o = ac.createOscillator(), og = ac.createGain(); o.type = type; o.frequency.value = f; o.detune.value = det; wow.g.connect(o.detune); og.gain.value = a; o.connect(og); og.connect(g); o.start(T); oscs.push(o); return o; };
+  const f = hz(n), lv = (.18 + .5 * vel) * (s === 1 ? .35 : .5);
+  if (s === 0) { add("sine", f, 1); add("sine", f * 2, .25); const m = add("sine", f * 14, .06); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv, T + .008); g.gain.setTargetAtTime(lv * .25, T + .02, .6); }
+  if (s === 1) { add("sawtooth", f, .5, -8); add("sawtooth", f, .5, 8); add("triangle", f / 2, .4); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv, T + .6); }
+  if (s === 2) { add("sine", f, 1); add("sine", f * 3.01, .35); add("sine", f * 5.4, .12); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv, T + .004); g.gain.setTargetAtTime(0, T + .01, 1.1); }
+  if (s === 3) { add("triangle", f, 1); add("square", f, .12); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv, T + .004); g.gain.setTargetAtTime(0, T + .01, .25); }
+  const h = { stop: (w = 0) => { const t = ac.currentTime + w; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.setTargetAtTime(0, t, s === 1 ? .5 : .18); oscs.forEach(o => o.stop(t + 2)); } };
+  if (dur) h.stop(when + dur);
+  return h;
+}
+function drum(kind, when) {
+  if (!ac) return; const T = ac.currentTime + when, g = ac.createGain(); g.connect(fx);
+  if (kind === "k") { const o = ac.createOscillator(); o.frequency.setValueAtTime(120, T); o.frequency.exponentialRampToValueAtTime(45, T + .12); g.gain.setValueAtTime(.7, T); g.gain.exponentialRampToValueAtTime(.001, T + .35); o.connect(g); o.start(T); o.stop(T + .4); }
+  else { const len = kind === "s" ? .22 : .05, b = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = ac.createBufferSource(), f = ac.createBiquadFilter(); s.buffer = b; f.type = kind === "s" ? "bandpass" : "highpass"; f.frequency.value = kind === "s" ? 1500 : 7000;
+    g.gain.setValueAtTime(kind === "s" ? .3 : .08, T); g.gain.exponentialRampToValueAtTime(.001, T + len); s.connect(f); f.connect(g); s.start(T); }
+}
+// the lofi loop: Dm9 G13 Cmaj9 Am9, 72 BPM, swung, a soft beat; its notes reach the scenes as yours do
+const PROG = [[50, 53, 57, 60, 64], [43, 53, 57, 59, 64], [48, 52, 55, 59, 62], [45, 55, 60, 64, 67]];
+let timer = null, step = 0, nextT = 0;
+function playToggle() {
+  startAudio(); st.playing = !st.playing; $("play").classList.toggle("on", st.playing); $("play").textContent = st.playing ? "STOP the loop" : "PLAY the lofi loop";
+  if (st.playing) { step = 0; nextT = ac.currentTime + .05; timer = setInterval(sched, 25); } else clearInterval(timer);
+}
+function sched() {
+  const s16 = 60 / 72 / 4;
+  while (nextT < ac.currentTime + .12) {
+    const i = step % 16, bar = Math.floor(step / 16) % 4, when = nextT - ac.currentTime + (i % 2 ? s16 * .22 : 0), ms = Math.max(0, when * 1000);
+    if (i === 0 || i === 10) { drum("k", when); setTimeout(() => { beat = 1; beatT = performance.now(); }, ms); }
+    if (i === 4 || i === 12) drum("s", when);
+    if (i % 2 === 0) drum("h", when);
+    if (i === 0) PROG[bar].forEach((n, k) => { const w = when + k * .018; voice(n, .45, w, s16 * 15); setTimeout(() => { noteEvent(n, .45); setTimeout(() => noteEnd(n), s16 * 15000); }, w * 1000); });
+    if (i === 7 && bar % 2) { const n = PROG[bar][4] + 12; voice(n, .35, when, s16 * 3); setTimeout(() => { noteEvent(n, .35); setTimeout(() => noteEnd(n), s16 * 3000); }, ms); }
+    nextT += s16; step++;
+  }
+}
+
+// ------------------------------------------------------------------ drawing: only what the FM-1 has (rect, circle, line, pixel, text), colours mixed by hand
+const cv = $("scr"), g = cv.getContext("2d"); g.imageSmoothingEnabled = false;
+const rgb = (r, gg, b) => "rgb(" + (r | 0) + "," + (gg | 0) + "," + (b | 0) + ")";
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * Math.max(0, Math.min(1, t)));
+const R = (x, y, w, h, c) => { g.fillStyle = typeof c === "string" ? c : rgb(...c); g.fillRect(x | 0, y | 0, Math.max(1, w | 0), Math.max(1, h | 0)); };
+const CIR = (x, y, r, c) => { g.fillStyle = typeof c === "string" ? c : rgb(...c); g.beginPath(); g.arc(x, y, Math.max(.5, r), 0, 7); g.fill(); };
+const RING = (x, y, r, c, w = 1) => { g.strokeStyle = typeof c === "string" ? c : rgb(...c); g.lineWidth = w; g.beginPath(); g.arc(x, y, Math.max(.5, r), 0, 7); g.stroke(); };
+const LN = (x0, y0, x1, y1, c, w = 1) => { g.strokeStyle = typeof c === "string" ? c : rgb(...c); g.lineWidth = w; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
+const TX = (s, x, y, size, c, al = "left", wt = 600) => { g.font = wt + " " + size + "px Inter, sans-serif"; g.fillStyle = typeof c === "string" ? c : rgb(...c); g.textAlign = al; g.textBaseline = "middle"; g.fillText(s, x, y); g.textAlign = "left"; };
+// a colour for each pitch class, round the circle of fifths: neighbours in the key sit near in colour
+const PC_COL = Array.from({ length: 12 }, (_, pc) => { const h = ((pc * 7) % 12) / 12; const f = (n, k = (n + h * 12) % 12) => .62 - .38 * Math.max(-1, Math.min(k - 3, 9 - k, 1)); return [f(0) * 255, f(8) * 255, f(4) * 255]; });
+const BG = [10, 12, 20];
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const held = () => [...live.entries()].filter(([, v]) => !v.off).map(([n]) => n);
+
+const scenes = [];
+// 1 Window: a room at night, rain on the glass, the street's windows light with the notes
+scenes.push((() => {
+  const wins = []; for (let r = 0; r < 4; r++) for (let c = 0; c < 9; c++) wins.push({ x: 18 + c * 23 + (r % 2) * 3, y: 92 + r * 22, on: 0, col: [255, 200, 120] });
+  const drops = Array.from({ length: 60 }, () => ({ x: rnd() * 240, y: rnd() * 240, v: .6 + rnd() * 1.4 }));
+  let sky = [24, 22, 48], skyT = [24, 22, 48];
+  return { on(n, vel) { const w = wins[(n * 7 + (rnd() * 5 | 0)) % wins.length]; w.on = 1; w.col = mix(PC_COL[n % 12], [255, 220, 160], .45); },
+    draw(dt) {
+      const ch = chordOf(held()); if (ch) skyT = mix([20, 18, 46], mix(PC_COL[ch.root], [60, 40, 120], .5), .3);
+      sky = mix(sky, skyT, dt * 1.2);
+      for (let y = 0; y < 240; y += 4) R(0, y, 240, 4, mix(sky, [6, 6, 12], y / 240));
+      R(10, 70, 220, 112, [16, 16, 26]);                         // the building across the street
+      wins.forEach(w => { w.on *= Math.pow(.25, dt); R(w.x, w.y, 14, 13, mix([28, 28, 40], w.col, w.on)); });
+      CIR(196, 36, 14, [236, 232, 210]); CIR(190, 32, 12, sky);   // the moon
+      drops.forEach(d => { d.y += d.v * (st.k[3] === 3 ? 90 : 35) * dt; if (d.y > 240) { d.y = -6; d.x = rnd() * 240; } LN(d.x, d.y, d.x, d.y + 4, [120, 140, 170]); });
+      R(0, 0, 240, 8, [30, 24, 22]); R(0, 232, 240, 8, [30, 24, 22]); R(0, 0, 8, 240, [30, 24, 22]); R(232, 0, 8, 240, [30, 24, 22]); R(118, 0, 4, 240, [30, 24, 22]); R(0, 118, 240, 4, [30, 24, 22]);   // the window frame
+      R(150, 196, 50, 30, [40, 30, 24]); CIR(175, 196, 10, mix([60, 50, 30], [255, 190, 110], Math.min(1, held().length / 3)));   // a lamp on the sill
+    } };
+})());
+// 2 Bloom: the circle of fifths
+scenes.push((() => {
+  const pos = pc => { const a = ((pc * 7) % 12) / 12 * Math.PI * 2 - Math.PI / 2; return [120 + Math.cos(a) * 84, 124 + Math.sin(a) * 84]; };
+  const bloom = new Array(12).fill(0);
+  return { on(n, vel) { bloom[n % 12] = Math.min(1.6, bloom[n % 12] + .6 + vel); },
+    draw(dt) {
+      R(0, 0, 240, 240, BG);
+      const key = keyOf(); if (key) { const [x, y] = pos(key.root); CIR(120, 124, 18, mix(BG, PC_COL[key.root], .14)); TX(NAMES[key.root] + (key.minor ? "m" : ""), 120, 124, 11, mix(BG, PC_COL[key.root], .6), "center", 700); LN(120, 124, x, y, mix(BG, PC_COL[key.root], .3)); }
+      const h = held(), pcs = [...new Set(h.map(n => n % 12))].sort((a, b) => (a * 7) % 12 - (b * 7) % 12);
+      if (pcs.length >= 2) for (let i = 0; i < pcs.length; i++) { const [x0, y0] = pos(pcs[i]), [x1, y1] = pos(pcs[(i + 1) % pcs.length]); LN(x0, y0, x1, y1, mix(BG, [255, 255, 255], .7), 2); }
+      for (let pc = 0; pc < 12; pc++) { bloom[pc] *= Math.pow(.35, dt); const [x, y] = pos(pc), b = bloom[pc];
+        if (b > .02) { CIR(x, y, 8 + b * 14, mix(BG, PC_COL[pc], .25 * Math.min(1, b))); CIR(x, y, 6 + b * 7, mix(BG, PC_COL[pc], .6 * Math.min(1, b))); }
+        CIR(x, y, 5, mix([40, 44, 60], PC_COL[pc], Math.min(1, b + .15)));
+        TX(NAMES[pc], x, y + (y < 124 ? -16 : 16) + 0, 8, mix([70, 74, 90], [230, 232, 240], Math.min(1, b)), "center"); }
+    } };
+})());
+// 3 Ripples
+scenes.push((() => {
+  const rings = [];
+  return { on(n, vel) { const x = 8 + ((n - LOW - 12 * st.oct + 60) % 27) / 26 * 224; rings.push({ x, y: 150 + (rnd() - .5) * 40, r: 2, v: 30 + vel * 50, life: 1, col: PC_COL[n % 12] }); if (rings.length > 40) rings.shift(); },
+    draw(dt) {
+      R(0, 0, 240, 240, [8, 18, 26]);
+      for (let y = 40; y < 240; y += 6) LN(0, y, 240, y, mix([8, 18, 26], [20, 40, 56], (y - 40) / 200));
+      rings.forEach(r => { r.r += r.v * dt; r.life -= dt * .45; if (r.life > 0) { RING(r.x, r.y, r.r, mix([8, 18, 26], r.col, r.life), 2); RING(r.x, r.y, r.r * .6, mix([8, 18, 26], r.col, r.life * .5)); } });
+      for (let i = rings.length - 1; i >= 0; i--) if (rings[i].life <= 0) rings.splice(i, 1);
+      CIR(200, 34, 12, [220, 226, 236]);
+    } };
+})());
+// 4 Tape: a cassette, reels turning with the loop, the notes scrolling past like a piano roll
+scenes.push((() => {
+  let ang = 0, vu = 0;
+  return { draw(dt) {
+      R(0, 0, 240, 240, [26, 22, 20]);
+      R(14, 22, 212, 128, [212, 196, 160]); R(24, 30, 192, 22, [235, 226, 200]); TX("SIDE A  ·  late night", 30, 41, 9, [90, 70, 50]);
+      R(52, 66, 136, 54, [44, 40, 36]);
+      ang += dt * (st.playing ? 2.2 : .15);
+      [[84, 93], [156, 93]].forEach(([x, y], k) => { CIR(x, y, 20, [230, 224, 210]); CIR(x, y, 6, [44, 40, 36]); for (let s = 0; s < 6; s++) { const a = ang * (k ? 1 : 1.3) + s * Math.PI / 3; LN(x + Math.cos(a) * 8, y + Math.sin(a) * 8, x + Math.cos(a) * 18, y + Math.sin(a) * 18, [150, 140, 120], 2); } });
+      // the tape below: the last 8 seconds of notes, scrolling left
+      R(0, 160, 240, 70, [56, 40, 30]); const now = performance.now();
+      events.forEach(e => { const x = 240 - (now - e.t) / 8000 * 240; if (x < -10) return; const y = 226 - ((e.n - 36) / 48) * 62; R(x, y, 10, 3, mix([56, 40, 30], PC_COL[e.n % 12], .9)); });
+      const loud = Math.min(1, held().length / 4 + (beat * Math.max(0, 1 - (now - beatT) / 300)));
+      vu += (loud - vu) * Math.min(1, dt * 8); const a = -2.4 + vu * 1.6;
+      R(186, 6, 46, 14, [20, 18, 16]); LN(209, 20, 209 + Math.cos(a) * 12, 20 + Math.sin(a) * 12, [240, 90, 60], 2); TX("VU", 192, 13, 7, [200, 190, 170]);
+    } };
+})());
+// 5 Sky: a constellation that grows for as long as you play
+scenes.push((() => {
+  const stars = [], links = [];
+  let lastChordStars = [];
+  return { on(n, vel) { const x = 10 + ((n % 12) * 19) + rnd() * 10, y = 220 - ((n - 36) / 50) * 200 + (rnd() - .5) * 14; const s = { x, y, b: 1, r: 1 + vel * 1.6, col: mix(PC_COL[n % 12], [255, 255, 255], .5), t: performance.now() };
+      stars.push(s); if (stars.length > 300) stars.shift();
+      const now = performance.now(); lastChordStars = lastChordStars.filter(o => now - o.t < 120); lastChordStars.forEach(o => links.push([o, s])); lastChordStars.push(s); if (links.length > 400) links.shift(); },
+    draw(dt) {
+      for (let y = 0; y < 240; y += 4) R(0, y, 240, 4, mix([4, 6, 18], [22, 16, 40], y / 240));
+      links.forEach(([a, b]) => LN(a.x, a.y, b.x, b.y, mix([4, 6, 18], [110, 120, 170], .35)));
+      stars.forEach(s => { s.b = Math.max(.35, s.b * Math.pow(.6, dt)); CIR(s.x, s.y, s.r * (s.b > .5 ? 1.4 : 1), mix([4, 6, 18], s.col, s.b)); });
+      TX(stars.length + " stars", 232, 230, 7, [80, 86, 120], "right");
+    } };
+})());
+// 6 Horizon: a sun that pulses with the beat, mountains grown from the pitches
+scenes.push((() => {
+  const ridge = new Array(25).fill(150);
+  return { on(n, vel) { const i = Math.round(((n % 24) / 23) * 24); ridge[i] = Math.min(ridge[i], 175 - ((n - 40) / 40) * 90); },
+    draw(dt) {
+      const now = performance.now(), pulse = beat * Math.max(0, 1 - (now - beatT) / 400);
+      for (let y = 0; y < 150; y += 5) R(0, y, 240, 5, mix([40, 16, 60], [250, 110, 90], y / 150));
+      CIR(120, 128, 40 + pulse * 6, mix([255, 190, 90], [255, 240, 170], pulse));
+      for (let y = 100; y < 150; y += 7) R(70, y, 100, 2, mix([40, 16, 60], [250, 110, 90], y / 150));
+      for (let i = 0; i < 25; i++) ridge[i] += (150 - ridge[i]) * dt * .08;
+      for (let i = 0; i < 24; i++) { const x0 = i * 10, x1 = x0 + 10; for (let x = x0; x < x1; x++) { const y = ridge[i] + (ridge[i + 1] - ridge[i]) * (x - x0) / 10; R(x, y, 1, 150 - y + 1, [50, 20, 60]); } }
+      R(0, 150, 240, 90, [24, 10, 40]);
+      for (let k = 1; k < 9; k++) { const y = 150 + k * k * 1.2; LN(0, y, 240, y, [180, 60, 150]); }
+      for (let k = -6; k <= 6; k++) LN(120 + k * 12, 150, 120 + k * 60, 240, [180, 60, 150]);
+    } };
+})());
+
+let last = performance.now();
+function frame() {
+  const now = performance.now(), dt = Math.min(.1, (now - last) / 1000); last = now;
+  for (let i = 0; i < 12; i++) hist[i] *= Math.pow(.97, dt);
+  for (const [n, v] of live) if (v.off && now - v.off > 4000) live.delete(n);
+  scenes[st.k[0]].draw(dt);
+  // what is written over the scene (K2)
+  const show = st.k[1], h = held();
+  if (show) {
+    const ch = chordOf(h), key = keyOf();
+    if (show === 3 && h.length) { const s = h.sort((a, b) => a - b).map(n => NAMES[n % 12]).join(" "); R(0, 206, 240, 26, [0, 0, 0]); TX(s, 120, 219, 12, [240, 240, 240], "center"); }
+    else if ((show === 1 || show === 2) && ch) { R(0, 196, 240, 36, [0, 0, 0]); TX(ch.name, 12, 214, 22, [250, 250, 250], "left", 700); if (show === 2 && key) TX(numeral(ch, key) + "   in " + NAMES[key.root] + (key.minor ? " minor" : " major"), 228, 216, 10, [180, 186, 200], "right"); }
+    else if (show === 2 && key) { R(0, 206, 240, 26, [0, 0, 0]); TX(NAMES[key.root] + (key.minor ? " minor" : " major"), 228, 219, 10, [180, 186, 200], "right"); }
+  }
+  requestAnimationFrame(frame);
+}
+frame();
+
+// ------------------------------------------------------------------ the panel
+function showKnobs() { $("v0").textContent = SCENES[st.k[0]]; $("v1").textContent = SHOWS[st.k[1]]; $("v2").textContent = SOUNDS[st.k[2]]; $("v3").textContent = VIBES[st.k[3]]; }
+const LIM = [SCENES, SHOWS, SOUNDS, VIBES];
+document.querySelectorAll("[data-k]").forEach(b => b.onclick = () => { const k = +b.dataset.k; st.k[k] = (st.k[k] + +b.dataset.d + LIM[k].length) % LIM[k].length; if (k === 3) applyVibe(); showKnobs(); });
+showKnobs();
+$("start").onclick = startAudio; $("play").onclick = playToggle;
+$("oct").onclick = () => { st.oct = st.oct >= 1 ? -1 : st.oct + 1; $("oct").textContent = "OCT " + (st.oct > 0 ? "+" : st.oct < 0 ? "" : "+") + st.oct; };
+const KB = "zsxdcvgbhnjm,l.;/q2w3er5t6y", keyEls = [], hv = new Map(), WH = []; for (let i = 0; i < NK; i++) if (!isB(LOW + i)) WH.push(i);
+for (let i = 0; i < NK; i++) {
+  const el = document.createElement("div"), b = isB(LOW + i), wi = b ? WH.indexOf(i - 1) : WH.indexOf(i), ww = 100 / WH.length;
+  el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .3 : wi * ww) + "%"; el.style.width = (b ? ww * .6 : ww) + "%"; el.textContent = KB[i];
+  el.addEventListener("pointerdown", e => { e.preventDefault(); const r = el.getBoundingClientRect(); press(i, .35 + .65 * (e.clientY - r.top) / r.height); });
+  ["pointerup", "pointerleave"].forEach(ev => el.addEventListener(ev, () => release(i)));
+  $("keys").appendChild(el); keyEls.push(el);
+}
+function press(i, vel) { startAudio(); if (hv.has(i)) return; const n = LOW + i + 12 * st.oct; hv.set(i, [voice(n, vel), n]); keyEls[i].classList.add("held"); noteEvent(n, vel); }
+function release(i) { const v = hv.get(i); if (!v) return; v[0] && v[0].stop(); noteEnd(v[1]); hv.delete(i); keyEls[i].classList.remove("held"); }
+const down = new Set();
+addEventListener("keydown", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0 && !down.has(i) && !e.repeat) { down.add(i); press(i, .7); e.preventDefault(); } });
+addEventListener("keyup", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0) { down.delete(i); release(i); } });
+$("hint").textContent = "Try: K1 through the scenes while the loop plays; hold a chord (z c b) on Bloom; play slowly on Sky for a few minutes.";
+})();
+</script>

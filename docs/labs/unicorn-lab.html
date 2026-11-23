@@ -1,0 +1,520 @@
+<title>Unicorn Jump</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the FM-1's 240x240 screen, big and pixel-sharp, its 27 keys under it, three knobs beside. A night arcade:
+   one dark look on purpose (the game's own sky), every colour set here. */
+:root {
+  --bg: #120f2b;          /* night behind the device */
+  --panel: #1d1a3d;       /* the FM-1's face */
+  --ink: #f4f1ff;
+  --muted: #a39fc9;
+  --gold: #ffd23f;        /* the unicorn's mane: the one accent */
+  --key-w: #e9e7f5;
+  --key-b: #26233f;
+  --display: "Press Start 2P", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px; }
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-family: var(--display); font-size: 18px; letter-spacing: .04em; margin: 0; color: var(--gold); text-wrap: balance; }
+p.lead { margin: 0; color: var(--muted); max-width: 65ch; line-height: 1.5; }
+.device { background: var(--panel); border-radius: 18px; padding: 16px; display: grid; gap: 14px;
+  box-shadow: 0 0 0 2px #2c2858 inset; }
+.top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+canvas#screen { width: min(480px, 100%); aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; background: #000;
+  border: 3px solid #0a0918; max-width: 100%; }
+.knobs { display: grid; gap: 10px; flex: 1; min-width: 180px; }
+.knob { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; background: #15132f; border-radius: 10px; padding: 8px 10px; }
+.knob button { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #3b3672; background: radial-gradient(#3a3570, #1a1838);
+  color: var(--ink); font: 11px var(--display); cursor: pointer; }
+.knob button:focus-visible, .start:focus-visible, .key:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.knob .lab { font: 9px var(--display); color: var(--muted); letter-spacing: .06em; }
+.knob .val { font-weight: 600; margin-top: 4px; }
+.start { font: 12px var(--display); background: var(--gold); color: #2a1a00; border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.keys { position: relative; height: 120px; overflow-x: auto; }
+.keys-inner { position: relative; height: 100%; min-width: 480px; }
+.key { position: absolute; top: 0; border: 1px solid #0a0918; border-radius: 0 0 6px 6px; cursor: pointer; padding: 0;
+  display: flex; align-items: flex-end; justify-content: center; font: 9px var(--display); color: #6f6a99; }
+.key.w { background: var(--key-w); height: 100%; z-index: 1; }
+.key.b { background: var(--key-b); height: 60%; z-index: 2; color: #8b86b8; }
+.key.glow { box-shadow: 0 0 14px 4px var(--glow, #fff) inset, 0 0 12px 2px var(--glow, #fff); }
+.key.down { filter: brightness(.8); }
+.notes { color: var(--muted); font-size: 13px; line-height: 1.55; display: grid; gap: 6px; }
+.notes b { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .key.glow { box-shadow: 0 0 0 3px var(--glow, #fff) inset; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap">
+
+<div class="wrap">
+  <h1>Unicorn Jump</h1>
+  <p class="lead">The unicorn runs to each fence and waits for you. Easy: any key jumps it, and the fence's note plays the song.
+    Key: the note's letter is over the fence and its key glows; a wrong one bumps it, two make it poop, and the poop comes round again to hop.
+    Wings (Easy: half way through the song; Key: eight good jumps): off to the moon! Leave it waiting and it neighs, then falls asleep. A soft band plays the song's chords under your notes (K4).</p>
+  <div class="device">
+    <div class="top">
+      <canvas id="screen" width="240" height="240" aria-label="The game screen"></canvas>
+      <div class="knobs">
+        <button class="start" id="start">▶ Start (sound on)</button>
+        <div class="knob"><button id="k1" aria-label="K1 mode">K1</button><div><div class="lab">MODE</div><div class="val" id="v1">Easy: any key</div></div></div>
+        <div class="knob"><button id="k2" aria-label="K2 speed">K2</button><div><div class="lab">SPEED</div><div class="val" id="v2">slow</div></div></div>
+        <div class="knob"><button id="k3" aria-label="K3 song">K3</button><div><div class="lab">SONG</div><div class="val" id="v3">Twinkle Twinkle</div></div></div>
+        <div class="knob"><button id="k4" aria-label="K4 music">K4</button><div><div class="lab">MUSIC</div><div class="val" id="v4">pad, bass, reverb</div></div></div>
+      </div>
+    </div>
+    <div class="keys"><div class="keys-inner" id="keys"></div></div>
+  </div>
+  <div class="notes">
+    <div><b>Play:</b> tap the keys here, or the computer keys <b>A S D F G H J K L</b> (white, C to D) and <b>W E T Y U O P</b> (black). A MIDI keyboard plugged into the computer works too, where the browser allows it.</div>
+    <div><b>On the FM-1</b> this is HOME (held) → Game. The glowing key is the key's own light; K1 to K4 are the four knobs.</div>
+    <div><b>Sprites</b> are our own pixel art (white winged unicorn, wooden fence, crescent moon), drawn for the FM-1's screen. The songs are traditional, free to use.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------- the FM-1's keys: 27, F3 (53) to G5 (79) ---------- */
+const LO = 53, HI = 79;
+const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const isBlack = (n) => [1, 3, 6, 8, 10].includes(n % 12);
+/* a colour per note, as children's bells and boomwhackers have them */
+const NOTE_COL = ["#ff4d4d", "#ff7a59", "#ff9f1c", "#ffbf47", "#ffe14d", "#5ed36b", "#38c9a4", "#2ec4f0", "#4d8cff", "#8a6bff", "#c26bff", "#ff6bc6"];
+
+/* ---------- songs: traditional, free; one fence a note ---------- */
+const N = (s) => s.split(" ").map((x) => { const m = x.match(/^([A-G]#?)(\d)$/); return 12 * (+m[2] + 1) + NAMES.indexOf(m[1]); });
+const SONGS = [
+  ["Twinkle Twinkle", N("C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4 G4 G4 F4 F4 E4 E4 D4 G4 G4 F4 F4 E4 E4 D4 C4 C4 G4 G4 A4 A4 G4 F4 F4 E4 E4 D4 D4 C4")],
+  ["Mary's Little Lamb", N("E4 D4 C4 D4 E4 E4 E4 D4 D4 D4 E4 G4 G4 E4 D4 C4 D4 E4 E4 E4 E4 D4 D4 E4 D4 C4")],
+  ["Frère Jacques", N("C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4 E4 F4 G4 G4 A4 G4 F4 E4 C4 G4 A4 G4 F4 E4 C4 C4 G3 C4 C4 G3 C4")],
+  ["Row Your Boat", N("C4 C4 C4 D4 E4 E4 D4 E4 F4 G4 C5 C5 C5 G4 G4 G4 E4 E4 E4 C4 C4 C4 G4 F4 E4 D4 C4")],
+  ["Ode to Joy", N("E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4")],
+  ["Happy Birthday", N("G4 G4 A4 G4 C5 B4 G4 G4 A4 G4 D5 C5 G4 G4 G5 E5 C5 B4 A4 F5 F5 E5 C5 D5 C5")],
+  ["Unicorn Song", N("G4 E4 G4 C5 B4 G4 A4 G4 F4 A4 G4 E4 D4 E4 C4 G4 E4 G4 C5 D5 C5 B4 C5 A4 G4 F4 E4 D4 G4 C4")],   /* the game's own */
+];
+const SPEEDS = [["slow", 42], ["medium", 56], ["fast", 72]];   /* fences a minute */
+
+/* ---------- our own pixel art: a letter a colour ---------- */
+const PAL = { O: "#1b2257", W: "#ffffff", w: "#c9d4f6", Y: "#ffd23f", y: "#f29d38", E: "#3b1d0e", P: "#ff9ec7", B: "#e6ecff", b: "#9fb2ea",
+  h: "#fff2a8", K: "#7a4a1c", k: "#b8722d", L: "#e0a050", G: "#3aa65a", g: "#7fd67f", M: "#ffcf4a", m: "#f29d1f", N: "#3a2470",
+  S: "#fff6c4", C: "#d9d4ee", c: "#a8a1cf", D: "#8a5a2b", d: "#5e3a17", T: "#ffffff" };
+/* the unicorn: the firmware's own frames (tools/gen_unicorn.py, 44 x 42), drawn at 2x */
+const UNI_PNG = {"uni_sleep": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAqCAYAAADI3bkcAAADFUlEQVR4nO2YP2/TQBjGHyOqTmHJQCVblXCWVKgkC2olhpYFJqqy4AipA4gF8QWQ+AbsjIghUhWztAoTXeiABKgLpIhmSZAqR4KhSzuFIh2De+fX57N9l5A/oD5S1FzPd/7l8XvvvT5gymS7HrNdj02aQ0u26zHWWmGstTL90AL229NM2AvjhNLS7w+TJlCLxip39/jlcm4oXBwPXly267Fg+wewuAunBAFYuD6bO9YY2HY91uv6luk4pfZXEWxHTWd9Dn9tbiCEff/111ArmGYCIdLOm1tr0fF4e/b8BQDAb9YxCLRyzP5q+HdxFwAQdBqZc+fab7se+/K5gfbhaaLPW9vQfoQ8bk/2+lGsnkGq5JRqAJCYP9Nh6mp5fibRr+u0EjZHQaehdDt10XFnqcrzMwmn/WYd3hqGXogLl2+L7wc/38bAnVI0v/ImtuuxEGQDMjQAo/BIdTcjHFRySjX0ur6VGhKt9jH8Zh3tw1NUqrVYn2l4GMO++hh+ABx878e6UoGvlS/FYGRXdaDFBkGl4+yD5fADYOFKPOYTMcxjl7vqN+uij0Nz2KyYzqfSFw8HJTAAvN45isVupVpLgMvQ1HE+tlKtaaUxnsKCTnK9UNhU4Hu3irE2heeOUrdvXE2GBwCEi03ZlVCv61u0rqD/p+0EcK/rW5VqfCAF5k4WC3ogJtJJjUqH5YH0B6geW5YKDydU39qux0Ylk7pEmSVUF5o6OyrFHr0ybwLGu9IgkrNBmnLLy5O9ft4lY5UAVrlrUl2NS6kOTyMscAYsu0thnfU5sRONSibzJ7KEylm+C40qU/B5ad2bJou6K8Pyt1jb9QSsXO4NI7kSC6Gzs0Xuaz6F5Td58+5oUEahOzeLAtDkyVkCSnoroGcEMjSVCfzjR08ApG9COrlYOJyWFbJggdApk0WTmOvTXdIY8OSHukvLvqDTCG+wtKWEyHPIdj0WA5Tm0ZHWURWHcEpgwSYiV5a2jB2iCp9MNEZnaxYX8DjOO9+Si6NgM8oazv3Z3JvS8UOfow16/PRPHfOf61zn+s/1B2jLODj9ZRimAAAAAElFTkSuQmCC", "uni_a": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAqCAYAAADI3bkcAAADOUlEQVR4nO2YvYsTQRjGn0jCVbG5wsAugds0CXImjXhgcWejlUds3CBcodgc/gOC/4G9pVgEJGvjETsbrxBUrrnLiaZJhCMBm2vuqnjCWOzNZHZnZmdm81n4QAib+djfPvvOO28GWDI5nk8czyeL5jCS4/mEdDYJ6WwuPzSD/fE8EfbKPKGM9PfLognk4mOVunv2ekMbCtn54EXleD4Z7P0G1vfhlsAA8zdXtGOtgR3PJ8N+kLEdJ9XxFgZ740u3XsDU5gZC2M/f/0y0gvlMwMRd6+Y2WnQ03l68fAUACNpNpIGWjjneCr/X9wEAg14rcW6t/Y7nk6PDFronF0Kbv71j/App3J4fjMaxegkpk1tqAIAwf6LDvKvlYk5oN3VaCqtQ5do9AKHTMreVwNTZh3dX2W+TQJuIwvKKQ0tfp+P5JGg34W/v4OiwJbTbhIfS3YRwkMktNTDsBxmlw53uGYJ2E92TC1RrjUibrdPWsG++hh8AP3+NIk1K4BvlqxGYuKsm0GyD4GXi7OON8AOgshaNeWHjoLFLXQ3aTdZGoSlsuZgTHiQMJUy10qLhIAUGgHcfTyOxW601BPA4NO84HVutNYzSGE1hg564XnhYJTCfGXgACst/l4s53L4uhgcAhItN2iRo2A8yfF3B/85fC8DDfpCp1qIDeWDq5GreDMRGJpuQ1OH4QP4BZK8tSfknC6pvHc8ns5LNxiPNErKOts7OSpFXL82bgPWulEbxbKCStrw8PxjpusxVDFjmrkl1NW8pHV5GWOASOO4uD+vWC2wnmpVM4xeQOCxzNtyFZgttqizvbhyW/ot1PJ/QtBYv9yZRvBIzkfXf/MraCj58OrW+UVz374zrlUGvBbcEo+OD7LAfZNy6mCFk7lLtPn3GbmQDz0OmFXNYFrsyWCpaXfHtujjfhXrHNHVZGhJuvcAmEdo0K1p3w/hD2srq9FIHqzsEAZIzjsl4JnqERE95TCoq037K+6Wo3pjD4eKzO4yTuWXlEq9vD8afBEVCQpUVkkJhqtAGkudh/ilvvTefLeKOwabA9XcfjfsnvWXtxmGyz7MU91bPqJtH10d5VGUzSdpxae/zX7PUP6zhlMFJXyOyAAAAAElFTkSuQmCC", "uni_b": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAqCAYAAADI3bkcAAADC0lEQVR4nOWYsW/TQBTGP1eNMoUlA5UcBdVZEqGSLEiVGNouMKUqC/bSAf4KJGYWdkaEUJaYqQobINEBCVCXNkWQpUGqEomlSzuFIh2Dc+7z+WzfOXGSik+KovP5nF++e/fe+YAFk2nZzLRsNm8OJZmWzVh3g7HuxuJD+7A/nsbCLs0SSkl/v8ybQC4aq9zd81friaGwPBu8oEzLZoO938DaPkoV+ICFu/nEsdrApmWzYd81dMdJdbyJwd5Vs7Szgqk9G/BgP3//M9EKppnAF2knPVtp0fF4e/biJQDA7bSQBlo65njT+17bBwAMTtqxz06037RsdnTYRu/0MtRnb+8qTyGP24uD0VWsjiFlKlUcAAg9P9Zh6mq1nAv1qzothY1Q7eYDAJ7TMrcjgbmzj+4X/WuTQKuIw1KJ0NLpNC2buZ0W7O1dHB22Q/064RHpbkw4yFSqOBj2XSPS4W7vHG6nhd7pJeoNJ9Cn67Q27Ouv3gfAz1+jQFck8J3qjQCM6KoKtF8gqFScfbzufQDUVoMxHyocPHa5q26n5fdxaA5bLedCf8QLJUx1p8XDQQoMAG/fnwVit95wQuAiNHWcj603HKU0xlPY4CS8XihsJDDNDBSAw9LvajmHe7fD4QEA3mKTdoU07LsG3VfQ67QdAh72XaPeCA6kwNzJYkENREcqRUjqsDiQ/gHZtMWp8GRO+1vTsllW0ik80iwhu1HX2awUmHpp3gS0q1IaidkgSonby4uDUdItM5UPLHNXZXc1a0U6vIiwwBhYdJfClnZW/EqUlVTjF5A4LHPWq0LZQOvAAsAydVeEpW+xvHR++PhmarDiTkxF2q/5tdU83n060/4hUc2tYvJNEhmA/K1AdkZgWjYTC4gOPIcsVZxAIdIJC9/htFmhuVVUXpTNMeQkVVMaEmlOYJLun9aL6uKdXiZoCfDcqT2/BSCD860sFTdt4vaStlUPUybdWgJCSKR1Nuk8TJZd0kovD397SBr5cFt5LJVeZrp2i04rBOi0D/uuIbZVx1JdmwX+3+gf3Os+RxHb4vsAAAAASUVORK5CYII=", "uni_up": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAqCAYAAADI3bkcAAADRElEQVR4nO2YMW/TQBTH/0FUndIlA5VsFdVZkqFNFlQm2i4wtSoDOEJiQGJBfAG+AF+hK0OlKkGVisrGQodKperSlgq6JKDKkRiSJZ2aIh2D+y7ni89356QQifwlK3ZsP//y97t3LweMmBzPZ47ns3/NYSTH8xk7WWTsZHH0oTnstzeJsLfTBKb9ZqOWSQuo1O99ANPK08bABFrb2cDJWQfzhSn4q4g4YfMDKF6zUcs4ns+CD79wcXiJ4tu7iXGMgB3PZ8dHVZTKFQDAfGGKnzs+quL9pzaePsyhVAYzgSZAzO3Czfd+dPbepAmOPvj6Vou1Ooy1Oow5ns/2Trt8o+/pnGlMGlziZnJ/ohvkrKyz8yu+768+h3gNvQUgPkW4uwAwtxt+fl3ix26+MtjYcDw/4qLO5b3TLlvfarG9026fY1RjuauMRfevNVCVaDZqmVIZEaePj6oRl2WJOS7C0sAChFwllwUF9SrPbdntWzpglQozE8bXirC6gVW88whACB3Uq5DdNgIOXa4ozye5bSOCFSVDWyV33CAkWHJcHpAAEOtuTCokiQajVUronFbJGvbdl3AD8P3HZeRU6hwmyc6KuV3b2QAvYSQTZ1/cDzcAxdlozlsDp3V5EIm1OXWBVk0qos7OrzB/8KCXDgp33XxoQFDvjydPJNbdmqhSuYIk6MLMBHBgFqvZqGXEvkL8XjxO3V6SG+2L5Ou7T/aBn0tGsU2mZCtgx/NZ3GvTyrKEJcl40KWGHbL6HFY1HirYXDY5LXLZlGQKRXIm0vqJMnilcdA2sKZtpTaHLw4vkZ3TP3DYTqrEczjOXZPu6m9LOehGERa4BpbdFWHdtWk+E92UbOL35XCcszQL3VRZo7huXv+vOyO6K8O6a9O9dYProHK7N4jkTiyETq4W2iohTxjF2Ul8/NxOy8i1spzjgDZvLsOhpH8F5G4ctCgb+FcvXwNQT0ImtZg7rKoKuil5ZTlnNWj6Yh08Fg70VSk2JUR3xbYvqFfDByxsx0LoHHI8n0UApTgmMurWCMLNgwWb6LmysG3tkKjwzfTuMZma+QWUx6K7cZKbo2CzVzXcZ5Pahw51uTbNqjctP438ivlYY431n+gP+b4so0sk0SMAAAAASUVORK5CYII=", "uni_fly1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAqCAYAAADI3bkcAAADRElEQVR4nO2YMW/TQBTH/0FUndIlA5VsFdVZkqFNFlQm2i4wtSoDOEJiQGJBfAG+AF+hK0OlKkGVisrGQodKperSlgq6JKDKkRiSJZ2aIh2D+y7ni89356QQifwlK3ZsP//y97t3LweMmBzPZ47ns3/NYSTH8xk7WWTsZHH0oTnstzeJsLfTBKb9ZqOWSQuo1O99ANPK08bABFrb2cDJWQfzhSn4q4g4YfMDKF6zUcs4ns+CD79wcXiJ4tu7iXGMgB3PZ8dHVZTKFQDAfGGKnzs+quL9pzaePsyhVAYzgSZAzO3Czfd+dPbepAmOPvj6Vou1Ooy1Oow5ns/2Trt8o+/pnGlMGlziZnJ/ohvkrKyz8yu+768+h3gNvQUgPkW4uwAwtxt+fl3ix26+MtjYcDw/4qLO5b3TLlvfarG9026fY1RjuauMRfevNVCVaDZqmVIZEaePj6oRl2WJOS7C0sAChFwllwUF9SrPbdntWzpglQozE8bXirC6gVW88whACB3Uq5DdNgIOXa4ozye5bSOCFSVDWyV33CAkWHJcHpAAEOtuTCokiQajVUronFbJGvbdl3AD8P3HZeRU6hwmyc6KuV3b2QAvYSQTZ1/cDzcAxdlozlsDp3V5EIm1OXWBVk0qos7OrzB/8KCXDgp33XxoQFDvjydPJNbdmqhSuYIk6MLMBHBgFqvZqGXEvkL8XjxO3V6SG+2L5Ou7T/aBn0tGsU2mZCtgx/NZ3GvTyrKEJcl40KWGHbL6HFY1HirYXDY5LXLZlGQKRXIm0vqJMnilcdA2sKZtpTaHLw4vkZ3TP3DYTqrEczjOXZPu6m9LOehGERa4BpbdFWHdtWk+E92UbOL35XCcszQL3VRZo7huXv+vOyO6K8O6a9O9dYProHK7N4jkTiyETq4W2iohTxjF2Ul8/NxOy8i1spzjgDZvLsOhpH8F5G4ctCgb+FcvXwNQT0ImtZg7rKoKuil5ZTlnNWj6Yh08Fg70VSk2JUR3xbYvqFfDByxsx0LoHHI8n0UApTgmMurWCMLNgwWb6LmysG3tkKjwzfTuMZma+QWUx6K7cZKbo2CzVzXcZ5Pahw51uTbNqjctP438ivlYY431n+gP+b4so0sk0SMAAAAASUVORK5CYII=", "uni_fly2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAqCAYAAADI3bkcAAADLUlEQVR4nO2YMW/TQBiGXyOiTmHJQCVbkXCWdAjJglqmhgUmqjKAI6QOSCyIP4DEP2BnRAyRqhiGVmFjaQekgrq0KYIsCahyJJYszZQWyQzuXT6f7+xzEtKA+kpW5Jzv7vF73313PmDOZNqOb9qOf9EcWjJtx/dbq77fWp1/aA777UUs7JVZQmnp995FE8hFY5W5e/JmJTEUrs4GLyzTdnxv+xdQ2oVVAAfM3lpIrJsa2LQdv9d1jbT1pDqqwtse3Vrri5ha20AA++nr6UQzmGYCLnKf1LbWpGPx9vLVawCA26xjHGhpnaNq8FvaBQB4nUZs24n2m7bjHx400D4+i5Q5axvaQ8jidrA/HMXqOaRMVqEGAJH2Yx2mrhbzmUi5rtNSWIWWrt8DEDgtc1sJzJx9dDfH/5sEWkcMlkqElg6naTu+26zDWdvA4UEjUp4mPJTuxoSDTFahhl7XNZQOt9oncJt1tI/PUK7UQmVpnU4N+/ZzcAH4/mMYKlIC3yxeC8GIrupA8wWCSsfZJyvBBWDpRjjmIwsHi13mqtus8zIGzWCL+UzkRYJQwlR3WiwcpMAA8O5jPxS75UotAi5CU8dZ3XKlppXGWArzOtH5QmGVwDQzUAAGS3+L+Yw0PHi997elZaJ6Xdeg+wr6P72PAPe6rlGuhCtSYAYnyxQynT7cA35WtZ7VWYSkDosV6QsweJWrUqVMYXHS2kuwF/A6DeSyCF2zljRLyB6UTQgggO4P1B1M+6VCQy/Nm4DWkMqg08CK2UClxA38YH+IbCm5w1mFB49hmbs6u6tZSznp5hEWOAcW3aWw1voiX4n+ltK0H4lhmbNsFVJliknF2rUKSPzANai7Iiz7ijVth8OK271JJO7EAuj4bJGYJSgs6+TDTn9cRq77d3IcMM3IGRxK+CqgZwQiNFUa+GdPnwNQL0I6uZg7rMoKcbBA4FSaSRNp68sDcjPmyQ91l277vE4j6GB5SwqR5JBpO34IUGhHR1pHVQzCKsD3NjFyZXkrtUNUwciM6ugszfwBFsdJ51vi5sjbHGUN6/FCYqe0/sTnaOMeP/1Tx/yXutSl/nP9AcbP4x/AxGGZAAAAAElFTkSuQmCC"};
+const FENCE = [   /* 14 x 16 */
+  ".KK......KK...",
+  "KLLK....KLLK..",
+  "KkkK....KkkK..",
+  "KkkKKKKKKkkKKK",
+  "KkkLLLLLLkkLLK",
+  "KkkKKKKKKkkKKK",
+  "KkkK....KkkK..",
+  "KkkK....KkkK..",
+  "KkkKKKKKKkkKKK",
+  "KkkLLLLLLkkLLK",
+  "KkkKKKKKKkkKKK",
+  "KkkK....KkkK..",
+  "KkkK....KkkK..",
+  "GkkGgGgGGkkGgG",
+  "gGgGgGgGgGgGgg",
+  ".............."];
+const FENCE_DOWN = [
+  "..............",
+  "..............",
+  "..............",
+  "..............",
+  "..............",
+  "..............",
+  "..............",
+  "..............",
+  "..............",
+  "..............",
+  "KKKKKKKKKKKKK.",
+  "KLLLLLLLLLLLLK",
+  "KkkkkkkkkkkkkK",
+  "GKKKKKKKKKKKKG",
+  "gGgGgGgGgGgGgg",
+  ".............."];
+const POOP = [
+  "....dd....",
+  "...dDd....",
+  "..dDDDd...",
+  "..dDDDDd..",
+  ".dDDDDDDd.",
+  "dDDDDDDDDd",
+  "dddddddddd"];
+const MOON = [
+  ".....NNNN.....",
+  "...NNMMMN.....",
+  "..NMMMMN......",
+  ".NMMMMN.......",
+  ".NMMMN........",
+  "NMMMMN........",
+  "NMMMMN........",
+  "NmMMMMN.......",
+  "NmmMMMMN......",
+  ".NmmmMMMNN..NN",
+  ".NmmmmMMMMNNMN",
+  "..NNmmmmmmmmN.",
+  "....NNNNNNNN.."];
+const CLOUD = [
+  ".....CCCC.........",
+  "...CCCCCCCC..CCC..",
+  ".CCCCCCCCCCCCCCCC.",
+  "CCCCCCCCCCCCCCCCCC",
+  ".cccccccccccccccc."];
+const STAR = [".S.", "SSS", ".S."];
+
+function sprite(rows, flip = false) {
+  const h = rows.length, w = rows[0].length, cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  const g = cv.getContext("2d");
+  rows.forEach((r, y) => [...r].forEach((ch, x) => { if (PAL[ch]) { g.fillStyle = PAL[ch]; g.fillRect(flip ? w - 1 - x : x, y, 1, 1); } }));
+  return cv;
+}
+function png(uri) { const im = new Image(); im.src = uri; return im; }
+const SPR = { a: png(UNI_PNG.uni_a), b: png(UNI_PNG.uni_b), up: png(UNI_PNG.uni_up), fly1: png(UNI_PNG.uni_fly1), fly2: png(UNI_PNG.uni_fly2), sleep: png(UNI_PNG.uni_sleep), fence: sprite(FENCE), down: sprite(FENCE_DOWN), poop: sprite(POOP),
+  moon: sprite(MOON), cloud: sprite(CLOUD), star: sprite(STAR) };
+
+/* ---------- sound: everything into a bus, the bus dry and through a reverb (as the FM-1's kit_reverb) ---------- */
+let ac = null, bus = null, wet = null;
+function power() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    bus = ac.createGain(); bus.connect(ac.destination);
+    const cv = ac.createConvolver(), len = Math.floor(ac.sampleRate * 2.2), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    cv.buffer = ir; wet = ac.createGain(); wet.gain.value = K.music ? 0.35 : 0;
+    bus.connect(cv); cv.connect(wet); wet.connect(ac.destination);
+  }
+  if (ac.state === "suspended") ac.resume();
+}
+const hz = (n) => 440 * Math.pow(2, (n - 69) / 12);
+function tone(f, t, dur, type = "sine", vol = 0.2, slideTo) {
+  if (!ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t); if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.05);
+}
+function bell(n) { if (!ac) return; const t = ac.currentTime; tone(hz(n), t, 0.9, "sine", 0.22); tone(hz(n) * 2, t, 0.5, "sine", 0.06); tone(hz(n) * 3.01, t, 0.25, "triangle", 0.03); }
+function bonk() { if (!ac) return; const t = ac.currentTime; tone(220, t, 0.25, "square", 0.12, 70); tone(660, t + 0.02, 0.12, "triangle", 0.08, 300); }
+function pfft() {                                               /* a low buzz, falling and fluttering (KIT_SFX_PFFT) */
+  if (!ac) return;
+  const t = ac.currentTime, o = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain(), lfo = ac.createOscillator(), depth = ac.createGain();
+  o.type = "sawtooth"; o.frequency.setValueAtTime(95, t); o.frequency.linearRampToValueAtTime(55, t + 0.55);
+  lp.type = "lowpass"; lp.frequency.value = 560;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.35, t + 0.02); g.gain.setValueAtTime(0.35, t + 0.38); g.gain.linearRampToValueAtTime(0.0001, t + 0.55);
+  lfo.frequency.value = 23; depth.gain.value = 0.15; lfo.connect(depth); depth.connect(g.gain);
+  o.connect(lp); lp.connect(g); g.connect(bus); o.start(t); lfo.start(t); o.stop(t + 0.6); lfo.stop(t + 0.6);
+}
+function neigh() {                                              /* a whinny (KIT_SFX_NEIGH) */
+  if (!ac) return;
+  const t = ac.currentTime, o = ac.createOscillator(), hp = ac.createBiquadFilter(), g = ac.createGain(), lfo = ac.createOscillator(), vib = ac.createGain(), trem = ac.createGain();
+  o.type = "sawtooth"; o.frequency.setValueAtTime(520, t); o.frequency.linearRampToValueAtTime(900, t + 0.15); o.frequency.linearRampToValueAtTime(420, t + 1);
+  hp.type = "bandpass"; hp.frequency.value = 1100; hp.Q.value = 0.8;
+  lfo.frequency.value = 13; vib.gain.value = 40; lfo.connect(vib); vib.connect(o.frequency); trem.gain.value = 0.08; lfo.connect(trem); trem.connect(g.gain);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.18, t + 0.03); g.gain.setValueAtTime(0.18, t + 0.65); g.gain.linearRampToValueAtTime(0.0001, t + 1);
+  o.connect(hp); hp.connect(g); g.connect(bus); o.start(t); lfo.start(t); o.stop(t + 1.05); lfo.stop(t + 1.05);
+}
+function plop() {                                               /* a drop (KIT_SFX_PLOP) */
+  if (!ac) return; const t = ac.currentTime; tone(250, t, 0.13, "sine", 0.3, 700);
+}
+function sparkle() { if (!ac) return; const t = ac.currentTime; [0, 4, 7, 12, 16].forEach((s, i) => tone(hz(72 + s), t + i * 0.07, 0.35, "triangle", 0.06)); }
+function flap() { if (!ac) return; const t = ac.currentTime; tone(900, t, 0.12, "sine", 0.04, 500); }
+/* the band: a soft pad and a bass hold C, F or G, the one with the last fence's note (as the firmware's u_pad) */
+const CHORDS = { 1: [48, 52, 55, 36], 2: [48, 53, 57, 41], 3: [47, 50, 55, 43] };
+const CHORD_OF = [1, 1, 3, 3, 1, 2, 2, 1, 1, 2, 2, 3];
+let band = { chord: 0, voices: [] };
+function padOff() {
+  if (!ac) return; const t = ac.currentTime;
+  band.voices.forEach(({ o, g }) => { g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(0.0001, t, 0.35); o.forEach((x) => x.stop(t + 2)); });
+  band.voices = []; band.chord = 0;
+}
+function pad(note) {
+  if (!ac || !K.music) return;
+  let c = CHORD_OF[note % 12];
+  if (band.chord && CHORDS[band.chord].slice(0, 3).some((n) => n % 12 === note % 12)) c = band.chord;   /* the note is in it: keep it */
+  if (c === band.chord) return;
+  padOff(); band.chord = c;
+  const t = ac.currentTime;
+  CHORDS[c].forEach((n, i) => {
+    const g = ac.createGain(), lp = ac.createBiquadFilter(), o = [];
+    lp.type = "lowpass"; lp.frequency.value = i < 3 ? 900 : 300;
+    (i < 3 ? [-6, 6] : [0]).forEach((cents) => { const x = ac.createOscillator(); x.type = i < 3 ? "sawtooth" : "triangle"; x.frequency.value = hz(n); x.detune.value = cents; x.connect(lp); x.start(t); o.push(x); });
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(i < 3 ? 0.025 : 0.09, t + (i < 3 ? 0.5 : 0.05));
+    lp.connect(g); g.connect(bus); band.voices.push({ o, g });
+  });
+}
+
+/* ---------- the game: as the firmware's apps/companion/unicorn.c ---------- */
+const cv = document.getElementById("screen"), g = cv.getContext("2d");
+g.imageSmoothingEnabled = false;
+const GROUND = 196, UX = 96, FS = 3;           /* the ground; the unicorn's front; fences and poops drawn 3x */
+const UW = 88, UH = 84, GY = GROUND - 78;      /* the unicorn, 44 x 42 drawn 2x; its top on the ground */
+const LEGS = 44, FW = 42, PW = 30, SPACING = 190, HOP = 84, FLYN = 5, STOP = 18;
+const MCX = 197, MCY = 39, RX = 46, RY = 20;    /* the moon's middle; the orbit round it */
+const GCX = UX - UW / 2, GCY = GY + 42, OUT = 0.37, ROUND = 0.68;
+const K = { mode: 0, speed: 0, song: 0, music: true };   /* mode: 0 Easy (any key, plain fences), 1 Key (the note on a sign, its key lit) */
+const MODES = ["Easy: any key", "Key: the note's letter"];
+const S = {
+  running: false, t: 0, x: 0,                  /* x: how far the meadow has scrolled (px) */
+  fences: [], poops: [], sparks: [], trail: [],
+  idx: 0, jump: null, bonk: 0, misses: 0, poopsMade: 0, score: 0, streak: 0, wings: false, fly: null, cheer: 0, last: 60,
+};
+const speed = () => SPACING * SPEEDS[K.speed][1] / 60;        /* px a second */
+const song = () => SONGS[K.song][1];
+
+function reset() {
+  S.fences = []; S.poops = []; S.sparks = []; S.trail = []; S.idx = 0; S.x = 0; S.jump = null; S.bonk = 0; S.misses = 0;
+  S.streak = 0; S.wings = false; S.fly = null; S.cheer = 0; S.idle = 0; S.sleep = false;
+  for (let i = 0; i < 4; i++) addFence(320 + i * SPACING);
+}
+function addFence(wx) {
+  const notes = song();
+  if (S.idx >= notes.length) { S.idx = 0; S.cheer = 2.5; sparkle(); }   /* the song is done: cheer, and again */
+  S.fences.push({ wx, si: S.idx, note: notes[S.idx++], state: "ahead" });
+}
+const nextFence = () => S.fences.find((f) => f.state === "ahead");
+const screenX = (wx) => wx - S.x;
+const far = () => Math.max(-1, ...S.fences.map((f) => f.wx), ...S.poops.filter((p) => p.ahead).map((p) => p.wx));
+const poopAhead = () => S.poops.filter((p) => p.ahead && !p.hop && screenX(p.wx) > UX - 4).sort((a, b) => a.wx - b.wx)[0];
+
+function press(note) {
+  power(); S.idle = 0; S.sleep = false;                         /* a key: awake */
+  if (!S.running) { start(); bell(note); S.last = 60; pad(60); return; }
+  if (S.fly) { bell(note); return; }                            /* flying: the keys just sing */
+  const f = nextFence(), poop = poopAhead();
+  if (poop && (!f || poop.wx < f.wx) && screenX(poop.wx) < 240) { poop.hop = true; bell(note); return; }   /* a poop first: any key hops it */
+  if (!f || screenX(f.wx) >= 240) { bell(note); return; }      /* no fence on the screen: the key just sings */
+  if (S.bonk > 0) return;
+  if (K.mode === 0 || note === f.note) ok(f);                   /* Easy: any key */
+  else bump();                                                 /* a wrong key: a bump, and it waits on */
+}
+function spark(c, x, y) { for (let i = 0; i < 6; i++) S.sparks.push({ x, y, vx: Math.random() * 60 - 10, vy: -Math.random() * 60 - 20, life: 0.6, c }); }
+function ok(f) {                                                /* played: the note sings, it dashes there and jumps */
+  f.state = "ok"; bell(f.note); S.last = f.note; pad(f.note);
+  S.misses = 0; S.score++;
+  spark(NOTE_COL[f.note % 12], UX - 20, GROUND - 70);
+  if (!S.fly && ++S.streak > 0 && (K.mode === 0 ? f.si === Math.floor(song().length / 2) : S.streak % 8 === 0)) S.wings = true;   /* Easy: half way; Key: eight */
+}
+/* a jump over something w wide that starts d ahead: highest with its legs over the middle, the same speed all the way */
+function doJump(d, w) { const v = speed() * 2; S.jump = { t: 0, dur: 2 * (LEGS + d + w / 2) / v, v }; flap(); }
+function bump() {
+  S.bonk = 0.6; S.streak = 0; bonk();
+  if (++S.misses >= 2) {                                       /* twice: pfrrt ... plop, and there it is */
+    S.misses = 0; S.poopsMade++; pfft();
+    setTimeout(() => { plop(); S.poops.push({ wx: S.x + UX - UW - 6, ahead: false, back: false }); }, 450);
+  }
+}
+function start() { power(); reset(); S.running = true; document.getElementById("start").textContent = "↺ Again"; }
+
+/* the flight: away to the moon, smaller and smaller; once round it (behind it over the top); back, bigger, and down */
+const flyP = () => Math.min(1, (S.x - S.fly.x0) / (FLYN * SPACING));
+const ease = (q) => q * q * (3 - 2 * q), rise = (q) => q * (2 - q);
+function flyAt() {
+  const p = flyP(), ox = MCX - RX, oy = MCY;
+  let f;
+  if (p < OUT) { const q = p / OUT; f = { cx: GCX + (ox - GCX) * q, cy: GCY + (oy - GCY) * rise(q), w: 88 - 66 * q, left: false, behind: false }; }
+  else if (p < ROUND) {
+    const a = Math.PI + 2 * Math.PI * (p - OUT) / (ROUND - OUT), sn = Math.sin(a);
+    f = { cx: MCX + RX * Math.cos(a), cy: MCY + RY * sn, w: 22 + 8 * sn, left: sn > 0, behind: sn < 0 };
+  } else { const q = (p - ROUND) / (1 - ROUND); f = { cx: ox + (GCX - ox) * q, cy: oy + (GCY - oy) * ease(q), w: 22 + 66 * q, left: q < 0.83, behind: false }; }
+  f.cy += Math.sin(S.t * 5) * 3 * f.w / 88;
+  return f;
+}
+
+/* ---------- the world moves ---------- */
+let last = performance.now();
+function step(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; S.t += dt;
+  if (S.running) {
+    let v;
+    if (S.fly) {                                               /* flying: the fences below play themselves, the poops are passed */
+      const land = S.fly.x0 + FLYN * SPACING + UX;
+      const f = nextFence();
+      if (f && screenX(f.wx) - UX < 40 && f.wx < land - 40) { ok(f); f.state = "cleared"; }
+      S.poops.forEach((p) => { if (p.ahead && screenX(p.wx) - UX < 20 && p.wx < land - 40) p.ahead = false; });
+      v = speed(); S.wait = false;
+      if (!S.fly.moon && flyP() >= OUT) { S.fly.moon = true; sparkle(); spark("#8a6bff", MCX - 30, MCY); }
+    } else {                                                   /* it waits in front of a fence not played (or a poop not hopped) */
+      const f0 = nextFence(), p0 = poopAhead();
+      const block = !S.jump && ((f0 && screenX(f0.wx) - UX <= STOP) || (p0 && screenX(p0.wx) - UX <= STOP));
+      const dash = S.fences.some((x) => x.state === "ok") || S.poops.some((p) => p.ahead && p.hop);
+      v = block ? 0 : S.jump ? S.jump.v : dash ? speed() * 2 : speed();   /* in the air: the jump's own speed */
+      S.wait = block;
+      if (block) {                                             /* waiting with no key: a neigh at 8 s, asleep at 20 s */
+        S.idle = (S.idle || 0) + dt;
+        if (S.idle >= 8 && S.idle - dt < 8) neigh();
+        if (S.idle >= 20) S.sleep = true;
+      }
+    }
+    S.x += v * dt;
+    if (S.bonk > 0) S.bonk -= dt;
+    if (S.jump) { S.jump.t += dt; if (S.jump.t >= S.jump.dur) S.jump = null; }
+    if (S.cheer > 0) S.cheer -= dt;
+    if (S.fly && flyP() >= 1) S.fly = null;                    /* down again: it runs on */
+    S.fences.forEach((x) => {                                  /* a fence played reaching the unicorn: over it (or, with wings, away) */
+      if (x.state === "ok" && screenX(x.wx) - UX < STOP + 4) {
+        x.state = "cleared";
+        if (S.wings) { S.wings = false; S.fly = { x0: S.x, moon: false }; S.trail = []; S.jump = null; flap(); }
+        else doJump(screenX(x.wx) - UX, FW);
+      }
+    });
+    S.fences = S.fences.filter((x) => screenX(x.wx) > -FW - 4);
+    const fx = far() < 0 ? S.x + 200 : far();
+    if (screenX(fx) < 240 + 40 - SPACING) addFence(fx + SPACING);
+    S.poops.forEach((p) => {                                   /* a poop left behind comes round again, in the next fence's place */
+      if (!p.back && screenX(p.wx) < -PW - 4) { p.back = true; p.ahead = true; p.wx = far() + SPACING; }
+      if (p.ahead && p.hop && screenX(p.wx) - UX < STOP + 4) { p.ahead = false; p.hop = false; doJump(screenX(p.wx) - UX, PW); }
+    });
+    S.poops = S.poops.filter((p) => !(p.back && !p.ahead && screenX(p.wx) < -PW - 4));
+    if (S.fly) { const f = flyAt(); S.trail.push({ t: S.t, x: f.cx + (f.left ? 34 : -34) * f.w / 88, y: f.cy - 2 * f.w / 88, w: f.w }); while (S.trail.length && S.t - S.trail[0].t > 1.2) S.trail.shift(); }
+    else if (S.trail.length) S.trail.splice(0, Math.max(1, Math.round(dt * 80)));   /* down again: the rainbow fades from its start */
+    S.sparks.forEach((s) => { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 120 * dt; s.life -= dt; });
+    S.sparks = S.sparks.filter((s) => s.life > 0);
+  }
+  draw();
+  glowKeys();
+  requestAnimationFrame(step);
+}
+
+/* ---------- drawing ---------- */
+const RB = ["#ff4d4d", "#ff9f1c", "#ffe14d", "#5ed36b", "#2ec4f0", "#8a6bff"];
+const stars = Array.from({ length: 46 }, (_, i) => ({ x: (i * 53) % 240, y: (i * 37) % 150 + 16, p: i % 7 }));
+function draw() {
+  const bands = ["#0d0b26", "#14113a", "#1c1750", "#26205f", "#30286d", "#3b3079"];   /* the night sky, a band at a time */
+  bands.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, i * 36, 240, 36); });
+  stars.forEach((s) => {                                        /* twinkling */
+    const on = Math.sin(S.t * 2 + s.p) > -0.3;
+    g.fillStyle = on ? "#fff6c4" : "#6f68a8"; g.fillRect(Math.floor(((s.x - S.x * 0.05) % 240 + 240) % 240), s.y, 1, 1);
+  });
+  g.drawImage(SPR.moon, 176, 20, 42, 39);
+  g.drawImage(SPR.star, 164, 30); g.drawImage(SPR.star, 226, 64);
+  for (let i = 0; i < 3; i++) {                                 /* clouds, slow */
+    const cx = ((i * 110 - S.x * 0.2) % 330 + 330) % 330 - 50;
+    g.drawImage(SPR.cloud, Math.round(cx), 64 + i * 26, 36, 10);
+  }
+  g.fillStyle = "#1f3a4f";                                      /* hills far away, then the meadow */
+  for (let x = 0; x < 240; x += 4) { const hh = 14 + 8 * Math.sin((x + S.x * 0.3) / 30); g.fillRect(x, GROUND - hh, 4, hh); }
+  g.fillStyle = "#2f8a4a"; g.fillRect(0, GROUND, 240, 44);
+  g.fillStyle = "#3aa65a";
+  for (let x = -8; x < 248; x += 8) { const gx = x - (S.x % 8); g.fillRect(Math.round(gx), GROUND, 4, 2); g.fillRect(Math.round(gx) + 4, GROUND + 6, 2, 2); }
+  g.fillStyle = "#1f6b37"; g.fillRect(0, GROUND + 22, 240, 22);
+
+  S.poops.forEach((p) => { g.drawImage(SPR.poop, Math.round(screenX(p.wx)), GROUND - 19, PW, 21); });
+  const nf = nextFence();
+  S.fences.forEach((f) => {
+    const x = Math.round(screenX(f.wx));
+    g.drawImage(SPR.fence, x, GROUND - 16 * FS + 3, FW, 16 * FS);
+    if (K.mode === 1 && f.state === "ahead") {                  /* Key: just the note's letter in its colour, with a halo; Easy: none */
+      const cy = GROUND - 66 + Math.round(Math.sin(S.t * 4 + f.si) * 2), cx = x + 21, nm = NAMES[f.note % 12][0];
+      g.font = "20px 'Press Start 2P', monospace"; g.textAlign = "center"; g.lineJoin = "round";
+      g.strokeStyle = f === nf ? (Math.floor(S.t * 4) % 2 ? "#ffffff" : "#fff6c4") : "#0d0b26"; g.lineWidth = 5; g.strokeText(nm, cx, cy);
+      g.strokeStyle = "#0d0b26"; g.lineWidth = 3; g.strokeText(nm, cx, cy);
+      g.fillStyle = NOTE_COL[f.note % 12]; g.fillText(nm, cx, cy);
+    }
+  });
+
+  for (let i = 0; i + 1 < S.trail.length; i++) {               /* the flight's rainbow, where it was drawn in the sky */
+    const a = S.trail[i], b = S.trail[i + 1], th = Math.max(1, Math.floor(a.w * 3 * (i + 1) / (88 * S.trail.length)));
+    const n = Math.floor(Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) / 2) + 1;
+    for (let j = 0; j < n; j++) RB.forEach((c, k) => { g.fillStyle = c; g.fillRect(Math.round(a.x + (b.x - a.x) * j / n), Math.round(a.y + (b.y - a.y) * j / n) + (k - 3) * th, 3, th); });
+  }
+  /* the unicorn: running, jumping (an arc), bonked (wobbling, little stars), flying */
+  let x = UX - UW, y = GY, spr = S.wait ? SPR.b : (Math.floor(S.t * 8) % 2) ? SPR.a : SPR.b;   /* waiting: it stands */
+  if (S.sleep) { spr = SPR.sleep; y += 10; }                    /* asleep: lying down, eyes shut */
+  if (S.jump) { const p = S.jump.t / S.jump.dur; y -= 4 * p * (1 - p) * HOP; spr = SPR.up; }
+  let fp = null;
+  if (S.fly) { fp = flyAt(); spr = Math.floor(S.t * 6.6) % 2 ? SPR.fly1 : SPR.fly2; }
+  if (S.bonk > 0) x += Math.sin(S.bonk * 40) * 2;
+  if (S.streak > 0 && S.bonk <= 0 && !S.fly) {                   /* a little rainbow behind it, longer with each good jump */
+    const w = Math.min(56, S.streak * 8);
+    RB.forEach((c, i) => { g.fillStyle = c; g.fillRect(Math.round(x - w + 10), Math.round(y + 40 + i * 3), w, 3); });
+  }
+  if (fp) {                                                     /* flying: smaller the further away, facing the way it goes */
+    const w = Math.round(fp.w), h = Math.round(w * 42 / 44);
+    g.save(); g.translate(Math.round(fp.cx), Math.round(fp.cy)); if (fp.left) g.scale(-1, 1);
+    g.drawImage(spr, -Math.round(w / 2), -Math.round(h / 2), w, h); g.restore();
+    if (fp.behind) g.drawImage(SPR.moon, 176, 20, 42, 39);           /* behind the moon over its top */
+  } else g.drawImage(spr, Math.round(x), Math.round(y), UW, UH);
+  if (S.sleep) for (let i = 0; i < 3; i++) {                     /* z z Z, floating up */
+    const ph = ((S.t * 16 + i * 12) % 36);
+    g.fillStyle = "#c9c3ee"; g.textAlign = "center"; g.font = (i === 2 ? "10px" : "7px") + " 'Press Start 2P', monospace";
+    g.fillText(i === 2 ? "Z" : "z", Math.round(x + 58 + ph / 3 + i * 5), Math.round(y + 6 - ph));
+  }
+  if (S.bonk > 0) for (let i = 0; i < 3; i++) {
+    const a = S.t * 8 + i * 2.1; g.drawImage(SPR.star, Math.round(x + 66 + Math.cos(a) * 10), Math.round(y + 2 + Math.sin(a) * 4), 9, 9);
+  }
+  S.sparks.forEach((s) => { g.fillStyle = s.c; g.fillRect(Math.round(s.x), Math.round(s.y), 3, 3); });
+
+  g.fillStyle = "#0d0b26"; g.fillRect(0, 0, 240, 14);           /* the top line: the song, the stars won, the poops made */
+  g.font = "6px 'Press Start 2P', monospace"; g.textAlign = "left"; g.fillStyle = "#ffd23f";
+  g.fillText(SONGS[K.song][0].toUpperCase(), 4, 10);
+  g.textAlign = "right"; g.fillStyle = "#fff6c4";
+  g.fillText(String(S.score), S.poopsMade ? 196 : 236, 10); g.drawImage(SPR.star, (S.poopsMade ? 196 : 236) - 6 * String(S.score).length - 7, 3, 5, 5);
+  if (S.poopsMade) { g.fillText(String(S.poopsMade), 236, 10); g.drawImage(SPR.poop, 236 - 6 * String(S.poopsMade).length - 12, 3, 10, 7); }
+  if (S.cheer > 0) { g.textAlign = "center"; g.font = "12px 'Press Start 2P', monospace"; g.fillStyle = NOTE_COL[Math.floor(S.t * 8) % 12]; g.fillText("YAY!", 120, 80); }
+  if (S.fly) { g.textAlign = "center"; g.font = "10px 'Press Start 2P', monospace"; g.fillStyle = "#fff6c4"; g.fillText(S.fly.moon ? "THE MOON!" : "WINGS!", 120, GROUND + 26); }
+  if (!S.running) {
+    g.fillStyle = "rgba(13,11,38,.8)"; g.fillRect(24, 40, 192, 56);
+    g.textAlign = "center"; g.font = "8px 'Press Start 2P', monospace"; g.fillStyle = "#ffd23f";
+    g.fillText("PRESS A KEY", 120, 64); g.fillStyle = "#c9c3ee"; g.font = "6px 'Press Start 2P', monospace"; g.fillText("TO RUN", 120, 80);
+  }
+}
+
+/* ---------- the keys ---------- */
+const keysEl = document.getElementById("keys"), keyEls = {};
+(function buildKeys() {
+  const whites = []; for (let n = LO; n <= HI; n++) if (!isBlack(n)) whites.push(n);
+  const w = 100 / whites.length;
+  let wi = 0;
+  for (let n = LO; n <= HI; n++) {
+    const b = document.createElement("button"); b.className = "key " + (isBlack(n) ? "b" : "w");
+    b.setAttribute("aria-label", NAMES[n % 12] + (Math.floor(n / 12) - 1));
+    if (isBlack(n)) { b.style.left = `calc(${wi * w}% - ${w * 0.3}%)`; b.style.width = `${w * 0.6}%`; }
+    else { b.style.left = `${wi * w}%`; b.style.width = `${w}%`; b.textContent = n % 12 === 0 ? "C" + (Math.floor(n / 12) - 1) : ""; wi++; }
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); b.classList.add("down"); press(n); });
+    ["pointerup", "pointerleave"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("down")));
+    keysEl.appendChild(b); keyEls[n] = b;
+  }
+})();
+function glowKeys() {                                           /* the next fence's key glows, in its colour */
+  const f = S.running ? nextFence() : null;
+  const want = f && K.mode > 0 && !S.fly ? f.note : (S.running ? -1 : 60);   /* Easy: no key to find */
+  Object.entries(keyEls).forEach(([n, el]) => {
+    const on = +n === want;
+    el.classList.toggle("glow", on); if (on) el.style.setProperty("--glow", NOTE_COL[+n % 12]);
+  });
+}
+
+/* computer keys and MIDI */
+const KB = { a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66, g: 67, y: 68, h: 69, u: 70, j: 71, k: 72, o: 73, l: 74, p: 75 };
+document.addEventListener("keydown", (e) => {
+  if (e.repeat || e.metaKey || e.ctrlKey) return;
+  const n = KB[e.key.toLowerCase()]; if (n === undefined) return;
+  e.preventDefault(); press(n); keyEls[n] && keyEls[n].classList.add("down");
+});
+document.addEventListener("keyup", (e) => { const n = KB[e.key.toLowerCase()]; if (n !== undefined && keyEls[n]) keyEls[n].classList.remove("down"); });
+try {
+  if (navigator.requestMIDIAccess) navigator.requestMIDIAccess().then((m) => {
+    m.inputs.forEach((i) => { i.onmidimessage = (ev) => { const [st, n, v] = ev.data; if ((st & 0xF0) === 0x90 && v > 0) press(n); }; });
+  }).catch(() => {});
+} catch (_) { /* no MIDI here: the keys and the computer keys still play */ }
+
+/* the knobs: a press steps to the next value */
+document.getElementById("start").addEventListener("click", start);
+document.getElementById("k1").addEventListener("click", () => { K.mode = (K.mode + 1) % 2; document.getElementById("v1").textContent = MODES[K.mode]; });
+document.getElementById("k2").addEventListener("click", () => { K.speed = (K.speed + 1) % SPEEDS.length; document.getElementById("v2").textContent = SPEEDS[K.speed][0]; });
+document.getElementById("k3").addEventListener("click", () => {
+  K.song = (K.song + 1) % SONGS.length; document.getElementById("v3").textContent = SONGS[K.song][0];
+  if (S.running) reset();
+});
+document.getElementById("k4").addEventListener("click", () => {
+  K.music = !K.music; document.getElementById("v4").textContent = K.music ? "pad, bass, reverb" : "off: the bells alone";
+  if (wet) wet.gain.value = K.music ? 0.35 : 0;
+  if (!K.music) padOff(); else if (S.running) pad(S.last);
+});
+reset();
+requestAnimationFrame(step);
+</script>

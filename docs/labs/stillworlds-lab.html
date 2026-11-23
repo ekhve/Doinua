@@ -1,0 +1,392 @@
+<title>Stillworlds Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: the FM-1 panel (the screen, four knobs, PLAY, the 27 keys), then the worlds and the questions. */
+:root {
+  --bg: #eceef2; --panel: #ffffff; --fg: #14171c; --muted: #5d6573; --line: #d6dae1;
+  --dev: #1d1f25; --dev-edge: #31353d; --btn: #3a3f48; --btn-fg: #e9edf3; --acc: #c98cff; --accd: #3d2a5c;
+  --wk: #d7dbe3; --bk: #1b1e24;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0e1116; --panel: #161a21; --fg: #e8ecf2; --muted: #9aa3b1; --line: #2a303a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 22px 50px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; }
+.lead { color: var(--muted); margin: 4px 0 14px; max-width: 80ch; }
+.start { font: 600 .9rem var(--body); padding: 7px 14px; border-radius: 8px; border: 0; background: #7c4dff; color: #fff; cursor: pointer; margin-bottom: 12px; }
+.dev { background: var(--dev); border: 1px solid var(--dev-edge); border-radius: 18px; padding: 16px; color: var(--btn-fg); overflow-x: auto; }
+.top { display: grid; grid-template-columns: auto 1fr; gap: 18px; min-width: 800px; }
+.screen { width: 432px; height: 432px; background: #000; border-radius: 6px; image-rendering: pixelated; }
+.controls { display: grid; gap: 10px; align-content: start; }
+.kn { display: grid; grid-template-columns: 74px auto auto 1fr; gap: 6px; align-items: center; }
+.kn b { font: 600 .72rem var(--body); color: #aab2bf; letter-spacing: .04em; }
+.kn span { font: 600 .92rem var(--display); color: #fff; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn { font: 600 .78rem var(--body); background: var(--btn); color: var(--btn-fg); border: 1px solid #4a505a; border-radius: 6px; padding: 7px 11px; cursor: pointer; user-select: none; }
+.btn.on { background: var(--accd); border-color: var(--acc); }
+.btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.hint { font-size: .8rem; color: #c3cad5; max-width: 470px; }
+.keys { position: relative; height: 130px; margin-top: 14px; min-width: 800px; user-select: none; touch-action: none; }
+.k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; box-sizing: border-box; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font: 600 .6rem var(--body); color: #555c68; }
+.k.w { background: var(--wk); height: 130px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); height: 80px; z-index: 2; border: 1px solid #000; color: #8a909b; }
+.k.held { box-shadow: inset 0 0 0 130px rgba(201,140,255,.85) !important; color: #fff; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font: 600 1rem var(--display); }
+.card li, .card p { margin: 4px 0; font-size: .87rem; }
+.card ul, .card ol { padding-left: 18px; margin: 4px 0; }
+.q { border-color: var(--acc); }
+</style>
+
+<div class="wrap">
+  <h1>Stillworlds Lab</h1>
+  <p class="lead">Still pixel worlds woken by music and light, from your references and ideas. Each world is a small pixel diorama that barely moves on its own; the music lights it. Drums pulse and sparkle, the bass glows deep and slow, chords set the mood and colour, the melody casts small spells, and what you play live shines brighter than the loop. Press <b>Start sound</b>, then <b>PLAY</b> and play over it (computer keys: <b>z s x d c v g b h n j m</b> and <b>q 2 w 3 e r 5 t 6 y</b>; three keys or more held is a chord).</p>
+  <button class="start" id="start">Start sound</button>
+  <div class="dev">
+    <div class="top">
+      <canvas class="screen" id="scr" width="240" height="240" aria-label="The FM-1 screen"></canvas>
+      <div class="controls">
+        <div class="kn"><b>K1 WORLD</b><button class="btn" data-k="0" data-d="-1">−</button><button class="btn" data-k="0" data-d="1">+</button><span id="v0"></span></div>
+        <div class="kn"><b>K2 SHOW</b><button class="btn" data-k="1" data-d="-1">−</button><button class="btn" data-k="1" data-d="1">+</button><span id="v1"></span></div>
+        <div class="kn"><b>K3 SOUND</b><button class="btn" data-k="2" data-d="-1">−</button><button class="btn" data-k="2" data-d="1">+</button><span id="v2"></span></div>
+        <div class="kn"><b>K4 GROOVE</b><button class="btn" data-k="3" data-d="-1">−</button><button class="btn" data-k="3" data-d="1">+</button><span id="v3"></span></div>
+        <div class="row"><button class="btn" id="play">PLAY the loop</button><button class="btn" id="oct">OCT 0</button></div>
+        <div class="hint" id="hint">Each world also lives on its own in silence: wait a little.</div>
+      </div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+  <div class="notes">
+    <div class="card"><h3>The four worlds</h3><ul>
+      <li><b>The Whispering Pool</b>: a moonlit clearing, standing stones round a dark pond, fireflies. The kick pulses from the pond's middle, the bass wakes the stones, chords tint the night, your notes ripple the water and lift motes.</li>
+      <li><b>The Midnight Machine</b>: a side street at night, a vending machine humming under a lamp, wet pavement. Drums blink the city, the bass is current in the wires, chords recolour the neon; play a phrase and the machine dispenses something that glows.</li>
+      <li><b>Miami Dusk</b>: a beach at sunset, palms, a skyline, a neon kiosk. Chords move the hour from golden dusk to neon night, the bass breathes the sun, notes skip light on the water.</li>
+      <li><b>The Little Skyworld</b>: a floating island with a house, a tree and a pond. It grows while you play: flowers, lit windows, spirits, then the tree glows. Play for a few minutes.</li>
+    </ul><p>Rare things happen in each, now and then. Your live notes are brighter than the loop's.</p></div>
+    <div class="card"><h3>On the FM-1</h3><ul>
+      <li>Drawn at half resolution (120 × 120 pixels, each a 2 × 2 block), so the world is a small picture in flash and the light is drawn in a buffer of 29 KB in RAM, then sent to the screen.</li>
+      <li>The loop's parts (drums, bass, chords, melody) come from the song's tracks, so the world knows which is which; your keys are "live".</li>
+      <li>Next worlds from your list: The Lantern Grove and The Star Shrine.</li>
+    </ul></div>
+    <div class="card q"><h3>Tell me</h3><ol>
+      <li>Which worlds feel right, and which to make next?</li>
+      <li>Its own mode, a button on every track (the song keeps playing), or both?</li>
+      <li>A name: Stillworlds, Lightscapes, Dream Scenes …?</li>
+    </ol></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const W = 120, LOW = 53, NK = 27, isB = n => [1,3,6,8,10].includes(n % 12);
+const NAMES = ["C","C#","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
+const WORLDS = ["The Whispering Pool", "The Midnight Machine", "Miami Dusk", "The Little Skyworld"];
+const SHOWS = ["nothing", "chord", "chord + key"];
+const SOUNDS = ["Lofi keys", "Warm pad", "Pluck", "Glass bell"];
+const GROOVES = ["Lofi 74", "Dembow 92", "House 120"];
+const st = { k: [0, 0, 0, 0], oct: 0, playing: false };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+let seed = 99; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+// ------------------------------------------------------------------ the music, as the worlds hear it
+const held = new Map();                 // live keys: midi -> vel
+const hist = new Array(12).fill(0);
+let lastChord = null, liveLevel = 0;
+const listeners = [];
+function emit(kind, n, vel, live) { if (n !== undefined) hist[n % 12] += vel; listeners.forEach(f => f(kind, n, vel, live)); }
+const CH = [["", [0, 4, 7], 0], ["m", [0, 3, 7], 1], ["7", [0, 4, 7, 10], 3], ["maj7", [0, 4, 7, 11], 2], ["m7", [0, 3, 7, 10], 4], ["m9", [0, 3, 7, 10, 2], 4], ["maj9", [0, 4, 7, 11, 2], 2], ["9", [0, 4, 7, 10, 2], 3], ["dim", [0, 3, 6], 1], ["sus4", [0, 5, 7], 2], ["sus2", [0, 2, 7], 2], ["6", [0, 4, 7, 9], 0], ["13", [0, 4, 10, 2, 9], 3]];
+function chordOf(ns) {
+  const pcs = [...new Set(ns.map(n => n % 12))]; if (pcs.length < 3) return null; let best = null;
+  for (let r = 0; r < 12; r++) for (const [suf, iv, mood] of CH) { const set = iv.map(i => (r + i) % 12);
+    if (!pcs.every(p => set.includes(p)) || set.filter(p => pcs.includes(p)).length < Math.min(3, set.length)) continue;
+    const sc = set.filter(p => pcs.includes(p)).length * 10 - (set.length - pcs.length) * 4 + (r === Math.min(...ns) % 12 ? 3 : 0);
+    if (!best || sc > best.sc) best = { name: NAMES[r] + suf, root: r, mood, sc }; }
+  return best;
+}
+const KMAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88], KMIN = [6.33, 2.68, 3.52, 5.38, 2.6, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+function keyOf() { let b = null; for (let r = 0; r < 12; r++) for (const [m, P] of [[0, KMAJ], [1, KMIN]]) { let s = 0; for (let i = 0; i < 12; i++) s += hist[(i + r) % 12] * P[i]; if (!b || s > b.s) b = { root: r, minor: m, s }; } return b && b.s > 0 ? b : null; }
+const ROMAN = ["I", "bII", "II", "bIII", "III", "IV", "#IV", "V", "bVI", "VI", "bVII", "VII"];
+
+// ------------------------------------------------------------------ sound
+let ac = null, bus, wet;
+function startAudio() {
+  if (ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
+  bus = ac.createGain(); bus.gain.value = .55; const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 6500;
+  const comp = ac.createDynamicsCompressor(); bus.connect(lp); lp.connect(comp); comp.connect(ac.destination);
+  const conv = ac.createConvolver(), len = ac.sampleRate * 2.4, ir = ac.createBuffer(2, len, ac.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+  conv.buffer = ir; wet = ac.createGain(); wet.gain.value = .3; bus.connect(conv); conv.connect(wet); wet.connect(comp);
+  $("start").textContent = "Sound on";
+}
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function tone(n, vel, when, dur, kind) {
+  if (!ac) return null; const T = ac.currentTime + Math.max(0, when), g = ac.createGain(), f = ac.createBiquadFilter(), os = [];
+  f.type = "lowpass"; f.frequency.value = kind === "bass" ? 700 : kind === 1 ? 1600 : 3200; g.connect(f); f.connect(bus);
+  const o = (type, fr, a, det = 0) => { const x = ac.createOscillator(), xg = ac.createGain(); x.type = type; x.frequency.value = fr; x.detune.value = det; xg.gain.value = a; x.connect(xg); xg.connect(g); x.start(T); os.push(x); };
+  const fr = hz(n), lv = (.15 + .45 * vel);
+  if (kind === "bass") { o("sine", fr, 1); o("triangle", fr, .4); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv * .9, T + .01); g.gain.setTargetAtTime(lv * .5, T + .05, .3); }
+  else if (kind === 1) { o("sawtooth", fr, .4, -7); o("sawtooth", fr, .4, 7); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv * .45, T + .4); }
+  else if (kind === 2) { o("triangle", fr, 1); o("square", fr, .1); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv * .7, T + .004); g.gain.setTargetAtTime(0, T + .01, .22); }
+  else if (kind === 3) { o("sine", fr, 1); o("sine", fr * 3.01, .3); o("sine", fr * 5.4, .1); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv * .55, T + .003); g.gain.setTargetAtTime(0, T + .01, 1); }
+  else { o("sine", fr, 1); o("sine", fr * 2, .22); o("sine", fr * 14, .04); g.gain.setValueAtTime(0, T); g.gain.linearRampToValueAtTime(lv * .55, T + .008); g.gain.setTargetAtTime(lv * .14, T + .02, .5); }
+  const h = { stop: (w = 0) => { const t = ac.currentTime + w; g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.setTargetAtTime(0, t, kind === 1 ? .5 : .15); os.forEach(x => x.stop(t + 2.5)); } };
+  if (dur) h.stop(when + dur); return h;
+}
+function drum(k, when) {
+  if (!ac) return; const T = ac.currentTime + Math.max(0, when), g = ac.createGain(); g.connect(bus);
+  if (k === "kick") { const o = ac.createOscillator(); o.frequency.setValueAtTime(130, T); o.frequency.exponentialRampToValueAtTime(42, T + .13); g.gain.setValueAtTime(.8, T); g.gain.exponentialRampToValueAtTime(.001, T + .4); o.connect(g); o.start(T); o.stop(T + .45); return; }
+  const len = k === "snare" ? .2 : .045, b = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const s = ac.createBufferSource(), f = ac.createBiquadFilter(); s.buffer = b; f.type = k === "snare" ? "bandpass" : "highpass"; f.frequency.value = k === "snare" ? 1700 : 7500;
+  g.gain.setValueAtTime(k === "snare" ? .32 : .07, T); g.gain.exponentialRampToValueAtTime(.001, T + len); s.connect(f); f.connect(g); s.start(T);
+}
+// the loop: four parts, so the world knows which is which
+const PROG = [[[50, 53, 57, 60, 64], 38], [[43, 53, 57, 59, 64], 31], [[48, 52, 55, 59, 62], 36], [[45, 55, 60, 64, 67], 33]];   // Dm9 G13 Cmaj9 Am9
+const MEL = [[0, 76], [3, 74], [6, 72], [10, 69], [16, 72], [19, 74], [22, 76], [26, 79], [32, 77], [35, 76], [38, 74], [48, 72], [51, 71], [54, 72]];
+const GR = [   // per groove: bpm, swing, kick, snare, hat, bass rhythm (16ths)
+  { bpm: 74, sw: .22, k: [0, 10], s: [4, 12], h: [0, 2, 4, 6, 8, 10, 12, 14], b: [0, 10] },
+  { bpm: 92, sw: 0, k: [0, 4, 8, 12], s: [3, 6, 11, 14], h: [2, 6, 10, 14], b: [0, 3, 8, 11] },
+  { bpm: 120, sw: 0, k: [0, 4, 8, 12], s: [4, 12], h: [2, 6, 10, 14], b: [2, 6, 10, 14] }];
+let timer = null, step = 0, nextT = 0;
+function at(ms, f) { setTimeout(f, Math.max(0, ms)); }
+function playToggle() {
+  startAudio(); st.playing = !st.playing; $("play").classList.toggle("on", st.playing); $("play").textContent = st.playing ? "STOP the loop" : "PLAY the loop";
+  if (st.playing) { step = 0; nextT = ac.currentTime + .05; timer = setInterval(sched, 25); } else clearInterval(timer);
+}
+function sched() {
+  const gr = GR[st.k[3]], s16 = 60 / gr.bpm / 4;
+  while (nextT < ac.currentTime + .12) {
+    const i = step % 16, bar = Math.floor(step / 16) % 4, when = nextT - ac.currentTime + (i % 2 ? s16 * gr.sw : 0), ms = when * 1000;
+    if (gr.k.includes(i)) { drum("kick", when); at(ms, () => emit("kick", undefined, 1)); }
+    if (gr.s.includes(i)) { drum("snare", when); at(ms, () => emit("snare", undefined, 1)); }
+    if (gr.h.includes(i)) { drum("hat", when); at(ms, () => emit("hat", undefined, .5)); }
+    const [ch, bn] = PROG[bar];
+    if (gr.b.includes(i)) { tone(bn, .7, when, s16 * 2.5, "bass"); at(ms, () => emit("bass", bn, .7)); }
+    if (i === 0) { ch.forEach((n, k) => tone(n, .4, when + k * .015, s16 * 15, st.k[2])); at(ms, () => { lastChord = chordOf(ch); emit("chord", ch[0], .5); }); }
+    const p = (step % 64);
+    MEL.forEach(([t, n]) => { if (t === p) { tone(n, .45, when, s16 * 2.5, 2); at(ms, () => emit("mel", n, .45, false)); } });
+    nextT += s16; step++;
+  }
+}
+
+// ------------------------------------------------------------------ the picture: a static world (RGB + a tint class per pixel), light drawn over it each frame
+const base = new Float32Array(W * W * 3), cls = new Uint8Array(W * W);   // cls: 0 none, 1 sky, 2 water, 3 neon/glow, 4 ground
+const buf = new Float32Array(W * W * 3);
+const P = (x, y, c, k = 0) => { x |= 0; y |= 0; if (x < 0 || y < 0 || x >= W || y >= W) return; const i = (y * W + x) * 3; base[i] = c[0]; base[i + 1] = c[1]; base[i + 2] = c[2]; cls[y * W + x] = k; };
+const RECT = (x, y, w, h, c, k) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) P(x + i, y + j, c, k); };
+const ELL = (cx, cy, rx, ry, c, k) => { for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) if ((x * x) / (rx * rx) + (y * y) / (ry * ry) <= 1) P(cx + x, cy + y, c, k); };
+const DITH = (x, y, w, h, a, b, k) => { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) P(x + i, y + j, ((x + i + y + j) & 1) ? a : b, k); };
+const BANDS = (y0, y1, cols, k) => { const n = cols.length; for (let y = y0; y < y1; y++) { const t = (y - y0) / (y1 - y0) * (n - 1), a = Math.floor(t), f = t - a; for (let x = 0; x < W; x++) P(x, y, (f > .5 && ((x + y) & 1)) || f > .8 ? cols[Math.min(n - 1, a + 1)] : cols[a], k); } };
+const STARS = (y1, n, c) => { for (let i = 0; i < n; i++) P(rnd() * W, rnd() * y1, c, 1); };
+// drawing the light, into the frame buffer
+const L = (x, y, c, a = 1) => { x |= 0; y |= 0; if (x < 0 || y < 0 || x >= W || y >= W) return; const i = (y * W + x) * 3; buf[i] += (c[0] - buf[i]) * a; buf[i + 1] += (c[1] - buf[i + 1]) * a; buf[i + 2] += (c[2] - buf[i + 2]) * a; };
+const ADD = (x, y, c, a = 1) => { x |= 0; y |= 0; if (x < 0 || y < 0 || x >= W || y >= W) return; const i = (y * W + x) * 3; buf[i] = Math.min(255, buf[i] + c[0] * a); buf[i + 1] = Math.min(255, buf[i + 1] + c[1] * a); buf[i + 2] = Math.min(255, buf[i + 2] + c[2] * a); };
+const GLOW = (cx, cy, r, c, a) => { for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) { const d = Math.sqrt(x * x + y * y) / r; if (d < 1) ADD(cx + x, cy + y, c, a * (1 - d) * (1 - d)); } };
+const RINGE = (cx, cy, rx, ry, c, a) => { const n = Math.max(12, (rx + ry) * 3 | 0); for (let i = 0; i < n; i++) { const t = i / n * Math.PI * 2; ADD(cx + Math.cos(t) * rx, cy + Math.sin(t) * ry, c, a); } };
+
+// ------------------------------------------------------------------ the worlds
+function tree(x, y, h, dark, mid) { RECT(x - 1, y - h * .4, 3, h * .4, [40, 26, 22]); for (let i = 0; i < 5; i++) ELL(x + (rnd() - .5) * h * .5, y - h * .45 - rnd() * h * .45, 4 + rnd() * h * .2, 3 + rnd() * h * .15, i % 2 ? dark : mid, 0); }
+function palm(x, y, h, c) { for (let i = 0; i < h; i++) P(x + Math.sin(i / h * 1.3) * 4, y - i, c, 0); const tx = x + Math.sin(1.3) * 4, ty = y - h; for (let f = 0; f < 7; f++) { const a = -Math.PI + f / 6 * Math.PI + (rnd() - .5) * .3; for (let r = 0; r < 12; r++) P(tx + Math.cos(a) * r, ty + Math.sin(a) * r * .7 + r * r * .02, c, 0); } }
+const worlds = [];
+
+// 1 The Whispering Pool
+worlds.push({
+  moods: [[110, 150, 255], [90, 220, 210], [170, 120, 255], [120, 230, 140], [255, 190, 110]],
+  build() {
+    seed = 11; BANDS(0, 62, [[10, 12, 30], [18, 20, 48], [30, 32, 70], [44, 46, 92]], 1); STARS(50, 40, [180, 190, 230]);
+    ELL(92, 16, 6, 6, [235, 236, 220], 1); ELL(90, 14, 5, 5, [10, 12, 30], 1); ELL(94, 16, 5, 5, [235, 236, 220], 1);
+    for (let x = -4; x < W; x += 9) tree(x + rnd() * 4, 64, 22 + rnd() * 14, [10, 22, 24], [18, 34, 34]);
+    BANDS(60, 120, [[20, 38, 30], [26, 48, 34], [30, 56, 38]], 4);
+    ELL(60, 82, 38, 14, [12, 22, 44], 2); ELL(60, 82, 34, 11, [16, 30, 58], 2); ELL(60, 81, 28, 8, [20, 38, 70], 2);
+    for (let y = 74; y < 90; y += 2) P(78 + (rnd() - .5) * 4, y, [200, 210, 230], 2);     // the moon's reflection
+    this.stones = [[18, 70], [32, 62], [88, 62], [104, 72], [60, 98]];
+    this.stones.forEach(([x, y]) => { RECT(x - 3, y - 10, 6, 11, [70, 74, 86], 0); RECT(x - 3, y - 10, 2, 11, [96, 100, 112], 0); RECT(x - 3, y - 11, 6, 1, [56, 60, 70], 0); P(x, y - 6, [50, 54, 64], 0); });
+    for (let i = 0; i < 40; i++) { const x = rnd() * W, y = 100 + rnd() * 20; for (let r = 0; r < 4 + rnd() * 5; r++) P(x + r * .3, y - r, [36 + rnd() * 20, 70 + rnd() * 30, 40], 4); }
+    for (let i = 0; i < 14; i++) P(rnd() * W, 96 + rnd() * 22, [[230, 200, 240], [250, 240, 200], [200, 220, 255]][i % 3], 4);
+    this.ff = Array.from({ length: 6 }, () => ({ x: rnd() * W, y: 50 + rnd() * 50, ph: rnd() * 9 }));
+    this.rings = []; this.motes = []; this.stoneGlow = 0; this.kick = 0; this.spark = []; this.link = 0;
+  },
+  on(kind, n, vel, live) {
+    if (kind === "kick") this.kick = 1;
+    if (kind === "snare") for (let i = 0; i < 4; i++) { const t = rnd() * Math.PI * 2; this.spark.push({ x: 60 + Math.cos(t) * 34, y: 82 + Math.sin(t) * 11, a: 1 }); }
+    if (kind === "hat") this.spark.push({ x: rnd() * W, y: 100 + rnd() * 18, a: .6 });
+    if (kind === "bass") this.stoneGlow = Math.min(1.4, this.stoneGlow + .6);
+    if (kind === "mel") { const x = 30 + ((n % 24) / 23) * 60; this.rings.push({ x, y: 80 + (rnd() - .5) * 6, r: 1, a: live ? 1 : .55, live }); this.motes.push({ x, y: 80, v: live ? 14 : 8, a: live ? 1 : .6 }); }
+    if (live && Math.random() < .04) this.link = 1;
+  },
+  draw(dt, t, mood) {
+    this.kick *= Math.pow(.04, dt); this.stoneGlow *= Math.pow(.25, dt); this.link *= Math.pow(.4, dt);
+    if (this.kick > .05) RINGE(60, 82, 34 * (1.15 - this.kick * .5), 11 * (1.15 - this.kick * .5), mood, .45 * this.kick), GLOW(60, 82, 16, mood, .25 * this.kick);
+    this.stones.forEach(([x, y]) => { GLOW(x, y - 6, 9, mood, .35 * this.stoneGlow + .04); for (let j = 0; j < 3; j++) ADD(x - 1, y - 8 + j * 3, mood, .5 * this.stoneGlow); });
+    if (this.link > .05) for (let i = 0; i < this.stones.length; i++) { const [x0, y0] = this.stones[i], [x1, y1] = this.stones[(i + 1) % this.stones.length]; for (let s = 0; s < 1; s += .02) ADD(x0 + (x1 - x0) * s, y0 - 6 + (y1 - y0) * s, mood, .6 * this.link); }
+    this.rings.forEach(r => { r.r += (r.live ? 16 : 11) * dt; r.a -= dt * .6; if (r.a > 0) RINGE(r.x, r.y, r.r, r.r * .32, [230, 240, 255], r.a * .7); });
+    this.rings = this.rings.filter(r => r.a > 0);
+    this.motes.forEach(m => { m.y -= m.v * dt; m.a -= dt * .3; ADD(m.x + Math.sin(t * 3 + m.y * .2) * 1.5, m.y, mix(mood, [255, 255, 255], .4), m.a); });
+    this.motes = this.motes.filter(m => m.a > 0);
+    this.spark.forEach(s => { s.a -= dt * 3; ADD(s.x, s.y, [255, 255, 255], Math.max(0, s.a)); }); this.spark = this.spark.filter(s => s.a > 0);
+    this.ff.forEach((f, i) => { f.x += Math.sin(t * .3 + f.ph) * .12; f.y += Math.cos(t * .4 + f.ph * 2) * .08; const b = .5 + .5 * Math.sin(t * 1.7 + f.ph * 3); GLOW(f.x, f.y, 3, mix([200, 255, 140], mood, .4), .5 * b + .1); ADD(f.x, f.y, [255, 255, 200], .6 * b + .2); });
+    for (let y = 74; y < 90; y += 2) ADD(78 + Math.sin(t * 1.3 + y) * 1.5, y, [200, 210, 230], .15);
+  } });
+
+// 2 The Midnight Machine
+worlds.push({
+  moods: [[120, 110, 255], [255, 80, 200], [60, 230, 230], [255, 160, 70], [230, 60, 120]],
+  build() {
+    seed = 23; BANDS(0, 70, [[8, 8, 22], [14, 12, 34], [24, 18, 48]], 1); STARS(40, 18, [140, 140, 190]);
+    for (let x = 0; x < W;) { const w = 14 + rnd() * 16, h = 30 + rnd() * 40; RECT(x, 72 - h, w, h, [18 + rnd() * 6, 16, 30], 0); this.wins = this.wins || [];
+      for (let wy = 76 - h; wy < 66; wy += 5) for (let wx = x + 2; wx < x + w - 3; wx += 4) { const on = rnd() < .22; RECT(wx, wy, 2, 3, on ? [255, 210, 130] : [30, 28, 46], 0); this.wins.push([wx, wy, on]); } x += w + 1; }
+    for (let x = 0; x < W; x++) P(x, 22 + Math.round(Math.pow((x - 60) / 60, 2) * 6), [30, 30, 40], 0);   // the power line
+    RECT(0, 72, W, 48, [26, 24, 34], 4); RECT(0, 72, W, 2, [50, 46, 60], 4);
+    DITH(0, 92, W, 28, [22, 22, 32], [28, 26, 38], 2);                                                    // the wet pavement
+    RECT(20, 30, 2, 44, [40, 40, 52], 0); RECT(16, 28, 10, 3, [60, 60, 70], 0);                          // the lamp
+    this.mx = 66; RECT(62, 40, 30, 46, [36, 36, 48], 0); RECT(64, 42, 26, 42, [56, 58, 74], 0);           // the machine
+    RECT(66, 44, 17, 30, [180, 210, 255], 3); for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) RECT(68 + c * 5, 46 + r * 7, 3, 4, [[255, 120, 120], [120, 220, 140], [255, 220, 120], [130, 170, 255]][(r + c) % 4], 3);
+    RECT(85, 50, 3, 10, [30, 30, 40], 0); RECT(66, 77, 17, 5, [24, 24, 32], 0);
+    for (let y = 0; y < 20; y++) for (let x = 0; x < 26; x++) if (((x + y) & 1) === 0) P(64 + x, 94 + y, mix([22, 22, 32], [120, 140, 200], .35 * (1 - y / 20)), 2);   // its reflection
+    RECT(100, 78, 10, 14, [40, 44, 54], 0); P(104, 80, [255, 90, 90], 3);                                 // a utility box with a red dot
+    this.kick = 0; this.bass = 0; this.flash = []; this.leds = []; this.motes = []; this.cube = null; this.moth = 0; this.cat = 0;
+  },
+  on(kind, n, vel, live) {
+    if (kind === "kick") this.kick = 1;
+    if (kind === "snare") { const w = this.wins[(rnd() * this.wins.length) | 0]; this.flash.push({ x: w[0], y: w[1], a: 1 }); }
+    if (kind === "hat") this.leds.push({ x: 66 + rnd() * 17, y: 44 + rnd() * 30, a: .9 });
+    if (kind === "bass") this.bass = Math.min(1.3, this.bass + .5);
+    if (kind === "mel") { const r = (n % 4), c = (n % 3); this.leds.push({ x: 69 + c * 5, y: 47 + r * 7, a: live ? 1.5 : 1, big: 1 }); this.motes.push({ x: 74, y: 44, v: live ? 10 : 6, a: live ? 1 : .5, dx: (rnd() - .5) * 6 }); if (live && held.size >= 2 && !this.cube) this.cube = { y: 79, a: 1 }; }
+    if (live && Math.random() < .02) this.cat = 1;
+  },
+  draw(dt, t, mood) {
+    this.kick *= Math.pow(.05, dt); this.bass *= Math.pow(.3, dt); this.cat *= Math.pow(.6, dt);
+    const hum = .18 + .04 * Math.sin(t * 7) + .35 * this.kick;
+    for (let y = 44; y < 74; y++) for (let x = 66; x < 83; x++) ADD(x, y, mood, hum * .35);
+    GLOW(74, 60, 26, mood, .12 + .25 * this.bass + .1 * this.kick);
+    for (let y = 94; y < 114; y++) for (let x = 60; x < 94; x++) if (((x + y) & 1) === 0) ADD(x, y, mood, (.1 + .3 * this.kick + .2 * this.bass) * (1 - (y - 94) / 20));
+    GLOW(21, 32, 10, [255, 200, 120], .35 + .05 * Math.sin(t * 13)); for (let y = 34; y < 92; y++) for (let x = 14 - (y - 34) * .2; x < 28 + (y - 34) * .2; x++) ADD(x, y, [255, 200, 130], .03);
+    this.moth += dt; ADD(21 + Math.cos(this.moth * 2.3) * 5, 33 + Math.sin(this.moth * 3.1) * 3, [255, 240, 220], .9);
+    for (let x = 0; x < W; x += 1) if (this.bass > .1 && ((x + (t * 40 | 0)) % 9) === 0) ADD(x, 22 + Math.round(Math.pow((x - 60) / 60, 2) * 6), mood, this.bass);
+    this.flash.forEach(f => { f.a -= dt * 2.5; for (let j = 0; j < 3; j++) for (let i = 0; i < 2; i++) ADD(f.x + i, f.y + j, [255, 230, 170], Math.max(0, f.a)); }); this.flash = this.flash.filter(f => f.a > 0);
+    this.leds.forEach(l => { l.a -= dt * (l.big ? 1.5 : 5); if (l.big) GLOW(l.x, l.y, 4, [255, 255, 255], Math.max(0, l.a) * .6); else ADD(l.x, l.y, [255, 255, 255], Math.max(0, l.a)); }); this.leds = this.leds.filter(l => l.a > 0);
+    this.motes.forEach(m => { m.y -= m.v * dt; m.x += m.dx * dt; m.a -= dt * .35; ADD(m.x, m.y, mix(mood, [255, 255, 255], .5), m.a); }); this.motes = this.motes.filter(m => m.a > 0);
+    if (this.cube) { this.cube.y -= dt * 8; this.cube.a -= dt * .15; const c = this.cube; if (c.a <= 0) this.cube = null; else { GLOW(74, c.y, 6, mood, c.a * .6); for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) ADD(73 + i, c.y - 1 + j, [255, 255, 255], c.a); } }
+    if (this.cat > .1) { const a = this.cat; [[106, 70], [107, 70], [108, 70], [109, 70], [106, 69], [109, 69], [110, 71], [111, 72]].forEach(([x, y]) => L(x, y, [6, 6, 10], a)); ADD(107, 70, [200, 255, 120], a); }
+  } });
+
+// 3 Miami Dusk
+worlds.push({
+  moods: [[255, 170, 80], [255, 90, 160], [150, 90, 255], [60, 200, 255], [120, 140, 255]],
+  build() {
+    seed = 37; BANDS(0, 64, [[60, 30, 110], [120, 50, 150], [210, 80, 150], [250, 130, 120], [255, 190, 130]], 1); STARS(24, 16, [255, 230, 255]);
+    for (let i = 0; i < 6; i++) { const y = 14 + rnd() * 30, x = rnd() * W; RECT(x, y, 16 + rnd() * 18, 2, [230, 110, 170], 1); RECT(x + 4, y - 1, 10, 1, [250, 150, 190], 1); }
+    ELL(70, 62, 18, 18, [255, 120, 160], 3); for (let y = 52; y < 64; y += 3) RECT(52, y, 37, 1, [210, 80, 150], 1);
+    BANDS(62, 80, [[100, 60, 170], [70, 50, 150], [50, 40, 120]], 2);
+    for (let y = 63; y < 80; y += 2) RECT(62 + (rnd() - .5) * 4, y, 16 - (y - 63) * .4, 1, [255, 150, 170], 2);
+    for (let x = 0; x < 44; x += 8) { const h = 18 + rnd() * 20; RECT(x, 62 - h, 7, h, [60, 50, 120], 0); for (let wy = 64 - h; wy < 60; wy += 3) for (let wx = x + 1; wx < x + 6; wx += 2) if (rnd() < .4) P(wx, wy, [130, 220, 255], 3); }
+    for (let y = 78; y < W; y++) for (let x = 0; x < W; x++) { const sh = 80 + Math.sin(x * .07) * 4 + (y - 78) * .3; P(x, y, x < sh - 30 ? [70, 60, 170] : x < sh - 26 ? [200, 220, 255] : [240, 170, 110], x < sh - 26 ? 2 : 4); }
+    palm(10, 100, 40, [20, 14, 30]); palm(106, 108, 46, [20, 14, 30]); palm(92, 104, 30, [26, 16, 36]);
+    RECT(70, 92, 22, 12, [80, 40, 90], 0); RECT(66, 88, 30, 4, [255, 110, 120], 0); RECT(74, 80, 14, 7, [255, 220, 120], 3); RECT(76, 82, 10, 3, [255, 120, 150], 3);
+    this.kick = 0; this.bass = 0; this.glints = []; this.streaks = []; this.shoot = null;
+  },
+  on(kind, n, vel, live) {
+    if (kind === "kick") this.kick = 1;
+    if (kind === "snare") this.glints.push({ x: 50 + rnd() * 40, y: 64 + rnd() * 14, a: 1 });
+    if (kind === "hat") this.glints.push({ x: rnd() * W, y: rnd() * 30, a: .6, star: 1 });
+    if (kind === "bass") this.bass = Math.min(1.3, this.bass + .5);
+    if (kind === "mel") this.streaks.push({ x: 20 + ((n % 24) / 23) * 80, y: 40 - ((n - 60) / 30) * 20, a: live ? 1 : .5, v: live ? 1 : .6 });
+    if (live && Math.random() < .03 && !this.shoot) this.shoot = { x: 110, y: 6, a: 1 };
+  },
+  draw(dt, t, mood) {
+    this.kick *= Math.pow(.05, dt); this.bass *= Math.pow(.3, dt);
+    GLOW(70, 60, 30, mood, .12 + .3 * this.bass); GLOW(70, 70, 14, [255, 200, 220], .2 * this.kick);
+    for (let y = 63; y < 80; y += 2) ADD(62 + Math.sin(t * 2 + y) * 2, y, [255, 220, 230], .2 + .5 * this.kick);
+    GLOW(81, 84, 12, mood, .15 + .35 * this.kick * (Math.sin(t * 20) > 0 ? 1 : .6));
+    this.glints.forEach(g => { g.a -= dt * (g.star ? 1.5 : 3); ADD(g.x, g.y, [255, 255, 255], Math.max(0, g.a)); if (!g.star) { ADD(g.x - 1, g.y, [255, 255, 255], Math.max(0, g.a) * .5); ADD(g.x + 1, g.y, [255, 255, 255], Math.max(0, g.a) * .5); } }); this.glints = this.glints.filter(g => g.a > 0);
+    this.streaks.forEach(s => { s.x += 10 * dt * s.v; s.a -= dt * .5; for (let k = 0; k < 6; k++) ADD(s.x - k, s.y + k * .3, mix(mood, [255, 255, 255], .5), Math.max(0, s.a) * (1 - k / 6)); }); this.streaks = this.streaks.filter(s => s.a > 0);
+    if (this.shoot) { const s = this.shoot; s.x -= 60 * dt; s.y += 20 * dt; s.a -= dt * .6; for (let k = 0; k < 10; k++) ADD(s.x + k, s.y - k * .33, [255, 255, 255], Math.max(0, s.a) * (1 - k / 10)); if (s.a <= 0) this.shoot = null; }
+  } });
+
+// 4 The Little Skyworld: it grows while you play
+worlds.push({
+  moods: [[140, 230, 150], [255, 200, 110], [200, 120, 255], [120, 170, 255], [90, 255, 180]],
+  build() {
+    seed = 51; BANDS(0, W, [[10, 10, 26], [16, 14, 40], [24, 18, 54], [20, 16, 46]], 1); STARS(W, 60, [170, 170, 220]);
+    for (let i = 0; i < 4; i++) ELL(rnd() * W, rnd() * W, 8, 4, [36, 24, 66], 1);
+    for (let y = 74; y < 112; y++) { const w = 46 * Math.pow(1 - (y - 74) / 38, 1.3); for (let x = -w; x < w; x++) P(60 + x + Math.sin(y * .5) * 2, y, ((x | 0) + y) % 5 ? [110 - (y - 74), 70 - (y - 74) * .6, 50] : [80, 50, 40], 0); if (y > 98) for (let x = -w * .5; x < w * .5; x += 3) P(60 + x, y, [70, 110, 190], 0); }
+    ELL(60, 70, 50, 16, [70, 150, 60], 4); ELL(60, 69, 48, 14, [96, 180, 70], 4); for (let i = 0; i < 60; i++) P(16 + rnd() * 88, 58 + rnd() * 22, [70, 140, 50], 4);
+    RECT(36, 46, 22, 18, [230, 220, 200], 0); for (let k = 0; k < 10; k++) RECT(34 + k, 46 - k, 26 - 2 * k, 1, [140, 60, 50], 0);   // the house
+    RECT(40, 52, 5, 5, [40, 60, 110], 0); this.win = [40, 52]; RECT(50, 54, 5, 10, [60, 80, 140], 0);
+    for (let y = 0; y < 5; y++) for (let x = 0; x < 4; x++) P(64 + x * 2 + (y & 1), 66 + y * 2, [220, 200, 170], 4);   // the path
+    tree(84, 64, 34, [40, 110, 50], [70, 150, 60]); ELL(76, 76, 9, 4, [60, 140, 170], 2); ELL(76, 76, 7, 3, [90, 180, 200], 2);   // tree and pond
+    RECT(24, 64, 6, 8, [100, 96, 90], 0); this.lamp = [27, 63];
+    this.grow = 0; this.flowers = []; for (let i = 0; i < 40; i++) this.flowers.push([18 + rnd() * 84, 62 + rnd() * 18, [[255, 120, 170], [255, 230, 120], [180, 140, 255], [255, 255, 255]][i % 4], i / 40]);
+    this.kick = 0; this.bass = 0; this.spirits = []; this.spark = [];
+  },
+  on(kind, n, vel, live) {
+    this.grow = Math.min(1, this.grow + (live ? .004 : .0012));
+    if (kind === "kick") this.kick = 1;
+    if (kind === "snare") this.spark.push({ x: 70 + rnd() * 12, y: 74 + rnd() * 4, a: 1 });
+    if (kind === "bass") this.bass = Math.min(1.3, this.bass + .5);
+    if (kind === "mel") this.spirits.push({ a: rnd() * 7, r: 30 + rnd() * 20, y: 50 + (rnd() - .5) * 30, life: live ? 1 : .5, live });
+  },
+  draw(dt, t, mood) {
+    this.kick *= Math.pow(.05, dt); this.bass *= Math.pow(.3, dt);
+    const g = this.grow;
+    GLOW(this.lamp[0], this.lamp[1], 8, [255, 180, 90], .35 + .4 * this.kick + .05 * Math.sin(t * 9));
+    if (g > .15) { for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) ADD(this.win[0] + i, this.win[1] + j, [255, 210, 120], Math.min(1, (g - .15) * 4)); }
+    this.flowers.forEach(([x, y, c, at]) => { if (g * 1.4 > at) ADD(x, y, c, Math.min(1, (g * 1.4 - at) * 6)); });
+    GLOW(60, 92, 30, mood, .08 + .25 * this.bass);
+    for (let y = 98; y < 112; y += 2) ADD(60 + Math.sin(t + y) * 4, y, mood, .2 + .3 * this.bass);
+    if (g > .6) GLOW(84, 44, 16, mood, (g - .6) * .9 * (.7 + .3 * Math.sin(t * 2)));
+    if (g > .8) for (let k = 0; k < 4; k++) { const a = t * .4 + k * 1.57; GLOW(60 + Math.cos(a) * 52, 70 + Math.sin(a) * 18, 3, mood, .5); }
+    this.spirits.forEach(s => { s.a += dt * .8; s.life -= dt * .25; const x = 60 + Math.cos(s.a) * s.r, y = s.y + Math.sin(s.a * 2) * 4; GLOW(x, y, s.live ? 4 : 3, mix(mood, [255, 255, 255], .4), Math.max(0, s.life) * .8); }); this.spirits = this.spirits.filter(s => s.life > 0);
+    this.spark.forEach(s => { s.a -= dt * 3; ADD(s.x, s.y, [255, 255, 255], Math.max(0, s.a)); }); this.spark = this.spark.filter(s => s.a > 0);
+    for (let i = 0; i < 6; i++) ADD((i * 23 + 7) % W, (i * 37 + 11) % 70, [255, 255, 255], .3 + .3 * Math.sin(t * 1.3 + i));
+  } });
+
+// ------------------------------------------------------------------ the frame
+const cv = $("scr"), gg = cv.getContext("2d"), off = document.createElement("canvas"); off.width = off.height = W; const og = off.getContext("2d"), img = og.createImageData(W, W);
+let cur = -1, mood = [120, 140, 255], moodT = [120, 140, 255];
+function enter(i) { cur = i; base.fill(0); cls.fill(0); worlds[i].build(); mood = worlds[i].moods[0].slice(); moodT = mood.slice(); }
+listeners.push((kind, n, vel, live) => { const w = worlds[cur]; if (w && w.on) w.on(kind, n, vel, live); if (kind === "chord" || (live && held.size >= 3)) { const ch = kind === "chord" ? lastChord : chordOf([...held.keys()]); if (ch) { lastChord = ch; moodT = worlds[cur].moods[ch.mood]; } } });
+let last = performance.now();
+function frame() {
+  const now = performance.now(), dt = Math.min(.1, (now - last) / 1000), t = now / 1000; last = now;
+  if (cur !== st.k[0]) enter(st.k[0]);
+  for (let i = 0; i < 12; i++) hist[i] *= Math.pow(.96, dt);
+  mood = mix(mood, moodT, Math.min(1, dt * .9));
+  const TW = [0, .22, .3, .45, .08];                   // how much each kind of pixel takes the mood's colour
+  for (let p = 0; p < W * W; p++) { const k = cls[p], w = TW[k], i = p * 3; buf[i] = base[i] + (mood[0] * .7 - base[i]) * w * .5; buf[i + 1] = base[i + 1] + (mood[1] * .7 - base[i + 1]) * w * .5; buf[i + 2] = base[i + 2] + (mood[2] * .7 - base[i + 2]) * w * .5; }
+  worlds[cur].draw(dt, t, mood);
+  for (let p = 0, q = 0; p < W * W; p++, q += 4) { img.data[q] = buf[p * 3]; img.data[q + 1] = buf[p * 3 + 1]; img.data[q + 2] = buf[p * 3 + 2]; img.data[q + 3] = 255; }
+  og.putImageData(img, 0, 0); gg.imageSmoothingEnabled = false; gg.drawImage(off, 0, 0, 240, 240);
+  if (st.k[1] && lastChord) { gg.fillStyle = "rgba(0,0,0,.55)"; gg.fillRect(0, 212, 240, 28); gg.font = "700 16px Inter, sans-serif"; gg.fillStyle = "#fff"; gg.textBaseline = "middle"; gg.fillText(lastChord.name, 8, 226);
+    const key = keyOf(); if (st.k[1] === 2 && key) { gg.font = "600 10px Inter, sans-serif"; gg.textAlign = "right"; let r = ROMAN[(lastChord.root - key.root + 12) % 12]; if (/^m(?!aj)|dim/.test(lastChord.name.slice(NAMES[lastChord.root].length))) r = r.toLowerCase(); gg.fillText(r + "  in " + NAMES[key.root] + (key.minor ? " minor" : " major"), 232, 227); gg.textAlign = "left"; } }
+  requestAnimationFrame(frame);
+}
+frame();
+
+// ------------------------------------------------------------------ the panel
+const LIM = [WORLDS, SHOWS, SOUNDS, GROOVES];
+function showKnobs() { for (let k = 0; k < 4; k++) $("v" + k).textContent = LIM[k][st.k[k]]; }
+document.querySelectorAll("[data-k]").forEach(b => b.onclick = () => { const k = +b.dataset.k; st.k[k] = (st.k[k] + +b.dataset.d + LIM[k].length) % LIM[k].length; showKnobs(); });
+showKnobs();
+$("start").onclick = startAudio; $("play").onclick = playToggle;
+$("oct").onclick = () => { st.oct = st.oct >= 1 ? -1 : st.oct + 1; $("oct").textContent = "OCT " + (st.oct > 0 ? "+" : "") + st.oct; };
+const KB = "zsxdcvgbhnjm,l.;/q2w3er5t6y", keyEls = [], hv = new Map(), WH = []; for (let i = 0; i < NK; i++) if (!isB(LOW + i)) WH.push(i);
+for (let i = 0; i < NK; i++) {
+  const el = document.createElement("div"), b = isB(LOW + i), wi = b ? WH.indexOf(i - 1) : WH.indexOf(i), ww = 100 / WH.length;
+  el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .3 : wi * ww) + "%"; el.style.width = (b ? ww * .6 : ww) + "%"; el.textContent = KB[i];
+  el.addEventListener("pointerdown", e => { e.preventDefault(); const r = el.getBoundingClientRect(); press(i, .35 + .65 * (e.clientY - r.top) / r.height); });
+  ["pointerup", "pointerleave"].forEach(ev => el.addEventListener(ev, () => release(i)));
+  $("keys").appendChild(el); keyEls.push(el);
+}
+function press(i, vel) { startAudio(); if (hv.has(i)) return; const n = LOW + i + 12 * st.oct; hv.set(i, [tone(n, vel, 0, 0, st.k[2]), n]); held.set(n, vel); keyEls[i].classList.add("held"); emit(held.size >= 3 ? "chord" : "mel", n, vel, true); if (held.size >= 3) { const ch = chordOf([...held.keys()]); if (ch) { lastChord = ch; moodT = worlds[cur].moods[ch.mood]; } } }
+function release(i) { const v = hv.get(i); if (!v) return; v[0] && v[0].stop(); held.delete(v[1]); hv.delete(i); keyEls[i].classList.remove("held"); }
+const down = new Set();
+addEventListener("keydown", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0 && !down.has(i) && !e.repeat) { down.add(i); press(i, .7); e.preventDefault(); } });
+addEventListener("keyup", e => { const i = KB.indexOf(e.key.toLowerCase()); if (i >= 0) { down.delete(i); release(i); } });
+})();
+</script>

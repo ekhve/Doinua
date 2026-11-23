@@ -1,0 +1,706 @@
+<title>Bedroom Night Train</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the FM-1's 240x240 screen, its keys under it, the knobs beside: the other game labs' frame. One look on
+   purpose: night, the engine's lamp the brightest thing on the page. */
+:root {
+  --bg: #0e0f22;          /* the night behind the device */
+  --panel: #1d1f3c;       /* the FM-1's face */
+  --ink: #f4f1e8;
+  --muted: #aaa8c8;
+  --lamp: #ffd66b;        /* the accent: the engine's lamp */
+  --key-w: #ebe8f2;
+  --key-b: #262842;
+  --display: "Press Start 2P", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px; }
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-family: var(--display); font-size: 17px; letter-spacing: .04em; margin: 0; color: var(--lamp); text-wrap: balance; line-height: 1.5; }
+p.lead { margin: 0; color: var(--muted); max-width: 65ch; line-height: 1.55; }
+.others { font-size: 13px; color: var(--muted); }
+.others a { color: var(--lamp); }
+.device { background: var(--panel); border-radius: 18px; padding: 16px; display: grid; gap: 14px; box-shadow: 0 0 0 2px #2f3260 inset; }
+.top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+canvas#screen { width: min(480px, 100%); aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; background: #000;
+  border: 3px solid #0a0b18; max-width: 100%; }
+.knobs { display: grid; gap: 10px; flex: 1; min-width: 180px; }
+.knob { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; background: #171933; border-radius: 10px; padding: 8px 10px; }
+.knob button { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #3f4280; background: radial-gradient(#3c3f7c, #1a1c3c);
+  color: var(--ink); font: 11px var(--display); cursor: pointer; }
+.knob button:focus-visible, .start:focus-visible, .key:focus-visible { outline: 3px solid var(--lamp); outline-offset: 2px; }
+.knob .lab { font: 9px var(--display); color: var(--muted); letter-spacing: .06em; }
+.knob .val { font-weight: 600; margin-top: 4px; }
+.start { font: 12px var(--display); background: var(--lamp); color: #2a1c00; border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.keys { position: relative; height: 120px; overflow-x: auto; }
+.keys-inner { position: relative; height: 100%; min-width: 480px; }
+.key { position: absolute; top: 0; border: 1px solid #0a0b18; border-radius: 0 0 6px 6px; cursor: pointer; padding: 0;
+  display: flex; align-items: flex-end; justify-content: center; font: 9px var(--display); color: #6f6a99; }
+.key.w { background: var(--key-w); height: 100%; z-index: 1; }
+.key.b { background: var(--key-b); height: 60%; z-index: 2; color: #8b86b8; }
+.key.glow { box-shadow: 0 0 14px 4px var(--glow, #fff) inset, 0 0 12px 2px var(--glow, #fff); }
+.key.down { filter: brightness(.8); }
+.notes { color: var(--muted); font-size: 13px; line-height: 1.55; display: grid; gap: 6px; max-width: 70ch; }
+.notes b { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .key.glow { box-shadow: 0 0 0 3px var(--glow, #fff) inset; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap">
+
+<div class="wrap">
+  <h1 id="h1">Bedroom Night Train</h1>
+  <p class="lead" id="lead"></p>
+  <div class="device">
+    <div class="top">
+      <canvas id="screen" width="240" height="240" aria-label="The game screen: an old steam engine at night, its lamp shining ahead"></canvas>
+      <div class="knobs">
+        <button class="start" id="listen">♪ Listen first</button>
+        <div class="knob"><button id="k1" aria-label="K1 mode">K1</button><div><div class="lab">MODE</div><div class="val" id="v1">Easy: any key</div></div></div>
+        <div class="knob"><button id="k4" aria-label="K4 music">K4</button><div><div class="lab">MUSIC</div><div class="val" id="v4">chords on</div></div></div>
+      </div>
+    </div>
+    <div class="keys"><div class="keys-inner" id="keys"></div></div>
+  </div>
+  <div class="notes">
+    <div><b>Play:</b> tap the keys, the computer keys <b>A S D F G H J K L</b> (white) and <b>W E T Y U O P</b> (black), or a MIDI keyboard where the browser allows it. Each note is a chuff: the engine moves on, a puff of smoke in the note's colour goes up, and at the end of each line it whistles <i>choo choo</i>. Stop playing and it slows down and waits, hissing. In Key mode the next note's letter shines over the engine and its key glows. A wrong key: the engine coughs black smoke. Two in a row: a big sooty sneeze, right over the passenger.</div>
+    <div><b>The tune</b> is the traditional <i>I've Been Working on the Railroad</i> (printed 1894, public domain), the verse and "Dinah, won't you blow", in G as the Digital Tradition has it: 92 notes, D4 to C5.</div>
+    <div class="others" id="others"></div>
+    <div>Our own pixel drawing, a sketch to talk about, not the firmware yet.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const PLACE = "bedroom";
+/* ---------- the tune: I've Been Working on the Railroad (traditional), notes and lengths in eighths ---------- */
+const TUNE = [
+  [67,3],[62,1],[67,1.5],[62,.5],[67,1.5],[69,.5],[71,4],[67,4],[72,3],[72,1],[67,2],[69,2],[71,8],
+  [67,3],[62,1],[67,1.5],[62,.5],[67,1.5],[69,.5],[71,4],[67,2],[71,1.5],[71,.5],[71,2],[69,2],[69,2],[71,2],[69,8],
+  [69,3],[69,1],[68,1.5],[69,.5],[71,1.5],[69,.5],[67,4],[62,4],[72,2],[72,1.5],[72,.5],[67,1.5],[67,.5],[69,1.5],[69,.5],[71,8],
+  [64,3],[66,1],[67,1.5],[66,.5],[67,1.5],[64,.5],[62,4],[67,4],[71,2],[72,2],[71,2],[69,2],[67,8],
+  [62,1.5],[62,.5],[62,1.5],[62,.5],[67,4],[64,1.5],[64,.5],[64,1.5],[64,.5],[69,4],[66,1.5],[66,.5],[66,1.5],[66,.5],[64,2],[66,2],[67,2],[69,2],[71,8],
+  [62,1.5],[62,.5],[62,1.5],[62,.5],[67,4],[64,1.5],[64,.5],[64,1.5],[64,.5],[69,4],[66,1.5],[66,.5],[66,1.5],[66,.5],[64,2],[66,2],[67,8]];
+const PHRASE_END = new Set(TUNE.map((t, i) => (t[1] >= 8 ? i : -1)).filter((i) => i >= 0));
+const EIGHTH = 0.22;
+const LO = 55, HI = 79;
+const NAMES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const isBlack = (n) => [1, 3, 6, 8, 10].includes(n % 12);
+const NOTE_COL = ["#ff4d4d", "#ff7a59", "#ff9f1c", "#ffbf47", "#ffe14d", "#5ed36b", "#38c9a4", "#2ec4f0", "#4d8cff", "#8a6bff", "#c26bff", "#ff6bc6"];
+
+/* ---------- sound ---------- */
+let ac = null, bus = null;
+function power() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    bus = ac.createGain(); bus.gain.value = 0.9; bus.connect(ac.destination);
+    const cv = ac.createConvolver(), len = Math.floor(ac.sampleRate * 1.6), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    cv.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.25; bus.connect(cv); cv.connect(wet); wet.connect(ac.destination);
+  }
+  if (ac.state === "suspended") ac.resume();
+}
+const hz = (n) => 440 * Math.pow(2, (n - 69) / 12);
+function noise(sec) { const len = Math.floor(ac.sampleRate * sec), b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; return b; }
+function calliope(n, dur) {                                      /* the tune: a little steam organ, round and bright */
+  if (!ac) return;
+  const t = ac.currentTime, g = ac.createGain(), f = ac.createBiquadFilter();
+  f.type = "lowpass"; f.frequency.value = 2200;
+  const os = [["square", 1, 0.05], ["square", 1.004, 0.04], ["sine", 2, 0.06], ["triangle", 0.5, 0.08]].map(([ty, m, lv]) => {
+    const o = ac.createOscillator(), og = ac.createGain(); o.type = ty; o.frequency.value = hz(n) * m; og.gain.value = lv; o.connect(og); og.connect(f); return o; });
+  const lfo = ac.createOscillator(), dep = ac.createGain(); lfo.frequency.value = 6; dep.gain.value = hz(n) * 0.005; lfo.connect(dep); os.forEach((o) => dep.connect(o.frequency));
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + 0.015); g.gain.setValueAtTime(0.85, t + Math.max(0.04, dur - 0.05)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.12);
+  f.connect(g); g.connect(bus); [...os, lfo].forEach((o) => { o.start(t); o.stop(t + dur + 0.15); });
+}
+function chuff(level = 0.12) {                                   /* a puff of steam: noise, shaped like "tsh" */
+  if (!ac) return;
+  const t = ac.currentTime, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = noise(0.2); f.type = "bandpass"; f.frequency.value = 1100; f.Q.value = 0.8;
+  g.gain.setValueAtTime(level, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16); s.connect(f); f.connect(g); g.connect(bus); s.start(t);
+}
+function whistle(times = 2, at = 0) {                            /* choo choo: the steam whistle's chord, breathy */
+  if (!ac) return;
+  for (let k = 0; k < times; k++) {
+    const t = ac.currentTime + at + k * 0.42, len = k === times - 1 ? 0.55 : 0.3, g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.12, t + 0.05); g.gain.setValueAtTime(0.11, t + len - 0.06); g.gain.exponentialRampToValueAtTime(0.0001, t + len + 0.08);
+    g.connect(bus);
+    [587, 740, 880].forEach((f0) => { const o = ac.createOscillator(); o.type = "triangle"; o.frequency.setValueAtTime(f0 * 0.97, t); o.frequency.linearRampToValueAtTime(f0, t + 0.08); o.connect(g); o.start(t); o.stop(t + len + 0.1); });
+    const s = ac.createBufferSource(), bf = ac.createBiquadFilter(), bg = ac.createGain(); s.buffer = noise(len + 0.1); bf.type = "bandpass"; bf.frequency.value = 2400; bg.gain.value = 0.25;
+    s.connect(bf); bf.connect(bg); bg.connect(g); s.start(t);
+  }
+}
+function cough(big) {                                            /* a cough: low, rough, two or three times */
+  if (!ac) return;
+  (big ? [0, 0.16, 0.3] : [0, 0.2]).forEach((dt, i) => {
+    const t = ac.currentTime + dt, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noise(0.25); f.type = "lowpass"; f.frequency.value = 520 - i * 60; f.Q.value = 3;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.55, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    s.connect(f); f.connect(g); g.connect(bus); s.start(t);
+    const o = ac.createOscillator(), og = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+    og.gain.setValueAtTime(0.2, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.14); o.connect(og); og.connect(bus); o.start(t); o.stop(t + 0.16);
+  });
+}
+function achoo() {                                               /* "aaah...", then the big CHOO */
+  if (!ac) return;
+  const t = ac.currentTime, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+  o.type = "sawtooth"; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(330, t + 0.55);
+  f.type = "bandpass"; f.frequency.value = 800; f.Q.value = 3;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.18, t + 0.4); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.62);
+  o.connect(f); f.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.65);
+  const s = ac.createBufferSource(), sf = ac.createBiquadFilter(), sg = ac.createGain(); s.buffer = noise(0.5); sf.type = "bandpass"; sf.frequency.value = 1800; sf.Q.value = 0.7;
+  sg.gain.setValueAtTime(0.0001, t + 0.62); sg.gain.linearRampToValueAtTime(0.7, t + 0.64); sg.gain.exponentialRampToValueAtTime(0.0001, t + 1.0);
+  s.connect(sf); sf.connect(sg); sg.connect(bus); s.start(t + 0.6);
+}
+function hiss() {                                                /* waiting: steam let out of the cylinders */
+  if (!ac) return;
+  const t = ac.currentTime, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = noise(1.3); f.type = "highpass"; f.frequency.value = 3000;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.06, t + 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+  s.connect(f); f.connect(g); g.connect(bus); s.start(t);
+}
+function tone(type, f0, f1, len, level, at = 0, vib = 0) {      /* a small helper for the places' own sounds */
+  if (!ac) return;
+  const t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + len);
+  if (vib) { const l = ac.createOscillator(), d = ac.createGain(); l.frequency.value = vib; d.gain.value = f0 * 0.03; l.connect(d); d.connect(o.frequency); l.start(t); l.stop(t + len); }
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(level, t + Math.min(0.05, len / 4)); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  o.connect(g); g.connect(bus); o.start(t); o.stop(t + len + 0.02);
+}
+const CHORD = { G: [55, 59, 62, 43], C: [55, 60, 64, 48], D: [54, 57, 62, 50], E: [56, 59, 64, 40], A: [57, 61, 64, 45] };
+const CHORD_OF = { 7: "G", 11: "G", 2: "G", 0: "C", 4: "C", 9: "D", 6: "D", 8: "E", 1: "A" };
+let pad = { name: "", v: [] }, music = true;
+function chordFor(n) { const pc = n % 12; if (pad.name && CHORD[pad.name].some((m) => m % 12 === pc)) return pad.name; return CHORD_OF[pc] || "G"; }
+function padTo(name) {
+  if (!ac || name === pad.name) return;
+  const t = ac.currentTime;
+  pad.v.forEach(({ o, g }) => { g.gain.setTargetAtTime(0.0001, t, 0.25); o.stop(t + 2); });
+  pad = { name, v: [] };
+  if (!music) return;
+  CHORD[name].forEach((n, i) => {
+    const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+    o.type = i < 3 ? "sawtooth" : "triangle"; o.frequency.value = hz(n); f.type = "lowpass"; f.frequency.value = i < 3 ? 700 : 300;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(i < 3 ? 0.018 : 0.07, t + 0.3);
+    o.connect(f); f.connect(g); g.connect(bus); o.start(t); pad.v.push({ o, g });
+  });
+}
+function padOff() { if (!ac) return; const t = ac.currentTime; pad.v.forEach(({ o, g }) => { g.gain.setTargetAtTime(0.0001, t, 0.3); o.stop(t + 2); }); pad = { name: "", v: [] }; }
+
+/* ---------- drawing helpers ---------- */
+const cv = document.getElementById("screen"), g = cv.getContext("2d");
+g.imageSmoothingEnabled = false;
+const OUT = "#0c0a10";
+const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+function disc(cx, cy, r, c, a = 1) {
+  g.globalAlpha = a; g.fillStyle = c;
+  for (let dy = -Math.floor(r); dy <= Math.floor(r); dy++) { const w = Math.floor(Math.sqrt(r * r - dy * dy)); g.fillRect(Math.round(cx - w), Math.round(cy + dy), 2 * w + 1, 1); }
+  g.globalAlpha = 1;
+}
+const wrap = (v, p) => ((v % p) + p) % p;
+/* a world thing at wx (repeating every period) seen with parallax par: its screen x, or null when far off-screen */
+function sx(wx, par, period, margin = 60) { const x = wrap(wx - S.scroll * par + margin, period) - margin; return x < KW + margin ? x : null; }
+const KW = 240;
+function mixc(a, b, t) { const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)); const A = p(a), B = p(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); }
+
+/* ---------- state ---------- */
+const K = { mode: 0 };
+const S = { t: 0, idx: 0, scroll: 0, v: 0, wheel: 0, puffs: [], misses: 0, cough: 0, soot: 0, wave: 0, fin: 0, listen: null,
+  lastNote: -10, nextHiss: 4, letterPop: 0, sparks: [] };
+
+/* ---------- the engine and its wagon ---------- */
+function engine(x, y, P) {
+  const shake = S.cough > 0 ? Math.round(Math.sin(S.t * 70) * 1) : 0, bob = S.v > 4 ? Math.round(Math.sin(S.wheel * 2)) * 0.5 : 0;
+  x += shake; y += bob;
+  const r = (ax, ay, w, h, c) => R(x + ax, y + ay, w, h, c);
+  r(-17, -15, 21, 31, OUT); r(-1, -1, 42, 16, OUT); r(28, -15, 11, 16, OUT); r(16, -7, 9, 8, OUT); r(39, 0, 13, 11, OUT); r(-17, 13, 60, 5, OUT);
+  r(0, 0, 40, 14, P.body); r(0, 1, 40, 2, P.shine);                            /* the boiler */
+  for (const bx of [8, 18, 28]) r(bx, 0, 1, 14, P.brass);
+  r(30, -12, 7, 12, P.body); r(29, -14, 9, 3, P.body); r(30, -13, 7, 1, P.shine);   /* the stack */
+  r(17, -5, 7, 5, P.brass); r(18, -6, 5, 1, P.brass);                           /* the dome */
+  r(-16, -12, 17, 26, P.trim); r(-16, -14, 19, 3, P.body);                      /* the cab */
+  r(-12, -8, 9, 8, "#ffd27a");                                                  /* its window, lit from inside */
+  const sooty = S.cough > 0;                                                    /* the driver: a cap, a face, a scarf */
+  r(-10, -6, 5, 5, sooty ? "#5a5050" : "#f1c7a3"); r(-11, -8, 7, 2, P.cap); r(-9, -4, 1, 1, "#111"); r(-10, -1, 5, 1, "#c8302a");
+  if (sooty) r(-8, -3, 3, 1, "#f1c7a3");                                        /* a hand to his mouth */
+  r(40, 2, 6, 8, P.body); r(46, 1, 5, 6, P.brass); r(47, 2, 3, 4, "#fff6c8");   /* the lamp */
+  for (let i = 0; i < 9; i++) r(42 + i, 14 + (i >> 1), 1, 6 - (i >> 1), P.trim); /* the cowcatcher */
+  r(-16, 14, 58, 3, P.shine);
+  const a = S.wheel;
+  for (const [wx, rr] of [[-8, 6], [10, 6], [26, 6], [36, 4]]) {               /* wheels turning, a rod across them */
+    disc(x + wx, y + 20, rr + 1, OUT); disc(x + wx, y + 20, rr, P.trim); disc(x + wx, y + 20, rr - 3, P.wheelIn);
+    for (let k = 0; k < 2; k++) { const an = a + k * Math.PI / 2; R(x + wx + Math.round(Math.cos(an) * (rr - 1)), y + 20 + Math.round(Math.sin(an) * (rr - 1)), 1, 1, P.brass); R(x + wx - Math.round(Math.cos(an) * (rr - 1)), y + 20 - Math.round(Math.sin(an) * (rr - 1)), 1, 1, P.brass); }
+    R(x + wx, y + 20, 1, 1, P.brass);
+  }
+  const ox = Math.round(Math.cos(a) * 3), oy = Math.round(Math.sin(a) * 3);
+  R(x - 8 + ox, y + 19 + oy, 34, 2, "#c8c8d8");
+  return { lamp: [x + 49, y + 4], stack: [x + 33, y - 15] };
+}
+function wagon(x, y, P) {
+  R(x - 1, y - 1, 34, 14, OUT); R(x, y, 32, 12, P.wagon); R(x, y, 32, 2, mixc(P.wagon, "#ffffff", 0.25));
+  for (let k = 0; k < 4; k++) R(x + 2 + k * 8, y + 3, 6, 7, mixc(P.wagon, "#000000", 0.25));
+  for (const wx of [6, 26]) { disc(x + wx, y + 14, 5, OUT); disc(x + wx, y + 14, 4, P.trim); R(x + wx, y + 14, 1, 1, P.brass); }
+  R(x + 32, y + 6, 15, 2, OUT);
+}
+function eyes(x, y, gap, blinkSeed) {                           /* two black eyes that blink now and then */
+  const blink = wrap(S.t + blinkSeed, 3.7) < 0.12;
+  if (blink) { R(x - gap, y, 2, 1, "#111"); R(x + gap - 1, y, 2, 1, "#111"); }
+  else { R(x - gap, y - 1, 2, 2, "#111"); R(x + gap - 1, y - 1, 2, 2, "#111"); }
+}
+function sootFace(x, y, gap) {                                   /* all black but two white blinking eyes */
+  const blink = wrap(S.t, 0.9) < 0.15;
+  R(x - gap - 1, y - 1, 4, 3, blink ? "#111" : "#ffffff"); R(x + gap - 2, y - 1, 4, 3, blink ? "#111" : "#ffffff");
+  if (!blink) { R(x - gap, y, 2, 2, "#111"); R(x + gap - 1, y, 2, 2, "#111"); }
+}
+
+/* ---------- smoke ---------- */
+function puff(x, y, col, opts = {}) {
+  S.puffs.push({ x, y, r: opts.r || 3, vx: opts.vx ?? (-8 - Math.random() * 6), vy: opts.vy ?? (-26 - Math.random() * 10), life: opts.life || 1.6, max: opts.life || 1.6, col, dark: !!opts.dark, grow: opts.grow || 5 });
+}
+function drawPuffs() {
+  for (const p of S.puffs) {
+    const a = Math.min(1, p.life / p.max * 1.6) * (p.dark ? 0.92 : 0.75);
+    disc(p.x, p.y, p.r + 1, p.dark ? "#000000" : mixc(p.col, "#000000", 0.35), a * 0.6);
+    disc(p.x - 1, p.y - 1, p.r, p.col, a);
+    if (!p.dark && p.r > 3) disc(p.x - p.r * 0.35, p.y - p.r * 0.35, p.r * 0.35, "#ffffff", a * 0.35);
+  }
+}
+
+/* ---------- the lamp's beam ---------- */
+function beam(lx, ly, col, len = 112) {
+  g.globalCompositeOperation = "lighter";
+  const fl = 0.93 + 0.07 * Math.sin(S.t * 13) * Math.sin(S.t * 7.3);
+  for (let dx = 0; dx < len && lx + dx < KW; dx++) {
+    const half = 2 + dx * 0.3, a = 0.22 * (1 - dx / len) * fl;
+    g.fillStyle = col; g.globalAlpha = a; g.fillRect(lx + dx, Math.round(ly - half), 1, Math.round(half * 2));
+    g.globalAlpha = a * 0.8; g.fillRect(lx + dx, Math.round(ly - half * 0.45), 1, Math.round(half * 0.9));
+  }
+  g.globalAlpha = 1; disc(lx, ly, 7, col, 0.35 * fl); disc(lx, ly, 4, "#ffffff", 0.4 * fl);
+  g.globalCompositeOperation = "source-over";
+}
+const inBeam = (x) => x > 150 && x < 236;
+
+/* ================= the three places ================= */
+const PLACES = {
+  /* ---------- the toy bedroom: a wooden train going round the floor at bedtime ---------- */
+  bedroom: {
+    title: "Bedroom Night Train",
+    lead: "A toy train on its wooden track, round the bedroom floor at bedtime. The moon at the window, the nightlight, the toys asleep: until the lamp finds them. The jack-in-the-box pops up, the cat opens one eye, the blocks wobble.",
+    track: 202,
+    eng: { body: "#2a5ad8", shine: "#6a9aff", trim: "#d8302a", brass: "#ffd040", wheelIn: "#8a1a18", cap: "#d8302a", wagon: "#2aa86a" },
+    beamCol: "#ffe6a0",
+    things: [],
+    init() { this.things = [{ wx: 70, kind: "blocks" }, { wx: 230, kind: "duck" }, { wx: 330, kind: "ball" }, { wx: 440, kind: "cat" }, { wx: 560, kind: "jack" }].map((o) => ({ ...o, lit: 0, was: false })); },
+    back() {
+      g.fillStyle = "#151a3e"; g.fillRect(0, 0, KW, 158);
+      const off = wrap(S.scroll * 0.3, 24);                                          /* wallpaper: little dim stars */
+      for (let row = 0; row < 6; row++) for (let k = -1; k < 12; k++) {
+        const x = k * 24 - off + (row % 2) * 12, y = 12 + row * 26; R(x, y - 1, 1, 3, "#232a5c"); R(x - 1, y, 3, 1, "#232a5c");
+      }
+      let x = sx(40, 0.3, 520, 90);                                                  /* the window, the moon, curtains */
+      if (x !== null) {
+        R(x - 2, 20, 70, 70, OUT); R(x, 22, 66, 66, "#22306e");
+        disc(x + 44, 42, 10, "#fff4c8"); disc(x + 48, 39, 9, "#22306e");
+        [[10, 12], [20, 40], [54, 52], [34, 6], [8, 56]].forEach(([a, b], i) => R(x + a, 22 + b, 1, 1, wrap(S.t + i, 2.3) < 0.3 ? "#8890c0" : "#ffffff"));
+        R(x + 31, 22, 2, 66, OUT); R(x, 54, 66, 2, OUT);
+        for (let k = 0; k < 10; k++) { const c = k % 3 ? "#5a3480" : "#46286a"; R(x - 12 + k, 16, 1, 80 + (k % 2) * 2, c); R(x + 66 + k, 16, 1, 80 + (k % 2) * 2, c); }
+        g.globalCompositeOperation = "lighter"; g.globalAlpha = 0.05; g.fillStyle = "#b8c8ff";   /* moonlight across the floor */
+        g.beginPath(); g.moveTo(x, 88); g.lineTo(x + 66, 88); g.lineTo(x + 110, 200); g.lineTo(x + 30, 200); g.fill(); g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
+      }
+      x = sx(220, 0.3, 520, 90);                                                     /* a shelf: a robot, a rocket, a ball */
+      if (x !== null) {
+        R(x - 1, 79, 72, 6, OUT); R(x, 80, 70, 4, "#7a4a2a");
+        R(x + 6, 60, 14, 20, OUT); R(x + 7, 61, 12, 18, "#8a96a8"); R(x + 9, 64, 3, 3, "#ffe14d"); R(x + 14, 64, 3, 3, "#ffe14d"); R(x + 12, 56, 1, 5, "#8a96a8"); R(x + 11, 54, 3, 2, "#ff4d4d");
+        R(x + 30, 50, 9, 30, OUT); R(x + 31, 54, 7, 25, "#e8e8f0"); R(x + 32, 50, 5, 5, "#d8302a"); R(x + 28, 72, 3, 8, "#d8302a"); R(x + 38, 72, 3, 8, "#d8302a"); R(x + 33, 60, 3, 3, "#4d8cff");
+        disc(x + 56, 72, 8, OUT); disc(x + 56, 72, 7, "#e84a8a"); R(x + 49, 71, 15, 2, "#ffe14d");
+      }
+      x = sx(350, 0.3, 520, 90);                                                     /* a drawing pinned up: a rainbow and a sun */
+      if (x !== null) {
+        R(x - 1, 30, 46, 36, OUT); R(x, 31, 44, 34, "#e8e0d0");
+        ["#ff4d4d", "#ff9f1c", "#ffe14d", "#5ed36b", "#4d8cff"].forEach((c, i) => { for (let a = 0; a < 40; a++) { const an = Math.PI * (1 - a / 39); R(x + 22 + Math.cos(an) * (16 - i * 2), 58 - Math.sin(an) * (16 - i * 2), 1, 1, c); } });
+        disc(x + 36, 38, 3, "#ffbf47"); R(x + 21, 29, 3, 3, "#d8302a");
+      }
+      x = sx(430, 0.3, 520, 90);                                                     /* the bed's end */
+      if (x !== null) {
+        R(x - 1, 92, 92, 66, OUT); R(x, 100, 90, 56, "#2e3c8a"); for (let k = 0; k < 6; k++) R(x, 106 + k * 9, 90, 2, "#3c4c9e");
+        disc(x + 18, 96, 9, "#e8e8f8"); R(x + 8, 94, 30, 8, "#e8e8f8"); R(x - 4, 88, 4, 70, "#7a4a2a"); R(x - 5, 84, 6, 6, "#7a4a2a");
+      }
+      R(0, 154, KW, 4, "#2a2240");                                                  /* the skirting, the floor */
+      g.fillStyle = "#2c2140"; g.fillRect(0, 158, KW, 82);
+      const fo = wrap(S.scroll, 60);
+      for (let k = 0; k < 6; k++) for (let row = 0; row < 5; row++) R(k * 60 - fo + (row % 2) * 30, 162 + row * 16, 1, 15, "#241a36");
+      for (let row = 0; row < 5; row++) R(0, 161 + row * 16, KW, 1, "#241a36");
+      x = sx(160, 1, 600, 120);                                                      /* the round rug */
+      if (x !== null) for (let y = 214; y < 240; y++) { const w = Math.round(110 * Math.sqrt(Math.max(0, 1 - ((y - 228) / 16) ** 2))); for (let k = -w; k < w; k += 6) R(x + k, y, 6, 1, ((k + y) >> 2) % 3 ? "#6a2e52" : "#7e3c62"); }
+      disc(16, 150, 9, "#ffd88a", 0.18); R(12, 146, 8, 7, "#ffd88a"); R(13, 147, 6, 5, "#fff2c8");   /* the nightlight, near the wall */
+    },
+    trackDraw() {
+      const y = this.track, off = wrap(S.scroll, 9);
+      for (let x = -off; x < KW; x += 9) R(x, y + 1, 7, 4, "#8a5a2a");
+      R(0, y - 1, KW, 2, "#c8904a"); R(0, y + 5, KW, 2, "#c8904a");
+    },
+    front(layer) {
+      for (const o of this.things) {
+        if ((o.kind === "duck") !== (layer === 1)) continue;
+        const x = sx(o.wx, 1, 640, 60); if (x === null) continue;
+        const lit = inBeam(x); if (lit && !o.was) this.wake(o); o.was = lit; if (o.lit > 0) o.lit -= dt0;
+        if (o.kind === "blocks") {                                                   /* A B C, wobbling when lit */
+          [["#d84040", "A", 0, 0], ["#4a8ad8", "B", 13, 0], ["#e8c040", "C", 6, -13]].forEach(([c, l, dx, dy], i) => {
+            const wob = o.lit > 0 ? Math.round(Math.sin(S.t * 30 + i) * 1) : 0;
+            R(x + dx - 1 + wob, 176 + dy - 1, 14, 14, OUT); R(x + dx + wob, 176 + dy, 12, 12, c); R(x + dx + 3 + wob, 176 + dy + 3, 6, 6, "#fff4e0");
+            g.fillStyle = c; g.font = "6px 'Press Start 2P'"; g.fillText(l, x + dx + 3.5 + wob, 176 + dy + 9);
+          });
+        } else if (o.kind === "duck") {                                              /* a rubber duck in front */
+          const hop = o.lit > 0 ? Math.round(Math.sin((0.6 - o.lit) / 0.6 * Math.PI) * 6) : 0;
+          disc(x, 226 - hop, 7, OUT); disc(x, 226 - hop, 6, "#ffd820"); disc(x + 5, 218 - hop, 5, OUT); disc(x + 5, 218 - hop, 4, "#ffd820"); R(x + 9, 218 - hop, 4, 2, "#ff8a1c"); R(x + 6, 216 - hop, 1, 1, "#111");
+        } else if (o.kind === "ball") {
+          const roll = o.lit > 0 ? (0.8 - o.lit) * 30 : 0;
+          disc(x + roll, 186, 8, OUT); disc(x + roll, 186, 7, "#e84a4a"); R(x - 7 + roll, 185, 15, 2, "#ffffff"); R(x + roll - 1, 179, 2, 15, "#4d8cff");
+        } else if (o.kind === "cat") {                                               /* asleep on a cushion; the lamp wakes her */
+          R(x - 14, 192, 30, 6, OUT); R(x - 13, 193, 28, 4, "#8a3a6a");
+          disc(x, 186, 8, OUT); disc(x, 186, 7, "#e8902a"); disc(x + 8, 182, 5, OUT); disc(x + 8, 182, 4, "#e8902a");
+          R(x + 5, 176, 2, 3, "#e8902a"); R(x + 10, 176, 2, 3, "#e8902a"); R(x - 3, 184, 6, 1, "#b86a1a"); R(x - 1, 188, 6, 1, "#b86a1a");
+          const tail = o.lit > 0 ? Math.round(Math.sin(S.t * 10) * 3) : 0; R(x - 12, 186 + tail, 5, 2, "#e8902a");
+          if (o.lit > 0 || lit) { R(x + 6, 181, 2, 2, "#9aff6a"); R(x + 10, 181, 2, 2, "#9aff6a"); } else { R(x + 6, 182, 2, 1, "#5a2a0a"); R(x + 10, 182, 2, 1, "#5a2a0a"); }
+          if (!lit && o.lit <= 0 && wrap(S.t, 3) < 1.5) { g.fillStyle = "#aab0e0"; g.font = "6px 'Press Start 2P'"; g.fillText("z", x + 12, 172 - wrap(S.t, 1.5) * 4); }
+        } else if (o.kind === "jack") {                                              /* the jack-in-the-box: boing! */
+          R(x - 9, 177, 18, 18, OUT); R(x - 8, 178, 16, 16, "#4d8cff"); R(x - 8, 178, 16, 3, "#ffe14d"); R(x + 8, 184, 4, 2, "#c8c8d8");
+          const up = o.lit > 0 ? Math.min(1, (2.2 - o.lit) * 6) * 20 + Math.sin(S.t * 18) * Math.max(0, o.lit - 1) * 3 : 0;
+          if (up > 1) {
+            for (let k = 0; k < up; k += 3) R(x - 3 + (k / 3 % 2) * 2, 177 - k, 4, 2, "#c8c8d8");
+            disc(x, 170 - up, 6, OUT); disc(x, 170 - up, 5, "#f1c7a3"); R(x - 5, 162 - up, 10, 4, "#d8302a"); R(x - 1, 158 - up, 2, 4, "#ffe14d");
+            R(x - 2, 169 - up, 1, 1, "#111"); R(x + 2, 169 - up, 1, 1, "#111"); R(x - 1, 172 - up, 3, 1, "#d8302a"); disc(x, 170 - up, 1, "#ff4d4d");
+          }
+        }
+      }
+    },
+    wake(o) {
+      if (o.kind === "jack") { o.lit = 2.2; tone("square", 220, 880, 0.35, 0.06); tone("sine", 660, 330, 0.3, 0.08, 0.3); }
+      else if (o.kind === "cat") { o.lit = 1.6; tone("sawtooth", 700, 520, 0.4, 0.035, 0.1, 8); }
+      else if (o.kind === "duck") { o.lit = 0.6; tone("square", 900, 600, 0.12, 0.04); }
+      else o.lit = 0.8;
+    },
+    rider(x, y) {                                                                    /* the teddy in the wagon */
+      const wv = S.wave > 0;
+      disc(x, y - 6, 8, OUT); disc(x, y - 6, 7, "#a8703a"); disc(x - 6, y - 12, 3, OUT); disc(x + 6, y - 12, 3, OUT); disc(x - 6, y - 12, 2, "#a8703a"); disc(x + 6, y - 12, 2, "#a8703a");
+      if (S.soot > 0) { disc(x, y - 6, 7, "#1a1418"); sootFace(x, y - 8, 3); return; }
+      disc(x, y - 3, 3, "#e8c08a"); R(x, y - 5, 1, 1, "#3a2010"); eyes(x, y - 8, 3, 0.7);
+      if (wv) { R(x + 7, y - 14 - Math.round(Math.sin(S.t * 16) * 2), 3, 8, "#a8703a"); }
+    },
+    finale() { for (let i = 0; i < 40; i++) S.sparks.push({ x: Math.random() * KW, y: -Math.random() * 120, vx: (Math.random() - .5) * 10, vy: 30 + Math.random() * 30, col: NOTE_COL[i % 12], star: true, life: 5 }); this.things.forEach((o) => this.wake(o)); },
+    ambient() {},
+  },
+
+  /* ---------- the Wild West: across the desert under a huge moon ---------- */
+  west: {
+    title: "Wild West Night Train",
+    lead: "An old steam engine across the desert at night, under a huge moon: mesas, saguaros, a tumbleweed rolling along, cowboys round a campfire, and a coyote who howls with the whistle.",
+    track: 206,
+    eng: { body: "#1e1e26", shine: "#3a3a48", trim: "#c8302a", brass: "#d8a83a", wheelIn: "#7a1a18", cap: "#2a4a7a", wagon: "#8a5a2a" },
+    beamCol: "#ffe2a0",
+    tw: { x: 260, a: 0 }, star: null, howl: 0,
+    init() {},
+    back() {
+      const gr = g.createLinearGradient(0, 0, 0, 170); [["#0c0a28", 0], ["#1c1446", .35], ["#3a2058", .65], ["#7a2c58", .88], ["#a8405a", 1]].forEach(([c, s]) => gr.addColorStop(s, c));
+      g.fillStyle = gr; g.fillRect(0, 0, KW, 170);
+      for (let i = 0; i < 46; i++) { const x = (i * 53) % 240, y = (i * 31) % 110; R(x, y, 1, 1, wrap(S.t * 0.7 + i * 0.37, 3) < 0.25 ? "#6a6aa0" : "#e8e0ff"); }
+      if (this.star) { const s = this.star; for (let k = 0; k < 10; k++) R(s.x + k * 2, s.y - k, 1, 1, k < 2 ? "#ffffff" : "#a8a8e0"); }
+      disc(72, 64, 40, "#fff0c8", 0.06); disc(72, 64, 33, "#fff0c8", 0.1); disc(72, 64, 26, "#fff0c8");   /* the huge moon */
+      disc(64, 58, 5, "#ece0b8"); disc(80, 72, 4, "#ece0b8"); disc(78, 54, 2, "#ece0b8");
+      const mesa = (wx, w, top, base, col, par) => { const x0 = sx(wx, par, 520, 140); if (x0 === null) return; for (let k = 0; k < w; k++) { const e = Math.min(k, w - k), y = top + Math.max(0, 6 - e) * 3; R(x0 + k, y, 1, base - y, col); } };
+      mesa(130, 80, 104, 170, "#4a2048", 0.12); mesa(220, 46, 116, 170, "#3a1a3c", 0.12); mesa(400, 70, 120, 170, "#3a1a3c", 0.12);
+      const ho = S.scroll * 0.35;                                                    /* the near hills */
+      for (let x = 0; x < KW; x++) { const y = 150 + Math.round(Math.sin((x + ho) / 30) * 3 + Math.sin((x + ho) / 11) * 1.5); R(x, y, 1, 30, "#2a1428"); }
+      let x = sx(80, 0.35, 480, 60);                                                 /* the coyote on its rock */
+      if (x !== null) {
+        R(x - 6, 146, 36, 8, "#1a0e1a"); R(x - 2, 142, 28, 6, "#1a0e1a");
+        const up = this.howl > 0 ? 1 : 0;
+        for (const [dx, dy, w, h] of [[2, 132, 14, 8], [14, 124 - up * 4, 5, 10 + up * 2], [16, 120 - up * 6, 4, 4], [18 + up, 116 - up * 8, 2, 4], [0, 134, 3, 8], [12, 138, 3, 4], [4, 138, 2, 4], [-2, 132, 4, 2]]) R(x + dx, dy, w, h, "#1a0e1a");
+        if (this.howl > 0) { g.fillStyle = "#e8d0ff"; g.font = "6px 'Press Start 2P'"; g.fillText("ow", x + 22, 108 - (1.4 - this.howl) * 8); }
+      }
+      x = sx(170, 0.6, 520, 80);                                                     /* a campfire, a tent, two cowboys asleep */
+      if (x !== null) {
+        R(x - 30, 166, 22, 1, "#0c0a10"); g.fillStyle = "#c8a878"; g.beginPath(); g.moveTo(x - 32, 166); g.lineTo(x - 21, 148); g.lineTo(x - 10, 166); g.fill(); R(x - 22, 154, 2, 12, "#3a2418");
+        const fl = Math.sin(S.t * 17) * 1.5 + Math.sin(S.t * 7) * 1;
+        disc(x, 162, 16 + fl, "#ff9a3a", 0.12); disc(x, 162, 9 + fl, "#ffb84a", 0.15);
+        R(x - 5, 165, 10, 2, "#5a3a2a"); disc(x, 161, 3 + fl * 0.4, "#ff6a1a"); disc(x, 162, 2, "#ffe14d");
+        R(x + 8, 162, 12, 4, "#5a3a5a"); R(x + 18, 159, 5, 5, "#e8b088"); R(x + 17, 157, 7, 2, "#7a4a2a");
+      }
+      x = sx(330, 0.6, 520, 80);                                                     /* the water tower */
+      if (x !== null) { R(x, 128, 18, 16, "#4a2a20"); R(x - 1, 126, 20, 3, "#3a1e16"); R(x + 3, 144, 2, 26, "#2a1a14"); R(x + 13, 144, 2, 26, "#2a1a14"); R(x + 4, 152, 10, 1, "#2a1a14"); }
+      g.fillStyle = "#3a1e30"; g.fillRect(0, 168, KW, 72);                          /* the desert floor */
+      const fo = wrap(S.scroll, 40); for (let k = -1; k < 8; k++) { R(k * 40 - fo + 7, 182, 3, 1, "#4a2a3a"); R(k * 40 - fo + 25, 228, 4, 1, "#4a2a3a"); }
+      for (const [wx, base, h] of [[30, 196, 30], [150, 200, 22]]) this.cactus(sx(wx, 1, 420, 40), base, h);
+    },
+    cactus(x, base, h) {
+      if (x === null) return;
+      const c = "#1e4a32", d = "#163a26";
+      R(x - 3, base - h - 1, 7, h + 1, OUT); R(x - 2, base - h, 5, h, c); R(x - 2, base - h, 1, h, d);
+      R(x - 8, base - h * 0.7, 4, 9, OUT); R(x - 7, base - h * 0.7, 2, 8, c); R(x - 7, base - h * 0.7 + 6, 6, 2, c);
+      R(x + 4, base - h * 0.55, 4, 8, OUT); R(x + 5, base - h * 0.55, 2, 7, c); R(x + 2, base - h * 0.55 + 5, 5, 2, c);
+    },
+    trackDraw() {
+      const y = this.track, off = wrap(S.scroll, 8);
+      for (let x = -off; x < KW; x += 8) R(x, y + 2, 5, 3, "#5a3a2a");
+      R(0, y, KW, 2, "#a8a0b8"); R(0, y + 5, KW, 2, "#a8a0b8");
+    },
+    front(layer) {
+      if (layer === 0) return;
+      const t = this.tw;                                                             /* the tumbleweed rolls on, the wind behind it */
+      const x = t.x, y = 226 - Math.abs(Math.sin(S.t * 3)) * 5;
+      for (let k = 0; k < 8; k++) { const an = t.a + k * Math.PI / 4; for (let r = 2; r < 7; r++) R(x + Math.cos(an) * r, y + Math.sin(an) * r, 1, 1, k % 2 ? "#9a7a4a" : "#7a5a3a"); }
+      disc(x, y, 7, "#7a5a3a", 0.35);
+      this.cactus(sx(260, 1, 420, 40), 238, 26);
+    },
+    ambient(dt) {
+      this.tw.x += (-18 - S.v) * dt; this.tw.a -= (18 + S.v) * dt / 7; if (this.tw.x < -20) this.tw.x = 260 + Math.random() * 120;
+      if (!this.star && Math.random() < dt / 7) this.star = { x: 120 + Math.random() * 100, y: 10 + Math.random() * 30 };
+      if (this.star) { this.star.x -= 120 * dt; this.star.y += 50 * dt; if (this.star.x < 60) this.star = null; }
+      if (this.howl > 0) this.howl -= dt;
+    },
+    phrase() { this.howl = 1.4; tone("sine", 480, 820, 0.5, 0.05, 0.9, 5); tone("sine", 820, 620, 0.8, 0.05, 1.4, 5); },
+    rider(x, y) {                                                                    /* the puppy in the wagon */
+      disc(x, y - 6, 8, OUT); disc(x, y - 6, 7, "#e8d8b8");
+      const ear = S.v > 20 ? -3 : 0;
+      R(x - 9, y - 10 + ear, 3, 8, "#7a4a2a"); R(x + 6, y - 10 + ear, 3, 8, "#7a4a2a");
+      if (S.soot > 0) { disc(x, y - 6, 7, "#1a1418"); sootFace(x, y - 8, 3); return; }
+      eyes(x, y - 7, 3, 1.9); R(x - 1, y - 4, 3, 2, "#3a2010");
+      if (S.wave > 0) R(x - 1, y - 2, 3, 3 + Math.round(Math.abs(Math.sin(S.t * 12)) * 2), "#ff6b8a");   /* panting, happy */
+    },
+    finale() { for (let k = 0; k < 6; k++) setTimeout(() => this.bang(), 250 + k * 600); this.phrase(); },
+    bang() {
+      const x = 40 + Math.random() * 160, y = 30 + Math.random() * 60, c = NOTE_COL[Math.floor(Math.random() * 12)];
+      for (let i = 0; i < 26; i++) { const an = i / 26 * Math.PI * 2, sp = 34 + Math.random() * 10; S.sparks.push({ x, y, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, col: c, life: 1.3, fall: 20 }); }
+      if (ac) { const t = ac.currentTime, s = ac.createBufferSource(), f = ac.createBiquadFilter(), gg = ac.createGain(); s.buffer = noise(0.6); f.type = "lowpass"; f.frequency.value = 500; gg.gain.setValueAtTime(0.4, t); gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.6); s.connect(f); f.connect(gg); gg.connect(bus); s.start(t); }
+    },
+  },
+
+  /* ---------- the mushroom swamp: an enchanted marsh, giant glowing mushrooms ---------- */
+  swamp: {
+    title: "Mushroom Swamp Train",
+    lead: "A little engine on a wooden trestle through an enchanted swamp: giant glowing mushrooms, fireflies, a spider swinging on its thread, and frogs on the lily pads who jump and croak when the lamp finds them.",
+    track: 194,
+    eng: { body: "#2a1e3a", shine: "#4a3a62", trim: "#7a3ab8", brass: "#e8c060", wheelIn: "#3a1a5a", cap: "#2a7a4a", wagon: "#3a6a4a" },
+    beamCol: "#d8ffc8",
+    frogs: [], flies: [],
+    init() {
+      this.frogs = [60, 190, 300, 420].map((wx, i) => ({ wx, y: 222 + (i % 2) * 8, hop: 0, was: false }));
+      for (let i = 0; i < 22; i++) this.flies.push({ wx: Math.random() * 400, y: 60 + Math.random() * 120, ph: Math.random() * 6, ring: 0 });
+    },
+    back() {
+      const gr = g.createLinearGradient(0, 0, 0, 176); [["#08081e", 0], ["#121436", .5], ["#1e1e48", .8], ["#2a1e4a", 1]].forEach(([c, s]) => gr.addColorStop(s, c));
+      g.fillStyle = gr; g.fillRect(0, 0, KW, 176);
+      for (let i = 0; i < 30; i++) R((i * 47) % 240, (i * 23) % 70, 1, 1, wrap(S.t + i * 0.41, 2.6) < 0.25 ? "#5a5a90" : "#d8e0ff");
+      disc(184, 38, 16, "#e8f0ff", 0.08); disc(184, 38, 11, "#e8f0ff");              /* the moon */
+      const to = S.scroll * 0.2;                                                     /* the dark trees beyond, moss hanging */
+      for (let x = 0; x < KW; x++) { const y = 112 + Math.round(Math.sin((x + to) / 22) * 7 + Math.sin((x + to) / 9) * 2); R(x, y, 1, 64, "#121c28"); if (wrap(x + Math.round(to), 17) === 0) R(x, y, 1, 10 + wrap(x + Math.round(to), 7), "#1e3a32"); }
+      for (const [wx, base, h, cap, c, sp, par] of [[40, 176, 46, 17, "#e84aa8", "#ffe0f4", 0.5], [230, 170, 36, 13, "#3ad0d8", "#e0ffff", 0.5], [360, 176, 52, 19, "#a86ae8", "#f0e0ff", 0.5]]) this.shroom(sx(wx, par, 480, 60), base, h, cap, c, sp, wx);
+      g.fillStyle = "#0e2232"; g.fillRect(0, 176, KW, 64);                            /* the water */
+      const wo = wrap(S.scroll, 16);
+      for (let y = 180; y < 240; y += 5) for (let x = -wo + ((y / 5) % 2) * 8; x < KW; x += 16) R(x, y, 5, 1, "#183a50");
+      g.globalAlpha = 0.45; for (let k = 0; k < 7; k++) { const w = 12 - k * 1.5, j = Math.round(Math.sin(S.t * 3 + k) * 2); R(184 - w / 2 + j, 206 + k * 4, w, 1, "#c8d8f0"); } g.globalAlpha = 1;   /* the moon in the water */
+      for (const f of this.flies) this.fly(f, false);
+    },
+    shroom(x, base, h, cap, c, sp, seed) {
+      if (x === null) return;
+      const pulse = 0.1 + 0.05 * Math.sin(S.t * 1.5 + seed);
+      disc(x, base - h - cap / 2, cap * 2.2, c, pulse);
+      R(x - 4, base - h, 9, h, OUT); R(x - 3, base - h, 7, h, "#d8d0e8"); R(x - 3, base - h, 2, h, "#f4f0ff");
+      for (let yy = 0; yy < cap; yy++) { const w = Math.floor(cap * 1.7 * Math.sqrt(1 - (yy / cap) ** 2)); R(x - w - 1, base - h - yy - 1, 2 * w + 2, 1, OUT); }
+      for (let yy = 0; yy < cap; yy++) { const w = Math.floor(cap * 1.7 * Math.sqrt(1 - (yy / cap) ** 2)); R(x - w, base - h - yy, 2 * w, 1, yy > cap * 0.75 ? mixc(c, "#ffffff", 0.3) : c); }
+      for (let k = 0; k < 5; k++) { const a = Math.sin(seed * 7 + k * 2.3), b = Math.abs(Math.cos(seed * 3 + k * 1.7)); disc(x + a * cap * 1.1, base - h - 2 - b * (cap - 5), 1.5, sp); }
+      R(x - cap * 1.6, base - h, cap * 3.2, 1, mixc(c, "#000000", 0.4));
+    },
+    fly(f, front) {
+      const x = sx(f.wx, 0.7, 400, 20); if (x === null) return;
+      let fx = x + Math.sin(S.t * 0.9 + f.ph) * 6, fy = f.y + Math.sin(S.t * 1.3 + f.ph * 2) * 5;
+      if (this.ringT > 0) { const an = f.ph + S.t * 1.5, k = Math.min(1, (5 - this.ringT) * 0.8); fx += (120 + Math.cos(an) * 60 - fx) * k; fy += (100 + Math.sin(an) * 40 - fy) * k; }
+      const on = wrap(S.t * 0.8 + f.ph, 2) < 1.4 || this.ringT > 0;
+      if (on) { disc(fx, fy, 3, "#dcff8c", 0.2); R(fx, fy, 1, 1, "#f0ffa0"); }
+    },
+    trackDraw() {
+      const y = this.track, off = wrap(S.scroll, 14);
+      const o2 = wrap(S.scroll, 28);
+      for (let x = -o2; x < KW; x += 28) {
+        R(x, y + 6, 3, 22, "#3a2418"); R(x + 1, y + 6, 1, 22, "#4a3020");
+        for (let k = 0; k < 4; k++) R(x - 1 + (k % 2) * 2, y + 30 + k * 3, 3, 1, "#2a2030");   /* its reflection, broken by ripples */
+        for (let k = 0; k < 12; k++) R(x + 3 + k * 2, y + 8 + k, 2, 1, "#2e1c12");
+      }
+      R(0, y + 2, KW, 4, "#5a3a2a"); R(0, y, KW, 2, "#a8a0b8");
+    },
+    front(layer) {
+      if (layer === 0) return;
+      for (const p of this.frogs) {
+        const x = sx(p.wx, 1, 520, 40); if (x === null) continue;
+        disc(x, p.y, 8, "#1e5a2a"); R(x, p.y - 1, 8, 2, "#0e2232");                  /* the lily pad, its notch */
+        const lit = inBeam(x); if (lit && !p.was) { p.hop = 0.7; tone("square", 95, 80, 0.18, 0.06); tone("square", 110, 90, 0.18, 0.05, 0.22); } p.was = lit;
+        const h = p.hop > 0 ? Math.sin((0.7 - p.hop) / 0.7 * Math.PI) * 14 : 0;
+        this.frog(x, p.y - h, p.hop > 0);
+      }
+      const x = sx(140, 0.5, 400, 30);                                               /* the spider on her thread, bobbing */
+      if (x !== null) {
+        const y = 40 + Math.sin(S.t * 1.2) * 14;
+        R(x, 0, 1, y, "#8a90b0");
+        disc(x, y + 3, 4, OUT); disc(x, y + 3, 3, "#3a2a5a"); R(x - 1, y + 2, 1, 1, "#ffffff"); R(x + 1, y + 2, 1, 1, "#ffffff");
+        for (let k = 0; k < 4; k++) { const lg = Math.round(Math.sin(S.t * 4 + k) * 1); R(x - 7, y + 1 + k * 2 + lg, 3, 1, "#3a2a5a"); R(x + 5, y + 1 + k * 2 - lg, 3, 1, "#3a2a5a"); }
+      }
+    },
+    frog(x, y, jump) {
+      disc(x, y - 4, 7, OUT); disc(x, y - 4, 6, "#4fb84a"); R(x - 6, y - 2, 12, 2, "#9ae07a");
+      for (const ex of [-3, 3]) { disc(x + ex, y - 10, 3, OUT); disc(x + ex, y - 10, 2, "#ffffff"); R(x + ex, y - 10, 1, 1, "#111"); }
+      R(x - 3, y - 3, 6, 1, "#1e4a1e");
+      if (jump) { R(x - 8, y, 4, 2, "#4fb84a"); R(x + 4, y, 4, 2, "#4fb84a"); }
+    },
+    ambient(dt) { for (const p of this.frogs) if (p.hop > 0) p.hop -= dt; if (this.ringT > 0) this.ringT -= dt; },
+    ringT: 0,
+    rider(x, y) {                                                                    /* the frog in the wagon */
+      if (S.soot > 0) { disc(x, y - 4, 7, OUT); disc(x, y - 4, 6, "#1a1418"); disc(x - 3, y - 10, 3, "#1a1418"); disc(x + 3, y - 10, 3, "#1a1418"); sootFace(x, y - 10, 3); return; }
+      this.frog(x, y + 1 - (S.wave > 0 ? Math.abs(Math.sin(S.t * 10)) * 4 : 0), S.wave > 0);
+    },
+    finale() { this.ringT = 5; this.frogs.forEach((p) => (p.hop = 0.7)); [0, 0.25, 0.5, 0.75].forEach((t, i) => tone("square", [98, 123, 147, 196][i], [90, 110, 130, 180][i], 0.3, 0.05, t)); },
+  },
+};
+const P = PLACES[PLACE];
+P.init();
+document.getElementById("lead").textContent = P.lead;
+document.getElementById("others").innerHTML = "The other two places: " + Object.entries(PLACES).filter(([k]) => k !== PLACE).map(([k, v]) => `<b>${v.title}</b>`).join(" and ") + " (each its own sketch).";
+
+/* ---------- playing ---------- */
+function letter() {                                              /* Key mode: the next note's letter, with a halo, over the engine */
+  if (K.mode !== 1 || S.listen || S.fin > 0) return;
+  const n = TUNE[S.idx % TUNE.length][0], name = NAMES[n % 12].replace("#", "♯"), c = NOTE_COL[n % 12];
+  const x = 112, y = 118 - Math.round(Math.sin(S.t * 3) * 2) - (S.letterPop > 0 ? 4 : 0);
+  disc(x + 7, y - 7, 15, c, 0.18); disc(x + 7, y - 7, 11, "#ffffff", 0.12);
+  g.font = "16px 'Press Start 2P'"; g.fillStyle = OUT;
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.fillText(name, x + dx - (name.length > 1 ? 7 : 0), y + dy);
+  g.fillStyle = c; g.fillText(name, x - (name.length > 1 ? 7 : 0), y);
+}
+function play(k, dur) {
+  const n = TUNE[k][0];
+  calliope(n, dur); chuff(0.1 + Math.random() * 0.04);
+  if (music) padTo(chordFor(n));
+  S.v = Math.min(70, S.v + 18 + TUNE[k][1] * 3); S.lastNote = S.t; S.letterPop = 0.15;
+  const st = stackAt(); puff(st[0], st[1], mixc(NOTE_COL[n % 12], "#ffffff", 0.55), { r: 3 + TUNE[k][1] * 0.4 });
+  if (PHRASE_END.has(k)) {
+    whistle(2, Math.min(0.3, dur * 0.4)); S.wave = 1.6; if (P.phrase) P.phrase();
+    for (let i = 0; i < 4; i++) setTimeout(() => { const s2 = stackAt(); puff(s2[0], s2[1], "#f4f4ff", { r: 5, vy: -40 }); }, 120 + i * 140);
+  }
+  if (k === TUNE.length - 1) finale();
+}
+let geo = { lamp: [147, 184], stack: [131, 165] };
+const stackAt = () => geo.stack;
+function finale() {
+  S.fin = 6; whistle(3, 0.6); P.finale(); S.wave = 4;
+  for (let i = 0; i < 14; i++) setTimeout(() => { const s = stackAt(); puff(s[0], s[1], mixc(NOTE_COL[i % 12], "#ffffff", 0.4), { r: 6, vy: -50, life: 2.2 }); }, i * 160);
+}
+function wrong() {
+  S.misses++;
+  const st = stackAt();
+  if (S.misses === 1) {                                          /* a cough: black smoke */
+    cough(false); S.cough = 0.9; S.v *= 0.4;
+    for (let i = 0; i < 6; i++) setTimeout(() => puff(st[0], st[1], "#1a1a1e", { dark: true, r: 4, vy: -30 - Math.random() * 15, vx: (Math.random() - .5) * 20, grow: 7 }), i * 70);
+  } else {                                                       /* the big sooty sneeze, back over the passenger */
+    S.misses = 0; achoo(); S.cough = 1.6; S.v = 0;
+    setTimeout(() => {
+      for (let i = 0; i < 16; i++) puff(st[0] - 4, st[1] + 4, "#141418", { dark: true, r: 5 + Math.random() * 3, vx: -70 - Math.random() * 40, vy: 4 + Math.random() * 10, life: 1.4, grow: 6 });
+      setTimeout(() => { S.soot = 4.5; }, 450);
+    }, 620);
+  }
+}
+function press(note) {
+  power();
+  if (S.listen || S.fin > 0) return;
+  const k = S.idx % TUNE.length, want = TUNE[k][0];
+  if (K.mode === 1 && note !== want) { wrong(); return; }
+  S.misses = 0;
+  play(k, Math.min(0.9, TUNE[k][1] * EIGHTH * 0.9 + 0.08));
+  S.idx = k + 1 >= TUNE.length ? 0 : k + 1;
+}
+document.getElementById("listen").addEventListener("click", () => {
+  power();
+  const b = document.getElementById("listen");
+  if (S.listen) { S.listen = null; b.textContent = "♪ Listen first"; return; }
+  S.idx = 0; S.listen = { k: 0, at: 0 }; b.textContent = "■ Stop";
+});
+
+let last = performance.now(), dt0 = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; S.t += dt; dt0 = dt;
+  if (S.listen) {
+    S.listen.at -= dt;
+    if (S.listen.at <= 0) {
+      const k = S.listen.k, len = TUNE[k][1] * EIGHTH;
+      play(k, len * 0.92); S.listen.at += len; S.listen.k++; S.idx = S.listen.k % TUNE.length;
+      if (S.listen.k >= TUNE.length) { S.listen = null; S.idx = 0; document.getElementById("listen").textContent = "♪ Listen first"; }
+    }
+  }
+  S.v *= Math.exp(-dt * 0.9); if (S.v < 0.5) S.v = 0;
+  S.scroll += S.v * dt; S.wheel += S.v * dt / 6;
+  if (S.t - S.lastNote > 3 && S.fin <= 0 && pad.name) padOff();
+  if (S.v === 0 && S.t > S.nextHiss && S.t - S.lastNote > 4) {    /* waiting: a hiss of steam from the cylinders */
+    hiss(); S.nextHiss = S.t + 5 + Math.random() * 3;
+    for (let i = 0; i < 6; i++) puff(geo.lamp[0] - 40 + i * 2, P.track - 6, "#e8e8f4", { r: 2, vx: 20 + i * 6, vy: -4, life: 0.9, grow: 6 });
+  }
+  if (S.v > 30 && Math.random() < dt * 6) { const s = stackAt(); puff(s[0], s[1], "#d8d8e8", { r: 2, life: 1 }); }
+  for (const p of S.puffs) { p.x += (p.vx - S.v) * dt; p.y += p.vy * dt; p.vy *= Math.exp(-dt * 0.8); p.r += p.grow * dt; p.life -= dt; }
+  S.puffs = S.puffs.filter((p) => p.life > 0 && p.x > -30);
+  for (const s of S.sparks) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += (s.fall || 0) * dt; s.life -= dt; }
+  S.sparks = S.sparks.filter((s) => s.life > 0 && s.y < 250);
+  for (const k of ["cough", "soot", "wave", "fin", "letterPop"]) if (S[k] > 0) S[k] -= dt;
+  if (P.ambient) P.ambient(dt);
+  draw(); glowKeys();
+  requestAnimationFrame(frame);
+}
+function draw() {
+  P.back();
+  P.trackDraw();
+  const ty = P.track;
+  P.front(0);
+  wagon(50, ty - 19, P.eng); P.rider(66, ty - 19);
+  geo = engine(98, ty - 26, P.eng);
+  P.front(1);
+  drawPuffs();
+  beam(geo.lamp[0], geo.lamp[1], P.beamCol);
+  for (const s of S.sparks) { const a = Math.min(1, s.life); if (s.star) { R(s.x, s.y - 1, 1, 3, s.col); R(s.x - 1, s.y, 3, 1, s.col); } else { g.globalAlpha = a; R(s.x, s.y, 2, 2, s.col); g.globalAlpha = 1; } }
+  letter();
+  if (S.fin > 0) {                                               /* CHOO CHOO! */
+    g.font = "16px 'Press Start 2P'"; const txt = "CHOO CHOO!", w = g.measureText(txt).width, x = (KW - w) / 2, y = 40 + Math.sin(S.t * 6) * 3;
+    g.fillStyle = OUT; for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2]]) g.fillText(txt, x + dx, y + dy);
+    g.fillStyle = NOTE_COL[Math.floor(S.t * 8) % 12]; g.fillText(txt, x, y);
+  }
+}
+
+/* ---------- the keys ---------- */
+const keysEl = document.getElementById("keys"), keyEls = {};
+(function buildKeys() {
+  const whites = []; for (let n = LO; n <= HI; n++) if (!isBlack(n)) whites.push(n);
+  const w = 100 / whites.length; let wi = 0;
+  for (let n = LO; n <= HI; n++) {
+    const b = document.createElement("button"); b.className = "key " + (isBlack(n) ? "b" : "w");
+    b.setAttribute("aria-label", NAMES[n % 12] + (Math.floor(n / 12) - 1));
+    if (isBlack(n)) { b.style.left = `calc(${wi * w}% - ${w * 0.3}%)`; b.style.width = `${w * 0.6}%`; }
+    else { b.style.left = `${wi * w}%`; b.style.width = `${w}%`; b.textContent = n % 12 === 0 ? "C" + (Math.floor(n / 12) - 1) : ""; wi++; }
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); b.classList.add("down"); press(n); });
+    ["pointerup", "pointerleave"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("down")));
+    keysEl.appendChild(b); keyEls[n] = b;
+  }
+})();
+function glowKeys() {
+  const want = K.mode === 1 && !S.listen ? TUNE[S.idx % TUNE.length][0] : -1;
+  Object.entries(keyEls).forEach(([n, el]) => { const on = +n === want; el.classList.toggle("glow", on); if (on) el.style.setProperty("--glow", NOTE_COL[+n % 12]); });
+}
+const KB = { a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66, g: 67, y: 68, h: 69, u: 70, j: 71, k: 72, o: 73, l: 74, p: 75 };
+document.addEventListener("keydown", (e) => {
+  if (e.repeat || e.metaKey || e.ctrlKey) return;
+  const n = KB[e.key.toLowerCase()]; if (n === undefined) return;
+  e.preventDefault(); press(n); keyEls[n] && keyEls[n].classList.add("down");
+});
+document.addEventListener("keyup", (e) => { const n = KB[e.key.toLowerCase()]; if (n !== undefined && keyEls[n]) keyEls[n].classList.remove("down"); });
+try {
+  if (navigator.requestMIDIAccess) navigator.requestMIDIAccess().then((m) => {
+    m.inputs.forEach((i) => { i.onmidimessage = (ev) => { const [st, n, v] = ev.data; if ((st & 0xF0) === 0x90 && v > 0) press(n); }; });
+  }).catch(() => {});
+} catch (_) { /* no MIDI here: the keys and the computer keys still play */ }
+document.getElementById("k1").addEventListener("click", () => { K.mode = 1 - K.mode; document.getElementById("v1").textContent = K.mode ? "Key: the next note's letter" : "Easy: any key"; });
+document.getElementById("k4").addEventListener("click", () => { music = !music; document.getElementById("v4").textContent = music ? "chords on" : "off: the tune alone"; if (!music) padOff(); });
+requestAnimationFrame(frame);
+</script>

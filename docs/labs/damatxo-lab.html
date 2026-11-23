@@ -1,0 +1,512 @@
+<title>Hiru Damatxo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the FM-1's 240x240 screen, its 27 keys under it, the knobs beside: the unicorn lab's frame. One look on
+   purpose: an evening at La Concha, every colour set here. */
+:root {
+  --bg: #1a1430;          /* the evening behind the device */
+  --panel: #262043;       /* the FM-1's face */
+  --ink: #f7f1ea;
+  --muted: #b3a9cc;
+  --rose: #ff7a8a;        /* the accent: the roses and carnations of the song */
+  --key-w: #ece8f2;
+  --key-b: #2a2545;
+  --display: "Press Start 2P", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px; }
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-family: var(--display); font-size: 17px; letter-spacing: .04em; margin: 0; color: var(--rose); text-wrap: balance; line-height: 1.5; }
+p.lead { margin: 0; color: var(--muted); max-width: 65ch; line-height: 1.55; }
+.device { background: var(--panel); border-radius: 18px; padding: 16px; display: grid; gap: 14px; box-shadow: 0 0 0 2px #352e5c inset; }
+.top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+canvas#screen { width: min(480px, 100%); aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; background: #000;
+  border: 3px solid #110d22; max-width: 100%; }
+.knobs { display: grid; gap: 10px; flex: 1; min-width: 180px; }
+.knob { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; background: #1d1838; border-radius: 10px; padding: 8px 10px; }
+.knob button { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #463e7a; background: radial-gradient(#423b78, #1f1a3e);
+  color: var(--ink); font: 11px var(--display); cursor: pointer; }
+.knob button:focus-visible, .start:focus-visible, .key:focus-visible { outline: 3px solid var(--rose); outline-offset: 2px; }
+.knob .lab { font: 9px var(--display); color: var(--muted); letter-spacing: .06em; }
+.knob .val { font-weight: 600; margin-top: 4px; }
+.start { font: 12px var(--display); background: var(--rose); color: #2b0a12; border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.keys { position: relative; height: 120px; overflow-x: auto; }
+.keys-inner { position: relative; height: 100%; min-width: 480px; }
+.key { position: absolute; top: 0; border: 1px solid #110d22; border-radius: 0 0 6px 6px; cursor: pointer; padding: 0;
+  display: flex; align-items: flex-end; justify-content: center; font: 9px var(--display); color: #6f6a99; }
+.key.w { background: var(--key-w); height: 100%; z-index: 1; }
+.key.b { background: var(--key-b); height: 60%; z-index: 2; color: #8b86b8; }
+.key.glow { box-shadow: 0 0 14px 4px var(--glow, #fff) inset, 0 0 12px 2px var(--glow, #fff); }
+.key.down { filter: brightness(.8); }
+.notes { color: var(--muted); font-size: 13px; line-height: 1.55; display: grid; gap: 6px; max-width: 70ch; }
+.notes b { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .key.glow { box-shadow: 0 0 0 3px var(--glow, #fff) inset; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap">
+
+<div class="wrap">
+  <h1>Hiru Damatxo</h1>
+  <p class="lead">A sketch for a second game: the three little ladies of Donostia dance on La Concha's promenade, a jump for each
+    note you play, in the dance costume: white blouse, black bodice, red skirt with black bands, laced stockings and
+    abarkak. They wait for you. At the end of each line all three jump together; at the very end they turn, and the bay
+    lights up with fireworks.</p>
+  <div class="device">
+    <div class="top">
+      <canvas id="screen" width="240" height="240" aria-label="The game screen: three ladies dancing by La Concha bay"></canvas>
+      <div class="knobs">
+        <button class="start" id="listen">♪ Listen first</button>
+        <div class="knob"><button id="k1" aria-label="K1 mode">K1</button><div><div class="lab">MODE</div><div class="val" id="v1">Easy: any key</div></div></div>
+        <div class="knob"><button id="k4" aria-label="K4 music">K4</button><div><div class="lab">MUSIC</div><div class="val" id="v4">soft chords on</div></div></div>
+      </div>
+    </div>
+    <div class="keys"><div class="keys-inner" id="keys"></div></div>
+  </div>
+  <div class="notes">
+    <div><b>Play:</b> tap the keys, the computer keys <b>A S D F G H J K L</b> (white) and <b>W E T Y U O P</b> (black), or a MIDI keyboard where the browser allows it. In Easy any key dances the next note; in Key the next note's letter floats over the lady who dances it and its key glows. A wrong key in Key: she falls on her bottom and the other two giggle; two in a row: a seagull flies in and poops on her head.</div>
+    <div><b>The tune</b> is the traditional <i>Donostiako hiru damatxo</i> as the old songbooks have it (Santesteban, Etxeberria-Guimon; sung and danced by 1784): 75 notes in G minor, D4 to E♭5. Its notes come from the Bertsolaritza database's MIDI of variant A.</div>
+    <div><b>The look:</b> our own pixel drawing of an evening at La Concha long ago: Igeldo a long green ridge with its old lighthouse tower, Santa Clara's round island with its blinking light, Urgull a dark profile with the Mota castle on its top; one old sailing boat at anchor, a trainera rowing across now and then, gulls, waves on the sand, clouds drifting; the white railing and its lamps; three dancers in the Basque dance costume: white blouse, black bodice, red skirt with black bands, white stockings laced in red, abarkak; a braid, a ponytail, a white headscarf. A sketch to talk about, not the firmware yet.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------- the tune: Donostiako hiru damatxo, variant A (traditional), notes and lengths in beats ---------- */
+const TUNE = [[62,.5],[62,.5],[67,.75],[69,.25],[70,.5],[69,.5],[67,.5],[69,.75],[66,.25],[62,.5],[74,.5],[72,.5],[70,.75],[69,.25],[67,.5],[69,.5],[67,.5],[66,.5],[67,1.5],
+  [62,.5],[62,.5],[67,.75],[69,.25],[70,.5],[69,.5],[67,.5],[69,.75],[66,.25],[62,.5],[74,.5],[72,.5],[70,.75],[69,.25],[67,.5],[69,.5],[67,.5],[66,.5],[67,1.5],
+  [70,.5],[72,.5],[74,.75],[74,.25],[74,.5],[75,1],[74,.5],[72,.75],[70,.25],[69,.5],[70,.5],[72,.5],[74,.75],[74,.25],[70,.5],[67,1],[70,.5],[69,1.5],
+  [62,.5],[62,.5],[67,.75],[69,.25],[70,.5],[69,.5],[67,.5],[69,.75],[65,.25],[62,.5],[74,.5],[72,.5],[70,.75],[69,.25],[67,.5],[69,.5],[67,.5],[65,.5],[67,1.5]];
+const PHRASE_END = new Set([18, 37, 55, 74]);   /* the long notes that close each line */
+const LO = 53, HI = 79;
+const NAMES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const isBlack = (n) => [1, 3, 6, 8, 10].includes(n % 12);
+const NOTE_COL = ["#ff4d4d", "#ff7a59", "#ff9f1c", "#ffbf47", "#ffe14d", "#5ed36b", "#38c9a4", "#2ec4f0", "#4d8cff", "#8a6bff", "#c26bff", "#ff6bc6"];
+
+/* ---------- sound: a soft flute for the tune, a soft step as they land, and G minor chords under it ---------- */
+let ac = null, bus = null;
+function power() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    bus = ac.createGain(); bus.connect(ac.destination);
+    const cv = ac.createConvolver(), len = Math.floor(ac.sampleRate * 1.8), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    cv.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.3; bus.connect(cv); cv.connect(wet); wet.connect(ac.destination);
+  }
+  if (ac.state === "suspended") ac.resume();
+}
+const hz = (n) => 440 * Math.pow(2, (n - 69) / 12);
+function flute(n, dur) {                                         /* a txistu-ish whistle: a sine, a breath, a little vibrato */
+  if (!ac) return;
+  const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), dep = ac.createGain();
+  o.type = "sine"; o.frequency.value = hz(n); lfo.frequency.value = 5.5; dep.gain.value = hz(n) * 0.006; lfo.connect(dep); dep.connect(o.frequency);
+  const o2 = ac.createOscillator(), g2 = ac.createGain(); o2.type = "triangle"; o2.frequency.value = hz(n) * 2; g2.gain.value = 0.04;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.2, t + 0.03); g.gain.setValueAtTime(0.18, t + Math.max(0.05, dur - 0.08)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.15);
+  o.connect(g); o2.connect(g2); g2.connect(g); g.connect(bus); [o, o2, lfo].forEach((x) => { x.start(t); x.stop(t + dur + 0.2); });
+}
+const CHORD = { G: [55, 58, 62, 43], C: [55, 60, 63, 48], D: [54, 57, 62, 50], Bb: [53, 58, 62, 46], F: [53, 57, 60, 41] };
+const CHORD_OF = { 7: "G", 10: "G", 2: "D", 9: "D", 6: "D", 0: "C", 3: "C", 5: "F" };
+let pad = { name: "", v: [] }, music = true;
+function chordFor(n) {
+  const pc = n % 12;
+  if (pad.name && CHORD[pad.name].some((m) => m % 12 === pc)) return pad.name;   /* the note is in it: keep it */
+  return CHORD_OF[pc] || "G";
+}
+function padTo(name) {
+  if (!ac || name === pad.name) return;
+  const t = ac.currentTime;
+  pad.v.forEach(({ o, g }) => { g.gain.setTargetAtTime(0.0001, t, 0.3); o.stop(t + 2); });
+  pad = { name, v: [] };
+  if (!music) return;
+  CHORD[name].forEach((n, i) => {
+    const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+    o.type = i < 3 ? "sawtooth" : "triangle"; o.frequency.value = hz(n); f.type = "lowpass"; f.frequency.value = i < 3 ? 800 : 300;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(i < 3 ? 0.02 : 0.07, t + 0.4);
+    o.connect(f); f.connect(g); g.connect(bus); o.start(t); pad.v.push({ o, g });
+  });
+}
+function padOff() { if (!ac) return; const t = ac.currentTime; pad.v.forEach(({ o, g }) => { g.gain.setTargetAtTime(0.0001, t, 0.3); o.stop(t + 2); }); pad = { name: "", v: [] }; }
+function boom() {                                                /* a firework, far over the bay */
+  if (!ac) return;
+  const t = ac.currentTime, len = Math.floor(ac.sampleRate * 0.6), b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = b; f.type = "lowpass"; f.frequency.value = 500; g.gain.value = 0.35; s.connect(f); f.connect(g); g.connect(bus); s.start(t);
+}
+
+/* ---------- the scene ---------- */
+const cv = document.getElementById("screen"), g = cv.getContext("2d");
+g.imageSmoothingEnabled = false;
+const K = { mode: 0 };                                           /* 0 Easy: any key; 1 Key: the next note's letter, its key lit */
+const S = { idx: 0, t: 0, dance: [0, 0, 0], spin: [0, 0, 0], step: [0, 0, 0], roses: [], fireworks: [], cheer: 0, listen: null, lastNote: 0,
+  misses: 0, fall: [0, 0, 0], giggle: [0, 0, 0], splat: [0, 0, 0], shake: [0, 0, 0], dust: [], gull: null, poop: null };
+/* the three: a headscarf, a shawl and a skirt each (one apron colour: they are seamstresses) */
+const LADIES = [
+  { x: 62, hair: "#2a1a14", style: "braid" },
+  { x: 120, hair: "#7a4424", style: "tail" },
+  { x: 178, hair: "#3a2418", style: "scarf" },
+];
+const OUT = "#22162e", SKIN = "#f1c7a3", WHITE = "#f6f2ea", WSH = "#d8d2c8", BLACK = "#1e1a22", RED = "#d8262a", REDD = "#a81c22",
+  LACE = "#c8202a", ABARKA = "#b05a2a";
+const FLOOR = 200;                                               /* the promenade's top */
+
+function rects(list, cx = 0, sx = 1) {                           /* outlined pixel shapes, squeezed about cx when she turns */
+  const sq = ([x, y, w, h, c]) => { const l = Math.round(cx + (x - cx) * sx), r = Math.round(cx + (x + w - cx) * sx); return [Math.min(l, r), Math.round(y), Math.max(1, Math.abs(r - l)), h, c]; };
+  const q = list.map(sq);
+  q.forEach(([x, y, w, h]) => { g.fillStyle = OUT; g.fillRect(x - 1, y - 1, w + 2, h + 2); });
+  q.forEach(([x, y, w, h, c]) => { g.fillStyle = c; g.fillRect(x, y, w, h); });
+}
+/* a dancer: white blouse with a collar and long sleeves, a black bodice, a red skirt with black bands at the hem, white
+   stockings laced crosswise in red, abarkak; she jumps to dance (toes pointed), sits down hard when she falls, giggles
+   behind her hand, and turns once at the very end */
+function lady(L, i) {
+  const d = S.dance[i], spin = S.spin[i] > 0, fall = S.fall[i] > 0, giggle = S.giggle[i] > 0;
+  const p = spin ? 1 - S.spin[i] / 1.0 : d > 0 ? 1 - d / 0.45 : 0;
+  const hop = fall ? 0 : spin ? Math.sin(p * Math.PI) * 4 : d > 0 ? Math.sin(p * Math.PI) * 9 : Math.sin(S.t * 2 + i) * 0.6;
+  const flare = spin ? Math.sin(p * Math.PI) * 8 : d > 0 ? Math.sin(p * Math.PI) * 3 : 0;
+  const turn = spin ? Math.cos(p * Math.PI * 2) : 1, back = turn < 0, sx = Math.max(0.2, Math.abs(turn));
+  const x = L.x, sit = fall ? 20 : 0, top = FLOOR - 66 - hop + sit;   /* sitting: the whole of her lower, her legs out in front */
+  const parts = [];
+  const skirtRows = fall ? 16 : 26;
+  for (let r = 0; r < skirtRows; r++) {                          /* the skirt: red, wider to the hem; three black bands near it */
+    const w = 16 + Math.round(r * (fall ? 1.3 : 0.55 + flare / 30)) * 2;
+    const band = (r >= skirtRows - 7 && (skirtRows - r) % 2 === 0);
+    parts.push([x - w / 2, top + 30 + r, w, 1, band ? BLACK : (r > skirtRows - 3 ? REDD : RED)]);
+  }
+  parts.push([x - 7, top + 17, 14, 14, back ? BLACK : BLACK]);   /* the bodice */
+  const armsUp = d > 0 && p > 0.2 && p < 0.8;                     /* jumping: arms out a little, hands open */
+  if (giggle && !fall) { parts.push([x - 11, top + 18, 4, 12, WHITE], [x + 7, top + 18, 4, 8, WHITE], [x + 2, top + 11, 4, 4, SKIN]); }   /* a hand to her mouth */
+  else if (fall) { parts.push([x - 13, top + 22, 4, 12, WHITE], [x + 9, top + 22, 4, 12, WHITE], [x - 14, top + 33, 4, 3, SKIN], [x + 10, top + 33, 4, 3, SKIN]); }   /* hands behind, on the ground */
+  else if (armsUp || spin) { parts.push([x - 14, top + 16, 5, 12, WHITE], [x + 9, top + 16, 5, 12, WHITE], [x - 15, top + 27, 4, 3, SKIN], [x + 11, top + 27, 4, 3, SKIN]); }
+  else { parts.push([x - 11, top + 18, 4, 14, WHITE], [x + 7, top + 18, 4, 14, WHITE], [x - 11, top + 31, 4, 3, SKIN], [x + 7, top + 31, 4, 3, SKIN]); }
+  parts.push([x - 8, top + 16, 16, 4, WHITE]);                    /* the blouse's shoulders */
+  parts.push([x - 5, top + 4, 10, 12, back ? L.hair : SKIN]);     /* the face, or the back of her head */
+  if (L.style === "scarf") parts.push([x - 6, top, 12, 6, WHITE], [x - 2, top + 5, 4, 4, back ? WHITE : WHITE]);   /* a white headscarf */
+  else parts.push([x - 6, top, 12, 5, L.hair]);
+  if (L.style === "braid") parts.push([x + 5, top + 4, 3, 14, L.hair]);    /* a braid over her shoulder */
+  if (L.style === "tail") parts.push([x - 8, top + 3, 3, 10, L.hair]);     /* a ponytail behind */
+  if (fall) {                                                    /* sitting: legs out to the front, stockings, abarkak */
+    parts.push([x - 16, FLOOR - 7, 10, 4, WHITE], [x + 6, FLOOR - 7, 10, 4, WHITE], [x - 20, FLOOR - 8, 5, 5, ABARKA], [x + 15, FLOOR - 8, 5, 5, ABARKA]);
+  } else {
+    const legTop = top + 30 + skirtRows, legLen = FLOOR - 3 - hop - legTop;
+    const pointed = d > 0 && p > 0.15 && p < 0.85;
+    parts.push([x - 5, legTop, 4, legLen, WHITE], [x + 1, legTop, 4, legLen, WHITE]);
+    parts.push([x - 6, FLOOR - 4 - hop, 5, pointed ? 4 : 3, ABARKA], [x + 1, FLOOR - 4 - hop, 5, pointed ? 4 : 3, ABARKA]);
+  }
+  rects(parts, x, sx);
+  if (!fall) {                                                   /* the red laces crossing up the stockings */
+    const legTop = top + 30 + skirtRows;
+    g.fillStyle = LACE;
+    for (let y = legTop + 1; y < FLOOR - 4 - hop; y += 2) { g.fillRect(x - 5 + ((y >> 1) % 2) * 3, y, 1, 1); g.fillRect(x + 1 + ((y >> 1) % 2) * 3, y, 1, 1); }
+  }
+  if (back || sx < 0.6) return;                                  /* turned away, or side-on: no face to draw */
+  g.fillStyle = WHITE; g.fillRect(x - 3, top + 15, 6, 2);        /* the blouse's collar */
+  g.fillStyle = "#c83a40"; g.fillRect(x - 1, top + 20, 2, 1); g.fillRect(x - 1, top + 23, 2, 1); g.fillRect(x - 1, top + 26, 2, 1);   /* the bodice's lacing */
+  g.fillStyle = L.style === "scarf" ? "#5a3a24" : L.hair; g.fillRect(x - 5, top + 4, 10, 2);
+  g.fillStyle = OUT;
+  if (fall) { g.fillRect(x - 3, top + 8, 2, 2); g.fillRect(x + 1, top + 8, 2, 2); g.fillRect(x - 1, top + 12, 2, 2); }   /* surprised: an O */
+  else if (giggle) { g.fillRect(x - 3, top + 9, 2, 1); g.fillRect(x + 1, top + 9, 2, 1); }                               /* eyes squeezed, laughing */
+  else { g.fillRect(x - 3, top + 9, 2, 2); g.fillRect(x + 1, top + 9, 2, 2); g.fillRect(x - 1, top + 13, 2, 1); }
+  g.fillStyle = "#e88a8a"; g.fillRect(x - 4, top + 12, 2, 1); g.fillRect(x + 2, top + 12, 2, 1);
+  if (S.splat[i] > 0) {                                          /* the seagull's present, on her head */
+    g.fillStyle = OUT; g.fillRect(x - 6, top - 3, 13, 6); g.fillRect(x - 2, top - 4, 5, 1);
+    g.fillStyle = "#ffffff"; g.fillRect(x - 5, top - 2, 11, 4); g.fillRect(x - 1, top - 3, 3, 1); g.fillRect(x + 3, top + 2, 2, 4); g.fillRect(x - 4, top + 2, 1, 3);
+    g.fillStyle = "#e0e4d8"; g.fillRect(x - 3, top, 3, 1); g.fillRect(x + 2, top - 1, 2, 1);
+  }
+}
+
+/* La Concha, as in the owner's photo but long ago: Igeldo a long green ridge on the left, its old lighthouse tower on top;
+   Santa Clara a round island in the bay with its little lighthouse; Urgull on the right, the Mota castle on top and the
+   old town and the port at its foot; the beach; the railing. What moves: clouds, the sailing boats at anchor, a trainera
+   rowing across now and then, the gulls, the waves on the sand, the lighthouse */
+const L2 = { clouds: [[20, 26, 1], [120, 18, 1.3], [200, 34, 0.8]], boats: [[218, 112, 1]],
+  trainera: null, nextTrainera: 6, gulls: [[40, 40, 0], [170, 60, 2]], wave: 0 };
+function lifeUpdate(dt) {
+  L2.clouds.forEach((c) => { c[0] += dt * 2.2 * c[2]; if (c[0] > 280) c[0] = -60; });
+  L2.boats.forEach((b, i) => { b[0] += Math.sin(S.t * 0.07 + i) * dt * 1.2; });
+  L2.nextTrainera -= dt;
+  if (!L2.trainera && L2.nextTrainera <= 0) { L2.trainera = { x: -30, y: 132 }; }
+  if (L2.trainera) { L2.trainera.x += dt * 16; if (L2.trainera.x > 270) { L2.trainera = null; L2.nextTrainera = 18 + Math.random() * 12; } }
+  L2.gulls.forEach((q, i) => { q[2] += dt * 0.5; });
+}
+function cloud(x, y, sc) {                                       /* an evening cloud: violet above, lit pink and gold beneath */
+  const parts = [[0, 0, 14, 5], [10, -4, 12, 6], [22, -1, 12, 5], [-8, 2, 10, 3]];
+  parts.forEach(([dx, dy, w, h]) => { g.fillStyle = "#6a4a7e"; g.fillRect(Math.round(x + dx * sc), Math.round(y + dy * sc), Math.round(w * sc), Math.round(h * sc)); });
+  parts.forEach(([dx, dy, w, h]) => { g.fillStyle = "#e8888a"; g.fillRect(Math.round(x + dx * sc), Math.round(y + (dy + h - 2) * sc), Math.round(w * sc), Math.round(2 * sc)); });
+  parts.forEach(([dx, dy, w, h]) => { g.fillStyle = "#ffc890"; g.fillRect(Math.round(x + dx * sc + 1), Math.round(y + (dy + h) * sc - 1), Math.max(1, Math.round(w * sc) - 2), 1); });
+}
+function scene() {
+  const sky = ["#2b2154", "#3d2a63", "#5a326e", "#813d72", "#b24f6e", "#e07a6b", "#f2a970"];
+  sky.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, i * 14, 240, 14); });
+  for (let i = 0; i < 30; i++) { const on = Math.sin(S.t * 1.5 + i) > -0.2; g.fillStyle = on ? "#fff3d6" : "#7d6aa0"; g.fillRect((i * 53) % 240, (i * 29) % 40 + 4, 1, 1); }
+  L2.clouds.forEach(([x, y, sc]) => cloud(x, y, sc));
+  g.fillStyle = "#ffe2a8"; g.beginPath(); g.arc(160, 96, 9, 0, Math.PI * 2); g.fill();   /* the sun going down into the sea */
+  g.fillStyle = "rgba(255,226,168,.25)"; g.beginPath(); g.arc(160, 96, 16, 0, Math.PI * 2); g.fill();
+  /* far hills behind Igeldo, hazy */
+  g.fillStyle = "#6a5a86"; for (let x = 0; x < 70; x++) { const y = 70 + Math.sin(x / 14) * 4 + x * 0.1; g.fillRect(x, y, 1, 100 - y); }
+  /* Igeldo: a long rounded ridge running down into the sea; the sunlit crest; its old lighthouse tower */
+  const ig = (x) => 64 - Math.sin(Math.min(1, x / 40) * Math.PI / 2) * 6 + Math.pow(Math.max(0, x - 40) / 78, 1.6) * 38;
+  for (let x = 0; x < 120; x++) { const y = Math.round(ig(x)); g.fillStyle = "#34463e"; g.fillRect(x, y, 1, 101 - y); g.fillStyle = "#c98a6a"; g.fillRect(x, y, 1, 1); }
+  g.fillStyle = "#2a3a33"; for (let i = 0; i < 46; i++) { const x = (i * 37 + i * i * 11) % 116, y = Math.round(ig(x)) + 3 + (i * i * 13 + i * 5) % 24; if (y < 100) g.fillRect(x, y, 3, 2); }   /* trees */
+  g.fillStyle = "#e8e0d0"; g.fillRect(72, Math.round(ig(72)) + 6, 4, 3); g.fillStyle = "#a8402a"; g.fillRect(71, Math.round(ig(72)) + 5, 6, 1);   /* a farmhouse on the slope */
+  const ty = Math.round(ig(36));
+  g.fillStyle = "#22162e"; g.fillRect(33, ty - 13, 8, 14); g.fillStyle = "#b8ab98"; g.fillRect(34, ty - 12, 6, 12);   /* the tower */
+  g.fillStyle = "#22162e"; g.fillRect(33, ty - 14, 2, 2); g.fillRect(36, ty - 14, 2, 2); g.fillRect(39, ty - 14, 2, 2);
+  if (Math.floor(S.t * 0.8) % 3 === 0) { g.fillStyle = "rgba(255,230,150,.9)"; g.fillRect(36, ty - 10, 2, 2); }   /* its lamp, now and then */
+  /* Urgull: a rounded profile against the evening, the Mota castle's outline on its top */
+  const ur = (x) => 96 - Math.sqrt(Math.max(0, 1 - Math.pow((x - 222) / 50, 2))) * 40;
+  for (let x = 172; x < 240; x++) { const y = Math.round(ur(x)); g.fillStyle = "#47305e"; g.fillRect(x, y, 1, 101 - y); g.fillStyle = "#a8607a"; g.fillRect(x, y, 1, 1); }
+  g.fillStyle = "#47305e"; g.fillRect(207, 52, 24, 8); for (let x = 207; x < 231; x += 3) g.fillRect(x, 50, 2, 2); g.fillRect(216, 45, 7, 8);
+  /* the bay */
+  for (let r = 0; r < 18; r++) { g.fillStyle = r % 4 === 0 ? "#6f8fd0" : r < 6 ? "#3e5fa8" : "#33508f"; g.fillRect(0, 100 + r * 3, 240, 3); }
+  for (let i = 0; i < 14; i++) { g.fillStyle = "#ffd9a0"; g.fillRect(((i * 37 + S.t * 6) % 240), 104 + (i * 11) % 36, 4 + (i % 3), 1); }   /* sun on the water */
+  /* Santa Clara: a round green island, its lighthouse blinking */
+  g.fillStyle = "#22162e"; g.beginPath(); g.ellipse(132, 102, 19, 11, 0, Math.PI, 0); g.fill();
+  g.fillStyle = "#3e5a3e"; g.beginPath(); g.ellipse(132, 102, 18, 10, 0, Math.PI, 0); g.fill();
+  g.fillStyle = "#c98a6a"; g.fillRect(122, 93, 12, 1);
+  g.fillStyle = "#f4efe6"; g.fillRect(138, 89, 3, 5); g.fillStyle = Math.floor(S.t * 1.2) % 2 ? "#ffe680" : "#8a7a60"; g.fillRect(138, 88, 3, 1);
+  /* the boats at anchor: old fishing boats, brown and ochre sails, bobbing */
+  L2.boats.forEach(([x, y, k], i) => {
+    const bob = Math.round(Math.sin(S.t * 1.6 + i * 1.7)), bx = Math.round(x), by = y + bob;
+    g.fillStyle = "#22162e"; g.fillRect(bx - 5, by, 11, 3); g.fillStyle = ["#6a3a24", "#2a4a6a", "#7a2a24"][k]; g.fillRect(bx - 4, by, 9, 2);
+    g.fillStyle = "#3a2a20"; g.fillRect(bx, by - 11, 1, 11);
+    g.fillStyle = ["#e8d0a0", "#c8783a", "#f0e8d8"][k];
+    for (let j = 0; j < 9; j++) g.fillRect(bx + 1, by - 10 + j, Math.round(j * 0.6) + 1, 1);
+  });
+  if (L2.trainera) {                                              /* a trainera, the rowers pulling together */
+    const { x, y } = L2.trainera, st = Math.sin(S.t * 6) > 0;
+    g.fillStyle = "#22162e"; g.fillRect(Math.round(x) - 14, y, 30, 3); g.fillStyle = "#c8302a"; g.fillRect(Math.round(x) - 13, y, 28, 2);
+    for (let k = 0; k < 6; k++) {
+      const rx = Math.round(x) - 10 + k * 4;
+      g.fillStyle = "#f4efe6"; g.fillRect(rx, y - 3, 2, 3);
+      g.fillStyle = "#c8a070"; g.fillRect(rx + (st ? -2 : 1), y + 2, 1, 2); g.fillRect(rx + (st ? -3 : 2), y + 4, 1, 1);
+    }
+  }
+  L2.gulls.forEach(([cx, cy, ph]) => {                           /* gulls, gliding in circles over the bay */
+    const x = Math.round(cx + Math.cos(ph) * 30), y = Math.round(cy + Math.sin(ph) * 8), up = Math.sin(S.t * 5 + cx) > 0.6;
+    g.fillStyle = "#f4f4f0"; g.fillRect(x, y, 1, 1); g.fillRect(x - 1, y - (up ? 1 : 0), 1, 1); g.fillRect(x + 1, y - (up ? 1 : 0), 1, 1);
+    g.fillRect(x - 2, y - (up ? 2 : 0), 1, 1); g.fillRect(x + 2, y - (up ? 2 : 0), 1, 1);
+  });
+  /* the beach, and the waves washing up it and back */
+  g.fillStyle = "#e7c98f"; g.fillRect(0, 154, 240, 12);
+  g.fillStyle = "#d4b47a"; for (let x = 0; x < 240; x += 7) g.fillRect(x, 160 + (x % 3), 3, 1);
+  const reach = Math.round(2 + 3 * Math.sin(S.t * 0.9));
+  g.fillStyle = "#c8ac78"; g.fillRect(0, 154, 240, reach + 2);   /* wet sand */
+  for (let x = 0; x < 240; x++) { const y = 154 + reach + Math.round(Math.sin(x / 9 + S.t) * 0.8); g.fillStyle = "#f6f8ff"; g.fillRect(x, y, 1, 1); }
+  g.fillStyle = "#9a8f84"; g.fillRect(0, 166, 240, 4);          /* the wall */
+  g.fillStyle = "#f4efe6"; g.fillRect(0, 170, 240, 3); g.fillRect(0, 188, 240, 2);   /* the white railing */
+  for (let x = 0; x < 240; x += 12) {
+    g.fillStyle = "#f4efe6"; g.fillRect(x, 170, 2, 20);
+    g.strokeStyle = "#f4efe6"; g.lineWidth = 1; g.beginPath(); g.arc(x + 7, 180, 3.5, 0, Math.PI * 2); g.stroke();
+  }
+  [30, 210].forEach((lx) => {                                    /* the lamps, their light breathing */
+    g.fillStyle = "#2c2a3a"; g.fillRect(lx, 128, 3, 62); g.fillRect(lx - 4, 128, 11, 2);
+    g.fillStyle = "#ffe6a0"; g.fillRect(lx - 4, 122, 4, 6); g.fillRect(lx + 3, 122, 4, 6);
+    g.fillStyle = `rgba(255,230,160,${(0.15 + 0.05 * Math.sin(S.t * 2 + lx)).toFixed(2)})`; g.beginPath(); g.arc(lx + 1, 125, 12, 0, Math.PI * 2); g.fill();
+  });
+  g.fillStyle = "#b9a58a"; g.fillRect(0, FLOOR - 10, 240, 50);  /* the promenade's paving */
+  g.fillStyle = "#a8957a"; for (let y = FLOOR - 6; y < 240; y += 8) for (let x = (y % 16) ? 0 : 8; x < 240; x += 16) g.fillRect(x, y, 14, 1);
+}
+
+function draw() {
+  scene();
+  S.fireworks.forEach((f) => {                                   /* fireworks over the bay */
+    const k = f.age / f.life;
+    for (let a = 0; a < 16; a++) {
+      const ang = a * Math.PI / 8, r = k * f.r;
+      g.fillStyle = f.c; g.globalAlpha = 1 - k;
+      g.fillRect(Math.round(f.x + Math.cos(ang) * r), Math.round(f.y + Math.sin(ang) * r), 2, 2);
+    }
+    g.globalAlpha = 1;
+  });
+  LADIES.forEach((L, i) => {
+    const jit = S.shake[i] > 0 ? Math.round(Math.sin(S.t * 50 + i) * 1.5) : 0;   /* shaking her head */
+    g.save(); g.translate(jit, 0); lady(L, i); g.restore();
+  });
+  S.dust.forEach((d) => { g.fillStyle = `rgba(220,206,180,${Math.max(0, d.life).toFixed(2)})`; g.fillRect(Math.round(d.x), Math.round(d.y), 3, 2); });
+  if (S.poop) { g.fillStyle = OUT; g.fillRect(Math.round(S.poop.x) - 1, Math.round(S.poop.y) - 1, 5, 6); g.fillStyle = "#ffffff"; g.fillRect(Math.round(S.poop.x), Math.round(S.poop.y), 3, 4); }
+  if (S.gull) {                                                  /* a seagull: white, grey wings beating, a yellow beak */
+    const b = S.gull, up = Math.sin(S.t * 14) > 0, x = Math.round(b.x), y = Math.round(b.y);
+    const P = (dx, dy, w, h, c) => { g.fillStyle = c; g.fillRect(x + dx * 2, y + dy * 2, w * 2, h * 2); };   /* drawn at 2x */
+    P(-5, -1, 11, 5, "#22162e"); P(-4, 0, 9, 3, "#f4f4f0"); P(-7, 0, 3, 2, "#f4f4f0"); P(-7, -1, 3, 1, "#22162e");
+    P(-10, 1, 3, 1, "#ffd030"); P(-9, 2, 1, 1, "#d84020");                      /* the yellow beak, its red spot */
+    P(4, 0, 3, 2, "#22162e"); P(5, 1, 2, 1, "#f4f4f0");                         /* the black-tipped tail */
+    if (up) { P(-2, -5, 3, 5, "#9aa4b0"); P(1, -7, 3, 7, "#9aa4b0"); P(3, -8, 3, 2, "#22162e"); }
+    else { P(-2, 3, 3, 4, "#9aa4b0"); P(1, 3, 3, 5, "#9aa4b0"); P(2, 7, 2, 1, "#22162e"); }
+    P(-6, 0, 1, 1, "#1e1a22");
+  }
+  S.roses.forEach((r) => { g.fillStyle = r.c; g.fillRect(Math.round(r.x), Math.round(r.y), 3, 3); g.fillStyle = "#3f8a4a"; g.fillRect(Math.round(r.x) + 1, Math.round(r.y) + 3, 1, 2); });
+  const next = S.idx % TUNE.length, who = next % 3, n = TUNE[next][0];
+  if (!S.listen) {                                               /* who dances next: a rose over her; in Key, the note's letter */
+    const L = LADIES[who], y = FLOOR - 84 + Math.sin(S.t * 4) * 2;
+    if (K.mode === 1) {
+      const nm = NAMES[n % 12];
+      g.font = "16px 'Press Start 2P', monospace"; g.textAlign = "center"; g.lineJoin = "round";
+      g.strokeStyle = Math.floor(S.t * 4) % 2 ? "#ffffff" : "#ffe9c2"; g.lineWidth = 5; g.strokeText(nm, L.x, y);
+      g.strokeStyle = OUT; g.lineWidth = 2; g.strokeText(nm, L.x, y); g.fillStyle = NOTE_COL[n % 12]; g.fillText(nm, L.x, y);
+    } else { g.fillStyle = "#ff5a6e"; g.beginPath(); g.arc(L.x, y - 4, 4, 0, Math.PI * 2); g.fill(); g.fillStyle = "#3f8a4a"; g.fillRect(L.x, y, 1, 6); }
+  }
+  /* the top line: the title, how far through */
+  g.fillStyle = "#1b1433"; g.fillRect(0, 0, 240, 14);
+  g.font = "6px 'Press Start 2P', monospace"; g.textAlign = "left"; g.fillStyle = "#ff9aa6"; g.fillText("HIRU DAMATXO", 4, 10);
+  g.textAlign = "right"; g.fillStyle = "#c9bfe0"; g.fillText(S.listen ? "LISTEN" : K.mode ? "KEY" : "EASY", 150, 10);
+  g.fillStyle = "#3a2f5e"; g.fillRect(160, 5, 74, 4); g.fillStyle = "#ff7a8a"; g.fillRect(160, 5, Math.round(74 * (S.idx % TUNE.length) / TUNE.length), 4);
+  if (S.cheer > 0) { g.textAlign = "center"; g.font = "10px 'Press Start 2P', monospace"; g.fillStyle = NOTE_COL[Math.floor(S.t * 8) % 12]; g.fillText("ZORIONAK!", 120, 40); }
+}
+
+/* ---------- playing ---------- */
+function danceNote(k, dur) {                                     /* note k of the tune: she dances it, the flute sings it */
+  const [n] = TUNE[k], who = k % 3;
+  flute(n, dur); setTimeout(landing, 280);
+  if (music) padTo(chordFor(n)); else padOff();
+  S.step[who]++;
+  S.dance[who] = 0.45;                                           /* a jump, toes pointed */
+  if (PHRASE_END.has(k)) for (let i = 0; i < 3; i++) S.dance[i] = 0.45;   /* a line's long note: all three jump together */
+  for (let i = 0; i < 3; i++) S.roses.push({ x: LADIES[who].x + Math.random() * 16 - 8, y: FLOOR - 70, vx: Math.random() * 40 - 20, vy: -40 - Math.random() * 30, life: 1, c: NOTE_COL[n % 12] });
+  if (k === TUNE.length - 1) finale();
+}
+function finale() {
+  S.cheer = 4;
+  setTimeout(() => { for (let i = 0; i < 3; i++) S.spin[i] = 1.0; }, 500);   /* one turn, all together, at the very end */
+  for (let i = 0; i < 6; i++) setTimeout(() => {
+    S.fireworks.push({ x: 40 + Math.random() * 160, y: 30 + Math.random() * 40, r: 18 + Math.random() * 14, age: 0, life: 1.4, c: NOTE_COL[Math.floor(Math.random() * 12)] });
+    boom();
+  }, i * 350);
+}
+/* a wrong key (Key mode): once, the lady whose note it was falls on her bottom (plof, a puff of dust) and the other two
+   giggle; twice in a row, a seagull flies in crying and poops on her head */
+function landing() {                                             /* a soft step on the paving */
+  if (!ac) return;
+  const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.08);
+  g.gain.setValueAtTime(0.12, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.12);
+}
+function plof() {
+  if (!ac) return;
+  const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.18);
+  g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.3);
+  const len = Math.floor(ac.sampleRate * 0.2), b = ac.createBuffer(1, len, ac.sampleRate), dd = b.getChannelData(0);
+  for (let i = 0; i < len; i++) dd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  const src = ac.createBufferSource(), f = ac.createBiquadFilter(), gg = ac.createGain(); src.buffer = b; f.type = "lowpass"; f.frequency.value = 900; gg.gain.value = 0.25;
+  src.connect(f); f.connect(gg); gg.connect(bus); src.start(t);
+}
+function kaio() {                                                /* a seagull's cry: high, falling, twice */
+  if (!ac) return;
+  [0, 0.28].forEach((dt) => {
+    const t = ac.currentTime + dt, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+    o.type = "sawtooth"; o.frequency.setValueAtTime(1500, t); o.frequency.exponentialRampToValueAtTime(900, t + 0.22);
+    f.type = "bandpass"; f.frequency.value = 1800; f.Q.value = 2;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.14, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+    o.connect(f); f.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.26);
+  });
+}
+function splat() {
+  if (!ac) return;
+  const t = ac.currentTime, len = Math.floor(ac.sampleRate * 0.12), b = ac.createBuffer(1, len, ac.sampleRate), dd = b.getChannelData(0);
+  for (let i = 0; i < len; i++) dd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = b; f.type = "bandpass"; f.frequency.value = 1400; g.gain.value = 0.35;
+  src.connect(f); f.connect(g); g.connect(bus); src.start(t);
+}
+function wrong(who) {
+  S.misses++;
+  const L = LADIES[who];
+  if (S.misses === 1) {                                            /* she falls on her bottom; the other two giggle */
+    S.fall[who] = 1.6; plof();
+    for (let i = 0; i < 12; i++) S.dust.push({ x: L.x + (Math.random() - 0.5) * 30, y: FLOOR - 4, vx: (Math.random() - 0.5) * 40, vy: -10 - Math.random() * 14, life: 0.8 });
+    for (let i = 0; i < 3; i++) if (i !== who) S.giggle[i] = 1.4;
+  } else {                                                         /* the seagull: in from the sea, over her, splat, away */
+    S.misses = 0;
+    S.gull = { x: 260, y: 40, tx: L.x, who, dropped: false, t: 0 };
+    kaio();
+  }
+}
+function press(note) {
+  power();
+  if (S.listen) return;
+  const k = S.idx % TUNE.length, want = TUNE[k][0];
+  if (K.mode === 1 && note !== want) { wrong(k % 3); return; }   /* Key: a wrong key, the sea answers */
+  S.misses = 0;
+  danceNote(k, TUNE[k][1] * 0.6 + 0.15);
+  S.idx++;
+}
+document.getElementById("listen").addEventListener("click", () => {   /* the tune in its own rhythm, the ladies dancing it */
+  power();
+  if (S.listen) { S.listen = null; document.getElementById("listen").textContent = "♪ Listen first"; return; }
+  S.idx = 0; S.listen = { k: 0, at: 0 };
+  document.getElementById("listen").textContent = "■ Stop";
+});
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; S.t += dt;
+  if (S.listen) {                                                /* 100 beats a minute */
+    S.listen.at -= dt;
+    if (S.listen.at <= 0) {
+      const k = S.listen.k, beat = 0.6;
+      danceNote(k, TUNE[k][1] * beat); S.idx = k + 1;
+      S.listen.at += TUNE[k][1] * beat; S.listen.k++;
+      if (S.listen.k >= TUNE.length) { S.listen = null; S.idx = 0; document.getElementById("listen").textContent = "♪ Listen first"; }
+    }
+  }
+  for (let i = 0; i < 3; i++) { if (S.dance[i] > 0) S.dance[i] -= dt; if (S.spin[i] > 0) S.spin[i] -= dt; }
+  S.roses.forEach((r) => { r.x += r.vx * dt; r.y += r.vy * dt; r.vy += 90 * dt; r.life -= dt * 0.8; });
+  S.roses = S.roses.filter((r) => r.life > 0 && r.y < 240);
+  S.fireworks.forEach((f) => f.age += dt); S.fireworks = S.fireworks.filter((f) => f.age < f.life);
+  lifeUpdate(dt);
+  if (S.cheer > 0) S.cheer -= dt;
+  S.dust.forEach((d) => { d.x += d.vx * dt; d.y += d.vy * dt; d.life -= dt; });
+  S.dust = S.dust.filter((d) => d.life > 0);
+  for (let i = 0; i < 3; i++) for (const k of ["fall", "giggle", "splat", "shake"]) if (S[k][i] > 0) S[k][i] -= dt;
+  if (S.gull) {                                                  /* the gull's flight: in from the right, low over her head, away up and left */
+    const b = S.gull; b.t += dt;
+    b.x -= 70 * dt; b.y = 40 + Math.max(0, 1 - Math.abs(b.x - b.tx) / 70) * 60;
+    if (!b.dropped && b.x <= b.tx + 6) { b.dropped = true; S.poop = { x: b.x, y: b.y + 3, who: b.who }; }
+    if (b.x < -20) S.gull = null;
+  }
+  if (S.poop) {
+    S.poop.y += 160 * dt;
+    const L = LADIES[S.poop.who];
+    if (S.poop.y >= FLOOR - 66) { splat(); S.splat[S.poop.who] = 4; S.shake[S.poop.who] = 0.8; for (let i = 0; i < 3; i++) if (i !== S.poop.who) S.giggle[i] = 1.4; S.poop = null; }
+  }
+  draw(); glowKeys();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- the keys ---------- */
+const keysEl = document.getElementById("keys"), keyEls = {};
+(function buildKeys() {
+  const whites = []; for (let n = LO; n <= HI; n++) if (!isBlack(n)) whites.push(n);
+  const w = 100 / whites.length;
+  let wi = 0;
+  for (let n = LO; n <= HI; n++) {
+    const b = document.createElement("button"); b.className = "key " + (isBlack(n) ? "b" : "w");
+    b.setAttribute("aria-label", NAMES[n % 12] + (Math.floor(n / 12) - 1));
+    if (isBlack(n)) { b.style.left = `calc(${wi * w}% - ${w * 0.3}%)`; b.style.width = `${w * 0.6}%`; }
+    else { b.style.left = `${wi * w}%`; b.style.width = `${w}%`; b.textContent = n % 12 === 0 ? "C" + (Math.floor(n / 12) - 1) : ""; wi++; }
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); b.classList.add("down"); press(n); });
+    ["pointerup", "pointerleave"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("down")));
+    keysEl.appendChild(b); keyEls[n] = b;
+  }
+})();
+function glowKeys() {
+  const want = K.mode === 1 && !S.listen ? TUNE[S.idx % TUNE.length][0] : -1;
+  Object.entries(keyEls).forEach(([n, el]) => { const on = +n === want; el.classList.toggle("glow", on); if (on) el.style.setProperty("--glow", NOTE_COL[+n % 12]); });
+}
+const KB = { a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66, g: 67, y: 68, h: 69, u: 70, j: 71, k: 72, o: 73, l: 74, p: 75 };
+document.addEventListener("keydown", (e) => {
+  if (e.repeat || e.metaKey || e.ctrlKey) return;
+  const n = KB[e.key.toLowerCase()]; if (n === undefined) return;
+  e.preventDefault(); press(n); keyEls[n] && keyEls[n].classList.add("down");
+});
+document.addEventListener("keyup", (e) => { const n = KB[e.key.toLowerCase()]; if (n !== undefined && keyEls[n]) keyEls[n].classList.remove("down"); });
+try {
+  if (navigator.requestMIDIAccess) navigator.requestMIDIAccess().then((m) => {
+    m.inputs.forEach((i) => { i.onmidimessage = (ev) => { const [st, n, v] = ev.data; if ((st & 0xF0) === 0x90 && v > 0) press(n); }; });
+  }).catch(() => {});
+} catch (_) { /* no MIDI here: the keys and the computer keys still play */ }
+document.getElementById("k1").addEventListener("click", () => { K.mode = 1 - K.mode; document.getElementById("v1").textContent = K.mode ? "Key: the next note's letter" : "Easy: any key"; });
+document.getElementById("k4").addEventListener("click", () => { music = !music; document.getElementById("v4").textContent = music ? "soft chords on" : "off: the flute alone"; if (!music) padOff(); });
+requestAnimationFrame(frame);
+</script>

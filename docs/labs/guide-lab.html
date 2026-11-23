@@ -1,0 +1,457 @@
+<title>Guided Scales and Chords</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the FM-1's 240x240 screen, its 27 keys (F3..G5) under it, the knobs beside: the game labs' frame. One look
+   on purpose: a calm evening classroom, the key colours of children's bells the brightest things. */
+:root {
+  --bg: #13182b;          /* behind the device */
+  --panel: #1f2744;       /* the FM-1's face */
+  --ink: #f2f0ea;
+  --muted: #a9b0cc;
+  --accent: #7fe0c8;      /* the guide's colour: a calm mint */
+  --key-w: #ecebf2;
+  --key-b: #252a44;
+  --display: "Press Start 2P", ui-monospace, monospace;
+  --body: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px; }
+.wrap { max-width: 780px; margin: 0 auto; display: grid; gap: 16px; }
+h1 { font-family: var(--display); font-size: 17px; letter-spacing: .04em; margin: 0; color: var(--accent); line-height: 1.5; text-wrap: balance; }
+p.lead { margin: 0; color: var(--muted); max-width: 66ch; line-height: 1.55; }
+.device { background: var(--panel); border-radius: 18px; padding: 16px; display: grid; gap: 14px; box-shadow: 0 0 0 2px #303b66 inset; }
+.top { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+canvas#screen { width: min(480px, 100%); aspect-ratio: 1; image-rendering: pixelated; border-radius: 6px; background: #000; border: 3px solid #0b0e1c; max-width: 100%; }
+.knobs { display: grid; gap: 8px; flex: 1; min-width: 190px; }
+.knob { display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: center; background: #19203a; border-radius: 10px; padding: 7px 10px; }
+.knob .btns { display: flex; gap: 4px; }
+.knob button { width: 24px; height: 40px; border-radius: 8px; border: 2px solid #3d4a80; background: radial-gradient(#3b4679, #1b2140); color: var(--ink); font: 10px var(--display); cursor: pointer; padding: 0; }
+.knob button:focus-visible, .start:focus-visible, .key:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.knob .lab { font: 9px var(--display); color: var(--muted); letter-spacing: .06em; }
+.knob .val { font-weight: 600; margin-top: 4px; font-size: 14px; }
+.start { font: 12px var(--display); background: var(--accent); color: #0b2a22; border: 0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.keys { position: relative; height: 120px; overflow-x: auto; }
+.keys-inner { position: relative; height: 100%; min-width: 520px; }
+.key { position: absolute; top: 0; border: 1px solid #0b0e1c; border-radius: 0 0 6px 6px; cursor: pointer; padding: 0; display: flex; align-items: flex-end; justify-content: center; font: 9px var(--display); color: #6f6a99; }
+.key.w { background: var(--key-w); height: 100%; z-index: 1; }
+.key.b { background: var(--key-b); height: 60%; z-index: 2; color: #8b86b8; }
+.key.dim { box-shadow: 0 0 0 3px var(--glow, #fff) inset; }
+.key.on { box-shadow: 0 0 14px 5px var(--glow, #fff) inset, 0 0 12px 2px var(--glow, #fff); }
+.key.down { filter: brightness(.8); }
+.notes { color: var(--muted); font-size: 13px; line-height: 1.55; display: grid; gap: 6px; max-width: 72ch; }
+.notes b { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .key.on { box-shadow: 0 0 0 4px var(--glow, #fff) inset; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap">
+
+<div class="wrap">
+  <h1>Guided: scales and chords</h1>
+  <p class="lead">A sketch of the guided mode: five short lessons on the scale and the key you choose, each the same for a child and a grown-up, told two ways (K1). The FM-1 lights the way and waits; a wrong key is a soft bonk and nothing is lost. Each lesson done earns a star.</p>
+  <div class="device">
+    <div class="top">
+      <canvas id="screen" width="240" height="240" aria-label="The guided mode's screen"></canvas>
+      <div class="knobs">
+        <button class="start" id="play">▶ Show me</button>
+        <div class="knob"><div class="btns"><button data-k="sel" data-d="-1" aria-label="previous lesson">‹</button><button data-k="sel" data-d="1" aria-label="next lesson">›</button></div><div><div class="lab">SELECT · LESSON</div><div class="val" id="vsel"></div></div></div>
+        <div class="knob"><div class="btns"><button data-k="k1" data-d="-1" aria-label="K1 down">‹</button><button data-k="k1" data-d="1" aria-label="K1 up">›</button></div><div><div class="lab">K1 · VIEW</div><div class="val" id="vk1"></div></div></div>
+        <div class="knob"><div class="btns"><button data-k="k2" data-d="-1" aria-label="K2 down">‹</button><button data-k="k2" data-d="1" aria-label="K2 up">›</button></div><div><div class="lab">K2 · KEY</div><div class="val" id="vk2"></div></div></div>
+        <div class="knob"><div class="btns"><button data-k="k3" data-d="-1" aria-label="K3 down">‹</button><button data-k="k3" data-d="1" aria-label="K3 up">›</button></div><div><div class="lab">K3 · SCALE</div><div class="val" id="vk3"></div></div></div>
+        <div class="knob"><div class="btns"><button data-k="k4" data-d="-1" aria-label="K4 down">‹</button><button data-k="k4" data-d="1" aria-label="K4 up">›</button></div><div><div class="lab">K4 · MUSIC</div><div class="val" id="vk4"></div></div></div>
+      </div>
+    </div>
+    <div class="keys"><div class="keys-inner" id="keys"></div></div>
+  </div>
+  <div class="notes">
+    <div><b>Play:</b> tap the keys (F3 to G5, as the FM-1's 27), the computer keys <b>A S D F G H J K L</b> (white, from C4) and <b>W E T Y U O P</b> (black), or a MIDI keyboard where the browser allows it. A glowing key is the next one; a softly ringed key is in the scale.</div>
+    <div><b>The lessons</b> (SELECT): <b>1 Climb the scale</b>, up and down; <b>2 Find home</b>: the FM-1 plays a little tune that stops, you play the home note it wants; <b>3 Chord towers</b>: three keys glow, play them together or one by one; <b>4 A chord song</b>: four chords, then the FM-1 plays your song back with a beat; <b>5 Make music</b>: play anything over a gentle band, every key in the scale fits.</div>
+    <div><b>The two views</b> (K1): <b>Kids</b>: pictures and colours, the letters big, a bird that climbs and flies home, towers with faces (happy major, sleepy minor), stars; three scales (Major, Minor, Pentatonic) and the three main chords. <b>Grown-up</b>: the note names spelled for the key, the scale on a staff, its degrees and its steps (W W H ...), each chord's name, numeral and recipe (major: 4 + 3 semitones), all seventeen of the FM-1's scales and all seven chords.</div>
+    <div>The theory is the firmware's own (its seventeen scales; chords built in thirds on each degree). A sketch to talk about, not the firmware yet.</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------------- theory: the firmware's scales (fm1kit music.c), spelled for the key ---------------- */
+const SCALES = [
+  ["Major", [0, 2, 4, 5, 7, 9, 11], 0], ["Natural minor", [0, 2, 3, 5, 7, 8, 10], 1], ["Major pentatonic", [0, 2, 4, 7, 9], 0],
+  ["Minor pentatonic", [0, 3, 5, 7, 10], 1], ["Dorian", [0, 2, 3, 5, 7, 9, 10], 1], ["Harmonic minor", [0, 2, 3, 5, 7, 8, 11], 1],
+  ["Phrygian", [0, 1, 3, 5, 7, 8, 10], 1], ["Blues", [0, 3, 5, 6, 7, 10], 1], ["Mixolydian", [0, 2, 4, 5, 7, 9, 10], 0],
+  ["Lydian", [0, 2, 4, 6, 7, 9, 11], 0], ["Melodic minor", [0, 2, 3, 5, 7, 9, 11], 1], ["Hirajoshi", [0, 2, 3, 7, 8], 1],
+  ["Locrian", [0, 1, 3, 5, 6, 8, 10], 1], ["Major blues", [0, 2, 3, 4, 7, 9], 0], ["Lydian dominant", [0, 2, 4, 6, 7, 9, 10], 0],
+  ["Phrygian dominant", [0, 1, 4, 5, 7, 8, 10], 0], ["Whole tone", [0, 2, 4, 6, 8, 10], 0]];
+const KIDS_SCALES = [0, 1, 2];                                       /* Major, Minor, Pentatonic */
+const LETTERS = "CDEFGAB", LETTER_PC = [0, 2, 4, 5, 7, 9, 11];
+/* the tonic's spelling: major-ish and minor-ish keys, the usual names */
+const TONIC_MAJ = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const TONIC_MIN = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B"];
+const SHARPS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], FLATS = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+const NOTE_COL = ["#ff4d4d", "#ff7a59", "#ff9f1c", "#ffbf47", "#ffe14d", "#5ed36b", "#38c9a4", "#2ec4f0", "#4d8cff", "#8a6bff", "#c26bff", "#ff6bc6"];
+const pretty = (n) => n.replace("bb", "𝄫").replace("##", "𝄪").replace("#", "♯").replace(/([A-G])b/, "$1♭");
+function spell(tonicPc, scale) {                                     /* each degree's name: a letter a degree when there are seven */
+  const [, iv, minor] = scale, tn = (minor ? TONIC_MIN : TONIC_MAJ)[tonicPc];
+  if (iv.length !== 7) { const flats = tn.includes("b") || ["F"].includes(tn); return iv.map((s) => (flats ? FLATS : SHARPS)[(tonicPc + s) % 12]); }
+  const l0 = LETTERS.indexOf(tn[0]);
+  return iv.map((s, i) => {
+    const li = (l0 + i) % 7, pc = (tonicPc + s) % 12; let acc = ((pc - LETTER_PC[li]) % 12 + 12) % 12; if (acc > 6) acc -= 12;
+    return LETTERS[li] + (acc === 1 ? "#" : acc === 2 ? "##" : acc === -1 ? "b" : acc === -2 ? "bb" : "");
+  });
+}
+const tonicNote = (pc) => 53 + ((pc - 5 + 12) % 12);                 /* the lowest tonic from F3: the scale climbs within the keys */
+function triads(tonicPc, scale) {                                    /* chords in thirds on each degree of a seven-note scale */
+  const iv = scale[1]; if (iv.length !== 7) return [];
+  const names = spell(tonicPc, scale), t0 = tonicNote(tonicPc);
+  const ROM = ["I", "II", "III", "IV", "V", "VI", "VII"];
+  return iv.map((s, i) => {
+    const a = iv[i], b = iv[(i + 2) % 7] + (i + 2 >= 7 ? 12 : 0), c = iv[(i + 4) % 7] + (i + 4 >= 7 ? 12 : 0);
+    const third = b - a, fifth = c - a;
+    const q = third === 4 && fifth === 7 ? "maj" : third === 3 && fifth === 7 ? "min" : third === 3 && fifth === 6 ? "dim" : third === 4 && fifth === 8 ? "aug" : "?";
+    let root = t0 + a; const notes = [root, t0 + b, t0 + c].map((n) => n);
+    while (notes[2] > 79) for (let k = 0; k < 3; k++) notes[k] -= 12;
+    const rom = q === "maj" || q === "aug" ? ROM[i] : ROM[i].toLowerCase();
+    return { deg: i, notes, q, name: pretty(names[i]) + (q === "min" ? "m" : q === "dim" ? "dim" : q === "aug" ? "+" : ""), rom: rom + (q === "dim" ? "°" : q === "aug" ? "+" : ""),
+      letters: [names[i], names[(i + 2) % 7], names[(i + 4) % 7]].map(pretty), third, fifth };
+  });
+}
+
+/* ---------------- sound: a soft piano, a pad, a bass, a little beat, the bonk and the cheer ---------------- */
+let ac = null, bus = null;
+function power() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)(); bus = ac.createGain(); bus.gain.value = 0.9; bus.connect(ac.destination);
+    const cv = ac.createConvolver(), len = Math.floor(ac.sampleRate * 1.6), ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    cv.buffer = ir; const wet = ac.createGain(); wet.gain.value = 0.25; bus.connect(cv); cv.connect(wet); wet.connect(ac.destination);
+  }
+  if (ac.state === "suspended") ac.resume();
+}
+const hz = (n) => 440 * Math.pow(2, (n - 69) / 12);
+function piano(n, level = 0.22, at = 0, len = 1.2) {
+  if (!ac) return; const t = ac.currentTime + at, g = ac.createGain(), f = ac.createBiquadFilter();
+  f.type = "lowpass"; f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(900, t + len);
+  [["triangle", 1, 1], ["sine", 2, 0.25], ["sine", 3, 0.08]].forEach(([ty, m, lv]) => { const o = ac.createOscillator(), og = ac.createGain(); o.type = ty; o.frequency.value = hz(n) * m; og.gain.value = lv; o.connect(og); og.connect(f); o.start(t); o.stop(t + len + 0.1); });
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(level, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + len); f.connect(g); g.connect(bus);
+}
+function pad(notes, len, level = 0.05, at = 0) {
+  if (!ac) return; const t = ac.currentTime + at;
+  notes.forEach((n) => { const o = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter(); o.type = "sawtooth"; o.frequency.value = hz(n); f.type = "lowpass"; f.frequency.value = 900;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(level, t + 0.15); g.gain.setValueAtTime(level, t + len - 0.2); g.gain.exponentialRampToValueAtTime(0.0001, t + len); o.connect(f); f.connect(g); g.connect(bus); o.start(t); o.stop(t + len + 0.05); });
+}
+function bass(n, len, at = 0) { if (!ac) return; const t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain(); o.type = "triangle"; o.frequency.value = hz(n); g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len); o.connect(g); g.connect(bus); o.start(t); o.stop(t + len); }
+function noiseHit(len, type, freq, level, at = 0) {
+  if (!ac) return; const t = ac.currentTime + at, L = Math.floor(ac.sampleRate * len), b = ac.createBuffer(1, L, ac.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < L; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / L); const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = b; f.type = type; f.frequency.value = freq; g.gain.value = level; s.connect(f); f.connect(g); g.connect(bus); s.start(t);
+}
+function kick(at) { if (!ac) return; const t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12); g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.2); }
+function bonk() { if (!ac) return; const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(150, t + 0.12); g.gain.setValueAtTime(0.12, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.18); }
+function cheer(base) { [0, 4, 7, 12].forEach((s, i) => piano(base + s, 0.18, i * 0.09, 0.8)); }
+
+/* ---------------- state ---------------- */
+const cv = document.getElementById("screen"), g = cv.getContext("2d"); g.imageSmoothingEnabled = false;
+const LO = 53, HI = 79;
+const LESSONS = ["Climb the scale", "Find home", "Chord towers", "A chord song", "Make music"];
+const S = { t: 0, view: 0, tonic: 0, scale: 0, lesson: 0, music: 1, stars: [0, 0, 0, 0, 0], st: null, fx: [], pop: [], shake: 0, msg: "", msgT: 0 };
+try { const k = JSON.parse(localStorage.getItem("fm1-guide-stars") || "null"); if (Array.isArray(k)) S.stars = k; } catch (_) { /* no storage */ }
+const scaleOf = () => SCALES[S.scale];
+const kidsScales = () => KIDS_SCALES;
+function scaleNotes() { const t0 = tonicNote(S.tonic); return scaleOf()[1].map((s) => t0 + s).concat([t0 + 12]); }
+function inScale(n) { return scaleOf()[1].includes(((n - S.tonic) % 12 + 12) % 12); }
+const names = () => spell(S.tonic, scaleOf()).map(pretty);
+function nameOf(n) { const iv = scaleOf()[1], d = iv.indexOf(((n - S.tonic) % 12 + 12) % 12); return d >= 0 ? names()[d] : pretty(SHARPS[n % 12]); }
+function degreeOf(n) { const iv = scaleOf()[1], d = iv.indexOf(((n - S.tonic) % 12 + 12) % 12); return d >= 0 ? d + 1 : 0; }
+function keyName() { return pretty((scaleOf()[2] ? TONIC_MIN : TONIC_MAJ)[S.tonic]) + " " + scaleOf()[0].toLowerCase(); }
+function saveStars() { try { localStorage.setItem("fm1-guide-stars", JSON.stringify(S.stars)); } catch (_) { /* no storage */ } }
+function earn() { if (!S.stars[S.lesson]) { S.stars[S.lesson] = 1; saveStars(); } S.fx.push({ kind: "star", t: 0 }); cheer(tonicNote(S.tonic) + 12); }
+
+/* ---------------- the lessons ---------------- */
+function startLesson() {
+  const L = S.lesson; S.fx = []; S.pop = [];
+  if (L === 0) S.st = { seq: (() => { const up = scaleNotes(); return up.concat(up.slice(0, -1).reverse()); })(), i: 0, bird: 0 };
+  else if (L === 1) { S.st = { round: 0, rounds: 3, phrase: [], waiting: false, fly: 0, wait: 0 }; setTimeout(homePhrase, 600); }
+  else if (L === 2 || L === 3) {
+    const tr = triads(S.tonic, scaleOf());
+    if (!tr.length) { S.st = { none: true }; return; }
+    let order = L === 2 ? (S.view === 0 ? [0, 3, 4] : [0, 1, 2, 3, 4, 5, 6]) : (S.view === 0 ? [0, 3, 4, 0] : (scaleOf()[2] ? [0, 5, 2, 6] : [0, 4, 5, 3]));
+    S.st = { tr, order, i: 0, got: new Set(), done: [], bounce: 0, playing: false };
+  } else if (L === 4) { S.st = { count: 0, chord: 0, lastBar: -1, startT: S.t }; }
+}
+function homePhrase() {                                              /* a little tune that stops away from home */
+  const st = S.st; if (!st || S.lesson !== 1) return;
+  const sc = scaleNotes(), ends = [1, 4, sc.length - 2].map((d) => sc[Math.min(d, sc.length - 1)]), end = ends[st.round % 3];
+  const walk = [sc[0], sc[2] ?? sc[1], sc[1], sc[4 % sc.length] ?? sc[2], sc[3] ?? sc[2], end];
+  st.phrase = walk; st.waiting = false; st.wait = 0;
+  walk.forEach((n, i) => setTimeout(() => { if (S.lesson === 1) { piano(n, 0.2); S.pop.push({ n, x: 30 + i * 28, y: 70, t: 0 }); } }, i * 330));
+  setTimeout(() => { if (S.lesson === 1) st.waiting = true; }, walk.length * 330);
+}
+function chordDone(c) { pad(c.notes, 1.6, 0.05); bass(c.notes[0] - 12, 1.2); }
+function press(n) {
+  power(); piano(n, 0.22);
+  const L = S.lesson, st = S.st; if (!st) return;
+  S.pop.push({ n, x: 0, y: 0, t: 0, press: true });
+  if (L === 0) {
+    if (st.i >= st.seq.length) return;
+    if (n === st.seq[st.i]) { st.i++; st.bird = st.i < st.seq.length / 2 + 0.5 ? st.i : st.seq.length - st.i; if (st.i === st.seq.length) { earn(); setTimeout(() => { if (S.lesson === 0) startLesson(); }, 3500); } else if (st.i === Math.ceil(st.seq.length / 2)) cheer(st.seq[st.i - 1]); }
+    else { bonk(); S.shake = 0.3; }
+  } else if (L === 1) {
+    if (!st.waiting) return;
+    if ((n - S.tonic) % 12 === 0) {
+      st.waiting = false; st.fly = 1.4; pad(triads(S.tonic, scaleOf())[0]?.notes || [tonicNote(S.tonic), tonicNote(S.tonic) + scaleOf()[1][2], tonicNote(S.tonic) + 7], 1.4, 0.05);
+      st.round++; if (st.round >= st.rounds) { earn(); setTimeout(() => { if (S.lesson === 1) startLesson(); }, 3800); } else setTimeout(homePhrase, 2200);
+    } else { bonk(); S.shake = 0.3; }
+  } else if (L === 2 || L === 3) {
+    if (st.none || st.i >= st.order.length) return;
+    const c = st.tr[st.order[st.i]], pc = n % 12;
+    if (c.notes.some((m) => m % 12 === pc)) {
+      st.got.add(pc);
+      if (c.notes.every((m) => st.got.has(m % 12))) {
+        chordDone(c); st.done.push(st.order[st.i]); st.i++; st.got = new Set(); st.bounce = 0.6;
+        if (st.i >= st.order.length) { earn(); if (L === 3) setTimeout(() => playSong(), 1200); setTimeout(() => { if (S.lesson === L) startLesson(); }, L === 3 ? 9000 : 3800); }
+      }
+    } else { bonk(); S.shake = 0.3; }
+  } else if (L === 4) {
+    st.count++; const ok = inScale(n);
+    S.fx.push({ kind: "spark", n, x: 20 + ((n - LO) / (HI - LO)) * 200, y: 200, vy: -60 - Math.random() * 30, t: 0, ok });
+    if (st.count === 24) earn();
+  }
+}
+function playSong() {                                                /* the chord song played back with a beat */
+  const st = S.st; if (!st || !st.tr) return; st.playing = true; const beat = 0.5;
+  st.order.forEach((d, i) => { const c = st.tr[d]; pad(c.notes, beat * 4, 0.05, i * beat * 4); bass(c.notes[0] - 12, beat * 1.5, i * beat * 4); bass(c.notes[0] - 5, beat, i * beat * 4 + beat * 2);
+    for (let b = 0; b < 4; b++) { kick(i * beat * 4 + b * beat); noiseHit(0.05, "highpass", 6000, 0.08, i * beat * 4 + b * beat + beat / 2); }
+    [0, 1, 2, 1].forEach((k, j) => piano(c.notes[k] + 12, 0.14, i * beat * 4 + j * beat, 0.5));
+    setTimeout(() => { if (S.st === st) st.cur = i; }, i * beat * 4 * 1000); });
+  setTimeout(() => { if (S.st === st) { st.playing = false; st.cur = -1; } }, st.order.length * beat * 4 * 1000);
+}
+function showMe() {                                                  /* PLAY: the FM-1 shows the step */
+  power(); const L = S.lesson, st = S.st; if (!st) return;
+  if (L === 0) st.seq.forEach((n, i) => setTimeout(() => piano(n, 0.2), i * 300));
+  else if (L === 1) { if (st.waiting) piano(tonicNote(S.tonic), 0.2); else homePhrase(); }
+  else if ((L === 2 || L === 3) && !st.none && st.i < st.order.length) { const c = st.tr[st.order[st.i]]; c.notes.forEach((n, i) => piano(n, 0.2, i * 0.25)); pad(c.notes, 1.2, 0.04, 0.8); }
+  else if (L === 4) { S.music = 1; }
+}
+/* the band under "Make music": the scale's I IV V I (or i iv v i), a bar each */
+let bandNext = 0;
+function band() {
+  if (S.lesson !== 4 || !S.music || !ac) return;
+  if (ac.currentTime < bandNext - 0.1) return;
+  const tr = triads(S.tonic, scaleOf()), t0 = tonicNote(S.tonic);
+  const prog = tr.length ? [tr[0], tr[3], tr[4], tr[0]] : [{ notes: [t0, t0 + 4, t0 + 7] }, { notes: [t0 + 5, t0 + 9, t0 + 12] }, { notes: [t0 + 7, t0 + 11, t0 + 14] }, { notes: [t0, t0 + 4, t0 + 7] }];
+  const st = S.st; const c = prog[(st.chord++) % 4]; st.cur = c;
+  const at = Math.max(0, bandNext - ac.currentTime), bar = 2.4;
+  pad(c.notes.map((n) => n - 12), bar, 0.035, at); bass(c.notes[0] - 24, 0.9, at); bass(c.notes[0] - 17, 0.6, at + bar / 2);
+  for (let b = 0; b < 4; b++) { kick(at + b * bar / 4); noiseHit(0.04, "highpass", 7000, 0.05, at + b * bar / 4 + bar / 8); }
+  bandNext = ac.currentTime + at + bar;
+}
+
+/* ---------------- drawing ---------------- */
+const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+function disc(cx, cy, r, c) { g.fillStyle = c; for (let dy = -Math.floor(r); dy <= Math.floor(r); dy++) { const w = Math.floor(Math.sqrt(r * r - dy * dy)); g.fillRect(Math.round(cx - w), Math.round(cy + dy), 2 * w + 1, 1); } }
+function text(s, x, y, size, col, align = "left", outline = "#0b0e1c") {
+  g.font = `${size}px 'Press Start 2P'`; g.textAlign = align; g.textBaseline = "alphabetic";
+  if (outline) { g.fillStyle = outline; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.fillText(s, x + dx, y + dy); }
+  g.fillStyle = col; g.fillText(s, x, y); g.textAlign = "left";
+}
+function small(s, x, y, col, align = "left") { g.font = "11px Inter, system-ui, sans-serif"; g.textAlign = align; g.fillStyle = col; g.fillText(s, x, y); g.textAlign = "left"; }
+const colOf = (n) => NOTE_COL[n % 12];
+function bg(top, bot) { const gr = g.createLinearGradient(0, 16, 0, 240); gr.addColorStop(0, top); gr.addColorStop(1, bot); g.fillStyle = gr; g.fillRect(0, 0, 240, 240); }
+function topLine() {
+  R(0, 0, 240, 16, "#141a33"); R(0, 0, 240, 2, "#7fe0c8");
+  text("GUIDE", 4, 12, 7, "#7fe0c8", "left", null); text(`${S.lesson + 1} ${LESSONS[S.lesson].toUpperCase()}`, 46, 12, 6, "#e8e6f5", "left", null);
+  for (let i = 0; i < 5; i++) star(204 + i * 7, 8, 3, S.stars[i] ? "#ffd84a" : "#3a4268");
+}
+function star(cx, cy, r, c) { g.fillStyle = c; g.beginPath(); for (let i = 0; i < 10; i++) { const an = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(cx + Math.cos(an) * rr, cy + Math.sin(an) * rr); } g.fill(); }
+function bird(x, y, flap, happy = true) {                            /* the guide's little bird */
+  disc(x, y, 9, "#0b0e1c"); disc(x, y, 8, "#ff8a5a"); disc(x + 2, y + 3, 5, "#ffd9b0");
+  R(x + 8, y - 2, 5, 3, "#ffbf47"); R(x + 2, y - 4, 2, 2, "#0b0e1c");
+  if (happy) R(x + 1, y - 5, 4, 1, "#0b0e1c");
+  const w = flap ? -4 : 2; g.fillStyle = "#d8603a"; g.beginPath(); g.moveTo(x - 5, y); g.lineTo(x - 13, y + w); g.lineTo(x - 3, y + 4); g.fill();
+}
+function miniKeys(y, highlight, ringed) {                            /* the 27 keys, small, for the grown-up's view */
+  const whites = []; for (let n = LO; n <= HI; n++) if (![1, 3, 6, 8, 10].includes(n % 12)) whites.push(n);
+  const w = 232 / whites.length; let wi = 0; const xs = {};
+  for (let n = LO; n <= HI; n++) if (![1, 3, 6, 8, 10].includes(n % 12)) { xs[n] = 4 + wi * w; R(4 + wi * w, y, w - 1, 26, highlight.includes(n) ? colOf(n) : ringed(n) ? "#cfd8f0" : "#7c84a8"); wi++; }
+  wi = 0;
+  for (let n = LO; n <= HI; n++) { if (![1, 3, 6, 8, 10].includes(n % 12)) { wi++; continue; } R(4 + wi * w - w * 0.3, y, w * 0.6, 16, highlight.includes(n) ? colOf(n) : ringed(n) ? "#4a5590" : "#151a30"); }
+}
+function staff(x0, y0, notes, cur, spelled) {                        /* a treble staff with the notes, the current one ringed */
+  for (let i = 0; i < 5; i++) R(x0, y0 + i * 8, 232 - x0 + 4, 1, "#c8cbe0");
+  text("𝄞", x0 - 2, y0 + 30, 0, "#fff", "left", null);
+  g.font = "34px serif"; g.fillStyle = "#e8e6f5"; g.fillText("𝄞", x0, y0 + 34);
+  const step = (232 - x0 - 24) / Math.max(1, notes.length);
+  notes.forEach((n, i) => {
+    const nm = spelled[i] || "C", li = LETTERS.indexOf(nm[0]);
+    let oct = Math.floor(n / 12) - 1; const pcLetter = LETTER_PC[li]; if (n % 12 < 3 && pcLetter > 8) oct--; if (n % 12 > 9 && pcLetter < 3) oct++;
+    const dia = oct * 7 + li, diaE4 = 4 * 7 + 2, y = y0 + 32 - (dia - diaE4) * 4, x = x0 + 26 + i * step;
+    for (let ly = y0 + 40; ly <= y; ly += 8) R(x - 6, ly, 13, 1, "#c8cbe0");
+    for (let ly = y0 - 8; ly >= y; ly -= 8) R(x - 6, ly, 13, 1, "#c8cbe0");
+    g.fillStyle = i === cur ? colOf(n) : i < cur ? "#8a92b8" : "#e8e6f5"; g.beginPath(); g.ellipse(x, y, 4.5, 3.4, -0.3, 0, Math.PI * 2); g.fill();
+    if (nm.length > 1) { g.font = "10px serif"; g.fillText(nm.slice(1).replace("#", "♯").replace("b", "♭"), x - 13, y + 4); }
+    if (i === cur) { g.strokeStyle = "#ffffff"; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, 7, 6, 0, 0, Math.PI * 2); g.stroke(); }
+  });
+}
+function face(x, y, q) {                                             /* a tower's face: happy major, sleepy minor, surprised diminished */
+  R(x - 6, y - 3, 3, 3, "#0b0e1c"); R(x + 3, y - 3, 3, 3, "#0b0e1c");
+  if (q === "maj" || q === "aug") { R(x - 6, y + 4, 12, 2, "#0b0e1c"); R(x - 7, y + 2, 2, 2, "#0b0e1c"); R(x + 5, y + 2, 2, 2, "#0b0e1c"); }
+  else if (q === "min") { R(x - 6, y - 3, 3, 1, "#ffffff"); R(x + 3, y - 3, 3, 1, "#ffffff"); R(x - 4, y + 5, 8, 2, "#0b0e1c"); R(x - 6, y + 6, 2, 2, "#0b0e1c"); R(x + 4, y + 6, 2, 2, "#0b0e1c"); }
+  else { disc(x, y + 6, 3, "#0b0e1c"); }
+}
+function tower(x, base, c, got, size, bounce = 0) {                  /* three blocks, one a note, the root at the bottom */
+  const h = size; const b = Math.round(Math.sin(bounce * Math.PI) * 6);
+  c.notes.forEach((n, k) => { const on = !got || got.has(n % 12); const y = base - (k + 1) * h - b; R(x - h / 2 - 1, y - 1, h + 2, h + 2, "#0b0e1c"); R(x - h / 2, y, h, h, on ? colOf(n) : "#2a3150"); if (on && h > 14) text(c.letters[k].replace("♯", "#").replace("♭", "b"), x, y + h / 2 + 4, Math.min(10, h / 3), "#0b0e1c", "center", null); });
+  if (!got || got.size === 3) face(x, base - 2.5 * h - b, c.q);
+}
+
+function draw() {
+  const L = S.lesson, st = S.st, kids = S.view === 0;
+  const sx = S.shake > 0 ? Math.round(Math.sin(S.t * 60) * 2) : 0;
+  g.save(); g.translate(sx, 0);
+  bg(kids ? "#2b3a78" : "#1a2142", kids ? "#4a7a9a" : "#262f55");
+  if (L === 0) {                                                     /* climb the scale */
+    const seq = st.seq, up = scaleNotes(), steps = up.length;
+    if (kids) {
+      const sw = 200 / steps, sh = 150 / steps;
+      up.forEach((n, i) => { const x = 20 + i * sw, y = 210 - (i + 1) * sh; R(x - 1, y - 1, sw + 2, 211 - y + 1, "#0b0e1c"); R(x, y, sw, 210 - y, colOf(n)); R(x, y, sw, 3, "#ffffff55"); text(nameOf(n).replace("♯", "#").replace("♭", "b"), x + sw / 2, y + 16, sw > 26 ? 10 : 8, "#0b0e1c", "center", null); });
+      const bi = Math.min(st.bird, steps - 1), bx = 20 + bi * sw + sw / 2, by = 210 - (bi + 1) * sh - 10 - Math.abs(Math.sin(S.t * 4)) * 2;
+      bird(bx, by, Math.floor(S.t * 6) % 2);
+      if (st.i < seq.length) { const nn = seq[st.i]; text(nameOf(nn).replace("♯", "#").replace("♭", "b"), 120, 46, 16, colOf(nn), "center"); text(st.i < seq.length / 2 ? "UP!" : "DOWN!", 120, 64, 7, "#ffffff", "center"); }
+    } else {
+      const sp = spell(S.tonic, scaleOf()), sn = sp.concat([sp[0]]), seqNames = st.i < up.length ? sn : sn;
+      text(keyName().toUpperCase(), 120, 32, 8, "#7fe0c8", "center", null);
+      const idx = st.i < up.length ? st.i : seq.length - 1 - st.i + 0;
+      staff(14, 52, up, Math.min(st.i < up.length ? st.i : seq.length - st.i - 1, up.length - 1), sn);
+      const iv = scaleOf()[1].concat([12]);
+      iv.forEach((s, i) => { const x = 40 + i * ((232 - 40 - 24) / up.length); small(String(i + 1), x + 26 - 12, 116, "#a9b0cc", "center"); if (i < iv.length - 1) { const d = iv[i + 1] - s; small(d === 1 ? "H" : d === 2 ? "W" : d === 3 ? "W+H" : "", x + 26 - 12 + ((232 - 40 - 24) / up.length) / 2, 128, d === 1 ? "#ffbf47" : "#7fe0c8", "center"); } });
+      small("W a whole step, H a half step", 120, 142, "#7c84a8", "center");
+      if (st.i < seq.length) { const nn = seq[st.i]; text(nameOf(nn).replace("♯", "#").replace("♭", "b"), 120, 168, 14, colOf(nn), "center"); small(`degree ${degreeOf(nn)}${st.i < up.length ? "  ↑" : "  ↓"}`, 120, 182, "#e8e6f5", "center"); }
+      miniKeys(200, st.i < seq.length ? [seq[st.i]] : [], (n) => inScale(n));
+    }
+  } else if (L === 1) {                                              /* find home */
+    if (kids) {
+      R(176, 132, 46, 40, "#0b0e1c"); R(177, 133, 44, 38, "#e8c88a"); g.fillStyle = "#c84a3a"; g.beginPath(); g.moveTo(170, 134); g.lineTo(199, 108); g.lineTo(228, 134); g.fill();
+      R(193, 148, 13, 23, st.fly > 0 || st.round > 0 ? "#ffcf6a" : "#6a4024"); text(nameOf(tonicNote(S.tonic)).replace("♯", "#").replace("♭", "b"), 199, 128, 8, "#ffffff", "center");
+      R(0, 172, 240, 68, "#3a6a3a");
+      S.pop.filter((p) => !p.press).forEach((p) => { disc(p.x, p.y - p.t * 10, 6, colOf(p.n)); });
+      const flying = st.fly > 0, k = flying ? 1 - st.fly / 1.4 : 0, bx = 40 + k * 150, by = 150 - Math.sin(k * Math.PI) * 40;
+      if (!(st.fly <= 0 && st.round > 0 && !st.waiting && S.t % 1 < 0)) bird(bx, by, Math.floor(S.t * 8) % 2);
+      text(st.waiting ? "FLY HOME!" : flying ? "HOME!" : "LISTEN...", 120, 44, 9, st.waiting ? "#ffe14d" : "#ffffff", "center");
+      for (let i = 0; i < st.rounds; i++) star(96 + i * 24, 98, 7, i < st.round ? "#ffd84a" : "#3a4268");
+    } else {
+      text(keyName().toUpperCase(), 120, 32, 8, "#7fe0c8", "center", null);
+      const ph = st.phrase || []; ph.forEach((n, i) => { const x = 24 + i * 34; R(x - 12, 52, 26, 24, "#0b0e1c"); R(x - 11, 53, 24, 22, colOf(n)); text(String(degreeOf(n)), x + 1, 70, 9, "#0b0e1c", "center", null); small(nameOf(n), x + 1, 90, "#e8e6f5", "center"); });
+      const last = ph[ph.length - 1];
+      if (last) small(`It stops on degree ${degreeOf(last)} (${nameOf(last)}): unfinished.`, 120, 116, "#e8e6f5", "center");
+      small(st.waiting ? `Play 1, the tonic: ${nameOf(tonicNote(S.tonic))}, in any octave.` : st.fly > 0 ? "Home: the tension resolves." : "Listen…", 120, 134, st.waiting ? "#ffe14d" : "#a9b0cc", "center");
+      small("Tunes want to end on the tonic.", 120, 152, "#7c84a8", "center");
+      for (let i = 0; i < st.rounds; i++) star(96 + i * 24, 172, 7, i < st.round ? "#ffd84a" : "#3a4268");
+      miniKeys(200, st.waiting && st.wait > 5 ? [tonicNote(S.tonic), tonicNote(S.tonic) + 12] : [], (n) => inScale(n));
+    }
+  } else if (L === 2 || L === 3) {                                   /* chord towers, a chord song */
+    if (st.none) { text("THIS SCALE", 120, 100, 9, "#ffffff", "center"); text("HAS NO TOWERS", 120, 118, 9, "#ffffff", "center"); small("Chords in thirds need a seven-note scale: try Major or Minor (K3).", 120, 150, "#a9b0cc", "center"); }
+    else {
+      const c = st.i < st.order.length ? st.tr[st.order[st.i]] : null;
+      if (kids) {
+        R(0, 196, 240, 44, "#3a6a3a");
+        if (L === 2) {
+          if (c) { tower(120, 196, c, st.got, 34, 0); text(c.q === "min" ? "SLEEPY" : c.q === "dim" ? "OH!" : "HAPPY", 120, 44, 9, "#ffffff", "center"); }
+          st.done.forEach((d, i) => tower(20 + i * 22, 236, st.tr[d], null, 10, i === st.done.length - 1 ? st.bounce : 0));
+        } else {
+          st.order.forEach((d, i) => tower(36 + i * 56, 196, st.tr[d], i < st.i ? null : i === st.i ? st.got : new Set(), 22, (st.playing && st.cur === i) ? (S.t * 2) % 1 : i === st.i - 1 ? st.bounce : 0));
+          text(st.playing ? "YOUR SONG!" : st.i >= st.order.length ? "YAY!" : "BUILD THE SONG", 120, 44, 9, "#ffffff", "center");
+        }
+      } else {
+        text(keyName().toUpperCase(), 120, 32, 8, "#7fe0c8", "center", null);
+        if (c) {
+          text(`${c.rom}  ${c.name.replace("♯", "#").replace("♭", "b")}`, 120, 62, 14, "#ffffff", "center");
+          small(`${c.letters.join("  ")}`, 120, 80, "#e8e6f5", "center");
+          small(`${c.q === "maj" ? "major" : c.q === "min" ? "minor" : c.q === "dim" ? "diminished" : "augmented"}: ${c.third} + ${c.fifth - c.third} semitones`, 120, 96, "#a9b0cc", "center");
+        } else text(st.playing ? "LISTEN" : "DONE", 120, 70, 12, "#ffd84a", "center");
+        const list = L === 2 ? st.tr.map((t, i) => i) : st.order;
+        list.forEach((d, i) => { const t = st.tr[d], x = 12 + i * (216 / list.length) + 216 / list.length / 2, on = L === 2 ? st.done.includes(d) : i < st.i, cur = L === 2 ? (c && d === st.order[st.i]) : i === st.i || (st.playing && st.cur === i);
+          small(t.rom, x, 122, cur ? "#ffe14d" : on ? "#7fe0c8" : "#7c84a8", "center"); small(t.name, x, 136, cur ? "#ffe14d" : on ? "#e8e6f5" : "#7c84a8", "center"); });
+        small(L === 3 ? (scaleOf()[2] ? "i – VI – III – VII: a minor pop song" : "I – V – vi – IV: the pop song in four chords") : "The scale's chords: stack every other note.", 120, 160, "#a9b0cc", "center");
+        miniKeys(200, c ? c.notes.filter((n) => !st.got.has(n % 12)) : [], (n) => c ? c.notes.some((m) => m % 12 === n % 12) && st.got.has(n % 12) : false);
+      }
+    }
+  } else if (L === 4) {                                              /* make music */
+    bg("#0e1430", "#25305a");
+    for (let i = 0; i < 40; i++) R((i * 53) % 240, 20 + (i * 37) % 160, 1, 1, (Math.floor(S.t * 2) + i) % 7 ? "#c8d0ff" : "#5a6290");
+    if (kids) disc(196, 46, 14, "#fff3d0");
+    S.fx.filter((f) => f.kind === "spark").forEach((f) => { if (kids) star(f.x, f.y, f.ok ? 6 : 4, f.ok ? colOf(f.n) : "#5a6290"); else { disc(f.x, f.y, 4, f.ok ? colOf(f.n) : "#5a6290"); small(nameOf(f.n), f.x, f.y - 7, "#e8e6f5", "center"); } });
+    if (kids) { text("PLAY ANYTHING!", 120, 44, 8, "#ffffff", "center"); const n = st.count; small(`${Math.min(n, 24)} / 24 notes`, 120, 230, "#a9b0cc", "center"); }
+    else {
+      text(keyName().toUpperCase(), 120, 32, 8, "#7fe0c8", "center", null);
+      const cur = st.cur; if (cur) small("now: " + (cur.name || "") + "   chord tones bright", 120, 52, "#e8e6f5", "center");
+      miniKeys(200, cur ? cur.notes.flatMap((n) => [n - 12, n, n + 12]).filter((n) => n >= LO && n <= HI) : [], (n) => inScale(n));
+      small("ringed: in the scale; bright: the chord", 120, 194, "#7c84a8", "center");
+    }
+  }
+  S.fx.filter((f) => f.kind === "star").forEach((f) => { const k = Math.min(1, f.t / 0.6); star(120, 120, 10 + k * 30, "#0b0e1c"); star(120, 120, 8 + k * 28, "#ffd84a"); text(kids ? "A STAR!" : "LESSON DONE", 120, 180, 10, "#ffd84a", "center"); });
+  g.restore();
+  topLine();
+}
+
+/* ---------------- the loop ---------------- */
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; S.t += dt;
+  if (S.shake > 0) S.shake -= dt;
+  const st = S.st;
+  if (st && S.lesson === 1) { if (st.fly > 0) st.fly -= dt; if (st.waiting) st.wait += dt; }
+  if (st && st.bounce > 0) st.bounce -= dt;
+  S.fx.forEach((f) => { f.t += dt; if (f.kind === "spark") f.y += f.vy * dt; }); S.fx = S.fx.filter((f) => (f.kind === "star" ? f.t < 2.5 : f.t < 2.6 && f.y > 20));
+  S.pop.forEach((p) => (p.t += dt)); S.pop = S.pop.filter((p) => p.t < (p.press ? 0.4 : 2.5));
+  band();
+  draw(); lights();
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- the keys and the knobs ---------------- */
+const keysEl = document.getElementById("keys"), keyEls = {};
+const isBlack = (n) => [1, 3, 6, 8, 10].includes(n % 12);
+(function buildKeys() {
+  const whites = []; for (let n = LO; n <= HI; n++) if (!isBlack(n)) whites.push(n);
+  const w = 100 / whites.length; let wi = 0;
+  for (let n = LO; n <= HI; n++) {
+    const b = document.createElement("button"); b.className = "key " + (isBlack(n) ? "b" : "w"); b.setAttribute("aria-label", SHARPS[n % 12] + (Math.floor(n / 12) - 1));
+    if (isBlack(n)) { b.style.left = `calc(${wi * w}% - ${w * 0.3}%)`; b.style.width = `${w * 0.6}%`; } else { b.style.left = `${wi * w}%`; b.style.width = `${w}%`; b.textContent = n % 12 === 0 ? "C" + (Math.floor(n / 12) - 1) : ""; wi++; }
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); b.classList.add("down"); press(n); });
+    ["pointerup", "pointerleave"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("down")));
+    keysEl.appendChild(b); keyEls[n] = b;
+  }
+})();
+function lights() {                                                  /* the next key full, the scale's (or the chord's) ringed */
+  const L = S.lesson, st = S.st; const on = new Set(), dim = new Set();
+  if (st) {
+    if (L === 0 && st.i < st.seq.length) { on.add(st.seq[st.i]); scaleNotes().forEach((n) => dim.add(n)); }
+    if (L === 1 && st.waiting && (S.view === 0 || st.wait > 5)) for (let n = LO; n <= HI; n++) if ((n - S.tonic) % 12 === 0) on.add(n);
+    if ((L === 2 || L === 3) && !st.none && st.i < st.order.length) st.tr[st.order[st.i]].notes.forEach((n) => (st.got.has(n % 12) ? dim : on).add(n));
+    if (L === 4) for (let n = LO; n <= HI; n++) if (inScale(n)) dim.add(n);
+  }
+  Object.entries(keyEls).forEach(([n, el]) => { n = +n; el.classList.toggle("on", on.has(n)); el.classList.toggle("dim", !on.has(n) && dim.has(n)); el.style.setProperty("--glow", NOTE_COL[n % 12]); });
+}
+function labels() {
+  document.getElementById("vsel").textContent = `${S.lesson + 1}. ${LESSONS[S.lesson]}`;
+  document.getElementById("vk1").textContent = S.view === 0 ? "Kids" : "Grown-up";
+  document.getElementById("vk2").textContent = pretty((scaleOf()[2] ? TONIC_MIN : TONIC_MAJ)[S.tonic]);
+  document.getElementById("vk3").textContent = scaleOf()[0];
+  document.getElementById("vk4").textContent = S.music ? "the band on" : "off";
+}
+document.querySelectorAll(".knob button").forEach((b) => b.addEventListener("click", () => {
+  power(); const d = +b.dataset.d, k = b.dataset.k;
+  if (k === "sel") S.lesson = (S.lesson + d + 5) % 5;
+  if (k === "k1") { S.view = S.view ? 0 : 1; if (S.view === 0 && !KIDS_SCALES.includes(S.scale)) S.scale = 0; }
+  if (k === "k2") S.tonic = (S.tonic + d + 12) % 12;
+  if (k === "k3") { if (S.view === 0) { const i = KIDS_SCALES.indexOf(S.scale); S.scale = KIDS_SCALES[((i < 0 ? 0 : i) + d + KIDS_SCALES.length) % KIDS_SCALES.length]; } else S.scale = (S.scale + d + SCALES.length) % SCALES.length; }
+  if (k === "k4") S.music = S.music ? 0 : 1;
+  if (k !== "k4") startLesson();
+  labels();
+}));
+document.getElementById("play").addEventListener("click", showMe);
+const KB = { a: 60, w: 61, s: 62, e: 63, d: 64, f: 65, t: 66, g: 67, y: 68, h: 69, u: 70, j: 71, k: 72, o: 73, l: 74, p: 75, ";": 76 };
+document.addEventListener("keydown", (e) => { if (e.repeat || e.metaKey || e.ctrlKey) return; const n = KB[e.key.toLowerCase()]; if (n === undefined) return; e.preventDefault(); press(n); keyEls[n] && keyEls[n].classList.add("down"); });
+document.addEventListener("keyup", (e) => { const n = KB[e.key.toLowerCase()]; if (n !== undefined && keyEls[n]) keyEls[n].classList.remove("down"); });
+try { if (navigator.requestMIDIAccess) navigator.requestMIDIAccess().then((m) => { m.inputs.forEach((i) => { i.onmidimessage = (ev) => { const [st, n, v] = ev.data; if ((st & 0xF0) === 0x90 && v > 0) press(n); }; }); }).catch(() => {}); } catch (_) { /* no MIDI */ }
+labels(); startLesson(); requestAnimationFrame(frame);
+</script>
