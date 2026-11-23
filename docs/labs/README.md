@@ -3,7 +3,9 @@
 Interactive HTML mock-ups the owner tried and shaped. **A lab is the contract for its screen** (D-084, CLAUDE.md
 rule 10): the firmware draws a screen as its lab does (layout, names, places, colours, messages); only what the FM-1
 cannot do differs, and each difference is listed in the PR. Open a file in a browser; each is one self-contained page.
-These are the latest versions (2026-11-23); older ones are in the private fm1-scales archive.
+These are the latest versions, and the ones the owner worked with: no newer owner-approved version exists elsewhere
+(the Sound Browser lab of 2026-11-21, approved for D-087; the Sound Edit Lab v3 of 2026-11-18, whose navigation the
+owner approved in D-072). Older drafts were not kept.
 
 | Lab | What it shapes | In the firmware |
 |---|---|---|
