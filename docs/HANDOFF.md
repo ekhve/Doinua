@@ -1,7 +1,9 @@
 # Handoff: getting started on Doinua (for a new agent)
 
-Written 2026-11-23 by the agent that built Doinua so far, for whichever agent takes over. Read this first, then
-`CLAUDE.md` (the rules: binding), then `docs/PLATFORM.md` (the API and the decision log D-001..D-094).
+Written 2026-11-23 by the agent that built Doinua so far, for whichever agent takes over. Read in this order:
+`docs/ONBOARDING.md` (how we work: the loop, the gates, the recipes, what to ask), this file (state and backlog),
+`docs/WORK_ORDER.md` (what to do until Thursday 26 November), `CLAUDE.md` (the rules: binding), then `docs/PLATFORM.md`
+(the API and the decision log D-001..D-094).
 
 ## What this is
 
