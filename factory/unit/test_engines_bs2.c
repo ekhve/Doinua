@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include "kit_internal.h"
+#include "../../apps/companion/sb_data.h"
 uint32_t kit__lock(void) { return 0; }
 void kit__unlock(uint32_t key) { (void)key; }
 int kit__track_pitch(int t) { (void)t; return 0; }
@@ -14,6 +15,14 @@ int main(void)
     assert(kit__eng_count() == engine + 1);
     assert(!strcmp(kit__eng_name(engine), "Bass Something 2"));
     assert(kit__eng_npresets(engine) == 11);
+    int matches = 0;
+    for (int i = 0; i < SB_NALL; ++i) {
+        const sb_entry_t *entry = &SB_ALL[i];
+        if (strcmp(SB_ENGINE[entry->engine], kit__eng_name(engine))) continue;
+        assert(!strcmp(entry->preset, kit__eng_preset_name(engine, matches)));
+        ++matches;
+    }
+    assert(matches == 11);
     for (int p = 0; p < 11; ++p) {
         int peak = 0;
         kit__eng_select(0, engine, p);

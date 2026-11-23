@@ -459,6 +459,14 @@ implement all sounds".)
 | R-307 | When an FMini sound plays a note, the firmware shall sound the note within 15 cents of its pitch. | D-086, ST-70 | A | Draft | An FMini sound plays its note in tune and stops when released |
 | R-308 | While a track plays an FMini sound, the firmware shall sound at most four of the track's notes at once. | D-086, ST-70 | A | Draft | FMini plays the owner's 66 picks, four notes at most a track |
 
+**ST-92, Bass Something 2 (Draft, work order of 2026-11-23).**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-316 | When a Bass Something 2 sound is chosen, the companion app shall select its matching factory patch. | D-095, ST-92, UC-07 | A | Draft | The Sound Browser selects each picked Bass Something 2 patch |
+| R-317 | While a track plays a Bass Something 2 sound, the firmware shall sound at most one of the track's notes at once. | D-095, ST-92, UC-07 | A | Draft | Bass Something 2 plays one voice per track |
+| R-318 | When Square Solo plays C4, the firmware shall sound the note within 15 cents of its pitch. | D-095, ST-92, UC-07 | A | Draft | Square Solo plays the selected note and releases it |
+
 **FM-106's Juno-106 engine (ST-71b)** (D-090; drafts for the owner, from "Let's go with the other engines!", 2026-11-22.)
 
 | ID | Requirement | Source | Mode | Status | Verified by |

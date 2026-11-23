@@ -1224,3 +1224,23 @@ Feature: ARP on every track (ST-77, ST-78)
     Given DRUMS with ARP on, RATE 1/32 and RAMP crescendo
     When the hat key is held
     Then the hat repeats in 32nds, getting louder
+
+Feature: Bass Something 2 (ST-92)
+
+  @D-095 @ST-92 @auto @gate:unit
+  Scenario: The Sound Browser selects each picked Bass Something 2 patch
+    Given the owner's eleven Bass Something 2 picks
+    When each sound is chosen in the Sound Browser
+    Then the track plays the matching upstream factory patch
+
+  @D-095 @ST-92 @auto @gate:unit
+  Scenario: Bass Something 2 plays one voice per track
+    Given two tracks with Bass Something 2 patches
+    When two keys overlap on one track while the other holds a note
+    Then the first track sounds one voice and the other keeps its note
+
+  @D-095 @ST-92 @auto
+  Scenario: Square Solo plays the selected note and releases it
+    Given Square Solo is selected with PRESETS
+    When C4 is pressed and released
+    Then C4 sounds within 15 cents and its release ends in silence
