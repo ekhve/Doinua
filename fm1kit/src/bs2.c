@@ -5,6 +5,9 @@
 #include "bs2/bs2_bank.h"
 #include "bs2_hooks.h"
 
+/* C4 at velocity 100: match the kit Piano/Analog range while preserving patch dynamics. */
+#define BS2_MIX_GAIN 49152.f
+
 static bs2_track_t tracks[KIT_NTRACKS] KIT_BIG;
 static uint8_t enabled[KIT_NTRACKS];
 
@@ -49,7 +52,7 @@ void kit__bs2_render(int t, int32_t *mix, int n)
         int count = n < (int)CTRL_N ? n : (int)CTRL_N;
         bs2_samples(&tracks[t], block, (unsigned)count, 120.f);
         for (int i = 0; i < count; ++i) {
-            int32_t sample = (int32_t)(block[i] * 32768.f);
+            int32_t sample = (int32_t)(block[i] * BS2_MIX_GAIN);
             if (sample > 40000) sample = 40000 + (sample - 40000) / 4;
             if (sample < -40000) sample = -40000 + (sample + 40000) / 4;
             *mix++ += sample;
