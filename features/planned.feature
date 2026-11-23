@@ -46,3 +46,16 @@ Feature: The sequencer (ST-85 to ST-91, drafts for the owner)
     When GLO is held
     Then the page's actions show
 
+Feature: Bass Something 2 (ST-92)
+
+  @ST-92 @planned
+  Scenario: The Sound Browser selects each picked Bass Something 2 patch
+    Given the owner's eleven Bass Something 2 picks
+    When each sound is chosen in the Sound Browser
+    Then the track plays the matching upstream factory patch
+
+  @ST-92 @planned
+  Scenario: Bass Something 2 plays one voice per track
+    Given two tracks with Bass Something 2 patches
+    When two keys overlap on one track while the other holds a note
+    Then the first track sounds one voice and the other keeps its note

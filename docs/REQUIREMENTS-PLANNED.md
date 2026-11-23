@@ -30,3 +30,10 @@ its rows to `REQUIREMENTS.md` exactly as approved, with their scenarios and exec
 
 **Subjects** (as in `REQUIREMENTS.md`'s glossary): **the companion app**; **the build**, `tools/build.py` with the
 user kit and the MIDI ideas it converts (to add to the glossary with the first of these stories).
+
+**ST-92, Bass Something 2 (Draft, work order of 2026-11-23).**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-316 | When a Bass Something 2 sound is chosen, the companion app shall select its matching factory patch. | ST-92, UC-07 | A | Draft | The Sound Browser selects each picked Bass Something 2 patch |
+| R-317 | While a track plays a Bass Something 2 sound, the firmware shall sound at most one of the track's notes at once. | ST-92, UC-07 | A | Draft | Bass Something 2 plays one voice per track |
