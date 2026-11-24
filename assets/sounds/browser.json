@@ -252,6 +252,13 @@
    "preset": "Wobble Dub"
   },
   {
+   "group": "Bass",
+   "name": "Clean Punch",
+   "from": "Doinua",
+   "engine": "Bass Something 2: Bass Something 2",
+   "preset": "Clean Punch"
+  },
+  {
    "group": "Lead",
    "name": "SYNC LEAD",
    "from": "OberVave",

@@ -146,6 +146,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-095 | API 37 adds KIT_ENGINE_BS2 after Juno, preserving the saved engine numbers. Each track has its own mono voice and selects one of the eleven ST-92 factory patches. | Work order ST-92; engine number and per-track storage decided by the agent. |
 | D-096 | API 38 appends OberVave as engine 11 so saved engine numbers stay stable. Its programs use the pinned OberVave voice code and factory bank (ST-72). | Factory lead, 2026-11-24 |
 | D-097 | API 39 reads a preset's factory arpeggio. Companion maps the OberVave programs to the existing track ARP (D-088) and preserves their gate fractions until K4 changes them. | Factory lead, 2026-11-24 |
+| D-101 | Clean Punch uses the approved original Bass Something 2 patch settings. Append it after the upstream presets to preserve their saved patch numbers. Show it at the end of the Sound Browser's Bass group. | Owner audition approval, issue #7. The factory lead chose its placement. |
 
 ## Known gaps (next)
 

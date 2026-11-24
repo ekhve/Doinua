@@ -11,9 +11,20 @@
 static bs2_track_t tracks[KIT_NTRACKS] KIT_BIG;
 static uint8_t enabled[KIT_NTRACKS];
 
-int kit__bs2_npresets(void) { return BS2_N; }
+/* The owner-approved Clean Punch audition (issue #7). */
+static const patch_t clean_punch = {
+    .wave1 = WAVE_TRI, .range1 = RANGE_4, .lvl1 = 18,
+    .wave2 = WAVE_SINE, .range2 = RANGE_8, .lvl2 = 14,
+    .sub_wave = SUB_SINE, .sub_oct = 1, .lvl_sub = 114,
+    .filter = FLT_LP24, .cutoff = 55, .drive = 5, .key_trk = 3,
+    .amp_a = 9, .amp_d = 56, .amp_s = 69, .amp_r = 46, .vel_amp = 24,
+    .glide = 46, .env_trig = { ENVT_AUTOGLIDE, ENVT_AUTOGLIDE },
+};
+
+int kit__bs2_npresets(void) { return BS2_N + 1; }
 const char *kit__bs2_preset_name(int p)
 {
+    if (p == BS2_N) return "Clean Punch";
     return p >= 0 && p < BS2_N ? BS2_NAMES[p] : "?";
 }
 
@@ -22,8 +33,12 @@ void kit__bs2_select(int t, int p)
     patch_t patch = {0};
     char name[17];
     enabled[t] = 0;
-    if (p < 0 || p >= BS2_N) return;
-    if (!bsx_import(BS2_PATCHES[p], sizeof BS2_PATCHES[p], &patch, name)) return;
+    if (p == BS2_N) {
+        patch = clean_punch;
+    } else {
+        if (p < 0 || p >= BS2_N) return;
+        if (!bsx_import(BS2_PATCHES[p], sizeof BS2_PATCHES[p], &patch, name)) return;
+    }
     bs2_prepare(&tracks[t], &patch);
     enabled[t] = 1;
 }

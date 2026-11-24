@@ -1,0 +1,18 @@
+{
+  "scenario": "Clean Punch plays low notes in tune and releases them",
+  "name": "companion, ST-94: Clean Punch is the last Bass sound in PRESETS",
+  "app": "companion",
+  "ms": 4800,
+  "keys": "1000:e6:+1,1200:e2:-1,1400:e6:-1,1900:m903064,2500:m903264,2550:m803040,3300:m803240,3950:m902464,4300:m802440",
+  "checks": [
+    {"type": "screen", "at": 1700},
+    {"type": "silence", "from": 1450, "to": 1850},
+    {"type": "pitch", "from": 2080, "to": 2450, "note": "C3", "cents": 15},
+    {"type": "sound", "from": 2490, "to": 2590},
+    {"type": "pitch", "from": 2780, "to": 3250, "note": "D3", "cents": 15},
+    {"type": "peak", "from": 1900, "to": 4350, "max_dbfs": -1.0},
+    {"type": "silence", "from": 3700, "to": 3900},
+    {"type": "sound", "from": 4070, "to": 4270},
+    {"type": "silence", "from": 4700, "to": 4800}
+  ]
+}

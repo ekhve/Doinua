@@ -1258,3 +1258,11 @@ Feature: OberVave (ST-72)
     Given the Sound Browser is open on the track's sounds
     When Shadow Arp is selected and C4 is held
     Then the track plays its factory arpeggio
+
+Feature: Clean Punch (ST-94)
+
+  @D-101 @ST-94 @auto
+  Scenario: Clean Punch plays low notes in tune and releases them
+    Given Clean Punch is selected in the Sound Browser's Bass group
+    When C3 is played, D3 overlaps it, and D3 is released
+    Then C3 and D3 sound within 15 cents of their pitches and the output returns to silence within 400 ms

@@ -469,6 +469,13 @@ implement all sounds".)
 | R-319 | When a note is played with Sync Lead selected, the firmware shall sound OberVave Sync Lead. | D-096, ST-72, UC-07 | A | Draft | OberVave Sync Lead sounds when played |
 | R-320 | When Shadow Arp is selected, the firmware shall enable the track arpeggiator with the factory settings. | D-097, ST-72, UC-07 | A | Draft | Selecting Shadow Arp enables the track arpeggiator |
 
+**Clean Punch (ST-94, Draft).**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-326 | When Clean Punch plays C3, the firmware shall sound the note within 15 cents of its pitch. | D-101, ST-94, UC-07 | A | Draft | Clean Punch plays low notes in tune and releases them |
+| R-327 | When a Clean Punch note is released, the firmware shall return its output to silence within 400 milliseconds. | D-101, ST-94, UC-07 | A | Draft | Clean Punch plays low notes in tune and releases them |
+
 **FM-106's Juno-106 engine (ST-71b)** (D-090; drafts for the owner, from "Let's go with the other engines!", 2026-11-22.)
 
 | ID | Requirement | Source | Mode | Status | Verified by |
