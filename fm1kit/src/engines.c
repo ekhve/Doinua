@@ -210,6 +210,23 @@ const char *kit__eng_preset_name(int i, int p)
     return preset ? preset->name : "?";
 }
 
+int kit_preset_arp(int engine, int preset, kit_preset_arp_t *arp)
+{
+    /* fmini-1 at 649a8bb: seq.c AM_* and fx.c div_samples(). */
+    static const uint8_t modes[] = {255, KIT_PRESET_ARP_UP, KIT_PRESET_ARP_DOWN,
+        KIT_PRESET_ARP_UP_DOWN, KIT_PRESET_ARP_RANDOM, KIT_PRESET_ARP_AS_PLAYED,
+        KIT_PRESET_ARP_REPEAT, 255, KIT_PRESET_ARP_UP_OCTAVE, 255, KIT_PRESET_ARP_DIVERGE};
+    static const uint8_t ticks[] = {24, 12, 6, 3, 8, 4, 48, 96, 192, 0, 32, 16};
+    if (engine == KIT_ENGINE_OBERVAVE) return kit__obv_preset_arp(preset, arp);
+    if (engine != KIT_ENGINE_FMINI || (unsigned)preset >= FMB_N || !arp) return 0;
+    const uint8_t *p = FMB_X[preset].arp;
+    if (!p[0] || p[1] >= sizeof modes || modes[p[1]] == 255 ||
+        p[2] >= sizeof ticks || !ticks[p[2]] || !p[3] || p[3] > 4)
+        return 0;
+    *arp = (kit_preset_arp_t){modes[p[1]], ticks[p[2]], p[3], p[4], p[5], p[6]};
+    return 1;
+}
+
 /* the caller holds the kit's lock */
 void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no engine */
 {
