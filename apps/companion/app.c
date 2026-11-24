@@ -205,10 +205,13 @@ static int sound_index(int engine, int preset)
     return n + preset;
 }
 
+static void ar_load_preset(int t, int engine, int preset);
+
 static void pick_sound(int t)
 {
     int e, p;
     sound_of(snd[t], &e, &p);
+    ar_load_preset(t, e, p);
     kit_track_sound(t, e, p);
 }
 

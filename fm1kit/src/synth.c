@@ -236,7 +236,7 @@ static int has_note(int t, int note)
 /* each engine's CPU per voice, tenths of %: measured on the cycle-modelled emulator (factory/cpu.py), the heaviest
  * preset of each: Basic, Analog, Phase, Lo-fi, Trio, Organ wheel, Noise, Drums, FMini, Juno-106 */
 static const uint8_t VOICE_COST[] = { 23, 46, 43, 21, 53, 53, 44, 20,   /* Drums: the layered kits (D-053), two thirds of a Basic voice at their heaviest, rounded up */
-                                        92, 98, 220 };                        /* FMini (SOLINA), the Juno (Synth Pad): D-091 */
+                                        92, 98, 220, 200 };                        /* FMini (SOLINA), the Juno (Synth Pad): D-091 */
 #define BASE_COST 100                           /* the FM-1 idle, tenths of % */
 #define PART_COST 30                            /* a track with voices sounding: its per-block work */
 #define JUNO_PART_COST 150                      /* .. the Juno's: its LFO, HPF, VCA and chorus run on every sample (D-091) */

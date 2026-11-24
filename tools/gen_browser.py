@@ -13,8 +13,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-BUILT = ["Analog", "Lo-fi", "Organ wheel", "Drums", "FMini", "Juno-106", "Bass Something 2"]   # the kit's engines the picks come from (kit_engine_name)
-AS = {"Bass Something 2: Bass Something 2": "Bass Something 2", "FM-106: Juno-106": "Juno-106"}     # the picks' firmware and engine, where the kit's engine is named otherwise
+BUILT = ["Analog", "Lo-fi", "Organ wheel", "Drums", "FMini", "Juno-106", "Bass Something 2", "OberVave"]   # the kit's engines the picks come from (kit_engine_name)
+AS = {"OberVave: OberVave": "OberVave", "Bass Something 2: Bass Something 2": "Bass Something 2", "FM-106: Juno-106": "Juno-106"}     # the picks' firmware and engine, where the kit's engine is named otherwise
 src = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "assets" / "sounds" / "browser.json"
 out = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "apps" / "companion" / "sb_data.h"
 d = json.loads(src.read_text())

@@ -1244,3 +1244,17 @@ Feature: Bass Something 2 (ST-92)
     Given Square Solo is selected with PRESETS
     When C4 is pressed and released
     Then C4 sounds within 15 cents and its release ends in silence
+
+Feature: OberVave (ST-72)
+
+  @D-096 @ST-72 @auto
+  Scenario: OberVave Sync Lead sounds when played
+    Given Sync Lead is selected with PRESETS
+    When C4 is pressed
+    Then the selected preset sounds
+
+  @D-097 @ST-72 @auto
+  Scenario: Selecting Shadow Arp enables the track arpeggiator
+    Given the Sound Browser is open on the track's sounds
+    When Shadow Arp is selected and C4 is held
+    Then the track plays its factory arpeggio

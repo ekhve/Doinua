@@ -1,0 +1,12 @@
+{
+  "scenario": "Selecting Shadow Arp enables the track arpeggiator",
+  "name": "companion, ST-72: Shadow Arp brings the factory up-down eighth-note triplet pattern into the track ARP",
+  "app": "companion",
+  "ms": 5600,
+  "keys": "900:e1:+2,1000:e6:+1,1200:e2:+6,1400:e6:+3,4000:C4@100,4900:C4^",
+  "checks": [
+    {"type": "silence", "from": 800, "to": 3900},
+    {"type": "sound", "from": 4050, "to": 4820},
+    {"type": "screen", "at": 4200}
+  ]
+}

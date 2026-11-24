@@ -12,7 +12,8 @@ int main(void)
 {
     const int engine = KIT_ENGINE_BS2 - 2;
     int32_t block[256];
-    assert(kit__eng_count() == engine + 1);
+    _Static_assert(KIT_ENGINE_BS2 == 10, "saved Bass Something 2 engine ID");
+    assert(engine < kit__eng_count());
     assert(!strcmp(kit__eng_name(engine), "Bass Something 2"));
     assert(kit__eng_npresets(engine) == 11);
     int matches = 0;
