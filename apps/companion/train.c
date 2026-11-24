@@ -38,8 +38,9 @@ static const t_song_t T_SONGS[2] = {
     { T_FUNICULI, (int)(sizeof T_FUNICULI / sizeof T_FUNICULI[0]), 100, 19, "FUNICULI", T_CH_D, 4 },
 };
 /* the voices (K2): a reedy pulse, a pluck, an organ */
-static const uint8_t T_VOICE[3][2] = { { 3, 0 }, { 1, 8 }, { 5, 1 } };   /* Lo-fi PULSE LD, Analog PLUCK, Organ wheel JAZZ PERC */
+static const uint8_t T_VOICE[3][2] = { { 5, 3 }, { 1, 8 }, { 5, 1 } };   /* Organ wheel SOFT FLUTE, Analog PLUCK, Organ wheel JAZZ PERC */
 static const char *const T_VOICE_NAME[3] = { "REED", "PLUCK", "ORGAN" };
+#define T_REVERB 20
 #define T_KIT 2                                 /* the Live kit: shaker1 the chuff, stick1 the bridge, bell1 the bell */
 enum { T_PAD_KICK = 0, T_PAD_STICK = 7, T_PAD_OPEN = 15, T_PAD_SHAKER = 17, T_PAD_TOM = 19, T_PAD_BELL = 23 };
 
@@ -127,7 +128,7 @@ static void t_boomchick(int k)                  /* the bass on the beat (the roo
         for (i = 0; i < 3; i++) t_play_note(KIT_TRACK_CHORDS, ch[i], 34, 140);
     }
 }
-static void t_whistle(void) { kit_sfx(KIT_SFX_WHISTLE, 7); T.steam = 1200; }
+static void t_whistle(void) { kit_sfx(KIT_SFX_WHISTLE, 4); T.steam = 1200; }
 
 static void t_enter(void)
 {
@@ -138,7 +139,7 @@ static void t_enter(void)
     kit_track_sound(KIT_TRACK_DRUMS, KIT_ENGINE_DRUMS, T_KIT);
     kit_track_sound(KIT_TRACK_CHORDS, 1, 8);    /* Analog: PLUCK, the strum */
     kit_track_sound(KIT_TRACK_BASS, 1, 7);      /* Analog: SUB BASS, the boom */
-    T.saved_rv = kit_reverb_of(); kit_reverb(T.quiet ? 0 : 30);
+    T.saved_rv = kit_reverb_of(); kit_reverb(T.quiet ? 0 : T_REVERB);
     T.on = 1; T.q = kit_ms() / T_STEP; T.t = T.q * T_STEP; T.rnd = 4242;
     T.idx = 0; T.misses = T.streak = 0; T.scroll = 0; T.v = 0; T.wheel = 0; T.listen = 0; T.npq = 0; T.chord = 0;
     T.cough = T.sneeze = T.soot = T.wave = T.super = T.howl = T.bell = T.steam = T.angry = T.bark = T.got = T.pop = 0;
@@ -198,7 +199,7 @@ static int t_in_canyon(int x);
 static void t_super(int ms)
 {
     T.super = ms; if (T.v < (120 << 8)) T.v = 120 << 8;
-    T.bell = 1500; t_whistle(); t_hit(T_PAD_BELL, 90);
+    T.bell = 1500; t_whistle(); t_hit(T_PAD_BELL, 48);
     T.rider.used = 1; T.rider.x = -(40 << 8);
     t_later(900, T_S_NEIGH);
 }
@@ -212,8 +213,8 @@ static void t_play(int k, int ms)               /* note k: a chuff, the voice si
     const t_song_t *s = t_sg();
     int n = s->n[k][0], len = s->n[k][1];
     T.rnd = 0x9E3779B9u ^ ((uint32_t)k * 2654435761u) ^ ((uint32_t)T.tune << 20);
-    t_play_note(KIT_TRACK_MELODY, n, 100, ms);
-    t_hit(T_PAD_SHAKER, 46 + t_rand(20));
+    t_play_note(KIT_TRACK_MELODY, n, 65, ms);
+    t_hit(T_PAD_SHAKER, 31 + t_rand(20));
     t_boomchick(k);
     T.v += (18 + len * 3 / 2) << 8; if (T.v > ((T.super > 0 ? 160 : 75) << 8)) T.v = (T.super > 0 ? 160 : 75) << 8;
     T.pop = 150;
@@ -222,9 +223,9 @@ static void t_play(int k, int ms)               /* note k: a chuff, the voice si
         if (T.super > 0) for (i = 0; i < 3; i++) t_puff(sx, sy, U_COL[(n + i * 4) % 12], 3, -20 + i * 8, -40 - i * 10, 1400, 0, 1, 0, 0);
         else { int vx = -6 - t_rand(6), vy = -26 - t_rand(10); t_puff(sx, sy, U_COL[n % 12], 4 + len / 4, vx, vy, 1600, 0, 0, 0, 5); }
     }
-    if (t_in_canyon(T_OX + T_X0 + 47)) t_hit(T_PAD_STICK, 70);   /* on the bridge: the wheels clatter on the timbers */
+    if (t_in_canyon(T_OX + T_X0 + 47)) t_hit(T_PAD_STICK, 46);   /* on the bridge: the wheels clatter on the timbers */
     if (s->n[k][2] & 1) {                       /* a line's end: the whistle, the bell, the coyote */
-        t_whistle(); t_hit(T_PAD_BELL, 70); T.bell = 1200; T.wave = 1800; T.howl = 1600; t_later(1100, T_S_HOWL);
+        t_whistle(); t_hit(T_PAD_BELL, 48); T.bell = 1200; T.wave = 1800; T.howl = 1600; t_later(1100, T_S_HOWL);
     }
     if (k == s->len - 1) t_finale();
 }
@@ -234,10 +235,10 @@ static void t_wrong(void)
     T.rnd = 1234567u + (uint32_t)T.idx * 7919u + (uint32_t)T.misses * 31u;
     T.streak = 0;
     if (++T.misses == 1) {                      /* a cough: black smoke */
-        kit_sfx(KIT_SFX_COUGH, 9); T.cough = 900; T.v = T.v * 4 / 10;
+        kit_sfx(KIT_SFX_COUGH, 5); T.cough = 900; T.v = T.v * 4 / 10;
         for (i = 0; i < 6; i++) { int ox = t_rand(5) - 2, vx = t_rand(21) - 10, vy = -30 - t_rand(15); t_puff(sx + ox, sy - i * 3, KIT_RGB(26, 26, 30), 4, vx, vy, 1500, 1, 0, 0, 7); }
     } else {                                    /* the sneeze: ah... ah... CHOO */
-        T.misses = 0; T.sneeze = 1; T.v = 0; kit_sfx(KIT_SFX_SNEEZE, 10);
+        T.misses = 0; T.sneeze = 1; T.v = 0; kit_sfx(KIT_SFX_SNEEZE, 6);
     }
 }
 static void t_sneeze_step(int32_t prev)        /* the sneeze's moments, as its clock passes them */
@@ -253,7 +254,7 @@ static void t_sneeze_step(int32_t prev)        /* the sneeze's moments, as its c
         for (i = 0; i < 12; i++) { int ox = t_rand(40), vx = t_rand(61) - 30, vy = -40 - t_rand(40); t_spark(T_OX + T_X0 + 18 + ox, 210, vx, vy, 160, 600, KIT_RGB(255, 216, 74), 0); }
     }
     if (T_AT(1200)) T.angry = 4500;              /* the driver: HMPH! */
-    if (T_AT(1350)) { T.bark = 1400; kit_sfx(KIT_SFX_WOOF, 9); t_later(450, T_S_WOOF); t_later(900, T_S_WOOF); }
+    if (T_AT(1350)) { T.bark = 1400; kit_sfx(KIT_SFX_WOOF, 5); t_later(450, T_S_WOOF); t_later(900, T_S_WOOF); }
     if (T_AT(2300)) T.soot = 4500;               /* the cloud has blown back over the puppy */
 #undef T_AT
 }
@@ -311,15 +312,15 @@ static void t_step(void)
         if (T.sch[i].used && (int32_t)(T.t - T.sch[i].at) >= 0) {
             int w = T.sch[i].what;
             T.sch[i].used = 0;
-            if (w == T_S_WOOF) kit_sfx(KIT_SFX_WOOF, 9);
-            else if (w == T_S_HOWL) kit_sfx(KIT_SFX_HOWL, 6);
-            else if (w == T_S_NEIGH) kit_sfx(KIT_SFX_NEIGH, 7);
-            else if (w == T_S_BELL) t_hit(T_PAD_BELL, 90);
+            if (w == T_S_WOOF) kit_sfx(KIT_SFX_WOOF, 5);
+            else if (w == T_S_HOWL) kit_sfx(KIT_SFX_HOWL, 4);
+            else if (w == T_S_NEIGH) kit_sfx(KIT_SFX_NEIGH, 4);
+            else if (w == T_S_BELL) t_hit(T_PAD_BELL, 48);
             else if (w == T_S_WHISTLE) t_whistle();
             else if (w == T_S_BOOM) {
                 int x = 30 + t_rand(180), y = 34 + t_rand(56), c = t_rand(12), j;
                 for (j = 0; j < 14; j++) t_spark(x, y, 36 * t_cos(j * 73) / 1024, 36 * t_sin(j * 73) / 1024, 22, 1300, U_COL[c], 1);
-                t_hit(T_PAD_TOM, 80);
+                t_hit(T_PAD_TOM, 55);
             }
         }
     if (T.listen) {                             /* PLAY: the song, in its own time */
@@ -373,7 +374,7 @@ static void t_step(void)
     if (T.rabbit.used) {
         int32_t rs;
         T.rabbit.t += dt;
-        if (!T.rabbit.tired && (T.rabbit.t > 7000 || T.v > (95 << 8))) { T.rabbit.tired = 1; kit_sfx(KIT_SFX_CHIRP, 4); }
+        if (!T.rabbit.tired && (T.rabbit.t > 7000 || T.v > (95 << 8))) { T.rabbit.tired = 1; kit_sfx(KIT_SFX_CHIRP, 3); }
         rs = T.rabbit.tired ? 0 : T.v * 13 / 10 + (30 << 8); if (rs > (95 << 8)) rs = 95 << 8;
         T.rabbit.x += (rs - T.v * 13 / 10) * dt / 1000;
         if (!T.rabbit.tired && T.rabbit.x > (226 << 8)) T.rabbit.x = 226 << 8;
@@ -573,20 +574,20 @@ static void t_triggers(void)                    /* what the lamplight and the tr
     static const int16_t CA[4][2] = { { 40, 85 }, { 220, 85 }, { 380, 85 }, { 560, 85 } };
     int i, x, late = T.idx >= t_sg()->late || T.phase, lit;
     x = t_x(560, 85, 700, 60); lit = x != -9999 && t_ahead(x);
-    if (lit && !T.cow_was) { T.cow_t = 2200; kit_sfx(KIT_SFX_MOO, 8); }
+    if (lit && !T.cow_was) { T.cow_t = 2200; kit_sfx(KIT_SFX_MOO, 5); }
     T.cow_was = lit;
     for (i = 0; i < 2; i++) {                   /* the prairie dogs hear it coming */
         int near;
         x = t_x(i ? 300 : 90, 130, 520, 40);
         near = x != -9999 && !t_in_canyon(x) && !t_in_canyon(x + 14) && x > 140 && x < 240;
-        if (near && !T.dog_was[i]) { T.dog_t[i] = 2000; kit_sfx(KIT_SFX_CHIRP, 5); }
+        if (near && !T.dog_was[i]) { T.dog_t[i] = 2000; kit_sfx(KIT_SFX_CHIRP, 3); }
         T.dog_was[i] = near;
     }
     {                                           /* the owl hoots as it goes by */
         int off = t_wrap(T.scroll >> 8, 170), k;
         for (k = 0; k < 4; k++) {
             int px = (k - 1) * 170 - off + 40, idx = ((T.scroll >> 8) + px) / 170;
-            if (idx % 3 == 1 && px > 40 && px < 190 && T.owl_last != idx) { T.owl_last = idx; T.owl_t = 1600; kit_sfx(KIT_SFX_HOOT, 7); }
+            if (idx % 3 == 1 && px > 40 && px < 190 && T.owl_last != idx) { T.owl_last = idx; T.owl_t = 1600; kit_sfx(KIT_SFX_HOOT, 4); }
         }
     }
     for (i = 0; i < 5; i++) {                   /* near the song's end, each cactus the lamp lights opens */
@@ -959,7 +960,7 @@ static int t_event(const kit_event_t *e)
         if (e->id == KIT_ENC_KNOB3 && !T.listen && !T.phase) { T.tune = !T.tune; T.idx = 0; T.streak = T.misses = 0; T.chord = 0; t_whistle(); }
         if (e->id == KIT_ENC_KNOB4) {
             int b = e->delta > 0;
-            if (b == T.quiet) { T.quiet = !b; kit_reverb(b ? 30 : 0); }
+            if (b == T.quiet) { T.quiet = !b; kit_reverb(b ? T_REVERB : 0); }
         }
     }
     return 1;
