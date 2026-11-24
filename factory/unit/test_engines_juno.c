@@ -63,7 +63,7 @@ int main(void)
     double r, f;
     int32_t pk;
     CHECK(!strcmp(kit__eng_name(E), "Juno-106") && kit__eng_npresets(E) == 28, "Juno-106 with the 28 picks (%s, %d)", kit__eng_name(E), kit__eng_npresets(E));
-    CHECK(kit__eng_count() == E + 2, "BS2 follows the Juno (%d)", kit__eng_count());
+    CHECK(kit__eng_count() > E + 1 && !strcmp(kit__eng_name(E + 1), "Bass Something 2"), "BS2 follows the Juno (%d)", kit__eng_count());
     CHECK(!strcmp(kit__eng_preset_name(E, 20), "Orchestral"), "names without the bank number or trailing spaces (%s)", kit__eng_preset_name(E, 20));
     for (p = 0; p < kit__eng_npresets(E); p++) {
         double held, after;
