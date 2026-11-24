@@ -482,6 +482,13 @@ implement all sounds".)
 |---|---|---|---|---|---|
 | R-323 | When a chosen FMini patch has its factory arpeggiator enabled, the companion app shall play that pattern using the track's arpeggiator. | D-099, ST-77, UC-07 | A | Draft | FMini Pluck Arp plays through the track arpeggiator |
 
+**Softer game sounds (ST-93, Draft)**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-324 | When Unicorn Jump plays the first three notes of Twinkle Twinkle in Listen mode, the companion app shall keep the mix peak at or below −10 dBFS. | D-100, UC-18, ST-93 | A | Draft | In Unicorn Jump PLAY runs the song by itself, each fence's key lit as its note sounds |
+| R-325 | When the Night Train whistles and plays the first note of Funiculì with music off, the companion app shall keep the mix peak at or below −20 dBFS. | D-100, UC-18, ST-93 | A | Draft | K3 changes the train's song to Funiculì, funiculà |
+
 **FM-106's Juno-106 engine (ST-71b)** (D-090; drafts for the owner, from "Let's go with the other engines!", 2026-11-22.)
 
 | ID | Requirement | Source | Mode | Status | Verified by |

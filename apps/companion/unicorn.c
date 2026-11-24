@@ -141,12 +141,13 @@ static void u_reset(void)
 
 /* sounds: the notes a bell on the melody track, the knocks the drum kit's */
 #define U_BELL KIT_TRACK_MELODY
+#define U_REVERB 24
 #define U_DRUM KIT_TRACK_DRUMS
 static void u_bell(int n)                      /* a bell, held 300 ms */
 {
     int i, k = 0;
     for (i = 0; i < 4; i++) if (U.off_at[i] && U.off_n[i] == n) { kit_track_note_off(U_BELL, n); U.off_at[i] = 0; }
-    kit_track_note_on(U_BELL, n, 110);
+    kit_track_note_on(U_BELL, n, 62);
     for (i = 0; i < 4; i++) if (!U.off_at[i]) { k = i; break; } else if (U.off_at[i] < U.off_at[k]) k = i;
     if (U.off_at[k]) kit_track_note_off(U_BELL, U.off_n[k]);
     U.off_n[k] = (uint8_t)n; U.off_at[k] = kit_ms() + 300; if (!U.off_at[k]) U.off_at[k] = 1;
@@ -207,11 +208,11 @@ static void u_enter(void)                       /* the game opens: a bell and Du
     int t;
     for (t = 0; t < KIT_NTRACKS; t++) { U.saved_e[t] = kit_track_engine(t); U.saved_p[t] = kit_track_preset(t); }
     kit_seq_stop();
-    kit_track_sound(U_BELL, 2, 4);              /* Phase: BELL */
+    kit_track_sound(U_BELL, KIT_ENGINE_BASIC, KIT_INST_MUSICBOX);
     kit_track_sound(U_DRUM, KIT_ENGINE_DRUMS, 0);
     kit_track_sound(KIT_TRACK_CHORDS, 1, 1);    /* Analog: SOFT PAD */
     kit_track_sound(KIT_TRACK_BASS, 1, 7);      /* Analog: SUB BASS */
-    U.saved_rv = kit_reverb_of(); kit_reverb(U.quiet ? 0 : 40);
+    U.saved_rv = kit_reverb_of(); kit_reverb(U.quiet ? 0 : U_REVERB);
     U.chord = 0;
     U.on = 1; U.running = 0; U.q = kit_ms() / U_STEP; U.t = U.q * U_STEP;
     u_reset(); u_key();
@@ -248,17 +249,17 @@ static void u_jump(int32_t d, int32_t w)
 static void u_bump(void)                        /* a wrong key: a bump with stars; it waits on; two in a row, a poop */
 {
     U.bonk = 600; U.streak = 0;
-    u_hit(19, 110);                             /* the low tom */
+    u_hit(19, 72);                             /* the low tom */
     if (++U.misses >= 2) {                      /* twice: it poops, and the poop stays on the meadow */
         U.misses = 0; U.poops++;
-        kit_sfx(KIT_SFX_PFFT, 9);               /* pfrrt ... */
+        kit_sfx(KIT_SFX_PFFT, 5);               /* pfrrt ... */
         U.plop_at = U.t + 450;                  /* ... plop, and there it is */
     }
 }
 static void u_plop(void)
 {
     int i;
-    kit_sfx(KIT_SFX_PLOP, 9);
+    kit_sfx(KIT_SFX_PLOP, 5);
     for (i = 0; i < U_NP; i++)
         if (!U.p[i].used) { U.p[i].used = 1; U.p[i].wx = (U.x >> 8) + U_X - U_W - 6; U.p[i].back = 0; U.p[i].ahead = 0; U.p[i].hop = 0; break; }
 }
@@ -464,7 +465,7 @@ static void u_step(void)                        /* one step of U_STEP ms */
         U.wait = block;
         if (block) {                            /* waiting with no key: a neigh at 8 s, asleep at 20 s */
             U.idle += dt;
-            if (U.idle >= 8000 && U.idle - dt < 8000) kit_sfx(KIT_SFX_NEIGH, 8);
+            if (U.idle >= 8000 && U.idle - dt < 8000) kit_sfx(KIT_SFX_NEIGH, 5);
             if (U.idle >= 20000) U.sleep = 1;
         }
     }
@@ -694,7 +695,7 @@ static int u_event(const kit_event_t *e)
         if (e->id == KIT_ENC_KNOB2) { U.speed += e->delta > 0 ? 1 : -1; U.speed = U.speed < 0 ? 0 : U.speed > 2 ? 2 : U.speed; }
         if (e->id == KIT_ENC_KNOB4) {         /* the music on or off */
             int b = e->delta > 0;
-            if (b == U.quiet) { U.quiet = !b; kit_reverb(b ? 40 : 0); if (!b) u_pad_off(); else if (U.running) u_pad(U.lastn); }
+            if (b == U.quiet) { U.quiet = !b; kit_reverb(b ? U_REVERB : 0); if (!b) u_pad_off(); else if (U.running) u_pad(U.lastn); }
         }
         if (e->id == KIT_ENC_KNOB3) { U.tune = ((U.tune + (e->delta > 0 ? 1 : -1)) % U_NALL + U_NALL) % U_NALL; u_pad_off(); u_reset(); u_key(); U.listen = 0; if (!u_len()) U.running = 0; }
         return 1;

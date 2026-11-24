@@ -18,6 +18,12 @@
       "cents": 25
     },
     {
+      "type": "peak",
+      "from": 2480,
+      "to": 4220,
+      "max_dbfs": -20.0
+    },
+    {
       "type": "screen",
       "at": 4025
     }
