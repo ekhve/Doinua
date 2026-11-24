@@ -45,4 +45,3 @@ Feature: The sequencer (ST-85 to ST-91, drafts for the owner)
     Then the top line shows SEQ 2
     When GLO is held
     Then the page's actions show
-

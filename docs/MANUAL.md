@@ -489,7 +489,7 @@ Bass, MELODY on Lead). PRESETS goes through the sounds one at a time, and on int
 While the list shows, **K1** jumps a whole group (K1 GROUP), back to the sound you were on in it. Play the keys to hear a
 sound: the list stays open while a key is held, and closes by itself 2 seconds after you stop turning or playing (or
 press HOME). The list holds the sounds you picked in the audition, as their engines arrive: now FMini's 66, the Juno-106's 28
-(FM-106's engine) and five of ours. The DRUMS track's PRESETS still chooses its kit.
+(FM-106's engine), the 11 Bass Something 2 patches and five of ours. The DRUMS track's PRESETS still chooses its kit.
 
 ### Effects
 
@@ -500,7 +500,7 @@ a sound's effects come later.
 ### How many notes at once
 
 The FM-1 plays up to 12 notes at once across the four tracks, as long as they fit its processor. Some sounds take more
-of it than others: the Juno-106 sounds and the FMini sounds are the heaviest, about four times a simple sound. A Juno
+of it than others. Bass Something 2 plays one note per track: a second key takes over the same voice. A Juno
 sound plays up to five notes on its track (a Cm7 and its bass), an FMini sound up to four. When everything plays at
 once and there is no room left, the newest note takes the place of the oldest one (a note that is fading out first,
 then a track with two or more notes, the song's before yours); a track never loses its last note. GLO, TRACKS shows the

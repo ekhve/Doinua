@@ -235,16 +235,21 @@ static int has_note(int t, int note)
 /* ---- the voices' budget (API 20, D-047) ---- */
 /* each engine's CPU per voice, tenths of %: measured on the cycle-modelled emulator (factory/cpu.py), the heaviest
  * preset of each: Basic, Analog, Phase, Lo-fi, Trio, Organ wheel, Noise, Drums, FMini, Juno-106 */
-static const uint8_t VOICE_COST[10] = { 23, 46, 43, 21, 53, 53, 44, 20,   /* Drums: the layered kits (D-053), two thirds of a Basic voice at their heaviest, rounded up */
-                                        92, 98 };                        /* FMini (SOLINA), the Juno (Synth Pad): D-091 */
+static const uint8_t VOICE_COST[] = { 23, 46, 43, 21, 53, 53, 44, 20,   /* Drums: the layered kits (D-053), two thirds of a Basic voice at their heaviest, rounded up */
+                                        92, 98, 220, 200 };                        /* FMini (SOLINA), the Juno (Synth Pad): D-091 */
 #define BASE_COST 100                           /* the FM-1 idle, tenths of % */
 #define PART_COST 30                            /* a track with voices sounding: its per-block work */
 #define JUNO_PART_COST 150                      /* .. the Juno's: its LFO, HPF, VCA and chorus run on every sample (D-091) */
 int kit__bg;
 static uint8_t tr_live[KIT_NTRACKS];            /* the track's last note was played live (not by the song) */
 static uint32_t stolen;
-static int vcost(int t) { int e = tr_engine[t]; return VOICE_COST[e >= 0 && e < 10 ? e : 0]; }
-static int pcost(int t) { return tr_engine[t] == KIT_ENGINE_JUNO ? JUNO_PART_COST : PART_COST; }
+static int vcost(int t) { int e = tr_engine[t]; return VOICE_COST[e >= 0 && e < (int)(sizeof VOICE_COST / sizeof VOICE_COST[0]) ? e : 0]; }
+static int pcost(int t)
+{
+    /* BS2 has one voice per track. Its measured 22-point increment includes the track. */
+    if (tr_engine[t] == KIT_ENGINE_BS2) return 0;
+    return tr_engine[t] == KIT_ENGINE_JUNO ? JUNO_PART_COST : PART_COST;
+}
 static int basic_rel(int t)
 {
     int i, n = 0;
@@ -715,7 +720,9 @@ void kit_track_note_on(int t, int note, int vel)
         held_add(t, note);
     }
     if (is_part(t)) {
-        if (!has_note(t, note) && !make_room(t)) { kit__unlock(k); return; }
+        /* A second BS2 key retunes the existing mono voice, including during release. */
+        int reuse = tr_engine[t] == KIT_ENGINE_BS2 && voices_on(t);
+        if (!reuse && !has_note(t, note) && !make_room(t)) { kit__unlock(k); return; }
         kit__eng_note_glide(t, note, vel, from >= 0 ? from * 16 : -1, tr_glide[t], mono, legato);
         kit__unlock(k);
         return;

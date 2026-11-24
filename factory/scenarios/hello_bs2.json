@@ -1,0 +1,13 @@
+{
+  "scenario": "Square Solo plays the selected note and releases it",
+  "name": "hello, ST-92: PRESETS selects Bass Something 2 Square Solo",
+  "app": "hello",
+  "ms": 6500,
+  "keys": "900:e6:+100,1900:e6:+46,3000:C4@100,3900:C4^",
+  "checks": [
+    {"type": "silence", "from": 800, "to": 2900},
+    {"type": "sound", "from": 3150, "to": 3800},
+    {"type": "pitch", "from": 3250, "to": 3780, "note": "C4", "cents": 15},
+    {"type": "silence", "from": 5700, "to": 6400}
+  ]
+}

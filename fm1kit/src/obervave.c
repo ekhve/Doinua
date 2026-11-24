@@ -1,9 +1,15 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* OberVave a1f660c voice allocator and mono mix adapter for fm1kit. */
-#include "fm1kit.h"
+#include "kit_internal.h"
+#include "obervave_hooks.h"
 #include "obervave/voice.h"
 #include "obervave/bank.h"
+#ifdef __PI32V2__
+void *memset(void *dst, int value, unsigned bytes);
+#else
 #include <string.h>
+#endif
+
 
 #define OBV_VOICES 8
 #define OBV_PRESETS (sizeof obervave_bank / sizeof obervave_bank[0])
@@ -127,7 +133,8 @@ void kit__obv_note_on(int track, int note, int velocity)
     obv_track_t *state = &tracks[track];
     for (unsigned i = 0; i < state->count; ++i) {
         if (state->held[i] != note) continue;
-        memmove(&state->held[i], &state->held[i + 1], --state->count - i);
+        --state->count;
+        for (; i < state->count; ++i) state->held[i] = state->held[i + 1];
         break;
     }
     state->held[state->count++] = (uint8_t)note;
@@ -142,7 +149,8 @@ void kit__obv_note_off(int track, int note)
     unsigned last = state->count && state->held[state->count - 1] == note;
     for (unsigned i = 0; i < state->count; ++i) {
         if (state->held[i] != note) continue;
-        memmove(&state->held[i], &state->held[i + 1], --state->count - i);
+        --state->count;
+        for (; i < state->count; ++i) state->held[i] = state->held[i + 1];
         break;
     }
     if (state->params[P_MODE] >= OBV_UNISON && last && state->count) {

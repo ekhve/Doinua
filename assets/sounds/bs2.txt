@@ -1,0 +1,12 @@
+# Upstream factory slot (P01 = 1) and Doinua browser name, in browser order.
+09 Grit Bass
+01 Dub Plate
+02 Station Bass
+03 Acid Slide
+06 Fm Growl
+07 Wobble Dub
+13 Sync Screamer
+23 S&H Computer
+12 Square Solo
+08 Sync Punch
+24 Slow Sweep Pad
