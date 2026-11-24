@@ -85,4 +85,3 @@ static inline int32_t cf_va_envelope_tick(cf_va_envelope_t *s, const uint8_t e[5
     s->level = x;
     return x >> 9;
 }
-

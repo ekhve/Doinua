@@ -40,6 +40,8 @@ static track_t trk[NPART];
 #define GQ 8                                    /* glide: pitch_cur's extra fraction bits */
 #include "fmini/eng_fmini.c"                    /* fmini-1's Minimoog engine (GPL-3.0-only, D-086) */
 
+#include "coralflower/eng_va.c"
+
 #define ENV_ONE (1 << 24)
 
 static const struct { const engine_t *e; const char *name; } ENGS[] = {
@@ -49,6 +51,11 @@ static const struct { const engine_t *e; const char *name; } ENGS[] = {
 };
 #define ENG_I_FMINI 6
 /* the Juno-106 (juno.c, D-090): host engine NENGS (the kit's 9), one FM-106 a track: these route to it */
+#include "bs2_hooks.h"
+#include "obervave_hooks.h"
+#define ENG_I_CF_VA (NENGS + 3)
+#define ENG_I_OBV (NENGS + 2)
+#define ENG_I_BS2 (NENGS + 1)
 #define ENG_I_JUNO NENGS
 int kit__juno_npresets(void);
 const char *kit__juno_preset_name(int p);
@@ -88,9 +95,11 @@ static int32_t pitch_of(int pt, int note)          /* 1/16 semitones: FMINI's pa
     return (n < 0 ? 0 : n > 127 ? 127 : n) * 16;
 }
 
-int kit__eng_count(void) { return NENGS + 1; }   /* and the Juno-106 */
+int kit__eng_count(void) { return NENGS + 4; }   /* Juno-106, BS2, OberVave and CoralFlower VA */
 int kit__eng_nactive(int pt)                        /* voices sounding (or releasing) on part pt */
 {
+    if (okp(pt) && kit__obv_on(pt)) return kit__obv_nactive(pt);
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_nactive(pt);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_nactive(pt);
     uint32_t i;
     int n = 0;
@@ -110,6 +119,8 @@ int kit__eng_active(void)
 }
 int kit__eng_has(int pt, int note)                  /* note sounding (gate on) on part pt */
 {
+    if (okp(pt) && kit__obv_on(pt)) return kit__obv_has(pt, note);
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_has(pt, note);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_has(pt, note);
     uint32_t i;
     if (!okp(pt))
@@ -121,6 +132,8 @@ int kit__eng_has(int pt, int note)                  /* note sounding (gate on) o
 }
 int kit__eng_steal(int pt)                          /* silence one voice of part pt: a releasing one, else the oldest */
 {
+    if (okp(pt) && kit__obv_on(pt)) return kit__obv_steal(pt);
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_steal(pt);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_steal(pt);
     voice_t *best = 0;
     uint32_t i;
@@ -141,6 +154,8 @@ int kit__eng_steal(int pt)                          /* silence one voice of part
 }
 int kit__eng_nreleasing(int pt)
 {
+    if (okp(pt) && kit__obv_on(pt)) return kit__obv_nreleasing(pt);
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_nreleasing(pt);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_nreleasing(pt);
     uint32_t i;
     int n = 0;
@@ -150,16 +165,49 @@ int kit__eng_nreleasing(int pt)
         n += trk[pt].v[i].active && !trk[pt].v[i].gate;
     return n;
 }
-int kit__eng_preset_mono(int i, int p)              /* the preset plays one note (a lead, a bass) */
+static const engine_t *engine_of(int i)
 {
-    return i >= 0 && i < NENGS && p >= 0 && p < ENGS[i].e->npresets ? ENGS[i].e->presets[p].mono : 0;
+    if (i == ENG_I_CF_VA) return &ENG_CF_VA;
+    return i >= 0 && i < NENGS ? ENGS[i].e : 0;
 }
-const char *kit__eng_name(int i) { return i == ENG_I_JUNO ? "Juno-106" : i >= 0 && i < NENGS ? ENGS[i].name : "?"; }
-int kit__eng_npresets(int i) { return i == ENG_I_JUNO ? kit__juno_npresets() : i >= 0 && i < NENGS ? ENGS[i].e->npresets : 0; }
+
+static const preset_t *engine_preset(int i, int p)
+{
+    const engine_t *engine = engine_of(i);
+    return engine && p >= 0 && p < engine->npresets ? &engine->presets[p] : 0;
+}
+
+int kit__eng_preset_mono(int i, int p)
+{
+    const preset_t *preset = engine_preset(i, p);
+    return preset ? preset->mono : 0;
+}
+
+const char *kit__eng_name(int i)
+{
+    if (i == ENG_I_CF_VA) return ENG_CF_VA.name;
+    if (i == ENG_I_OBV) return "OberVave";
+    if (i == ENG_I_BS2) return "Bass Something 2";
+    if (i == ENG_I_JUNO) return "Juno-106";
+    return i >= 0 && i < NENGS ? ENGS[i].name : "?";
+}
+
+int kit__eng_npresets(int i)
+{
+    if (i == ENG_I_OBV) return kit__obv_npresets();
+    if (i == ENG_I_BS2) return kit__bs2_npresets();
+    if (i == ENG_I_JUNO) return kit__juno_npresets();
+    const engine_t *engine = engine_of(i);
+    return engine ? engine->npresets : 0;
+}
+
 const char *kit__eng_preset_name(int i, int p)
 {
+    if (i == ENG_I_OBV) return kit__obv_preset_name(p);
+    if (i == ENG_I_BS2) return kit__bs2_preset_name(p);
     if (i == ENG_I_JUNO) return kit__juno_preset_name(p);
-    return i >= 0 && i < NENGS && p >= 0 && p < ENGS[i].e->npresets ? ENGS[i].e->presets[p].name : "?";
+    const preset_t *preset = engine_preset(i, p);
+    return preset ? preset->name : "?";
 }
 
 /* the caller holds the kit's lock */
@@ -170,6 +218,8 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     uint32_t k;
     if (!okp(pt))
         return;
+    kit__obv_select(pt, i == ENG_I_OBV ? p : -1);
+    kit__bs2_select(pt, i == ENG_I_BS2 ? p : -1);
     kit__juno_select(pt, i == ENG_I_JUNO ? p : -1);   /* the Juno (or none) */
     t = &trk[pt];
     P = &part[pt];
@@ -178,10 +228,10 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     memset(drw_v[pt], 0, sizeof drw_v[pt]);
     memset(P, 0, sizeof *P);
     fmx[pt] = 0;
-    if (i < 0 || i >= NENGS || p < 0 || p >= ENGS[i].e->npresets)
-        return;
-    P->cur = ENGS[i].e;
-    P->pre = &P->cur->presets[p];
+    P->pre = engine_preset(i, p);
+    if (!P->pre) return;
+    P->cur = engine_of(i);
+    if (i == ENG_I_CF_VA) kit_va_select((unsigned)pt, (unsigned)p);
     if (i == ENG_I_FMINI) {                         /* its patch and extras */
         memcpy(fmini_patch[pt], FMB_PATCH[p], FG_SIZE);
         fmx[pt] = &FMB_X[p];
@@ -200,6 +250,8 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
 
 void kit__eng_note_on(int pt, int note, int vel)
 {
+    if (okp(pt) && kit__obv_on(pt)) { kit__obv_note_on(pt, note, vel); return; }
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_note_on(pt, note, vel); return; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_note_on(pt, note, vel); return; }
     track_t *t;
     part_t *P;
@@ -276,6 +328,8 @@ static voice_t *mono_voice(track_t *t)          /* the part's sounding voice: ga
 
 int kit__eng_note_glide(int pt, int note, int vel, int from16, int glide_ms, int mono, int legato)
 {
+    if (okp(pt) && kit__obv_on(pt)) { kit__obv_note_on(pt, note, vel); return 1; }
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_note_on(pt, note, vel); return 1; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_note_on(pt, note, vel); return 1; }   /* (the Juno glides and stacks its own way) */
     track_t *t;
     voice_t *v;
@@ -329,6 +383,8 @@ int kit__eng_note_glide(int pt, int note, int vel, int from16, int glide_ms, int
 
 int kit__eng_retarget(int pt, int from_note, int note, int glide_ms)
 {
+    if (okp(pt) && kit__obv_on(pt)) return 0;
+    if (okp(pt) && kit__bs2_on(pt)) return 0;
     if (okp(pt) && kit__juno_on(pt)) return 0;
     voice_t *v;
     if (!okp(pt) || !part[pt].cur)
@@ -345,6 +401,8 @@ int kit__eng_retarget(int pt, int from_note, int note, int glide_ms)
 
 void kit__eng_note_off(int pt, int note)
 {
+    if (okp(pt) && kit__obv_on(pt)) { kit__obv_note_off(pt, note); return; }
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_note_off(pt, note); return; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_note_off(pt, note); return; }
     uint32_t i;
     if (!okp(pt))
@@ -360,6 +418,8 @@ void kit__eng_note_off(int pt, int note)
 
 void kit__eng_all_off(int pt)
 {
+    if (okp(pt) && kit__obv_on(pt)) { kit__obv_all_off(pt); return; }
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_all_off(pt); return; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_all_off(pt); return; }
     uint32_t i;
     if (!okp(pt))
@@ -462,8 +522,13 @@ static void render_part(int pt, int32_t *mix, int n)
             uint32_t base;
             if (!v->active)
                 continue;
-            a = x ? env_tick_fmini(P, v) : env_tick(P, v);
-            a = (a * v->vel) / 127;                 /* (FMINI too: on the FM-1 the velocity also carries the track's level) */
+            if (cur->ownenv && cur->done && cur->done(t, v)) {
+                v->active = 0;
+                v->stage = 0;
+                continue;
+            }
+            a = cur->ownenv ? 32767 : x ? env_tick_fmini(P, v) : env_tick(P, v);
+            if (!cur->ownenv) a = (a * v->vel) / 127;                 /* (FMINI too: on the FM-1 the velocity also carries the track's level) */
             if (x && x->mod[1])                     /* LFO -> amplitude */
                 a = mulq15(a, 32767 - mulq15((lfo + 32768) >> 1, x->mod[1] * 258));
             if (cur->amp)
@@ -484,7 +549,7 @@ static void render_part(int pt, int32_t *mix, int n)
             m.inc = base;
             m.amp0 = P->last_amp[k];
             m.amp1 = a;
-            m.envq15 = a;
+            m.envq15 = cur->ownenv ? 0 : a;
             m.cutoff = 0;
             m.shape = 64 << 8;
             P->last_amp[k] = a;
@@ -502,6 +567,13 @@ static void render_part(int pt, int32_t *mix, int n)
                 else if (o < -FM_KNEE) o = -FM_KNEE + ((o + FM_KNEE) >> 2);
                 mix[b + i] += o;
             }
+        } else if (cur == &ENG_CF_VA) {
+            for (i = 0; i < CTL; i++) {
+                int32_t value = out[i];
+                if (value > FM_KNEE) value = FM_KNEE + ((value - FM_KNEE) >> 2);
+                else if (value < -FM_KNEE) value = -FM_KNEE + ((value + FM_KNEE) >> 2);
+                mix[b + i] += value;
+            }
         } else
             for (i = 0; i < CTL; i++)
                 mix[b + i] += out[i];
@@ -511,7 +583,9 @@ static void render_part(int pt, int32_t *mix, int n)
 void kit__eng_render_part(int pt, int32_t *buf, int n)
 {
     if (!okp(pt)) return;
-    if (kit__juno_on(pt)) kit__juno_render(pt, buf, n);       /* D-090 */
+    if (kit__obv_on(pt)) kit__obv_render(pt, buf, n);
+    else if (kit__bs2_on(pt)) kit__bs2_render(pt, buf, n);
+    else if (kit__juno_on(pt)) kit__juno_render(pt, buf, n);       /* D-090 */
     else render_part(pt, buf, n);
 }
 
@@ -530,6 +604,7 @@ int kit__eng_fx(int pt, uint8_t sends[4], uint8_t bus12[12])
     int k;
     for (k = 0; k < 4; k++) sends[k] = 0;
     if (!okp(pt)) return 0;
+    if (kit__obv_on(pt)) { kit__obv_sends(pt, sends); return 0; }
     if (kit__juno_on(pt)) { kit__juno_sends(pt, sends); return 0; }
     if (!part[pt].pre) return 0;                 /* every engine's sound plays its preset's sends (the owner, D-094) */
     for (k = 0; k < 4; k++) sends[k] = part[pt].pre->fx[k] ? (uint8_t)(part[pt].pre->fx[k] - 1u) : FX_DEF[k];

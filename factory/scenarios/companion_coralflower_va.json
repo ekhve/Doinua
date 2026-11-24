@@ -1,0 +1,12 @@
+{
+  "scenario": "The Sound Browser selects each picked CoralFlower VA patch",
+  "name": "companion, ST-73: the Bass group selects CoralFlower Punch Bass",
+  "app": "companion",
+  "ms": 5000,
+  "keys": "1000:e6:+1,1400:e2:-2,2600:C4@100,3500:C4^",
+  "checks": [
+    {"type": "silence", "from": 850, "to": 2400},
+    {"type": "sound", "from": 2700, "to": 3350},
+    {"type": "screen", "at": 2860}
+  ]
+}

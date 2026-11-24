@@ -35,6 +35,8 @@ static int ar_level(char c) { return c == '2' ? 100 : c == '1' ? 72 : c == 'g' ?
 typedef struct { uint8_t on, latch, mode, rate, oct, gate, rhythm, ramp, pitch; } arp_t;
 static arp_t arps[KIT_NTRACKS] = { { 0, 0, 0, 3, 1, 2, 0, 0, 0 }, { 0, 0, 0, 3, 1, 2, 0, 0, 0 },
                                    { 0, 0, 0, 3, 1, 2, 0, 0, 0 }, { 0, 0, 0, 3, 1, 2, 0, 0, 0 } };
+static arp_t ar_before_factory[KIT_NTRACKS];
+static uint8_t ar_factory_gate[KIT_NTRACKS], ar_factory[KIT_NTRACKS];
 static int8_t ar_keys[16];                      /* the keys held, as pressed; then latched while latch is on */
 static uint8_t ar_vels[16];
 static int ar_nkeys, ar_nheld;                  /* keys in ar_keys; of those, held now (0 with latch: latched) */
@@ -123,6 +125,36 @@ static void ar_stop(void)                       /* nothing to play: what sounds 
 
 static void ar_clear(void) { ar_stop(); ar_nkeys = ar_nheld = 0; }
 
+static void ar_load_preset(int t, int engine, int preset)
+{
+    static const uint8_t modes[] = {0, 1, 2, 4, 5};
+    kit_preset_arp_t factory;
+    int rate;
+    if (!kit_preset_arp(engine, preset, &factory)) {
+        if (ar_factory[t]) {
+            if (t == ar_track) ar_clear();
+            arps[t] = ar_before_factory[t];
+            ar_factory[t] = ar_factory_gate[t] = 0;
+        }
+        return;
+    }
+    for (rate = 0; rate < AR_NRATES && AR_RTICKS[rate] != factory.ticks; ++rate) {}
+    if (rate == AR_NRATES) return;
+    if (t == ar_track) ar_clear();
+    int gate = 0, error = 12800;
+    for (int i = 0; i < AR_NGATES; ++i) {
+        int delta = AR_GATES[i] * 128 - factory.gate * 100;
+        if (delta < 0) delta = -delta;
+        if (delta < error) { gate = i; error = delta; }
+    }
+    if (!ar_factory[t]) ar_before_factory[t] = arps[t];
+    arps[t] = (arp_t){1, 0, modes[factory.mode], (uint8_t)rate, factory.octaves,
+                       (uint8_t)gate, 0, 0, 0};
+    ar_factory[t] = 1;
+    ar_factory_gate[t] = factory.gate;
+}
+
+
 static uint32_t ar_step_ms(void) { return 60000u * AR_RTICKS[arps[track].rate] / (24u * (uint32_t)(song.bpm ? song.bpm : 90)); }
 
 static void ar_play_step(uint32_t now)          /* one step of the rhythm: a note (or the chord, or a rest) */
@@ -132,7 +164,8 @@ static void ar_play_step(uint32_t now)          /* one step of the rhythm: a not
     ar_step++;
     if (!n || !lvl) return;
     {
-        uint32_t held = now - ar_hold_ms, off = now + ar_step_ms() * AR_GATES[a->gate] / 100u;
+        uint32_t held = now - ar_hold_ms, off = now + (ar_factory_gate[track] ? ar_step_ms() * ar_factory_gate[track] / 128u
+                                                           : ar_step_ms() * AR_GATES[a->gate] / 100u);
         int vel = (ar_nkeys ? ar_vels[0] : 100) * lvl / 100, cnt = a->mode == 10 && !is_drums() ? n : 1, first = 0;
         if (is_drums()) {                       /* note repeat: the ramp on the velocity, the pitch on the tune */
             int r = (int)(held / 10u);          /* centiseconds held */
@@ -237,7 +270,7 @@ static int ar_event(const kit_event_t *e)
         if (e->id == KIT_ENC_KNOB1) { v = is_drums() ? a->ramp : a->mode; clampi(&v, e->delta, 0, is_drums() ? 2 : AR_NMODES - 1); if (is_drums()) a->ramp = (uint8_t)v; else { a->mode = (uint8_t)v; ar_idx = 0; } }
         else if (e->id == KIT_ENC_KNOB2) { v = a->rate; clampi(&v, e->delta, 0, AR_NRATES - 1); a->rate = (uint8_t)v; }
         else if (e->id == KIT_ENC_KNOB3) { if (is_drums()) { v = a->pitch; clampi(&v, e->delta, 0, 2); a->pitch = (uint8_t)v; } else { v = a->oct; clampi(&v, e->delta, 1, 4); a->oct = (uint8_t)v; } }
-        else if (e->id == KIT_ENC_KNOB4) { v = a->gate; clampi(&v, e->delta, 0, AR_NGATES - 1); a->gate = (uint8_t)v; }
+        else if (e->id == KIT_ENC_KNOB4) { v = a->gate; clampi(&v, e->delta, 0, AR_NGATES - 1); a->gate = (uint8_t)v; ar_factory_gate[track] = 0; }
         else if (e->id == KIT_ENC_SELECT) { v = a->rhythm; clampi(&v, e->delta, 0, AR_NRHY - 1); a->rhythm = (uint8_t)v; ar_menu_until = kit_ms() + 1600u; }   /* R-306 */
         else return 0;                          /* PRESETS, ALGORITHM: as on any page */
         dirty = 1;
@@ -289,7 +322,8 @@ static void ar_draw(void)                       /* the ARP page, as the lab */
         if (i == 0) vl = is_drums() ? AR_RAMPS[a->ramp] : AR_MODES[a->mode];
         else if (i == 1) vl = AR_RATES[a->rate];
         else if (i == 2) { if (is_drums()) vl = AR_PITCHES[a->pitch]; else cat_int(v, a->oct); }
-        else cat(cat_int(v, AR_GATES[a->gate] > 95 ? 100 : AR_GATES[a->gate]), "%");
+        else cat(cat_int(v, ar_factory_gate[track] ? (ar_factory_gate[track] * 100 + 64) / 128
+                                                  : AR_GATES[a->gate] > 95 ? 100 : AR_GATES[a->gate]), "%");
         exp_card(i, lb, vl, 0);
         kit_round_rect(4 + i * 58, 26, 54, 30, 5, CARD);
         ctext(4 + i * 58 + 27, 34, lb, KIT_FONT_TINY, MUTED);

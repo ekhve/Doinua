@@ -1224,3 +1224,51 @@ Feature: ARP on every track (ST-77, ST-78)
     Given DRUMS with ARP on, RATE 1/32 and RAMP crescendo
     When the hat key is held
     Then the hat repeats in 32nds, getting louder
+
+Feature: Bass Something 2 (ST-92)
+
+  @D-095 @ST-92 @auto @gate:unit
+  Scenario: The Sound Browser selects each picked Bass Something 2 patch
+    Given the owner's eleven Bass Something 2 picks
+    When each sound is chosen in the Sound Browser
+    Then the track plays the matching upstream factory patch
+
+  @D-095 @ST-92 @auto @gate:unit
+  Scenario: Bass Something 2 plays one voice per track
+    Given two tracks with Bass Something 2 patches
+    When two keys overlap on one track while the other holds a note
+    Then the first track sounds one voice and the other keeps its note
+
+  @D-095 @ST-92 @auto
+  Scenario: Square Solo plays the selected note and releases it
+    Given Square Solo is selected with PRESETS
+    When C4 is pressed and released
+    Then C4 sounds within 15 cents and its release ends in silence
+
+Feature: OberVave (ST-72)
+
+  @D-096 @ST-72 @auto
+  Scenario: OberVave Sync Lead sounds when played
+    Given Sync Lead is selected with PRESETS
+    When C4 is pressed
+    Then the selected preset sounds
+
+  @D-097 @ST-72 @auto
+  Scenario: Selecting Shadow Arp enables the track arpeggiator
+    Given the Sound Browser is open on the track's sounds
+    When Shadow Arp is selected and C4 is held
+    Then the track plays its factory arpeggio
+
+Feature: CoralFlower VA (ST-73)
+
+  @D-098 @ST-73 @auto
+  Scenario: CoralFlower Punch Bass sounds when played
+    Given Punch Bass is selected with PRESETS
+    When C4 is pressed
+    Then the selected preset sounds
+
+  @D-098 @ST-73 @auto @gate:unit
+  Scenario: The Sound Browser selects each picked CoralFlower VA patch
+    Given the nine selected CoralFlower sounds in the browser
+    When a selected sound is loaded
+    Then the matching CoralFlower factory patch is used
