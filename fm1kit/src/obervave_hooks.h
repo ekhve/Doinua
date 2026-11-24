@@ -13,3 +13,4 @@ int kit__obv_nreleasing(int t);
 int kit__obv_has(int t, int note);
 int kit__obv_steal(int t);
 void kit__obv_render(int t, int32_t *mix, int n);
+void kit__obv_sends(int t, uint8_t sends[4]);

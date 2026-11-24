@@ -558,6 +558,7 @@ int kit__eng_fx(int pt, uint8_t sends[4], uint8_t bus12[12])
     int k;
     for (k = 0; k < 4; k++) sends[k] = 0;
     if (!okp(pt)) return 0;
+    if (kit__obv_on(pt)) { kit__obv_sends(pt, sends); return 0; }
     if (kit__juno_on(pt)) { kit__juno_sends(pt, sends); return 0; }
     if (!part[pt].pre) return 0;                 /* every engine's sound plays its preset's sends (the owner, D-094) */
     for (k = 0; k < 4; k++) sends[k] = part[pt].pre->fx[k] ? (uint8_t)(part[pt].pre->fx[k] - 1u) : FX_DEF[k];

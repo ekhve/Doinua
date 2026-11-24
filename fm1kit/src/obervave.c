@@ -206,3 +206,16 @@ void kit__obv_render(int track, int32_t *mix, int count)
         *mix++ += state->samples[state->cursor++];
     }
 }
+
+
+/* The filter stage already applies OberVave's drive. Feed its three wet
+ * levels into Doinua's existing shared chorus, delay and reverb returns. */
+void kit__obv_sends(int track, uint8_t sends[4])
+{
+    if (!kit__obv_on(track)) return;
+    const uint8_t *params = tracks[track].params;
+    sends[0] = 0;
+    sends[1] = params[P_CHO_MIX];
+    sends[2] = params[P_DLY_MIX];
+    sends[3] = params[P_REV_MIX];
+}
