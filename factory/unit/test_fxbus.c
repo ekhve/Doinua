@@ -58,6 +58,27 @@ int main(void)
     for (i = N - FS / 2; i < N; i++) late |= out[i];
     CHECK(!late, "and it ends: silence half a second before the end (no DC, no hum)");
 
+    CHECK(kit_delay_tone_of() == 127, "the delay starts with its type's original tone");
+    {
+        int tones[] = { 0, 126 };
+        int echo[2] = { 0, 0 };
+        int setting;
+        for (setting = 0; setting < 2; setting++) {
+            kit_delay_tone(tones[setting]);
+            CHECK(kit_delay_tone_of() == tones[setting], "delay tone reads back");
+            run(0, in, N);
+            CHECK(out[100] == 30000, "setting delay tone leaves the dry signal unchanged");
+            for (i = 100 + dn - 4; i < 100 + dn + 8; i++) {
+                int a = abs(out[i]);
+                if (a > echo[setting]) echo[setting] = a;
+            }
+        }
+        CHECK(echo[0] > 0 && echo[0] < echo[1], "dark tone softens the impulse echo (%d < %d)", echo[0], echo[1]);
+        kit_delay_tone(127);
+        run(0, in, N);
+        CHECK(abs(out[at1]) == peak1, "type tone restores the original impulse echo");
+    }
+
     kit_track_sends(0, 127, 0, 0, 0);
     for (i = 0; i < N; i++) in[i] = i < FS / 2 ? ((i / 50) & 1 ? 32767 : -32767) : 0;
     memset(out, 0, sizeof out);

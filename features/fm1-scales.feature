@@ -1182,6 +1182,13 @@ Feature: fmini-1's Minimoog engine (ST-70)
     Then it sounds below the mix's clip and ends after its release, and a fifth note on LUSH STRINGS takes the oldest
 
 Feature: The effects bus (ST-69)
+
+  @D-102 @ST-69 @auto @gate:unit
+  Scenario: Delay tone softens the echo
+    Given the delay receives a short impulse
+    When its tone is changed from brightest to darkest
+    Then the first echo has a lower peak at the same delay time
+    And the dry impulse keeps its level
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus
