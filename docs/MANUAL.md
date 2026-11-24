@@ -522,6 +522,10 @@ playing after you let go, until you hold new ones. While ARP is on, the keys fee
 On **CHORDS** each key arpeggiates its chord. On **DRUMS** ARP is note repeat: hold a sound and it repeats at RATE; K1
 RAMP makes it grow or fade, K3 PITCH makes it rise or fall. REC records what ARP plays.
 
+Selecting an FMini patch with a factory arpeggio turns on the track's ARP with its factory settings. It follows the
+song's tempo and keeps the preset's octave span, gate, swing and note order, including repeat and up + oct where used.
+Selecting a sound without a factory arpeggio restores the track's previous ARP settings.
+
 ## 9d. Your song is kept
 
 Switch the FM-1 off and on and your song is there: every sequence, the song's order, each track's sound, GRID and

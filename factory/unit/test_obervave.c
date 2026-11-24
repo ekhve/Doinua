@@ -43,7 +43,7 @@ int main(void)
     assert(kit__obv_npresets() == 19);
     for (int preset = 0; preset < kit__obv_npresets(); ++preset) {
         kit_preset_arp_t arp;
-        if (kit_preset_arp(KIT_ENGINE_OBERVAVE, preset, &arp)) {
+        if (kit__obv_preset_arp(preset, &arp)) {
             assert(next < sizeof expected / sizeof expected[0]);
             assert(strcmp(kit__obv_preset_name(preset), expected[next].name) == 0);
             assert(arp.mode == expected[next].mode && arp.ticks == expected[next].ticks);

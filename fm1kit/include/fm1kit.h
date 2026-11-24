@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 40
+#define FM1KIT_API 41
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -163,9 +163,14 @@ void kit_drum_pad_set(int track, int pad, int kit, int src, int tune, int decay)
 enum { KIT_TRACK_CHORDS = 0, KIT_TRACK_BASS, KIT_TRACK_MELODY, KIT_TRACK_DRUMS, KIT_NTRACKS };
 #define KIT_CPU_LIMIT 75        /* % of the CPU the voices may take (API 35, D-091: the cpu gate's limit is 80) */
 void kit_track_sound(int track, int engine, int preset);   /* stops what the track sounds, then switches */
-/* Factory arpeggio metadata. Mode is up/down/up-down/as played/random (0..4),
- * ticks are at 24 per quarter, and gate is a fraction of 128. */
-typedef struct { uint8_t mode, ticks, octaves, gate; } kit_preset_arp_t;
+/* Factory arpeggio metadata. Ticks are at 24 per quarter. Gate is a fraction of 128.
+ * Swing is 0..100; probability is 0..127 (127 always plays). */
+enum {
+    KIT_PRESET_ARP_UP, KIT_PRESET_ARP_DOWN, KIT_PRESET_ARP_UP_DOWN,
+    KIT_PRESET_ARP_AS_PLAYED, KIT_PRESET_ARP_RANDOM, KIT_PRESET_ARP_REPEAT,
+    KIT_PRESET_ARP_UP_OCTAVE, KIT_PRESET_ARP_DIVERGE
+};
+typedef struct { uint8_t mode, ticks, octaves, gate, swing, probability; } kit_preset_arp_t;
 int kit_preset_arp(int engine, int preset, kit_preset_arp_t *arp); /* 0 if no factory arp */
 
 /* API 26 (D-067): a track's level, 0..10 (10 at start), a mixer's fader: each note the track starts plays at its
@@ -289,6 +294,7 @@ void kit_seq_metronome(int level);
 void kit_seq_count_in(kit_song_t *s, int bars, int level);
 int kit_seq_counting(void);
 int kit_seq_playing(void);
+int kit_seq_tick_fine(void);                                 /* sixteenths of a song tick, -1 when stopped */
 int kit_seq_tick(void);                                      /* where the song is (ticks), -1 when stopped */
 void kit_seq_record(int track);                              /* record into track while playing; -1: no */
 void kit_seq_note_on(int track, int note, int vel);          /* play a note, and record it when armed */

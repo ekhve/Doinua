@@ -1272,3 +1272,11 @@ Feature: CoralFlower VA (ST-73)
     Given the nine selected CoralFlower sounds in the browser
     When a selected sound is loaded
     Then the matching CoralFlower factory patch is used
+
+Feature: FMini factory arpeggios (ST-77)
+
+  @D-099 @ST-77 @auto @gate:unit
+  Scenario: FMini Pluck Arp plays through the track arpeggiator
+    Given Pluck Arp is selected for the melody track
+    When C4 is held
+    Then the track plays the factory's up-down pattern across its three octaves

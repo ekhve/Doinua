@@ -57,8 +57,49 @@ static int find(const char *name)
     return -1;
 }
 
+static void check_factory_arp(void)
+{
+    static const struct { int preset; uint8_t mode, ticks, octaves, gate, swing; } expected[] = {
+        {0, KIT_PRESET_ARP_UP_DOWN, 6, 3, 64, 0},
+        {6, KIT_PRESET_ARP_UP_DOWN, 12, 1, 64, 0},
+        {14, KIT_PRESET_ARP_UP_DOWN, 8, 2, 102, 0},
+        {16, KIT_PRESET_ARP_UP_DOWN, 12, 2, 89, 10},
+        {19, KIT_PRESET_ARP_UP_OCTAVE, 12, 1, 70, 0},
+        {20, KIT_PRESET_ARP_AS_PLAYED, 6, 1, 44, 25},
+        {23, KIT_PRESET_ARP_DIVERGE, 12, 2, 114, 0},
+        {27, KIT_PRESET_ARP_UP_DOWN, 6, 2, 57, 0},
+        {28, KIT_PRESET_ARP_UP, 6, 3, 64, 0},
+        {29, KIT_PRESET_ARP_UP_DOWN, 12, 2, 38, 0},
+        {30, KIT_PRESET_ARP_UP, 3, 4, 114, 0},
+        {36, KIT_PRESET_ARP_REPEAT, 48, 1, 95, 0},
+        {39, KIT_PRESET_ARP_UP, 6, 2, 57, 0},
+        {40, KIT_PRESET_ARP_UP, 6, 1, 64, 0},
+        {47, KIT_PRESET_ARP_UP, 6, 1, 64, 0},
+        {49, KIT_PRESET_ARP_UP, 6, 1, 64, 0},
+        {50, KIT_PRESET_ARP_UP, 6, 1, 64, 0},
+        {55, KIT_PRESET_ARP_UP, 6, 1, 64, 0},
+        {64, KIT_PRESET_ARP_UP, 6, 1, 64, 0},
+    };
+    unsigned next = 0, count = sizeof expected / sizeof expected[0];
+    for (int preset = 0; preset < kit__eng_npresets(E); ++preset) {
+        kit_preset_arp_t actual;
+        int enabled = kit_preset_arp(KIT_ENGINE_FMINI, preset, &actual);
+        int want = next < count && expected[next].preset == preset;
+        CHECK(enabled == want, "factory ARP enable for FMini preset %d", preset);
+        if (enabled && want) {
+            CHECK(actual.mode == expected[next].mode && actual.ticks == expected[next].ticks &&
+                  actual.octaves == expected[next].octaves && actual.gate == expected[next].gate &&
+                  actual.swing == expected[next].swing && actual.probability == 127,
+                  "factory ARP settings for FMini preset %d", preset);
+        }
+        next += want;
+    }
+    CHECK(next == count, "all selected FMini factory arpeggios checked");
+}
+
 int main(void)
 {
+    check_factory_arp();
     int p, i, sine = find("SINE SOLO"), pad = find("LUSH STRINGS");
     double r, f;
     int32_t pk;
