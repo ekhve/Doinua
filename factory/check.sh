@@ -21,7 +21,7 @@ mkdir -p "$ROOT/work/unit"
 for t in "$ROOT"/factory/unit/test_*.c; do
     n="$(basename "$t" .c)"
     m="${n#test_}"; m="${m%%_*}"                 # test_<module>[_...].c is linked with fm1kit/src/<module>.c
-    x=""; [ "$m" = engines ] && x="$ROOT/fm1kit/src/juno.c $ROOT/fm1kit/src/fxbus.c"   # the Juno-106 (D-090), the bus (D-093)
+    x=""; [ "$m" = engines ] && x="$ROOT/fm1kit/src/bs2.c $ROOT/fm1kit/src/juno.c $ROOT/fm1kit/src/fxbus.c"   # the Juno-106 (D-090), the bus (D-093)
     [ "$m" = synth ] && x="$ROOT/fm1kit/src/fxbus.c"           # the effects bus (D-093)
     cc -Wall -Wextra -O1 -I"$ROOT/fm1kit/include" -I"$ROOT/fm1kit/src" -I"$ROOT/build/gen" -I"$ROOT/third_party/felucca-engines/src" "$t" "$ROOT/fm1kit/src/$m.c" $x -lm -o "$ROOT/work/unit/$n"
     "$ROOT/work/unit/$n"

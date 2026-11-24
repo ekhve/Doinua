@@ -49,6 +49,8 @@ static const struct { const engine_t *e; const char *name; } ENGS[] = {
 };
 #define ENG_I_FMINI 6
 /* the Juno-106 (juno.c, D-090): host engine NENGS (the kit's 9), one FM-106 a track: these route to it */
+#include "bs2_hooks.h"
+#define ENG_I_BS2 (NENGS + 1)
 #define ENG_I_JUNO NENGS
 int kit__juno_npresets(void);
 const char *kit__juno_preset_name(int p);
@@ -88,9 +90,10 @@ static int32_t pitch_of(int pt, int note)          /* 1/16 semitones: FMINI's pa
     return (n < 0 ? 0 : n > 127 ? 127 : n) * 16;
 }
 
-int kit__eng_count(void) { return NENGS + 1; }   /* and the Juno-106 */
+int kit__eng_count(void) { return NENGS + 2; }   /* Juno-106 and BS2 */
 int kit__eng_nactive(int pt)                        /* voices sounding (or releasing) on part pt */
 {
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_nactive(pt);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_nactive(pt);
     uint32_t i;
     int n = 0;
@@ -110,6 +113,7 @@ int kit__eng_active(void)
 }
 int kit__eng_has(int pt, int note)                  /* note sounding (gate on) on part pt */
 {
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_has(pt, note);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_has(pt, note);
     uint32_t i;
     if (!okp(pt))
@@ -121,6 +125,7 @@ int kit__eng_has(int pt, int note)                  /* note sounding (gate on) o
 }
 int kit__eng_steal(int pt)                          /* silence one voice of part pt: a releasing one, else the oldest */
 {
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_steal(pt);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_steal(pt);
     voice_t *best = 0;
     uint32_t i;
@@ -141,6 +146,7 @@ int kit__eng_steal(int pt)                          /* silence one voice of part
 }
 int kit__eng_nreleasing(int pt)
 {
+    if (okp(pt) && kit__bs2_on(pt)) return kit__bs2_nreleasing(pt);
     if (okp(pt) && kit__juno_on(pt)) return kit__juno_nreleasing(pt);
     uint32_t i;
     int n = 0;
@@ -154,10 +160,11 @@ int kit__eng_preset_mono(int i, int p)              /* the preset plays one note
 {
     return i >= 0 && i < NENGS && p >= 0 && p < ENGS[i].e->npresets ? ENGS[i].e->presets[p].mono : 0;
 }
-const char *kit__eng_name(int i) { return i == ENG_I_JUNO ? "Juno-106" : i >= 0 && i < NENGS ? ENGS[i].name : "?"; }
-int kit__eng_npresets(int i) { return i == ENG_I_JUNO ? kit__juno_npresets() : i >= 0 && i < NENGS ? ENGS[i].e->npresets : 0; }
+const char *kit__eng_name(int i) { return i == ENG_I_BS2 ? "Bass Something 2" : i == ENG_I_JUNO ? "Juno-106" : i >= 0 && i < NENGS ? ENGS[i].name : "?"; }
+int kit__eng_npresets(int i) { return i == ENG_I_BS2 ? kit__bs2_npresets() : i == ENG_I_JUNO ? kit__juno_npresets() : i >= 0 && i < NENGS ? ENGS[i].e->npresets : 0; }
 const char *kit__eng_preset_name(int i, int p)
 {
+    if (i == ENG_I_BS2) return kit__bs2_preset_name(p);
     if (i == ENG_I_JUNO) return kit__juno_preset_name(p);
     return i >= 0 && i < NENGS && p >= 0 && p < ENGS[i].e->npresets ? ENGS[i].e->presets[p].name : "?";
 }
@@ -170,6 +177,7 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     uint32_t k;
     if (!okp(pt))
         return;
+    kit__bs2_select(pt, i == ENG_I_BS2 ? p : -1);
     kit__juno_select(pt, i == ENG_I_JUNO ? p : -1);   /* the Juno (or none) */
     t = &trk[pt];
     P = &part[pt];
@@ -200,6 +208,7 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
 
 void kit__eng_note_on(int pt, int note, int vel)
 {
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_note_on(pt, note, vel); return; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_note_on(pt, note, vel); return; }
     track_t *t;
     part_t *P;
@@ -276,6 +285,7 @@ static voice_t *mono_voice(track_t *t)          /* the part's sounding voice: ga
 
 int kit__eng_note_glide(int pt, int note, int vel, int from16, int glide_ms, int mono, int legato)
 {
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_note_on(pt, note, vel); return 1; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_note_on(pt, note, vel); return 1; }   /* (the Juno glides and stacks its own way) */
     track_t *t;
     voice_t *v;
@@ -329,6 +339,7 @@ int kit__eng_note_glide(int pt, int note, int vel, int from16, int glide_ms, int
 
 int kit__eng_retarget(int pt, int from_note, int note, int glide_ms)
 {
+    if (okp(pt) && kit__bs2_on(pt)) return 0;
     if (okp(pt) && kit__juno_on(pt)) return 0;
     voice_t *v;
     if (!okp(pt) || !part[pt].cur)
@@ -345,6 +356,7 @@ int kit__eng_retarget(int pt, int from_note, int note, int glide_ms)
 
 void kit__eng_note_off(int pt, int note)
 {
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_note_off(pt, note); return; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_note_off(pt, note); return; }
     uint32_t i;
     if (!okp(pt))
@@ -360,6 +372,7 @@ void kit__eng_note_off(int pt, int note)
 
 void kit__eng_all_off(int pt)
 {
+    if (okp(pt) && kit__bs2_on(pt)) { kit__bs2_all_off(pt); return; }
     if (okp(pt) && kit__juno_on(pt)) { kit__juno_all_off(pt); return; }
     uint32_t i;
     if (!okp(pt))
@@ -511,7 +524,8 @@ static void render_part(int pt, int32_t *mix, int n)
 void kit__eng_render_part(int pt, int32_t *buf, int n)
 {
     if (!okp(pt)) return;
-    if (kit__juno_on(pt)) kit__juno_render(pt, buf, n);       /* D-090 */
+    if (kit__bs2_on(pt)) kit__bs2_render(pt, buf, n);
+    else if (kit__juno_on(pt)) kit__juno_render(pt, buf, n);       /* D-090 */
     else render_part(pt, buf, n);
 }
 

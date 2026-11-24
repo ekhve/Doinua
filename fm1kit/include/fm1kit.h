@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 36
+#define FM1KIT_API 37
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -133,6 +133,7 @@ enum {
 #define KIT_ENGINE_BASIC 0
 #define KIT_ENGINE_DRUMS 7
 #define KIT_ENGINE_FMINI 8              /* API 32 (D-086): fmini-1's Minimoog engine, the owner's 66 picks */
+#define KIT_ENGINE_BS2 10               /* API 37: Bass Something 2 (ST-92) */
 #define KIT_ENGINE_JUNO 9               /* API 34 (D-090): FM-106's Juno-106 engine, the owner's 28 picks */
 #define KIT_DRUM_KITS 4
 #define KIT_DRUM_PADS 27
