@@ -469,6 +469,13 @@ implement all sounds".)
 | R-319 | When a note is played with Sync Lead selected, the firmware shall sound OberVave Sync Lead. | D-096, ST-72, UC-07 | A | Draft | OberVave Sync Lead sounds when played |
 | R-320 | When Shadow Arp is selected, the firmware shall enable the track arpeggiator with the factory settings. | D-097, ST-72, UC-07 | A | Draft | Selecting Shadow Arp enables the track arpeggiator |
 
+**CoralFlower VA (ST-73, Draft)**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-321 | When a note is played with Punch Bass selected, the firmware shall sound CoralFlower Punch Bass. | D-098, ST-73, UC-07 | A | Draft | CoralFlower Punch Bass sounds when played |
+| R-322 | When a CoralFlower VA sound is chosen, the companion app shall select its matching factory patch. | D-098, ST-73, UC-07 | A | Draft | The Sound Browser selects each picked CoralFlower VA patch |
+
 **FM-106's Juno-106 engine (ST-71b)** (D-090; drafts for the owner, from "Let's go with the other engines!", 2026-11-22.)
 
 | ID | Requirement | Source | Mode | Status | Verified by |

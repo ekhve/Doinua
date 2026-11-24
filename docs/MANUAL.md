@@ -489,7 +489,7 @@ Bass, MELODY on Lead). PRESETS goes through the sounds one at a time, and on int
 While the list shows, **K1** jumps a whole group (K1 GROUP), back to the sound you were on in it. Play the keys to hear a
 sound: the list stays open while a key is held, and closes by itself 2 seconds after you stop turning or playing (or
 press HOME). The list holds the sounds you picked in the audition, as their engines arrive: now FMini's 66, the Juno-106's 28
-(FM-106's engine), the 11 Bass Something 2 patches and five of ours. The DRUMS track's PRESETS still chooses its kit.
+(FM-106's engine), the 11 Bass Something 2 patches, 19 OberVave programs, nine CoralFlower VA sounds and five of ours. The DRUMS track's PRESETS still chooses its kit.
 
 ### Effects
 

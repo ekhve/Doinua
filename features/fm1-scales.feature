@@ -1258,3 +1258,17 @@ Feature: OberVave (ST-72)
     Given the Sound Browser is open on the track's sounds
     When Shadow Arp is selected and C4 is held
     Then the track plays its factory arpeggio
+
+Feature: CoralFlower VA (ST-73)
+
+  @D-098 @ST-73 @auto
+  Scenario: CoralFlower Punch Bass sounds when played
+    Given Punch Bass is selected with PRESETS
+    When C4 is pressed
+    Then the selected preset sounds
+
+  @D-098 @ST-73 @auto @gate:unit
+  Scenario: The Sound Browser selects each picked CoralFlower VA patch
+    Given the nine selected CoralFlower sounds in the browser
+    When a selected sound is loaded
+    Then the matching CoralFlower factory patch is used

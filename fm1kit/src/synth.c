@@ -189,6 +189,8 @@ void kit_track_sound(int t, int e, int p)
     kit__eng_select(t, eng_of(e), p);
     if (e == KIT_ENGINE_FMINI)                      /* API 32: an FMini sound brings its own way of playing (MONO legato or POLY) */
         tr_vmode[t] = (uint8_t)(kit__eng_preset_mono(eng_of(e), p) ? KIT_VMODE_LEGATO : KIT_VMODE_POLY);
+    if (e == KIT_ENGINE_CF_VA)
+        tr_vmode[t] = (uint8_t)(kit__eng_preset_mono(eng_of(e), p) ? KIT_VMODE_MONO : KIT_VMODE_POLY);
     tr_engine[t] = e;
     tr_preset[t] = p;
     kit__unlock(k);
@@ -236,7 +238,7 @@ static int has_note(int t, int note)
 /* each engine's CPU per voice, tenths of %: measured on the cycle-modelled emulator (factory/cpu.py), the heaviest
  * preset of each: Basic, Analog, Phase, Lo-fi, Trio, Organ wheel, Noise, Drums, FMini, Juno-106 */
 static const uint8_t VOICE_COST[] = { 23, 46, 43, 21, 53, 53, 44, 20,   /* Drums: the layered kits (D-053), two thirds of a Basic voice at their heaviest, rounded up */
-                                        92, 98, 220, 200 };                        /* FMini (SOLINA), the Juno (Synth Pad): D-091 */
+                                        92, 98, 220, 200, 120 };                        /* FMini (SOLINA), the Juno (Synth Pad): D-091 */
 #define BASE_COST 100                           /* the FM-1 idle, tenths of % */
 #define PART_COST 30                            /* a track with voices sounding: its per-block work */
 #define JUNO_PART_COST 150                      /* .. the Juno's: its LFO, HPF, VCA and chorus run on every sample (D-091) */

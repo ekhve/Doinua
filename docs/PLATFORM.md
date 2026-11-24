@@ -146,6 +146,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-095 | API 37 adds KIT_ENGINE_BS2 after Juno, preserving the saved engine numbers. Each track has its own mono voice and selects one of the eleven ST-92 factory patches. | Work order ST-92; engine number and per-track storage decided by the agent. |
 | D-096 | API 38 appends OberVave as engine 11 so saved engine numbers stay stable. Its programs use the pinned OberVave voice code and factory bank (ST-72). | Factory lead, 2026-11-24 |
 | D-097 | API 39 reads a preset's factory arpeggio. Companion maps the OberVave programs to the existing track ARP (D-088) and preserves their gate fractions until K4 changes them. | Factory lead, 2026-11-24 |
+| D-098 | API 40 appends CoralFlower VA as engine 12 and preserves all saved engine IDs. The nine ST-73 factory patches use the CoralFlower 46790b9 voice renderer and their own sends on the shared effects bus. Punch Bass is mono. The kit budgets 12 CPU percentage points per VA voice to cover the heaviest measured chord. | Work order ST-73. Engine ID and routing decided by the factory lead, 2026-11-24. |
 
 ## Known gaps (next)
 

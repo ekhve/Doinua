@@ -89,6 +89,7 @@ People do three things: approve the spec, approve the screens (`run.py --approve
 ## Licence
 
 The selected OberVave factory programs in `fm1kit/src/obervave/bank.h` come from [OberVave 3.5.2](https://github.com/zvenson/obervave/tree/a1f660c), GPL-3.0-only.
+The CoralFlower VA engine and nine selected factory patches in `fm1kit/src/coralflower/` come from [CoralFlower](https://github.com/FicusFicusov/CoralFlower/tree/46790b9), GPL-3.0-only.
 
 GPL-3.0-only (`LICENSE`). `fm1kit/src/device.c` and `fm1kit/app.ld` are derived from felucca-bsp, so
 they stay MPL-2.0. The Inter Tight font is SIL OFL 1.1 (`assets/fonts/OFL.txt`). The FMini engine (`fm1kit/src/fmini/`) is fmini-1's (GPL-3.0-only, https://github.com/ruppert/fmini-1), ported (D-086). The Juno-106 engine (`fm1kit/src/juno/`) is FM-106's (GPL-3.0-only, https://github.com/PatttF/fm-106), ported (D-090). The selected Bass Something 2 patch data (`fm1kit/src/bs2/`) comes from John Brown’s MPL-2.0 factory bank (https://github.com/imijes/bass-something-2, 4c8a82f). Each package carries
