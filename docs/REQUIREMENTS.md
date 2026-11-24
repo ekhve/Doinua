@@ -469,6 +469,26 @@ implement all sounds".)
 | R-319 | When a note is played with Sync Lead selected, the firmware shall sound OberVave Sync Lead. | D-096, ST-72, UC-07 | A | Draft | OberVave Sync Lead sounds when played |
 | R-320 | When Shadow Arp is selected, the firmware shall enable the track arpeggiator with the factory settings. | D-097, ST-72, UC-07 | A | Draft | Selecting Shadow Arp enables the track arpeggiator |
 
+**CoralFlower VA (ST-73, Draft)**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-321 | When a note is played with Punch Bass selected, the firmware shall sound CoralFlower Punch Bass. | D-098, ST-73, UC-07 | A | Draft | CoralFlower Punch Bass sounds when played |
+| R-322 | When a CoralFlower VA sound is chosen, the companion app shall select its matching factory patch. | D-098, ST-73, UC-07 | A | Draft | The Sound Browser selects each picked CoralFlower VA patch |
+
+**FMini factory arpeggios (ST-77, Draft)**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-323 | When a chosen FMini patch has its factory arpeggiator enabled, the companion app shall play that pattern using the track's arpeggiator. | D-099, ST-77, UC-07 | A | Draft | FMini Pluck Arp plays through the track arpeggiator |
+
+**Softer game sounds (ST-93, Draft)**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-324 | When Unicorn Jump plays the first three notes of Twinkle Twinkle in Listen mode, the companion app shall keep the mix peak at or below −10 dBFS. | D-100, UC-18, ST-93 | A | Draft | In Unicorn Jump PLAY runs the song by itself, each fence's key lit as its note sounds |
+| R-325 | When the Night Train whistles and plays the first note of Funiculì with music off, the companion app shall keep the mix peak at or below −20 dBFS. | D-100, UC-18, ST-93 | A | Draft | K3 changes the train's song to Funiculì, funiculà |
+
 **Clean Punch (ST-94, Draft).**
 
 | ID | Requirement | Source | Mode | Status | Verified by |

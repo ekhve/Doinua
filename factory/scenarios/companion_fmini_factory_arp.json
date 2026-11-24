@@ -1,0 +1,12 @@
+{
+  "scenario": "FMini Pluck Arp plays through the track arpeggiator",
+  "name": "companion, ST-77: Pluck Arp plays its factory pattern on the melody track",
+  "app": "companion",
+  "ms": 5800,
+  "keys": "900:e1:+2,1000:e6:+1,1200:e2:+6,1400:e6:+2,4000:C4@100,5200:C4^",
+  "checks": [
+    {"type": "silence", "from": 850, "to": 3900},
+    {"type": "sound", "from": 4050, "to": 5120},
+    {"type": "screen", "at": 4300}
+  ]
+}

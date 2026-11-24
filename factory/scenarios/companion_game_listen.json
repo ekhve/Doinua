@@ -25,6 +25,12 @@
       }
     },
     {
+      "type": "peak",
+      "from": 4250,
+      "to": 6320,
+      "max_dbfs": -10.0
+    },
+    {
       "type": "screen",
       "at": 6025
     }

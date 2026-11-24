@@ -489,7 +489,7 @@ Bass, MELODY on Lead). PRESETS goes through the sounds one at a time, and on int
 While the list shows, **K1** jumps a whole group (K1 GROUP), back to the sound you were on in it. Play the keys to hear a
 sound: the list stays open while a key is held, and closes by itself 2 seconds after you stop turning or playing (or
 press HOME). The list holds the sounds you picked in the audition, as their engines arrive: now FMini's 66, the Juno-106's 28
-(FM-106's engine), the 11 Bass Something 2 patches and five of ours. The DRUMS track's PRESETS still chooses its kit.
+(FM-106's engine), the 11 Bass Something 2 patches, 19 OberVave programs, nine CoralFlower VA sounds and five of ours. The DRUMS track's PRESETS still chooses its kit.
 
 **Clean Punch**, at the end of Bass, is an original dry mono preset with a sine sub and a short glide between
 overlapping notes.
@@ -524,6 +524,10 @@ playing after you let go, until you hold new ones. While ARP is on, the keys fee
 
 On **CHORDS** each key arpeggiates its chord. On **DRUMS** ARP is note repeat: hold a sound and it repeats at RATE; K1
 RAMP makes it grow or fade, K3 PITCH makes it rise or fall. REC records what ARP plays.
+
+Selecting an FMini patch with a factory arpeggio turns on the track's ARP with its factory settings. It follows the
+song's tempo and keeps the preset's octave span, gate, swing and note order, including repeat and up + oct where used.
+Selecting a sound without a factory arpeggio restores the track's previous ARP settings.
 
 ## 9d. Your song is kept
 

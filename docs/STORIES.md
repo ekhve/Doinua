@@ -100,6 +100,7 @@ requirements (`REQUIREMENTS.md`). On the board, a story is raised as a Story iss
 | ST-89 | As a producer, I want my song kept when the FM-1 is switched off, so that I carry on tomorrow. | song storage (with #26) | UC-04 | built (D-085) |
 | ST-90 | As a producer, I want punch-in effects (stutter, filter, reverb and delay throws, crush) on all tracks or on one, recorded with the song, so that I perform a beat. | FX: punch-in on PERFORM | UC-10, UC-20 | backlog, drafts for the owner (REQUIREMENTS-PLANNED.md) |
 | ST-91 | As anyone, I want GLO held to explain the page I am on, and every page to show the sequence REC records into, so that the screens can stay simple without leaving me lost. | help and the top line | all | backlog, drafts for the owner (REQUIREMENTS-PLANNED.md) |
+| ST-93 | As a player, I want Unicorn Jump and the Night Train to sound softer so their music and effects are less strident. | November work order, D-100 | UC-18 | in progress |
 
 **Cross-track hints (ST-12, the owner, 2026-11-08).** What one track has recorded helps the next: recorded chords light
 their root on the bass keys at their moment, and later the chord's notes on the melody keys and the bass's notes on the
