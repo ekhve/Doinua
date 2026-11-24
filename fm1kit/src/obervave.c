@@ -200,7 +200,8 @@ void kit__obv_render(int track, int32_t *mix, int count)
                 obv_voice_render(&slot->voice.render, &state->part.render, stereo);
             }
             for (unsigned i = 0; i < OBV_CONTROL_FRAMES; ++i)
-                state->samples[i] = (stereo[2 * i] + stereo[2 * i + 1]) >> 1;
+                /* Sum the stereo pair to match the kit's mono playback level. */
+                state->samples[i] = stereo[2 * i] + stereo[2 * i + 1];
             state->cursor = 0;
         }
         *mix++ += state->samples[state->cursor++];

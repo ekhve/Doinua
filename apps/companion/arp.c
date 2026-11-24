@@ -35,6 +35,7 @@ static int ar_level(char c) { return c == '2' ? 100 : c == '1' ? 72 : c == 'g' ?
 typedef struct { uint8_t on, latch, mode, rate, oct, gate, rhythm, ramp, pitch; } arp_t;
 static arp_t arps[KIT_NTRACKS] = { { 0, 0, 0, 3, 1, 2, 0, 0, 0 }, { 0, 0, 0, 3, 1, 2, 0, 0, 0 },
                                    { 0, 0, 0, 3, 1, 2, 0, 0, 0 }, { 0, 0, 0, 3, 1, 2, 0, 0, 0 } };
+static arp_t ar_before_factory[KIT_NTRACKS];
 static uint8_t ar_factory_gate[KIT_NTRACKS], ar_factory[KIT_NTRACKS];
 static int8_t ar_keys[16];                      /* the keys held, as pressed; then latched while latch is on */
 static uint8_t ar_vels[16];
@@ -132,7 +133,8 @@ static void ar_load_preset(int t, int engine, int preset)
     if (!kit_preset_arp(engine, preset, &factory)) {
         if (ar_factory[t]) {
             if (t == ar_track) ar_clear();
-            arps[t].on = arps[t].latch = ar_factory[t] = ar_factory_gate[t] = 0;
+            arps[t] = ar_before_factory[t];
+            ar_factory[t] = ar_factory_gate[t] = 0;
         }
         return;
     }
@@ -145,6 +147,7 @@ static void ar_load_preset(int t, int engine, int preset)
         if (delta < 0) delta = -delta;
         if (delta < error) { gate = i; error = delta; }
     }
+    if (!ar_factory[t]) ar_before_factory[t] = arps[t];
     arps[t] = (arp_t){1, 0, modes[factory.mode], (uint8_t)rate, factory.octaves,
                        (uint8_t)gate, 0, 0, 0};
     ar_factory[t] = 1;
