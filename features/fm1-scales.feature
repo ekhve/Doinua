@@ -1252,3 +1252,9 @@ Feature: OberVave (ST-72)
     Given Sync Lead is selected with PRESETS
     When C4 is pressed
     Then the selected preset sounds
+
+  @D-097 @ST-72 @auto
+  Scenario: Selecting Shadow Arp enables the track arpeggiator
+    Given the Sound Browser is open on the track's sounds
+    When Shadow Arp is selected and C4 is held
+    Then the track plays its factory arpeggio

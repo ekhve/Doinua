@@ -219,3 +219,15 @@ void kit__obv_sends(int track, uint8_t sends[4])
     sends[2] = params[P_DLY_MIX];
     sends[3] = params[P_REV_MIX];
 }
+
+int kit_preset_arp(int engine, int preset, kit_preset_arp_t *arp)
+{
+    static const uint8_t modes[] = {0, 0, 1, 2, 4, 3};
+    static const uint8_t ticks[] = {24, 12, 8, 6, 4, 3, 2};
+    if (engine != KIT_ENGINE_OBERVAVE || (unsigned)preset >= OBV_PRESETS || !arp) return 0;
+    const uint8_t *p = obervave_bank[preset].param;
+    if (!p[P_ARP_MODE] || p[P_ARP_MODE] >= sizeof modes || p[P_ARP_DIV] >= sizeof ticks) return 0;
+    *arp = (kit_preset_arp_t){modes[p[P_ARP_MODE]], ticks[p[P_ARP_DIV]], p[P_ARP_OCT],
+                             (uint8_t)(p[P_ARP_GATE] + 1u)};
+    return 1;
+}
