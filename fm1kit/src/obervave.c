@@ -12,6 +12,8 @@ void *memset(void *dst, int value, unsigned bytes);
 
 
 #define OBV_VOICES 8
+/* Drone Uni at eight unison voices reaches 81% in Hello's mixed-track sweep. */
+#define OBV_UNISON_MAX 6
 #define OBV_PRESETS (sizeof obervave_bank / sizeof obervave_bank[0])
 enum { OBV_POLY, OBV_DUAL, OBV_UNISON, OBV_MONO };
 
@@ -89,7 +91,7 @@ static void trigger(int track, int note, int velocity)
     obv_track_t *state = &tracks[track];
     const uint8_t *p = state->params;
     unsigned mode = p[P_MODE];
-    int count = mode == OBV_UNISON ? clampi(p[P_UNI_N], 1, OBV_VOICES) :
+    int count = mode == OBV_UNISON ? clampi(p[P_UNI_N], 1, OBV_UNISON_MAX) :
                 mode == OBV_DUAL ? 2 : 1;
     unsigned reused = 0;
     uint32_t first_new_age = next_age + 1;
