@@ -98,6 +98,27 @@ static int okp(int pt) { return pt >= 0 && pt < NPART; }
 
 #include "fmini/spectrum.c"
 
+int kit_track_motion_of(int pt, kit_sound_motion_t *motion)
+{
+    const voice_t *latest = 0;
+    uint32_t lock, contour;
+    int i;
+    if (!okp(pt) || !fmx[pt] || !motion) return 0;
+    lock = kit__lock();
+    for (i = 0; i < NVOICE; i++) {
+        const voice_t *v = &trk[pt].v[i];
+        if (v->active && (!latest || (int32_t)(v->age - latest->age) > 0)) latest = v;
+    }
+    if (latest) {
+        contour = (uint32_t)latest->s[7];
+        *motion = (kit_sound_motion_t){latest->stage, clamp(latest->env >> 17, 0, 127),
+                                       contour >> 24, clamp((contour & 0xffffff) >> 16, 0, 127),
+                                       trk[pt].lfo_ph >> 24};
+    }
+    kit__unlock(lock);
+    return latest != 0;
+}
+
 void kit_track_mod_shape(int pt, const kit_sound_mod_t *mod)
 {
     uint32_t lock;

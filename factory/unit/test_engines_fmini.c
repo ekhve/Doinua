@@ -272,6 +272,26 @@ static void check_live_spectrum(int preset)
     kit__eng_select(1, -1, 0);
 }
 
+static void check_live_motion(int preset)
+{
+    kit_sound_motion_t first, next;
+    kit__eng_select(0, E, preset);
+    CHECK(!kit_track_motion_of(0, &first), "idle tracks have no live marker");
+    kit__eng_note_on(0, 60, 100);
+    render(450, 0, 0);
+    CHECK(kit_track_motion_of(0, &first) && first.amp_stage == 2 && first.amp_level > 80 &&
+          first.filter_stage == 2 && first.filter_level > 50, "held note reports both native contours");
+    render(65, 0, 0);
+    CHECK(kit_track_motion_of(0, &next) && next.lfo_phase != first.lfo_phase, "the native LFO advances the phase marker");
+    kit__eng_note_off(0, 60);
+    render(85, 0, 0);
+    CHECK(kit_track_motion_of(0, &next) && next.amp_stage == 3 && next.amp_level < first.amp_level &&
+          next.filter_stage == 3 && next.filter_level < first.filter_level, "released note reports the declining contours");
+    render(1700, 0, 0);
+    CHECK(!kit_track_motion_of(0, &next), "the markers disappear when the voice ends");
+    kit__eng_select(0, -1, 0);
+}
+
 int main(void)
 {
     check_factory_arp();
@@ -297,6 +317,7 @@ int main(void)
     check_live_lfo(sine);
     check_wheel_filter(sine);
     check_live_spectrum(sine);
+    check_live_motion(sine);
     kit__eng_select(0, E, sine);
     kit__eng_note_on(0, 60, 100);
     render(300, 0, 0);

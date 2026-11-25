@@ -222,6 +222,9 @@ typedef struct { uint8_t rate, depth, target, wave; } kit_sound_lfo_t;
 int kit_track_lfo_of(int track, kit_sound_lfo_t *lfo);
 int kit_track_lfo(int track, const kit_sound_lfo_t *lfo);
 int kit_track_lfo_centihz(int track, int dial);
+/* Real-time FMini graph markers for its newest sounding voice. Stage 1/2/3 is attack/decay or sustain/release. */
+typedef struct { uint8_t amp_stage, amp_level, filter_stage, filter_level, lfo_phase; } kit_sound_motion_t;
+int kit_track_motion_of(int track, kit_sound_motion_t *motion);   /* levels 0..127, phase 0..255 */
 /* Temporary modulation of native FMini controls and track effects, in control steps (-127..127). */
 typedef struct { int16_t cutoff, resonance, rate, drive, delay, reverb; } kit_sound_mod_t;
 void kit_track_mod_shape(int track, const kit_sound_mod_t *mod);

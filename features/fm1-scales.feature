@@ -1348,6 +1348,18 @@ Feature: The effects bus (ST-69)
     Then it peaks near the note's fundamental
     And sound from another track does not appear in the selected spectrum
 
+  @D-116 @ST-46 @auto
+  Scenario: Sound Edit plots the sounding note's markers
+    Given an FMini sound is selected in Sound Edit
+    When a note is played across F.ENV, A.ENV and LFO
+    Then their graphs show live markers while the voice sounds
+
+  @D-116 @ST-46 @auto @gate:unit
+  Scenario: FMini motion reports live contour and phase
+    Given a note plays on the selected FMini track
+    When the note is released
+    Then the contour levels fall as the LFO phase advances
+
 
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends

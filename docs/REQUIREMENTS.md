@@ -531,6 +531,8 @@ implement all sounds".)
 | R-354 | While the modulation wheel offsets the track's effects, the firmware shall retain the base effect sends. | D-114, ST-46, UC-07 | A | Draft | Wheel offsets preserve base FX sends |
 | R-355 | While FMini FILTER shows, the companion app shall display the selected track's live spectrum. | D-115, ST-46, UC-07 | A | Draft | FILTER shows the FMini spectrum while playing |
 | R-356 | While a C4 sine sounds on the selected FMini track, the firmware shall report the largest spectrum value in the band nearest its fundamental. | D-115, ST-46, UC-07 | A | Draft | Spectrum measures the selected FMini track |
+| R-357 | While an FMini note sounds on the selected track, the companion app shall display its envelope marker on the selected envelope page. | D-116, ST-46, UC-07 | A | Draft | Sound Edit plots the sounding note's markers |
+| R-358 | While an FMini note is releasing, the firmware shall report the falling envelope level. | D-116, ST-46, UC-07 | A | Draft | FMini motion reports live contour and phase |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

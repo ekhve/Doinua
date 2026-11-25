@@ -42,6 +42,9 @@ drive, delay and reverb sends. The offsets leave the patch values available to t
 `kit_track_spectrum` selects one FMini track for pre-effects capture. `kit_track_spectrum_read` returns 24 band levels
 from 0 to 100 when a new window is ready. `kit_track_spectrum_position` maps a nominal cutoff to the same horizontal axis.
 
+`kit_track_motion_of` reads the newest sounding FMini voice's amp and filter contour stages and levels alongside
+the track's current LFO phase. It returns zero when there is no sounding source for a marker.
+
 The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_of`. At 127 the delay retains the
 original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
 delay line limit are applied.

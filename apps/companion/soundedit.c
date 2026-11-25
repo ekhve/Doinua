@@ -11,6 +11,9 @@ static uint32_t sed_press_at;
 static int sed_spectrum_track = -1;
 static uint32_t sed_spectrum_at;
 static uint8_t sed_spectrum[KIT_SPECTRUM_BANDS];
+static kit_sound_motion_t sed_motion;
+static int sed_motion_live, sed_motion_page = -1, sed_motion_track = -1;
+static uint32_t sed_motion_at;
 static const char *const sed_waves[] = { "TRI", "SHARK", "SAW", "SQR", "PLS W", "PLS N", "SIN" };
 static const char *const sed_modes[] = { "POLY", "MONO", "LEGATO" };
 static const char *const sed_lfo_waves[] = { "SIN", "TRI", "SAW", "SQR" };
@@ -66,11 +69,39 @@ static void sound_edit_close(void)
     dirty = 1;
 }
 
+static void sed_update_motion(uint32_t now, int visible)
+{
+    int page = sed_page;
+    kit_sound_motion_t next;
+    int live, changed;
+    if (!visible || (page != SED_FENV && page != SED_AENV && page != SED_LFO)) {
+        sed_motion_page = -1;
+        sed_motion_live = 0;
+        return;
+    }
+    if (page == sed_motion_page && track == sed_motion_track && now - sed_motion_at < 48u) return;
+    sed_motion_page = page;
+    sed_motion_track = track;
+    sed_motion_at = now;
+    live = kit_track_motion_of(track, &next);
+    changed = live != sed_motion_live;
+    if (live) {
+        if (page == SED_FENV) changed |= next.filter_stage != sed_motion.filter_stage || next.filter_level != sed_motion.filter_level;
+        else if (page == SED_AENV) changed |= next.amp_stage != sed_motion.amp_stage || next.amp_level != sed_motion.amp_level;
+        else changed |= next.lfo_phase != sed_motion.lfo_phase;
+        sed_motion = next;
+    }
+    sed_motion_live = live;
+    if (changed) dirty = 1;
+}
+
 static void sound_edit_frame(uint32_t now)
 {
-    int i, input;
+    int i, input, visible;
     if (!sound_fx_available()) sound_edit_close();
-    input = !asleep && !sb_open && sed_page == SED_FILTER && kit_track_engine(track) == KIT_ENGINE_FMINI ? track : -1;
+    visible = !asleep && !sb_open && kit_track_engine(track) == KIT_ENGINE_FMINI;
+    sed_update_motion(now, visible);
+    input = visible && sed_page == SED_FILTER ? track : -1;
     if (input != sed_spectrum_track) {
         sed_spectrum_track = input;
         kit_track_spectrum(input);
@@ -288,8 +319,11 @@ static void sed_draw_env(const uint8_t env[4], const int times[4], kit_color_t c
     static const char *const stage[] = { "A", "D", "S", "R" };
     static const uint8_t fall[] = { 127, 99, 77, 59, 46, 35, 27, 20, 15, 11, 8, 5, 3, 2, 1, 0 };
     const int bottom = 148, top = 59;
-    int i, j, start = 11, width[4], total = 0, x = start, y = bottom;
+    int i, j, start = 11, width[4], total = 0, x = start, y = bottom, marker_x = -1;
     int levels[] = { 0, 127, env[KIT_ENV_SUSTAIN], env[KIT_ENV_SUSTAIN], 0 };
+    int stage_now = sed_page == SED_FENV ? sed_motion.filter_stage : sed_motion.amp_stage;
+    int level_now = sed_page == SED_FENV ? sed_motion.filter_level : sed_motion.amp_level;
+    int segment = stage_now == 3 ? 3 : stage_now == 2 ? (level_now <= levels[2] + 2 ? 2 : 1) : 0;
     for (i = 0; i < 4; i++) {
         int ms = i == KIT_ENV_SUSTAIN ? 600 : times[i];
         width[i] = 20 + ms * 90 / (ms + 500);
@@ -297,14 +331,24 @@ static void sed_draw_env(const uint8_t env[4], const int times[4], kit_color_t c
     }
     for (i = 0; i < 4; i++) {
         int span = width[i] * 218 / total, from = x;
+        int nearest = 128;
         kit_text(from + span - 1, 39, stage[i], KIT_FONT_TINY, KIT_ALIGN_RIGHT, FX_DIM);
-        for (j = 1; j <= 15; j++) {
+        for (j = 0; j <= 15; j++) {
             int level = levels[i + 1] + (levels[i] - levels[i + 1]) * fall[j] / 127;
             int px = from + j * span / 15, py = bottom - level * (bottom - top) / 127;
-            kit_line(x, y, px, py, color);
+            if (j) kit_line(x, y, px, py, color);
+            if (sed_motion_live && stage_now && level_now > 0 && i == segment) {
+                int diff = level_now - level;
+                if (diff < 0) diff = -diff;
+                if (diff < nearest) {
+                    nearest = diff;
+                    marker_x = i == 2 ? from + span / 2 : px;
+                }
+            }
             x = px; y = py;
         }
     }
+    if (marker_x >= 0) kit_circle(marker_x, bottom - level_now * (bottom - top) / 127, 3, FX_INK);
 }
 
 static void sed_draw_voice(int voice_mode, int glide, int slide, kit_color_t color)
@@ -349,6 +393,11 @@ static void sed_draw_lfo(const kit_sound_lfo_t *lfo, kit_color_t color)
         int y = 98 - sed_wave(x * 300 / 220 % 100, wave[lfo->wave]) * span / 100;
         if (x) kit_line(9 + x, last, 10 + x, y, color);
         last = y;
+    }
+    if (sed_motion_live) {
+        int phase = sed_motion.lfo_phase;
+        int y = 98 - sed_wave(phase * 100 / 256, wave[lfo->wave]) * span / 100;
+        kit_circle(10 + phase * 220 / (256 * 3), y, 3, FX_INK);
     }
 }
 
