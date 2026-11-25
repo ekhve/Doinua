@@ -54,10 +54,22 @@ const factory = [
 ];
 const storageKey = "doinua.preset-save-lab.v1";
 const defaultUser = [{ id:"u1", kind:"User", name:"Night Bass", cutoff:44 }];
+const nameLength = 12;
 function readSaved() {
   try {
     const record = JSON.parse(localStorage.getItem(storageKey));
-    if (record && Array.isArray(record.presets) && Number.isInteger(record.nextId)) return record;
+    if (record && Array.isArray(record.presets) && Number.isSafeInteger(record.nextId) && record.nextId >= 2) {
+      const ids = new Set();
+      const valid = record.presets.every(preset => {
+        if (!preset || typeof preset.id !== "string" || !/^u[1-9]\d*$/.test(preset.id) ||
+            Number(preset.id.slice(1)) >= record.nextId || ids.has(preset.id) || preset.kind !== "User" ||
+            typeof preset.name !== "string" || !preset.name.trim() || preset.name.length > nameLength ||
+            !Number.isInteger(preset.cutoff) || preset.cutoff < 0 || preset.cutoff > 100) return false;
+        ids.add(preset.id);
+        return true;
+      });
+      if (valid) return record;
+    }
   } catch (error) {
     // The lab can still demonstrate edits when browser storage is unavailable.
   }
@@ -68,7 +80,6 @@ let pending = null;
 let sound = { ...factory[0] };
 let mode = "edit", selected = 0, name = [], cursor = 0, notice = "";
 const glyphs = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-";
-const nameLength = 12;
 const el = id => document.getElementById(id);
 const input = el("preset");
 const list = () => [...factory, ...user];
