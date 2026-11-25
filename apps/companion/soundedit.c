@@ -1,10 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Sound Edit v3 (D-072): live sound controls in Producer. */
-enum { SED_OSC, SED_FILTER, SED_FENV, SED_AENV, SED_VOICE, SED_NPAGES };
+enum { SED_OSC, SED_FILTER, SED_FENV, SED_AENV, SED_VOICE, SED_LFO, SED_NPAGES };
 static int sed_page = -1, sed_press_track = -1;
 static uint32_t sed_press_at;
 static const char *const sed_waves[] = { "TRI", "SHARK", "SAW", "SQR", "PLS W", "PLS N", "SIN" };
 static const char *const sed_modes[] = { "POLY", "MONO", "LEGATO" };
+static const char *const sed_lfo_waves[] = { "SIN", "TRI", "SAW", "SQR" };
+static const char *const sed_lfo_targets[] = { "PITCH", "CUTOFF", "VOLUME" };
 static const uint16_t sed_glide_times[] = {
     0, 5, 7, 10, 14, 20, 28, 40, 56, 80, 113, 160, 226, 320, 452, 640, 905, 1280, 1810, 2000
 };
@@ -108,13 +110,36 @@ static void sed_adjust_voice(int knob, int delta)
     kit_track_voice(track, voice_mode, glide, slide);
 }
 
+static void sed_adjust_lfo(int knob, int delta)
+{
+    kit_sound_lfo_t lfo;
+    int value;
+    if (!kit_track_lfo_of(track, &lfo)) return;
+    if (knob == 2) {
+        value = lfo.target;
+        wrap(&value, delta, KIT_LFO_NTARGETS);
+        lfo.target = (uint8_t)value;
+    } else if (knob == 3) {
+        value = lfo.wave;
+        wrap(&value, delta, KIT_LFO_NWAVES);
+        lfo.wave = (uint8_t)value;
+    } else {
+        uint8_t *control = knob == 0 ? &lfo.rate : &lfo.depth;
+        value = *control;
+        clampi(&value, delta * 4, 0, 127);
+        *control = (uint8_t)value;
+    }
+    kit_track_lfo(track, &lfo);
+}
+
 static int sound_edit_event(const kit_event_t *e)
 {
     int knob;
-    if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_ENV && sound_fx_available()) {
+    if (e->type == KIT_EV_BTN_DOWN && (e->id == KIT_BTN_ENV || e->id == KIT_BTN_LFO) && sound_fx_available()) {
         sound_fx_close();
         sb_open = 0;
-        sed_page = sed_page == SED_FENV ? SED_AENV : SED_FENV;
+        if (e->id == KIT_BTN_LFO) sed_page = SED_LFO;
+        else sed_page = sed_page == SED_FENV ? SED_AENV : SED_FENV;
         dirty = 1;
         return 1;
     }
@@ -129,6 +154,7 @@ static int sound_edit_event(const kit_event_t *e)
         if (sed_page == SED_FILTER) sed_adjust_filter(knob, e->delta);
         else if (sed_page == SED_OSC) sed_adjust_osc(knob, e->delta);
         else if (sed_page == SED_VOICE) sed_adjust_voice(knob, e->delta);
+        else if (sed_page == SED_LFO) sed_adjust_lfo(knob, e->delta);
         else sed_adjust_env(knob, e->delta);
     } else return 0;
     dirty = 1;
@@ -236,23 +262,39 @@ static void sed_time_text(char *value, int ms)
     }
 }
 
+static void sed_draw_lfo(const kit_sound_lfo_t *lfo, kit_color_t color)
+{
+    static const uint8_t wave[] = { KIT_OSC_SINE, KIT_OSC_TRI, KIT_OSC_SAW, KIT_OSC_SQR };
+    int x, last = 98, span = 4 + lfo->depth * 44 / 127;
+    kit_text(10, 39, sed_lfo_targets[lfo->target], KIT_FONT_TINY, KIT_ALIGN_LEFT, FX_DIM);
+    kit_line(10, 98, 230, 98, FX_GRID);
+    for (x = 0; x <= 220; x++) {
+        int y = 98 - sed_wave(x * 300 / 220 % 100, wave[lfo->wave]) * span / 100;
+        if (x) kit_line(9 + x, last, 10 + x, y, color);
+        last = y;
+    }
+}
+
 static void sound_edit_draw(void)
 {
-    static const char *const names[] = { "OSC", "FILTER", "F.ENV", "A.ENV", "VOICE" };
+    static const char *const names[] = { "OSC", "FILTER", "F.ENV", "A.ENV", "VOICE", "LFO" };
     static const char *const osc_labels[] = { "WAVE 1", "WAVE 2", "DETUNE", "MIX" };
     static const char *const filter_labels[] = { "CUTOFF", "RESO", "ENV AMT", "KEY TRK" };
     static const char *const env_labels[] = { "ATTACK", "DECAY", "SUSTAIN", "RELEASE" };
     static const char *const voice_labels[] = { "MODE", "GLIDE", "SLIDE", "BEND RANGE" };
+    static const char *const lfo_labels[] = { "RATE", "DEPTH", "TARGET", "WAVE" };
     static const kit_color_t knob_colors[] = { KIT_RGB(255, 107, 107), KIT_RGB(255, 209, 102), FX_CYAN, KIT_RGB(199, 155, 255) };
-    static const kit_color_t page_colors[] = { KIT_RGB(111, 183, 255), KIT_RGB(255, 179, 71), KIT_RGB(255, 209, 102), KIT_RGB(126, 224, 138), KIT_RGB(199, 155, 255) };
+    static const kit_color_t page_colors[] = { KIT_RGB(111, 183, 255), KIT_RGB(255, 179, 71), KIT_RGB(255, 209, 102), KIT_RGB(126, 224, 138), KIT_RGB(199, 155, 255), FX_CYAN };
     kit_sound_osc_t osc;
     kit_sound_filter_t filter;
+    kit_sound_lfo_t lfo;
     uint8_t env[4];
     int i, values[4] = {0}, times[4] = {0}, supported;
     int envelope = sed_page == SED_FENV || sed_page == SED_AENV;
     int voice = sed_page == SED_VOICE, voice_mode = 0, glide = 0, slide = 0, bend = 2;
     char title[32], value[16];
-    const char *const *labels = voice ? voice_labels : envelope ? env_labels : sed_page == SED_FILTER ? filter_labels : osc_labels;
+    static const char *const *const page_labels[] = { osc_labels, filter_labels, env_labels, env_labels, voice_labels, lfo_labels };
+    const char *const *labels = page_labels[sed_page];
     const char *page = names[sed_page];
     kit_color_t color = page_colors[sed_page];
     const char *preset = kit_preset_name(kit_track_engine(track), kit_track_preset(track));
@@ -265,7 +307,16 @@ static void sound_edit_draw(void)
         kit_rect(start, 25, end - start - 4, 3, i == sed_page ? color : FX_GRID);
     }
     kit_rect_outline(4, 34, 232, 120, 1, FX_GRID);
-    if (voice) {
+    if (sed_page == SED_LFO) {
+        supported = kit_track_lfo_of(track, &lfo);
+        if (supported) {
+            values[0] = fx_percent(lfo.rate, 127);
+            values[1] = fx_percent(lfo.depth, 127);
+            values[2] = fx_percent(lfo.target, KIT_LFO_NTARGETS - 1);
+            values[3] = fx_percent(lfo.wave, KIT_LFO_NWAVES - 1);
+            sed_draw_lfo(&lfo, color);
+        }
+    } else if (voice) {
         supported = sed_voice_supported();
         if (supported) {
             voice_mode = kit_track_voice_mode(track);
@@ -311,6 +362,13 @@ static void sound_edit_draw(void)
         else if (sed_page == SED_OSC && i < 2) cat(value, sed_waves[i ? osc.wave2 : osc.wave1]);
         else if (sed_page == SED_OSC && i == 2) cat(cat_int(value, osc.detune), " ct");
         else if (envelope && i != KIT_ENV_SUSTAIN) sed_time_text(value, times[i]);
+        else if (sed_page == SED_LFO && i == 0) {
+            int hz = kit_track_lfo_centihz(track, lfo.rate);
+            char *out = cat(cat_int(value, hz / 100), ".");
+            if (hz % 100 < 10) out = cat(out, "0");
+            cat(cat_int(out, hz % 100), " Hz");
+        } else if (sed_page == SED_LFO && i == 2) cat(value, sed_lfo_targets[lfo.target]);
+        else if (sed_page == SED_LFO && i == 3) cat(value, sed_lfo_waves[lfo.wave]);
         else if (voice) {
             if (i == 0) cat(value, sed_modes[voice_mode]);
             else if (i == 1 && glide) sed_time_text(value, glide);

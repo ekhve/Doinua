@@ -210,6 +210,13 @@ enum { KIT_ENV_ATTACK, KIT_ENV_DECAY, KIT_ENV_SUSTAIN, KIT_ENV_RELEASE };
 int kit_track_envelope_of(int track, int kind, uint8_t values[4]);
 int kit_track_envelope(int track, int kind, int control, int value);
 int kit_track_envelope_ms(int track, int time_dial);
+/* FMini LFO rate and depth use 0..127. The editable route has zero depth in factory presets. */
+enum { KIT_LFO_SINE, KIT_LFO_TRI, KIT_LFO_SAW, KIT_LFO_SQUARE, KIT_LFO_NWAVES };
+enum { KIT_LFO_PITCH, KIT_LFO_CUTOFF, KIT_LFO_VOLUME, KIT_LFO_NTARGETS };
+typedef struct { uint8_t rate, depth, target, wave; } kit_sound_lfo_t;
+int kit_track_lfo_of(int track, kit_sound_lfo_t *lfo);
+int kit_track_lfo(int track, const kit_sound_lfo_t *lfo);
+int kit_track_lfo_centihz(int track, int dial);
 void kit_track_note_on(int track, int note, int vel);
 void kit_track_note_off(int track, int note);
 void kit_track_notes_off(int track);

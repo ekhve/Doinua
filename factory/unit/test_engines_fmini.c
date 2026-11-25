@@ -190,6 +190,45 @@ static void check_live_envelopes(int preset)
     kit__eng_select(0, -1, 0);
 }
 
+static void check_live_lfo(int preset)
+{
+    kit_sound_lfo_t lfo, factory;
+    kit_sound_filter_t filter = { 65, 0, 0, 0 };
+    double first, second;
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_lfo_of(0, &factory) && !factory.depth, "the added LFO route starts at zero depth");
+    lfo = (kit_sound_lfo_t){ 57, 120, KIT_LFO_VOLUME, KIT_LFO_SQUARE };
+    CHECK(kit_track_lfo(0, &lfo) && kit_track_lfo_of(0, &factory) && !memcmp(&factory, &lfo, sizeof lfo),
+          "the rate, depth, target and wave round-trip");
+    CHECK(kit_track_lfo_centihz(0, 57) >= 95 && kit_track_lfo_centihz(0, 57) <= 105,
+          "the displayed rate is near one Hz");
+    kit__eng_note_on(0, 72, 100);
+    render(200, 0, 0); render(150, &first, 0);
+    render(250, 0, 0); render(150, &second, 0);
+    CHECK(first > 0 && second > first * 5, "square LFO modulates held-note volume (%.1f to %.1f)", first, second);
+
+    kit__eng_select(0, E, preset);
+    lfo.target = KIT_LFO_CUTOFF;
+    kit_track_filter(0, &filter);
+    kit_track_lfo(0, &lfo);
+    kit__eng_note_on(0, 72, 100);
+    render(200, 0, 0); render(150, &first, 0);
+    render(250, 0, 0); render(150, &second, 0);
+    CHECK(first > 100 && first > second * 2, "square LFO reaches the held note's filter (%.1f to %.1f)", first, second);
+    CHECK(kit_track_filter_of(0, &filter) && filter.cutoff == 65, "LFO leaves the stored cutoff untouched");
+
+    kit__eng_select(0, E, preset);
+    lfo.target = KIT_LFO_PITCH;
+    kit_track_lfo(0, &lfo);
+    kit__eng_note_on(0, 60, 100);
+    render(200, 0, 0); first = hz(130);
+    render(300, 0, 0); second = hz(130);
+    CHECK(first > 264 && second < 259 && second > 235, "square LFO modulates pitch (%.1f to %.1f Hz)", first, second);
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_lfo_of(0, &lfo) && !lfo.depth, "preset reload clears the added LFO route");
+    kit__eng_select(0, -1, 0);
+}
+
 int main(void)
 {
     check_factory_arp();
@@ -212,6 +251,7 @@ int main(void)
     check_live_filter(sine);
     check_live_osc(sine);
     check_live_envelopes(sine);
+    check_live_lfo(sine);
     kit__eng_select(0, E, sine);
     kit__eng_note_on(0, 60, 100);
     render(300, 0, 0);

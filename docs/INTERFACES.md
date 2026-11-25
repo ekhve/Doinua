@@ -33,6 +33,9 @@ cents and oscillator balance. They return zero for unsupported tracks. The edits
 `kit_track_bend_range` and `kit_track_bend_range_of` set and read the track's pitch bend range from 1 to 12 semitones.
 Two semitones is the default. The track's current wheel position is scaled immediately when the range changes.
 
+`kit_track_lfo` and `kit_track_lfo_of` access FMini's rate, wave and added modulation depth and target. The target is
+pitch, cutoff or volume. `kit_track_lfo_centihz` reads the rate's nominal frequency in hundredths of a Hz.
+
 The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_of`. At 127 the delay retains the
 original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
 delay line limit are applied.

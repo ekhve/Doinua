@@ -1310,6 +1310,18 @@ Feature: The effects bus (ST-69)
     When VOICE sets BEND RANGE to 12 semitones
     Then full upward pitch bend raises the note by an octave
 
+  @D-072 @D-113 @ST-46 @auto
+  Scenario: LFO opens the editable FMini modulation
+    Given a Producer track with an FMini sound selected
+    When LFO is pressed
+    Then the rate, depth, target and waveform can be edited
+
+  @D-113 @ST-46 @auto @gate:unit
+  Scenario: FMini LFO changes a held sound
+    Given an FMini note held with a square LFO
+    When the editable route targets volume
+    Then the held note cycles between two levels
+
 
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends

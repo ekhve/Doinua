@@ -516,6 +516,9 @@ On VOICE, choose POLY, MONO or LEGATO, then set the glide time, when it slides, 
 to two semitones. Changing the mode releases the track's currently sounding notes. VOICE is available for Basic, the
 shared Felucca engines and FMini.
 
+On FMini, press **LFO** to edit rate, depth, target and wave. Pitch, cutoff and volume are available as targets on
+the mono FM-1. At zero depth only the preset's original modulation routes apply.
+
 ### How many notes at once
 
 The FM-1 plays up to 12 notes at once across the four tracks, as long as they fit its processor. Some sounds take more

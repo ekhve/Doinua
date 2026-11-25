@@ -525,6 +525,8 @@ implement all sounds".)
 | R-348 | When the release of an FMini amp envelope is edited, the firmware shall apply its selected time to the note's release. | D-111, ST-46, UC-07 | A | Draft | FMini envelope edits change the amp release |
 | R-349 | While VOICE shows for a supported sound, when K4 is turned, the companion app shall change the track's pitch bend range. | D-112, ST-46, UC-07 | A | Draft | VOICE changes the track bend range |
 | R-350 | While a supported track's bend range is 12 semitones, when pitch bend reaches its upper endpoint, the firmware shall raise the sounding note by one octave. | D-112, ST-46, UC-07 | A | Draft | VOICE changes the track bend range |
+| R-351 | When LFO is pressed on a Producer sound track, the companion app shall open LFO. | D-072, ST-46, UC-07 | A | Draft | LFO opens the editable FMini modulation |
+| R-352 | While a note is held on an FMini track, when the LFO adds volume modulation, the firmware shall vary the note's level. | D-113, ST-46, UC-07 | A | Draft | FMini LFO changes a held sound |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

@@ -84,6 +84,7 @@ typedef struct {                    /* a part's sound: its engine, preset and en
     int32_t sus_level;
     int32_t last_amp[NVOICE];
     uint8_t fmini_amp[4];
+    kit_sound_lfo_t fmini_lfo;
 } part_t;
 static part_t part[NPART];
 static uint32_t vage;
@@ -93,6 +94,30 @@ static uint32_t vage;
  * times (1 ms .. 12 s). Velocity as the other engines (fmini-1's default is off; here it also carries the level) */
 static const fmini_x_t *fmx[NPART];             /* the part's extras while it plays FMINI, else 0 */
 static int okp(int pt) { return pt >= 0 && pt < NPART; }
+
+int kit_track_lfo_of(int pt, kit_sound_lfo_t *lfo)
+{
+    if (!okp(pt) || !fmx[pt] || !lfo) return 0;
+    *lfo = part[pt].fmini_lfo;
+    return 1;
+}
+
+int kit_track_lfo(int pt, const kit_sound_lfo_t *lfo)
+{
+    uint32_t lock;
+    if (!okp(pt) || !fmx[pt] || !lfo) return 0;
+    lock = kit__lock();
+    part[pt].fmini_lfo = (kit_sound_lfo_t){clamp(lfo->rate, 0, 127), clamp(lfo->depth, 0, 127),
+                                          clamp(lfo->target, 0, KIT_LFO_NTARGETS - 1),
+                                          clamp(lfo->wave, 0, KIT_LFO_NWAVES - 1)};
+    kit__unlock(lock);
+    return 1;
+}
+
+int kit_track_lfo_centihz(int pt, int dial)
+{
+    return okp(pt) && fmx[pt] ? FM_LFO_CHZ[clamp(dial, 0, 127)] : 0;
+}
 
 int kit_track_envelope_of(int pt, int kind, uint8_t values[4])
 {
@@ -355,6 +380,8 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
         P->fmini_amp[KIT_ENV_RELEASE] = FM_ENV_FOLLOW_DECAY;
         t->p[P_FREL] = FM_ENV_FOLLOW_DECAY;
         fmx[pt] = &FMB_X[p];
+        P->fmini_lfo.rate = fmx[pt]->lfo[0] & 127;
+        P->fmini_lfo.wave = fmx[pt]->lfo[1] < KIT_LFO_NWAVES ? fmx[pt]->lfo[1] : KIT_LFO_SINE;
         t->lfo_fade = 32767;
     }
     for (k = 0; k < 8u; k++)
@@ -620,17 +647,26 @@ static void render_part(int pt, int32_t *mix, int n)
     for (b = 0; b < n; b += CTL) {
         const fmini_x_t *x = fmx[pt];
         int32_t lfo = 0;
+        int32_t lfo_pitch = 0, lfo_cutoff = 0, lfo_volume = 0;
         if (x) {                                    /* FMINI: the part's LFO, a block at a time (fmini-1 voice.c) */
             uint32_t ph;
-            t->lfo_ph += FM_LFO_INC[x->lfo[0] & 127];
+            kit_sound_lfo_t setting = P->fmini_lfo;
+            t->lfo_ph += FM_LFO_INC[setting.rate];
             ph = t->lfo_ph;
-            t->lfo_val = x->lfo[1] == 1 ? osc_tri(ph) : x->lfo[1] == 2 ? (int32_t)(ph >> 16) - 32768
-                       : x->lfo[1] == 3 ? (ph < 0x80000000u ? 32767 : -32767) : osc_sine(ph);
+            t->lfo_val = setting.wave == KIT_LFO_TRI ? osc_tri(ph) : setting.wave == KIT_LFO_SAW ? (int32_t)(ph >> 16) - 32768
+                       : setting.wave == KIT_LFO_SQUARE ? (ph < 0x80000000u ? 32767 : -32767) : osc_sine(ph);
             if (t->lfo_fade < 32767) {
                 int32_t st = (int32_t)(FM_ENV_LIN[x->lfo[2] & 127] >> 9);
                 t->lfo_fade = x->lfo[2] ? clamp(t->lfo_fade + (st ? st : 1), 0, 32767) : 32767;
             }
             lfo = mulq15(t->lfo_val, t->lfo_fade);
+            if (setting.depth) {
+                int32_t depth = setting.depth * 258;
+                /* The added route has its own depth. Preset fade still applies to factory paths. */
+                if (setting.target == KIT_LFO_PITCH) lfo_pitch = mulq15(t->lfo_val, depth) * 13 / 32768;
+                else if (setting.target == KIT_LFO_CUTOFF) lfo_cutoff = mulq15(mulq15(t->lfo_val, depth), 12000);
+                else lfo_volume = mulq15((t->lfo_val + 32768) >> 1, depth);
+            }
         }
         if (cur->block)
             cur->block(t);
@@ -651,6 +687,7 @@ static void render_part(int pt, int32_t *mix, int n)
             if (!cur->ownenv) a = (a * v->vel) / 127;                 /* (FMINI too: on the FM-1 the velocity also carries the track's level) */
             if (x && x->mod[1])                     /* LFO -> amplitude */
                 a = mulq15(a, 32767 - mulq15((lfo + 32768) >> 1, x->mod[1] * 258));
+            if (lfo_volume) a = mulq15(a, 32767 - lfo_volume);
             if (cur->amp)
                 a = cur->amp(t, v, a);
             if (!v->active)
@@ -662,15 +699,15 @@ static void render_part(int pt, int32_t *mix, int n)
             base = pitch_inc((uint32_t)clamp((v->pitch_cur >> GQ) + pb, 0, 2047));
             memset(&m, 0, sizeof m);
             m.pitch16 = (v->pitch_cur >> GQ) + pb;
-            if (x && (x->mod[0] || x->mod[2])) {    /* LFO -> pitch, contour -> pitch */
-                m.pitch16 = clamp(m.pitch16 + ((lfo * x->mod[0] * 3) >> 15) + ((a * x->mod[2] * 3) >> 15), 0, 2047);
+            if (x && (lfo_pitch || x->mod[0] || x->mod[2])) {    /* LFO -> pitch, contour -> pitch */
+                m.pitch16 = clamp(m.pitch16 + lfo_pitch + ((lfo * x->mod[0] * 3) >> 15) + ((a * x->mod[2] * 3) >> 15), 0, 2047);
                 base = pitch_inc((uint32_t)m.pitch16);
             }
             m.inc = base;
             m.amp0 = P->last_amp[k];
             m.amp1 = a;
             m.envq15 = cur->ownenv ? 0 : a;
-            m.cutoff = 0;
+            m.cutoff = lfo_cutoff;
             m.shape = 64 << 8;
             P->last_amp[k] = a;
             cur->render(t, v, out, CTL, &m);
