@@ -1322,6 +1322,19 @@ Feature: The effects bus (ST-69)
     When the editable route targets volume
     Then the held note cycles between two levels
 
+  @D-114 @ST-46 @auto
+  Scenario: MOD applies a signed cutoff route
+    Given FMini MOD routes the wheel to cutoff with a negative amount
+    When the modulation wheel is raised during a note
+    Then the held note becomes darker
+    And clearing the wheel restores the original cutoff
+
+  @D-114 @ST-46 @auto @gate:unit
+  Scenario: Wheel offsets preserve base FX sends
+    Given the track has base delay and reverb sends
+    When signed wheel offsets change those sends
+    Then the audible send changes and the base settings remain available
+
 
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends

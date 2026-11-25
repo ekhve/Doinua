@@ -28,6 +28,7 @@ typedef struct track {
     voice_t v[NVOICE];
     int32_t lfo_val, lfo_fade, mw;  /* the part's LFO this block (Q15), its fade-in (Q15), the mod wheel (FMINI reads them) */
     uint32_t lfo_ph;
+    int8_t mod_cutoff, mod_resonance, mod_rate;
 } track_t;
 static track_t trk[NPART];
 
@@ -94,6 +95,18 @@ static uint32_t vage;
  * times (1 ms .. 12 s). Velocity as the other engines (fmini-1's default is off; here it also carries the level) */
 static const fmini_x_t *fmx[NPART];             /* the part's extras while it plays FMINI, else 0 */
 static int okp(int pt) { return pt >= 0 && pt < NPART; }
+
+void kit_track_mod_shape(int pt, const kit_sound_mod_t *mod)
+{
+    uint32_t lock;
+    if (!okp(pt) || !mod) return;
+    lock = kit__lock();
+    trk[pt].mod_cutoff = clamp(mod->cutoff, -127, 127);
+    trk[pt].mod_resonance = clamp(mod->resonance, -127, 127);
+    trk[pt].mod_rate = clamp(mod->rate, -127, 127);
+    kit__fx_mod(pt, mod->drive, mod->delay, mod->reverb);
+    kit__unlock(lock);
+}
 
 int kit_track_lfo_of(int pt, kit_sound_lfo_t *lfo)
 {
@@ -360,6 +373,7 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     uint32_t k;
     if (!okp(pt))
         return;
+    kit__fx_mod(pt, 0, 0, 0);
     kit__obv_select(pt, i == ENG_I_OBV ? p : -1);
     kit__bs2_select(pt, i == ENG_I_BS2 ? p : -1);
     kit__juno_select(pt, i == ENG_I_JUNO ? p : -1);   /* the Juno (or none) */
@@ -651,7 +665,8 @@ static void render_part(int pt, int32_t *mix, int n)
         if (x) {                                    /* FMINI: the part's LFO, a block at a time (fmini-1 voice.c) */
             uint32_t ph;
             kit_sound_lfo_t setting = P->fmini_lfo;
-            t->lfo_ph += FM_LFO_INC[setting.rate];
+            int rate = t->mod_rate ? clamp(setting.rate + t->mod_rate, 0, 127) : setting.rate;
+            t->lfo_ph += FM_LFO_INC[rate];
             ph = t->lfo_ph;
             t->lfo_val = setting.wave == KIT_LFO_TRI ? osc_tri(ph) : setting.wave == KIT_LFO_SAW ? (int32_t)(ph >> 16) - 32768
                        : setting.wave == KIT_LFO_SQUARE ? (ph < 0x80000000u ? 32767 : -32767) : osc_sine(ph);

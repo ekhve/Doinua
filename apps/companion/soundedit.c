@@ -1,6 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Sound Edit v3 (D-072): live sound controls in Producer. */
-enum { SED_OSC, SED_FILTER, SED_FENV, SED_AENV, SED_VOICE, SED_LFO, SED_NPAGES };
+enum { SED_OSC, SED_FILTER, SED_FENV, SED_AENV, SED_VOICE, SED_LFO, SED_MOD, SED_NPAGES };
+enum { SED_VIBRATO, SED_CUTOFF, SED_RESO, SED_RATE, SED_DRIVE, SED_DELAY, SED_REVERB, SED_NMOD };
+typedef struct { uint8_t target[2]; int8_t amount[2]; } sed_mod_t;
+static const sed_mod_t sed_mod_default = {{SED_VIBRATO, SED_CUTOFF}, {127, 0}};
+static sed_mod_t sed_mod[KIT_NTRACKS];
+static const char *const sed_mod_targets[] = { "VIBRATO", "CUTOFF", "RESO", "LFO RATE", "DRIVE", "DELAY", "REVERB" };
 static int sed_page = -1, sed_press_track = -1;
 static uint32_t sed_press_at;
 static const char *const sed_waves[] = { "TRI", "SHARK", "SAW", "SQR", "PLS W", "PLS N", "SIN" };
@@ -26,6 +31,29 @@ static int sed_glide_step(int ms)
 }
 
 static int sound_edit_open(void) { return sed_page >= 0; }
+
+static void sound_mod_apply(int t, int value)
+{
+    kit_sound_mod_t mod = {0};
+    int vib = value;
+    if (mode == MODE_PRODUCER && kit_track_engine(t) == KIT_ENGINE_FMINI) {
+        int i, amount[SED_NMOD] = {0};
+        for (i = 0; i < 2; i++)
+            amount[sed_mod[t].target[i]] += sed_mod[t].amount[i] * value / 127;
+        vib = amount[SED_VIBRATO];
+        mod = (kit_sound_mod_t){amount[SED_CUTOFF] * 3 / 5, amount[SED_RESO] * 3 / 5,
+                                amount[SED_RATE] / 2, amount[SED_DRIVE], amount[SED_DELAY], amount[SED_REVERB]};
+    }
+    kit_track_mod_shape(t, &mod);
+    kit_track_mod(t, vib);
+    if (t == track && sed_page == SED_MOD) dirty = 1;
+}
+
+static void sound_mod_reset(int t)
+{
+    sed_mod[t] = sed_mod_default;
+    sound_mod_apply(t, fx_mod[t]);
+}
 
 static void sound_edit_close(void)
 {
@@ -132,6 +160,22 @@ static void sed_adjust_lfo(int knob, int delta)
     kit_track_lfo(track, &lfo);
 }
 
+static void sed_adjust_mod(int knob, int delta)
+{
+    int i = knob / 2, value;
+    if (kit_track_engine(track) != KIT_ENGINE_FMINI) return;
+    if (knob & 1) {
+        value = sed_mod[track].amount[i];
+        clampi(&value, delta * 4, -127, 127);
+        sed_mod[track].amount[i] = (int8_t)value;
+    } else {
+        value = sed_mod[track].target[i];
+        wrap(&value, delta, SED_NMOD);
+        sed_mod[track].target[i] = (uint8_t)value;
+    }
+    sound_mod_apply(track, fx_mod[track]);
+}
+
 static int sound_edit_event(const kit_event_t *e)
 {
     int knob;
@@ -155,6 +199,7 @@ static int sound_edit_event(const kit_event_t *e)
         else if (sed_page == SED_OSC) sed_adjust_osc(knob, e->delta);
         else if (sed_page == SED_VOICE) sed_adjust_voice(knob, e->delta);
         else if (sed_page == SED_LFO) sed_adjust_lfo(knob, e->delta);
+        else if (sed_page == SED_MOD) sed_adjust_mod(knob, e->delta);
         else sed_adjust_env(knob, e->delta);
     } else return 0;
     dirty = 1;
@@ -275,16 +320,35 @@ static void sed_draw_lfo(const kit_sound_lfo_t *lfo, kit_color_t color)
     }
 }
 
+static void sed_draw_mod(const sed_mod_t *mod, kit_color_t color)
+{
+    int i, level = fx_mod[track];
+    kit_text(10, 39, "MOD WHEEL", KIT_FONT_TINY, KIT_ALIGN_LEFT, FX_DIM);
+    kit_rect(10, 53, 220, 6, FX_GRID);
+    if (level) kit_rect(10, 53, level * 220 / 127, 6, color);
+    for (i = 0; i < 2; i++) {
+        int y = 70 + i * 40, span = mod->amount[i] * 62 / 127;
+        char value[12];
+        kit_text(10, y, sed_mod_targets[mod->target[i]], KIT_FONT_XSMALL, KIT_ALIGN_LEFT, FX_INK);
+        kit_rect(91, y + 16, 124, 5, FX_GRID);
+        if (span) kit_rect(span < 0 ? 153 + span : 153, y + 16, span < 0 ? -span : span, 5, color);
+        kit_rect(152, y + 14, 2, 9, FX_INK);
+        cat(cat_int(value, mod->amount[i] * level * 100 / (127 * 127)), "%");
+        kit_text(230, y, value, KIT_FONT_TINY, KIT_ALIGN_RIGHT, FX_DIM);
+    }
+}
+
 static void sound_edit_draw(void)
 {
-    static const char *const names[] = { "OSC", "FILTER", "F.ENV", "A.ENV", "VOICE", "LFO" };
+    static const char *const names[] = { "OSC", "FILTER", "F.ENV", "A.ENV", "VOICE", "LFO", "MOD" };
     static const char *const osc_labels[] = { "WAVE 1", "WAVE 2", "DETUNE", "MIX" };
     static const char *const filter_labels[] = { "CUTOFF", "RESO", "ENV AMT", "KEY TRK" };
     static const char *const env_labels[] = { "ATTACK", "DECAY", "SUSTAIN", "RELEASE" };
     static const char *const voice_labels[] = { "MODE", "GLIDE", "SLIDE", "BEND RANGE" };
     static const char *const lfo_labels[] = { "RATE", "DEPTH", "TARGET", "WAVE" };
+    static const char *const mod_labels[] = { "MOD > 1", "AMOUNT 1", "MOD > 2", "AMOUNT 2" };
     static const kit_color_t knob_colors[] = { KIT_RGB(255, 107, 107), KIT_RGB(255, 209, 102), FX_CYAN, KIT_RGB(199, 155, 255) };
-    static const kit_color_t page_colors[] = { KIT_RGB(111, 183, 255), KIT_RGB(255, 179, 71), KIT_RGB(255, 209, 102), KIT_RGB(126, 224, 138), KIT_RGB(199, 155, 255), FX_CYAN };
+    static const kit_color_t page_colors[] = { KIT_RGB(111, 183, 255), KIT_RGB(255, 179, 71), KIT_RGB(255, 209, 102), KIT_RGB(126, 224, 138), KIT_RGB(199, 155, 255), FX_CYAN, KIT_RGB(255, 158, 203) };
     kit_sound_osc_t osc;
     kit_sound_filter_t filter;
     kit_sound_lfo_t lfo;
@@ -293,7 +357,7 @@ static void sound_edit_draw(void)
     int envelope = sed_page == SED_FENV || sed_page == SED_AENV;
     int voice = sed_page == SED_VOICE, voice_mode = 0, glide = 0, slide = 0, bend = 2;
     char title[32], value[16];
-    static const char *const *const page_labels[] = { osc_labels, filter_labels, env_labels, env_labels, voice_labels, lfo_labels };
+    static const char *const *const page_labels[] = { osc_labels, filter_labels, env_labels, env_labels, voice_labels, lfo_labels, mod_labels };
     const char *const *labels = page_labels[sed_page];
     const char *page = names[sed_page];
     kit_color_t color = page_colors[sed_page];
@@ -307,7 +371,17 @@ static void sound_edit_draw(void)
         kit_rect(start, 25, end - start - 4, 3, i == sed_page ? color : FX_GRID);
     }
     kit_rect_outline(4, 34, 232, 120, 1, FX_GRID);
-    if (sed_page == SED_LFO) {
+    if (sed_page == SED_MOD) {
+        const sed_mod_t *mod = &sed_mod[track];
+        supported = kit_track_engine(track) == KIT_ENGINE_FMINI;
+        if (supported) {
+            for (i = 0; i < 2; i++) {
+                values[i * 2] = fx_percent(mod->target[i], SED_NMOD - 1);
+                values[i * 2 + 1] = fx_percent(mod->amount[i] + 127, 254);
+            }
+            sed_draw_mod(mod, color);
+        }
+    } else if (sed_page == SED_LFO) {
         supported = kit_track_lfo_of(track, &lfo);
         if (supported) {
             values[0] = fx_percent(lfo.rate, 127);
@@ -369,6 +443,15 @@ static void sound_edit_draw(void)
             cat(cat_int(out, hz % 100), " Hz");
         } else if (sed_page == SED_LFO && i == 2) cat(value, sed_lfo_targets[lfo.target]);
         else if (sed_page == SED_LFO && i == 3) cat(value, sed_lfo_waves[lfo.wave]);
+        else if (sed_page == SED_MOD) {
+            const sed_mod_t *mod = &sed_mod[track];
+            if (!(i & 1)) cat(value, sed_mod_targets[mod->target[i / 2]]);
+            else {
+                int amount = mod->amount[i / 2] * 100 / 127;
+                char *out = amount > 0 ? cat(value, "+") : value;
+                cat(cat_int(out, amount), "%");
+            }
+        }
         else if (voice) {
             if (i == 0) cat(value, sed_modes[voice_mode]);
             else if (i == 1 && glide) sed_time_text(value, glide);

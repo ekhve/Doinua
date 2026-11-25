@@ -36,6 +36,9 @@ Two semitones is the default. The track's current wheel position is scaled immed
 `kit_track_lfo` and `kit_track_lfo_of` access FMini's rate, wave and added modulation depth and target. The target is
 pitch, cutoff or volume. `kit_track_lfo_centihz` reads the rate's nominal frequency in hundredths of a Hz.
 
+`kit_track_mod_shape` applies temporary signed offsets to FMini's cutoff, resonance and LFO rate and to the track's
+drive, delay and reverb sends. The offsets leave the patch values available to the editors.
+
 The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_of`. At 127 the delay retains the
 original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
 delay line limit are applied.

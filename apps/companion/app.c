@@ -206,6 +206,7 @@ static int sound_index(int engine, int preset)
 }
 
 static void ar_load_preset(int t, int engine, int preset);
+static void sound_mod_reset(int t);
 
 static void pick_sound(int t)
 {
@@ -213,6 +214,7 @@ static void pick_sound(int t)
     sound_of(snd[t], &e, &p);
     ar_load_preset(t, e, p);
     kit_track_sound(t, e, p);
+    sound_mod_reset(t);
 }
 
 static int channel_of(int t) { return set.ch[t]; }
@@ -842,6 +844,7 @@ static int sound_fx_event(const kit_event_t *e);
 static void sound_fx_close(void);
 static void sound_fx_bend(int t, int value);
 static void sound_fx_mod(int t, int value);
+static void sound_mod_apply(int t, int value);
 static void sound_edit_press(void);
 static void sound_edit_release(void);
 static int sound_edit_event(const kit_event_t *e);

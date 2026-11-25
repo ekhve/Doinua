@@ -102,7 +102,10 @@ static void fmini_block(track_t *t)
         static const uint8_t KN[3] = {P_E0, P_E1, P_E2};
         uint32_t j;
         for (j = 0; j < 3; j++) {
-            int32_t want = (int32_t)clamp(t->p[KN[j]], 0, 127) << 16, d = want - fmini_sm[tr][j], st;
+            int target = t->p[KN[j]];
+            if (j == 0) target += t->mod_cutoff;
+            if (j == 1) target += t->mod_resonance;
+            int32_t want = (int32_t)clamp(target, 0, 127) << 16, d = want - fmini_sm[tr][j], st;
             if (i == NVOICE || !(fmini_sm_ok & (1u << tr))) {
                 fmini_sm[tr][j] = want;
                 continue;

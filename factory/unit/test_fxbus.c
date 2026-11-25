@@ -211,6 +211,22 @@ int main(void)
         CHECK(!memcmp(out, in, LEN * sizeof *in), "zero WOBBLE depth bypasses the filter");
     }
 
+    {
+        int32_t dry[KIT_BLOCK] = {8000};
+        int32_t mix[KIT_BLOCK] = {0};
+        kit_track_sends(0, 0, 0, 40, 20);
+        kit__fx_mod(0, 0, -40, 90);
+        kit__fx_begin();
+        kit__fx_track(0, dry, mix);
+        CHECK(kit__fx_rev_in()[0] > 6800, "positive wheel offset adds reverb");
+        CHECK(kit_track_send_of(0, KIT_SEND_DELAY) == 40 && kit_track_send_of(0, KIT_SEND_REVERB) == 20,
+              "wheel FX routes retain the base sends");
+        CHECK(!kit__fx_sends(1), "wheel FX routing applies to the selected track only");
+        kit__fx_mod(0, 0, 0, 0);
+        kit_track_sends(0, 0, 0, 0, 0);
+        CHECK(!kit__fx_sends(0), "zero wheel offsets restore dry routing");
+    }
+
     kit_track_sends(0, 0, 127, 0, 0);
     memset(in, 0, sizeof in);
     for (i = 0; i < FS; i++) in[i] = (i / 100) & 1 ? 8000 : -8000;

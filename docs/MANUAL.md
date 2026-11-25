@@ -519,6 +519,10 @@ shared Felucca engines and FMini.
 On FMini, press **LFO** to edit rate, depth, target and wave. Pitch, cutoff and volume are available as targets on
 the mono FM-1. At zero depth only the preset's original modulation routes apply.
 
+On FMini's **MOD** page, choose two destinations and their signed amounts. PERFORM MOD and MIDI CC1 apply the
+same routes. Bringing MOD to zero returns the sound to its base settings. Reselecting the sound restores the
+original vibrato route.
+
 ### How many notes at once
 
 The FM-1 plays up to 12 notes at once across the four tracks, as long as they fit its processor. Some sounds take more

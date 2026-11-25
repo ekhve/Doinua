@@ -229,6 +229,21 @@ static void check_live_lfo(int preset)
     kit__eng_select(0, -1, 0);
 }
 
+static void check_wheel_filter(int preset)
+{
+    kit_sound_filter_t filter;
+    kit_sound_mod_t route = {.cutoff = -100};
+    double open, closed;
+    kit__eng_select(0, E, preset);
+    kit__eng_note_on(0, 72, 100);
+    render(700, 0, 0); render(100, &open, 0);
+    kit_track_mod_shape(0, &route);
+    render(1400, 0, 0); render(100, &closed, 0);
+    CHECK(open > 100 && closed < open / 2, "signed cutoff route darkens a held note (%.1f to %.1f RMS)", open, closed);
+    CHECK(kit_track_filter_of(0, &filter) && filter.cutoff == 127, "wheel offset keeps the patch's cutoff");
+    kit__eng_select(0, -1, 0);
+}
+
 int main(void)
 {
     check_factory_arp();
@@ -252,6 +267,7 @@ int main(void)
     check_live_osc(sine);
     check_live_envelopes(sine);
     check_live_lfo(sine);
+    check_wheel_filter(sine);
     kit__eng_select(0, E, sine);
     kit__eng_note_on(0, 60, 100);
     render(300, 0, 0);

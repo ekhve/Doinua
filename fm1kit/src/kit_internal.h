@@ -23,6 +23,7 @@ const char *kit__eng_name(int i);
 int kit__eng_npresets(int i);
 const char *kit__eng_preset_name(int i, int p);
 void kit__eng_select(int part, int i, int p);     /* i < 0: none */
+void kit__fx_mod(int track, int drive, int delay, int reverb);    /* caller holds the kit lock */
 void kit__eng_note_on(int part, int note, int vel);
 /* API 27: from16 the pitch (1/16 semitones) the note slides from (-1: none) over glide_ms; mono: the part's one voice takes
  * the note (legato: without a new attack). Returns 1 when it played. */

@@ -14,6 +14,7 @@ static int16_t dly_buf[DLY_LEN] __attribute__((section(".pool")));
 static int16_t cho_buf[CHO_LEN] __attribute__((section(".pool")));
 
 static uint8_t snd[KIT_NTRACKS][4];             /* DRIVE, CHORUS, DELAY, REVERB sends, 0..127 */
+static int8_t wheel_fx[KIT_NTRACKS][3];         /* signed offsets for DRIVE, DELAY, REVERB */
 static struct {
     uint8_t crush, darkness, dry;               /* zero is an open tone and full wet, the original drive */
     int32_t lp;
@@ -54,6 +55,13 @@ void kit_track_sends(int t, int drive, int chorus, int delay, int reverb)
     kit__unlock(k);
 }
 int kit_track_send_of(int t, int which) { return t >= 0 && t < KIT_NTRACKS && which >= 0 && which < 4 ? snd[t][which] : 0; }
+
+void kit__fx_mod(int t, int drive, int delay, int reverb)
+{
+    wheel_fx[t][0] = clamp32(drive, -127, 127);
+    wheel_fx[t][1] = clamp32(delay, -127, 127);
+    wheel_fx[t][2] = clamp32(reverb, -127, 127);
+}
 
 void kit_fx_bus(const kit_fx_t *f)
 {
@@ -173,7 +181,8 @@ void kit_track_dirt_of(int t, kit_dirt_t *f)
 int kit__fx_sends(int t)
 {
     return t >= 0 && t < KIT_NTRACKS &&
-           (snd[t][0] | snd[t][1] | snd[t][2] | snd[t][3] | dirt[t].crush | dirt[t].darkness | (perform.track == t));
+           (snd[t][0] | snd[t][1] | snd[t][2] | snd[t][3] | dirt[t].crush | dirt[t].darkness |
+            wheel_fx[t][0] | wheel_fx[t][1] | wheel_fx[t][2] | (perform.track == t));
 }
 
 void kit__fx_begin(void)                        /* a block: the buses' inputs empty */
@@ -269,6 +278,11 @@ void kit__fx_track(int t, int32_t *x, int32_t *mix)
     int i;
     int32_t d = snd[t][0], c = snd[t][1] * 258, l = snd[t][2], r = snd[t][3];
     int32_t crush = dirt[t].crush, darkness = dirt[t].darkness;
+    if (wheel_fx[t][0] | wheel_fx[t][1] | wheel_fx[t][2]) {
+        d = clamp32(d + wheel_fx[t][0], 0, 127);
+        l = clamp32(l + wheel_fx[t][1], 0, 127);
+        r = clamp32(r + wheel_fx[t][2], 0, 127);
+    }
     if (perform.track == t) {
         if (perform.wah_frequency) fx_perform_filter(x, perform.wah_frequency, perform.wah_damping, 0);
         if (perform.wobble_depth) fx_wobble_block(x);

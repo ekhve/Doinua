@@ -36,7 +36,7 @@ static void sound_fx_bend(int t, int value)
 static void sound_fx_mod(int t, int value)
 {
     fx_mod[t] = value;
-    kit_track_mod(t, value);
+    sound_mod_apply(t, value);
     if (sound_fx_open() && t == track) dirty = 1;
 }
 
@@ -226,6 +226,13 @@ static int sound_fx_event(const kit_event_t *e)
 
 static void sound_fx_frame(uint32_t now)
 {
+    static int was_producer = 1;
+    int in_producer = mode == MODE_PRODUCER;
+    if (was_producer != in_producer) {
+        int t;
+        was_producer = in_producer;
+        for (t = 0; t < KIT_NTRACKS; t++) sound_mod_apply(t, fx_mod[t]);
+    }
     if (mode != MODE_PRODUCER && fx_pair_track >= 0) {
         fx_pair_track = -1;
         fx_reset_pair();
