@@ -249,20 +249,52 @@ static void sound_fx_frame(uint32_t now)
 
 static int fx_percent(int value, int limit) { return (value * 100 + limit / 2) / limit; }
 
+static kit_color_t fx_dial_shade(kit_color_t stroke, int alpha)
+{
+    kit_color_t bg = FX_BG;
+    int red = (((stroke >> 11) * alpha + (bg >> 11) * (4 - alpha) + 2) / 4) << 11;
+    int green = ((((stroke >> 5) & 63) * alpha + ((bg >> 5) & 63) * (4 - alpha) + 2) / 4) << 5;
+    int blue = ((stroke & 31) * alpha + (bg & 31) * (4 - alpha) + 2) / 4;
+    return (kit_color_t)(red | green | blue);
+}
+
 static void fx_dial(int cx, const char *label, const char *value, int percent, kit_color_t col)
 {
+    /* Directions for the 270-degree sweep, starting at the lower left. */
     static const int8_t arc[][2] = {
-        {-14, 14}, {-17, 11}, {-18, 8}, {-20, 4}, {-20, 0}, {-20, -4}, {-18, -8}, {-17, -11},
-        {-14, -14}, {-11, -17}, {-8, -18}, {-4, -20}, {0, -20}, {4, -20}, {8, -18}, {11, -17},
-        {14, -14}, {17, -11}, {18, -8}, {20, -4}, {20, 0}, {20, 4}, {18, 8}, {17, 11}, {14, 14}
+        {-90, 90}, {-106, 71}, {-118, 49}, {-125, 25}, {-127, 0}, {-125, -25}, {-118, -49}, {-106, -71},
+        {-90, -90}, {-71, -106}, {-49, -118}, {-25, -125}, {0, -127}, {25, -125}, {49, -118}, {71, -106},
+        {90, -90}, {106, -71}, {118, -49}, {125, -25}, {127, 0}, {125, 25}, {118, 49}, {106, 71}, {90, 90}
     };
-    int i, end = (percent * 24 + 50) / 100;
-    int cy = 196;
-    for (i = 0; i <= 24; i++) {
-        int x = cx + arc[i][0], y = cy + arc[i][1];
-        kit_circle(x, y, 2, i <= end ? col : FX_GRID);
+    const int cy = 196;
+    kit_color_t shade[2][5];
+    int x, y, alpha, end = percent * 24 / 100, fraction = percent * 24 % 100;
+    int dx = arc[end][0], dy = arc[end][1], past_top = percent >= 50;
+    if (fraction) {
+        dx += (arc[end + 1][0] - dx) * fraction / 100;
+        dy += (arc[end + 1][1] - dy) * fraction / 100;
     }
-    kit_line(cx, cy, cx + arc[end][0] * 13 / 20, cy + arc[end][1] * 13 / 20, FX_INK);
+    for (alpha = 1; alpha <= 4; alpha++) {
+        shade[0][alpha] = fx_dial_shade(FX_GRID, alpha);
+        shade[1][alpha] = fx_dial_shade(col, alpha);
+    }
+    kit_circle(cx, cy, 15, KIT_RGB(31, 39, 54));
+    kit_circle(cx, cy, 14, KIT_RGB(21, 26, 36));
+    /* Rasterize the annulus with partial coverage at both radial edges. */
+    for (y = -21; y <= 21; y++) {
+        for (x = -21; x <= 21; x++) {
+            int distance = x * x + y * y - 400;
+            int cross, active;
+            if (distance < 0) distance = -distance;
+            if (distance > 43 || (y > x && y > -x)) continue;
+            alpha = (52 - distance) / 9;
+            if (alpha > 4) alpha = 4;
+            cross = x * dy - y * dx;
+            active = percent && ((past_top && x < 0) || ((past_top || x <= 0) && cross >= 0));
+            kit_pixel(cx + x, cy + y, shade[active][alpha]);
+        }
+    }
+    kit_line(cx + dx * 4 / 127, cy + dy * 4 / 127, cx + dx * 12 / 127, cy + dy * 12 / 127, FX_INK);
     kit_text(cx, 163, label, KIT_FONT_TINY, KIT_ALIGN_CENTER, FX_DIM);
     kit_text(cx, 222, value, KIT_FONT_XSMALL, KIT_ALIGN_CENTER, FX_INK);
 }
