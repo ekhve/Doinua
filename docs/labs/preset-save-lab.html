@@ -26,7 +26,7 @@ button:focus-visible,select:focus-visible{outline:2px solid #ffb347}
 </head>
 <body><main>
 <h1>Preset save lab</h1>
-<p>Choose a sound, turn K1 to change cutoff, then press SAVE. This prototype stores presets in the page until it reloads.</p>
+<p>Choose a sound, turn K1 to change cutoff, then press SAVE. The lab saves to this browser. Simulate a reboot to check what was saved.</p>
 <div class="panel">
   <label class="actions">Current sound <select id="preset"></select></label>
   <div class="screen" aria-live="polite">
@@ -43,6 +43,7 @@ button:focus-visible,select:focus-visible{outline:2px solid #ffb347}
     <button data-key="save">SAVE</button>
     <button data-key="home">HOME</button>
   </div>
+  <button id="reboot">Simulate reboot</button>
 </div>
 </main>
 <script>
@@ -51,8 +52,19 @@ const factory = [
   { id:"sine", kind:"Factory", name:"SINE SOLO", cutoff:100 },
   { id:"init", kind:"INIT", name:"INIT", cutoff:65 },
 ];
-let user = [{ id:"u1", kind:"User", name:"Night Bass", cutoff:44 }];
-let nextId = 2;
+const storageKey = "doinua.preset-save-lab.v1";
+const defaultUser = [{ id:"u1", kind:"User", name:"Night Bass", cutoff:44 }];
+function readSaved() {
+  try {
+    const record = JSON.parse(localStorage.getItem(storageKey));
+    if (record && Array.isArray(record.presets) && Number.isInteger(record.nextId)) return record;
+  } catch (error) {
+    // The lab can still demonstrate edits when browser storage is unavailable.
+  }
+  return { presets:defaultUser, nextId:2 };
+}
+let { presets:user, nextId } = readSaved();
+let pending = null;
 let sound = { ...factory[0] };
 let mode = "edit", selected = 0, name = [], cursor = 0, notice = "";
 const glyphs = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-";
@@ -75,18 +87,39 @@ function beginName() {
   mode = "name";
 }
 function store(asNew) {
-  if (asNew) {
-    const label = name.join("").trim();
-    if (!label) { notice = "Enter a name"; return; }
-    sound = { ...sound, id:"u" + nextId++, kind:"User", name:label };
-    user = [...user, { ...sound }];
-  } else {
-    user = user.map(preset => preset.id === sound.id ? { ...sound } : preset);
-  }
-  notice = "Saved " + sound.name;
-  mode = "edit";
+  const label = asNew ? name.join("").trim() : sound.name;
+  if (!label) { notice = "Enter a name"; return; }
+  const candidate = asNew ? { ...sound, id:"u" + nextId, kind:"User", name:label } : { ...sound };
+  const record = {
+    presets: asNew ? [...user, candidate] : user.map(preset => preset.id === candidate.id ? candidate : preset),
+    nextId: nextId + (asNew ? 1 : 0),
+  };
+  mode = "pending";
+  notice = "Saving " + label;
+  pending = setTimeout(() => {
+    pending = null;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(record));
+      user = record.presets;
+      nextId = record.nextId;
+      sound = { ...candidate };
+      notice = "Saved " + label;
+    } catch (error) {
+      notice = "Save failed · try again";
+    }
+    mode = "edit";
+    draw();
+  }, 900);
+}
+function reboot() {
+  if (pending !== null) clearTimeout(pending);
+  pending = null;
+  ({ presets:user, nextId } = readSaved());
+  load(factory[0].id);
+  draw();
 }
 function step(key) {
+  if (mode === "pending") return;
   const dir = key === "left" || key === "down" ? -1 : 1;
   const select = key === "left" || key === "right";
   const knob = key === "down" || key === "up";
@@ -126,6 +159,9 @@ function draw() {
   if (mode === "edit") {
     text("title","Cutoff " + sound.cutoff + "%");
     text("hint",notice || "K1 edits cutoff · SAVE opens preset options");
+  } else if (mode === "pending") {
+    text("title",notice);
+    text("hint","Waiting for storage");
   } else if (mode === "menu") {
     text("title",sound.kind === "User" ? "Overwrite " + sound.name + "?" : "Save a new preset?");
     const items = document.createElement("ul");
@@ -153,6 +189,7 @@ function draw() {
 }
 input.addEventListener("change", () => { load(input.value); draw(); });
 document.querySelectorAll("[data-key]").forEach(key => key.addEventListener("click", () => step(key.dataset.key)));
+el("reboot").addEventListener("click", reboot);
 draw();
 </script>
 </body>
