@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "kit_internal.h"
 
 uint32_t kit__lock(void) { return 0; }
@@ -45,6 +46,16 @@ int main(void)
     for (i = 101; i < N; i++) CHECK(out[i] == 0, "no sends: nothing after (%d at %d)", (int)out[i], i);
 
     kit_fx_bus(&f);
+    CHECK(kit_delay_ms_of() == d, "displayed time matches DIGITAL delay");
+    f.dly_type = 3;
+    kit_fx_bus(&f);
+    CHECK(kit_delay_ms_of() == 31 + d / 10, "displayed time follows SLAP scaling");
+    f.dly_type = 1;
+    f.dly_time = 127;
+    kit_fx_bus(&f);
+    CHECK(kit_delay_ms_of() == 743, "displayed time accounts for the delay line limit");
+    f.dly_time = 64;
+    kit_fx_bus(&f);
     kit_track_sends(0, 0, 0, 127, 0);
     memset(out, 0, sizeof out);
     run(0, in, N);
@@ -58,6 +69,27 @@ int main(void)
     for (i = N - FS / 2; i < N; i++) late |= out[i];
     CHECK(!late, "and it ends: silence half a second before the end (no DC, no hum)");
 
+    CHECK(kit_delay_tone_of() == 127, "the delay starts with its type's original tone");
+    {
+        int tones[] = { 0, 126 };
+        int echo[2] = { 0, 0 };
+        int setting;
+        for (setting = 0; setting < 2; setting++) {
+            kit_delay_tone(tones[setting]);
+            CHECK(kit_delay_tone_of() == tones[setting], "delay tone reads back");
+            run(0, in, N);
+            CHECK(out[100] == 30000, "setting delay tone leaves the dry signal unchanged");
+            for (i = 100 + dn - 4; i < 100 + dn + 8; i++) {
+                int a = abs(out[i]);
+                if (a > echo[setting]) echo[setting] = a;
+            }
+        }
+        CHECK(echo[0] > 0 && echo[0] < echo[1], "dark tone softens the impulse echo (%d < %d)", echo[0], echo[1]);
+        kit_delay_tone(127);
+        run(0, in, N);
+        CHECK(abs(out[at1]) == peak1, "type tone restores the original impulse echo");
+    }
+
     kit_track_sends(0, 127, 0, 0, 0);
     for (i = 0; i < N; i++) in[i] = i < FS / 2 ? ((i / 50) & 1 ? 32767 : -32767) : 0;
     memset(out, 0, sizeof out);
@@ -65,6 +97,135 @@ int main(void)
     for (i = 0; i < FS / 2; i++)
         CHECK(abs(out[i]) <= 32768 && (out[i] > 0) == (in[i] > 0), "DRIVE: a full square is clipped softly under 1.0, its sign kept (%d at %d)", (int)out[i], i);
     for (i = FS / 2; i < N; i++) CHECK(out[i] == 0, "DRIVE: silence stays silence (%d at %d)", (int)out[i], i);
+
+    {
+        enum { BLOCKS = KIT_BLOCK * 16 };
+        kit_dirt_t f = {127, 127, 127}, read;
+        kit_track_sends(0, 0, 0, 0, 0);
+        for (i = 0; i < BLOCKS; i++) in[i] = (i & 1) ? 12000 : -3000;
+        kit_track_dirt(0, &f);
+        CHECK(kit__fx_sends(0) && !kit__fx_sends(1), "DIRT routes only its track");
+        run(0, in, BLOCKS);
+        CHECK(out[0] == 0 && out[1] == 8192, "3-bit crush quantizes the output (%d, %d)", (int)out[0], (int)out[1]);
+        CHECK(kit_track_dirt_curve(0, in[1]) == out[1], "the static curve matches the quantized output");
+        f = (kit_dirt_t){0, 0, 127};
+        kit_track_dirt(0, &f);
+        for (i = 0; i < BLOCKS; i++) in[i] = (i & 1) ? 8000 : -8000;
+        run(0, in, BLOCKS);
+        CHECK(abs(out[BLOCKS - 1]) < 1000, "dark DIRT tone attenuates the alternating input");
+        f = (kit_dirt_t){127, 0, 0};
+        kit_track_dirt(0, &f);
+        kit_track_dirt_of(0, &read);
+        CHECK(read.crush == 127 && read.tone == 0 && read.mix == 0, "DIRT reads back its settings");
+        kit_track_sends(0, 127, 0, 0, 0);
+        run(0, in, BLOCKS);
+        CHECK(!memcmp(out, in, BLOCKS * sizeof *in), "zero DIRT MIX keeps the dry samples");
+        f = (kit_dirt_t){0, 127, 127};
+        kit_track_dirt(0, &f);
+    }
+
+    {
+        kit_fx_t base;
+        kit_dirt_t base_dirt;
+        int old_time = kit_delay_ms_of();
+        kit_track_sends(0, 0, 0, 0, 0);
+        memset(in, 0, sizeof in);
+        in[100] = 22000;
+        kit_perform_fx(0, KIT_PERFORM_DUB, 127, 0);
+        CHECK(kit__fx_sends(0) && !kit__fx_sends(1), "DUB routes the selected track only");
+        run(0, in, N);
+        CHECK(out[541] > 0 && kit_delay_ms_of() == old_time, "DUB overlays a ten ms echo without changing TIME");
+        kit_fx_bus_of(&base);
+        CHECK(base.dly_time == 64 && base.dly_fb == 60 && !kit_track_send_of(0, KIT_SEND_DELAY), "DUB preserves base delay settings");
+        kit_perform_fx(0, KIT_PERFORM_SPACE, 127, 0);
+        kit__fx_begin();
+        in[0] = 8000;
+        kit__fx_track(0, in, out);
+        CHECK(kit__fx_rev_in()[0] > 7000 && !kit_track_send_of(0, KIT_SEND_REVERB), "SPACE overlays reverb send");
+        kit_perform_fx(0, KIT_PERFORM_DIRT, 0, 127);
+        kit__fx_begin();
+        in[0] = 12000;
+        kit__fx_track(0, in, out);
+        kit_track_dirt_of(0, &base_dirt);
+        CHECK(in[0] == 8192 && !base_dirt.crush, "DIRT overlays crush without changing the track setting");
+        kit_perform_fx(-1, KIT_PERFORM_DIRT, 0, 0);
+        CHECK(!kit__fx_sends(0), "clearing the performance overlay restores base routing");
+    }
+
+    {
+        int energies[2] = {0, 0}, test;
+        enum { LEN = KIT_BLOCK * 128 };
+        for (test = 0; test < 2; test++) {
+            int hz = test ? 1000 : 100;
+            kit_perform_fx(-1, KIT_PERFORM_WAH, 0, 0);
+            kit_perform_fx(0, KIT_PERFORM_WAH, 56, 64);
+            for (i = 0; i < LEN; i++)
+                in[i] = (int32_t)(4000 * sin(i * (6.283185307179586 / FS) * hz));
+            run(0, in, LEN);
+            for (i = LEN / 2; i < LEN; i++) energies[test] += abs(out[i]);
+        }
+        CHECK(energies[0] > 0 && energies[1] > 4 * energies[0], "WAH passes the sweep band (%d > %d)",
+              energies[1], energies[0]);
+        kit_perform_fx(-1, KIT_PERFORM_WAH, 0, 0);
+        run(0, in, LEN);
+        CHECK(!memcmp(out, in, LEN * sizeof *in), "clearing WAH restores the input");
+        memset(in, 0, sizeof in);
+        for (i = 0; i < LEN / 2; i++)
+            in[i] = (int32_t)(4500 * sin(i * (6.283185307179586 / FS) * 5657));
+        kit_perform_fx(0, KIT_PERFORM_WAH, 127, 127);
+        run(0, in, N);
+        for (i = N - FS / 2; i < N && !out[i]; i++) {}
+        CHECK(i == N, "WAH stops ringing at maximum sweep and sharpness");
+        kit_perform_fx(-1, KIT_PERFORM_WAH, 0, 0);
+    }
+
+    {
+        enum { LEN = KIT_BLOCK * 512 };
+        int tone, window, energy[2][2] = {{0, 0}, {0, 0}};
+        for (tone = 0; tone < 2; tone++) {
+            int hz = tone ? 3000 : 80;
+            for (i = 0; i < LEN; i++) in[i] = (int32_t)(4000 * sin(i * (6.283185307179586 / FS) * hz));
+            kit_perform_fx(-1, KIT_PERFORM_WOBBLE, 0, 0);
+            kit_perform_fx(0, KIT_PERFORM_WOBBLE, 127, 127);
+            run(0, in, LEN);
+            for (window = 0; window < 2; window++) {
+                int start = window ? 2150 : 4700;
+                for (i = start; i < start + 400; i++) energy[tone][window] += abs(out[i]);
+            }
+        }
+        CHECK(energy[0][0] > energy[0][1] / 2 && energy[0][1] > energy[0][0] / 2,
+              "WOBBLE keeps the low-frequency fundamental through the cycle");
+        CHECK(energy[1][0] > 5 * energy[1][1], "WOBBLE varies cutoff (%d > %d)", energy[1][0], energy[1][1]);
+        kit_perform_fx(-1, KIT_PERFORM_WOBBLE, 0, 0);
+        kit_perform_fx(0, KIT_PERFORM_WOBBLE, 0, 127);
+        run(0, in, LEN);
+        {
+            int slow = 0;
+            for (i = 2150; i < 2550; i++) slow += abs(out[i]);
+            CHECK(slow > 4 * energy[1][1], "WOBBLE SPEED changes the cutoff cycle");
+        }
+        run(1, in, LEN);
+        CHECK(!memcmp(out, in, LEN * sizeof *in), "WOBBLE affects only its selected track");
+        kit_perform_fx(0, KIT_PERFORM_WOBBLE, 127, 0);
+        run(0, in, LEN);
+        CHECK(!memcmp(out, in, LEN * sizeof *in), "zero WOBBLE depth bypasses the filter");
+    }
+
+    {
+        int32_t dry[KIT_BLOCK] = {8000};
+        int32_t mix[KIT_BLOCK] = {0};
+        kit_track_sends(0, 0, 0, 40, 20);
+        kit__fx_mod(0, 0, -40, 90);
+        kit__fx_begin();
+        kit__fx_track(0, dry, mix);
+        CHECK(kit__fx_rev_in()[0] > 6800, "positive wheel offset adds reverb");
+        CHECK(kit_track_send_of(0, KIT_SEND_DELAY) == 40 && kit_track_send_of(0, KIT_SEND_REVERB) == 20,
+              "wheel FX routes retain the base sends");
+        CHECK(!kit__fx_sends(1), "wheel FX routing applies to the selected track only");
+        kit__fx_mod(0, 0, 0, 0);
+        kit_track_sends(0, 0, 0, 0, 0);
+        CHECK(!kit__fx_sends(0), "zero wheel offsets restore dry routing");
+    }
 
     kit_track_sends(0, 0, 127, 0, 0);
     memset(in, 0, sizeof in);

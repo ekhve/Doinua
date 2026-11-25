@@ -1,0 +1,14 @@
+{
+  "scenario": "FX opens a live reverb page",
+  "name": "companion, ST-69: REVERB diagrams the live room send and pre-delay",
+  "app": "companion",
+  "ms": 8500,
+  "keys": "900:FX,960:FX^,1200:FX,1260:FX^,1500:FX,1560:FX^,1840:e2:+12,1970:e3:+32,2290:e4:-9,2430:e5:+30,3000:C4@100,3080:C4^",
+  "checks": [
+    {"type": "screen", "at": 1740},
+    {"type": "screen", "at": 2840},
+    {"type": "sound", "from": 3030, "to": 3070},
+    {"type": "sound", "from": 3170, "to": 3230, "rms": 100},
+    {"type": "silence", "from": 7900, "to": 8300}
+  ]
+}

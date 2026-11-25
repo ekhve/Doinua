@@ -1,0 +1,16 @@
+{
+  "scenario": "ENV opens the native FMini contours",
+  "name": "companion, ST-46: ENV opens the FMini filter and amp contours",
+  "app": "companion",
+  "ms": 9100,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:ENV,3670:ENV^,4030:e3:+8,4350:ENV,4420:ENV^,4910:e5:-26,5230:C5@100,5650:C5^,6330:e5:+24,6800:C5@100,7230:C5^,8200:HOME,8270:HOME^",
+  "checks": [
+    {"type": "screen", "at": 3850},
+    {"type": "screen", "at": 4630},
+    {"type": "screen", "at": 5100},
+    {"type": "sound", "from": 5450, "to": 5630},
+    {"type": "screen", "at": 6580},
+    {"type": "sound", "from": 7330, "to": 7560},
+    {"type": "peak", "from": 5230, "to": 8500, "max_dbfs": -1}
+  ]
+}

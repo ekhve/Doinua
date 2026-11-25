@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 41
+#define FM1KIT_API 43
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -194,13 +194,50 @@ int kit_voices_load(void);      /* API 20: the estimated CPU the voices take, % 
 uint32_t kit_voices_stolen(void);   /* API 20: how many voices were taken or notes dropped since start */
 int kit_track_engine(int track);
 int kit_track_preset(int track);
+/* Native filter controls of the active sound, 0..127. Return 0 for unsupported tracks. */
+typedef struct { uint8_t cutoff, resonance, amount, keytrack; } kit_sound_filter_t;
+int kit_track_filter_of(int track, kit_sound_filter_t *filter);
+int kit_track_filter(int track, const kit_sound_filter_t *filter);
+/* Selected FMini or Juno-106 track's spectrum before the shared effects. A negative track disables capture. */
+#define KIT_SPECTRUM_BANDS 24
+void kit_track_spectrum(int track);
+int kit_track_spectrum_read(uint8_t bands[KIT_SPECTRUM_BANDS]);
+int kit_track_spectrum_position(int track, int cutoff);   /* nominal cutoff on the spectrum axis, 0..100 */
+/* First two oscillators of an editable sound. Detune is signed cents, mix is oscillator 2's share (0..127). */
+enum { KIT_OSC_TRI, KIT_OSC_SHARK, KIT_OSC_SAW, KIT_OSC_SQR, KIT_OSC_WIDE, KIT_OSC_NARROW, KIT_OSC_SINE, KIT_OSC_NWAVES };
+enum { KIT_OSC_WAVE1, KIT_OSC_WAVE2, KIT_OSC_DETUNE, KIT_OSC_MIX };
+typedef struct { uint8_t wave1, wave2, mix; int16_t detune; } kit_sound_osc_t;
+int kit_track_osc_of(int track, kit_sound_osc_t *osc);
+int kit_track_osc(int track, int control, int value);
+/* Native envelopes of an editable sound. Controls are 0..127; times use the engine's dial scale. */
+enum { KIT_ENV_FILTER, KIT_ENV_AMP };
+enum { KIT_ENV_ATTACK, KIT_ENV_DECAY, KIT_ENV_SUSTAIN, KIT_ENV_RELEASE };
+int kit_track_envelope_of(int track, int kind, uint8_t values[4]);
+int kit_track_envelope(int track, int kind, int control, int value);
+int kit_track_envelope_ms(int track, int time_dial);      /* FMini's common time dial */
+int kit_track_envelope_stage_ms(int track, int control, int time_dial);
+/* FMini LFO rate and depth use 0..127. The editable route has zero depth in factory presets. */
+enum { KIT_LFO_SINE, KIT_LFO_TRI, KIT_LFO_SAW, KIT_LFO_SQUARE, KIT_LFO_NWAVES };
+enum { KIT_LFO_PITCH, KIT_LFO_CUTOFF, KIT_LFO_VOLUME, KIT_LFO_NTARGETS };
+typedef struct { uint8_t rate, depth, target, wave; } kit_sound_lfo_t;
+int kit_track_lfo_of(int track, kit_sound_lfo_t *lfo);
+int kit_track_lfo(int track, const kit_sound_lfo_t *lfo);
+int kit_track_lfo_centihz(int track, int dial);
+/* Real-time FMini graph markers for its newest sounding voice. Stage 1/2/3 is attack/decay or sustain/release. */
+typedef struct { uint8_t amp_stage, amp_level, filter_stage, filter_level, lfo_phase; } kit_sound_motion_t;
+int kit_track_motion_of(int track, kit_sound_motion_t *motion);   /* levels 0..127, phase 0..255 */
+/* Temporary modulation of native FMini controls and track effects, in control steps (-127..127). */
+typedef struct { int16_t cutoff, resonance, rate, drive, delay, reverb; } kit_sound_mod_t;
+void kit_track_mod_shape(int track, const kit_sound_mod_t *mod);
 void kit_track_note_on(int track, int note, int vel);
 void kit_track_note_off(int track, int note);
 void kit_track_notes_off(int track);
-/* A MIDI keyboard's controls on a track (API 17, D-044). Bend: -8192..8191, two semitones each way. Mod: 0..127, a
+/* A MIDI keyboard's controls on a track (API 17, D-044). Bend: -8192..8191, two semitones each way by default. Mod: 0..127, a
  * vibrato (5.5 Hz) up to half a semitone each way. Sustain: while on, the track's note-offs wait, then all go at once
  * when it goes off (kit_track_notes_off clears them). The drums neither bend nor wobble. */
 void kit_track_bend(int track, int value);
+void kit_track_bend_range(int track, int semitones);       /* 1..12, retained for the track */
+int kit_track_bend_range_of(int track);
 void kit_track_mod(int track, int depth);
 void kit_track_sustain(int track, int on);
 /* API 18 (D-045): a click (a short blip on its own voice, never on a track: 1 kHz, 2 kHz accented), level 1..10; and
@@ -214,6 +251,11 @@ void kit_tune(int cents);
  * WOOF a dog's bark, MOO a cow, HOOT an owl (two hoots), HOWL a coyote. */
 void kit_reverb(int level);
 int kit_reverb_of(void);
+/* Shared room shape: SIZE 0..127, DAMP 0..100 percent, PRE-DELAY 0..120 ms. */
+typedef struct { uint8_t size, damp, pre_ms; } kit_reverb_shape_t;
+void kit_reverb_shape(const kit_reverb_shape_t *shape);
+void kit_reverb_shape_of(kit_reverb_shape_t *shape);
+int kit_reverb_tail_ms_of(void);            /* send tail processing time before pre-delay */
 /* API 36 (D-093): the effects bus (ST-69), after Felucca's and fmini-1's: each track's DRIVE, then its sends into
  * three shared buses, CHORUS, DELAY and REVERB (the reverb above, fed by the sends as well as by kit_reverb's
  * level). A track's sends are 0..127; kit_track_sound sets them from the sound's preset (its FX(DIST, CHORUS, DELAY,
@@ -226,6 +268,21 @@ void kit_track_sends(int track, int drive, int chorus, int delay, int reverb);
 int kit_track_send_of(int track, int which);
 void kit_fx_bus(const kit_fx_t *fx);
 void kit_fx_bus_of(kit_fx_t *fx);
+/* Shared delay tone: 0 is darkest, 126 brightest, 127 uses the delay type's original tone. */
+void kit_delay_tone(int tone);
+int kit_delay_tone_of(void);
+/* Rounded delay time of the selected type and setting, within the available delay line. */
+int kit_delay_ms_of(void);
+/* Track DIRT controls, 0..127. DRIVE is the existing drive send. */
+typedef struct { uint8_t crush, tone, mix; } kit_dirt_t;
+void kit_track_dirt(int track, const kit_dirt_t *dirt);
+void kit_track_dirt_of(int track, kit_dirt_t *dirt);
+int kit_dirt_bits(int crush);
+int32_t kit_track_dirt_curve(int track, int32_t sample);   /* static Q15 transfer: drive, crush, mix */
+/* One live performance pair. X and Y are 0..127. A negative track clears the overlay. */
+enum { KIT_PERFORM_FILTER, KIT_PERFORM_WAH, KIT_PERFORM_DUB, KIT_PERFORM_SPACE, KIT_PERFORM_DIRT,
+       KIT_PERFORM_WOBBLE, KIT_NPERFORM_FX };
+void kit_perform_fx(int track, int pair, int x, int y);
 enum { KIT_SFX_PFFT = 0, KIT_SFX_PLOP, KIT_SFX_NEIGH, KIT_SFX_GULL, KIT_SFX_BAA, KIT_SFX_CHIRP,
        KIT_SFX_WHISTLE, KIT_SFX_COUGH, KIT_SFX_SNEEZE, KIT_SFX_WOOF, KIT_SFX_MOO, KIT_SFX_HOOT, KIT_SFX_HOWL, KIT_NSFX };
 void kit_sfx(int id, int level);          /* level 1..10 */

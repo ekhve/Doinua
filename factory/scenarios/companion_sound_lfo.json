@@ -1,0 +1,14 @@
+{
+  "scenario": "LFO opens the editable FMini modulation",
+  "name": "companion, ST-46: LFO changes the sound of a held FMini note",
+  "app": "companion",
+  "ms": 8300,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:LFO,3670:LFO^,4040:e2:-32,4460:e2:+14,4800:e4:+2,5120:e5:+3,5500:e3:+30,6200:C5@100,7550:C5^",
+  "checks": [
+    {"type": "screen", "at": 3900},
+    {"type": "screen", "at": 6000},
+    {"type": "sound", "from": 6300, "to": 7450},
+    {"type": "level_ratio", "a": [6900, 7075], "b": [6500, 6580], "ratio": 0.055, "tol": 0.45},
+    {"type": "peak", "from": 6200, "to": 7550, "max_dbfs": -1}
+  ]
+}

@@ -487,11 +487,22 @@ function drawDirt(x, y, w, h, col) {
   txt("in > out: how the wave is bent", x + 6, y + 4, 10, DIM, "left", 600);
 }
 function knobRow(keys) {
-  keys.forEach((k, i) => { const cx = 30 + i * 60, cy = 196, v = S[k];
-    g.strokeStyle = "#2a2f40"; g.lineWidth = 5; g.beginPath(); g.arc(cx, cy, 20, 0.75 * Math.PI, 2.25 * Math.PI); g.stroke();
-    g.strokeStyle = KC[i]; g.beginPath(); g.arc(cx, cy, 20, 0.75 * Math.PI, (0.75 + 1.5 * v) * Math.PI); g.stroke();
-    const an = (0.75 + 1.5 * v) * Math.PI; g.strokeStyle = INK; g.lineWidth = 2; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(an) * 13, cy + Math.sin(an) * 13); g.stroke();
-    txt(P[k].n, cx, 163, 9, DIM, "center", 700); txt(P[k].f(v), cx, 222, 11, INK, "center", 700); });
+  keys.forEach((k, i) => {
+    const cx = 30 + i * 60, cy = 196, v = S[k];
+    const start = 0.75 * Math.PI, end = start + 1.5 * Math.PI, an = start + (end - start) * v;
+    g.fillStyle = "#1f2736"; g.beginPath(); g.arc(cx, cy, 15, 0, 2 * Math.PI); g.fill();
+    g.fillStyle = "#151a24"; g.beginPath(); g.arc(cx, cy, 14, 0, 2 * Math.PI); g.fill();
+    g.lineWidth = 2;
+    g.strokeStyle = GRID; g.beginPath(); g.arc(cx, cy, 20, start, end); g.stroke();
+    if (v > 0) {
+      g.strokeStyle = KC[i]; g.beginPath(); g.arc(cx, cy, 20, start, an); g.stroke();
+    }
+    const dx = Math.cos(an), dy = Math.sin(an);
+    g.strokeStyle = INK; g.lineWidth = 1; g.beginPath();
+    g.moveTo(cx + dx * 4, cy + dy * 4); g.lineTo(cx + dx * 12, cy + dy * 12); g.stroke();
+    txt(P[k].n, cx, 163, 9, DIM, "center", 700);
+    txt(P[k].f(v), cx, 222, 11, INK, "center", 700);
+  });
 }
 function draw() {
   header();

@@ -1,0 +1,16 @@
+{
+  "scenario": "VOICE changes the track bend range",
+  "name": "companion, ST-46: VOICE changes glide and bend range on a Basic track",
+  "app": "companion",
+  "ms": 6700,
+  "keys": "900:EDIT,970:EDIT^,1200:e0:+4,1580:e2:+1,1720:e3:+9,1950:e4:+1,2140:e5:+10,2800:m903964,3300:me07f7f,4050:me00040,4820:m803940,5500:HOME,5570:HOME^",
+  "checks": [
+    {"type": "screen", "at": 1410},
+    {"type": "screen", "at": 2430},
+    {"type": "pitch", "from": 2980, "to": 3220, "note": "A3", "cents": 25},
+    {"type": "pitch", "from": 3480, "to": 3910, "note": "A4", "cents": 25},
+    {"type": "pitch", "from": 4210, "to": 4580, "note": "A3", "cents": 25},
+    {"type": "screen", "at": 5780},
+    {"type": "silence", "from": 6400, "to": 6650}
+  ]
+}
