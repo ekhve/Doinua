@@ -170,17 +170,14 @@ The track's playing mode and transport stay active while either panel is open. H
 instrument. The panel closes when the player switches tracks or enters a view that takes over the controls.
 
 ```mermaid
-stateDiagram-v2
-    state "Track page" as Track
-    state "Sound Edit" as Edit
-    state "Sound FX" as FX
-    Track --> Edit: EDIT, ENV, or LFO
-    Track --> FX: FX
-    Edit --> FX: FX
-    FX --> Edit: EDIT, ENV, or LFO
-    Edit --> Track: HOME
-    FX --> Track: HOME
+flowchart TD
+    Track["Track page"] -->|EDIT, ENV or LFO| Edit["Sound Edit"]
+    Track -->|FX| FX["Sound FX"]
+    Edit -->|HOME| Return["Track page restored"]
+    FX -->|HOME| Return
 ```
+
+From Sound Edit, FX opens Sound FX. From Sound FX, EDIT, ENV and LFO open Sound Edit.
 
 | Panel | Page order and controls |
 | --- | --- |
