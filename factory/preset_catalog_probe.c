@@ -4,6 +4,73 @@
 #include <string.h>
 #include "../apps/companion/presetcatalog.c"
 
+#define KIT_STORE_MAX 1024
+#define KIT_STORE_ERR_SIZE (-1)
+#define KIT_BIG
+static uint8_t stored[KIT_STORE_MAX], queued[KIT_STORE_MAX];
+static unsigned stored_size, queued_size;
+
+static int kit_store_load(void *out, int capacity)
+{
+    unsigned bytes = stored_size < (unsigned)capacity ? stored_size : (unsigned)capacity;
+    memcpy(out, stored, bytes);
+    return (int)bytes;
+}
+
+static int kit_store_save(const void *data, int bytes)
+{
+    assert(bytes >= 0 && bytes <= KIT_STORE_MAX);
+    memcpy(queued, data, (unsigned)bytes);
+    queued_size = (unsigned)bytes;
+    return 0;
+}
+
+#include "../apps/companion/settingsrecord.c"
+
+static void check_settings_record(void)
+{
+    uint8_t prefix[505] = {0}, original_tail[128];
+    preset_record_t p = {1, 8, 0, 4, 1, {'B', 'a', 's', 's'}, {42}}, decoded;
+    preset_reader_t reader;
+    unsigned tail_size;
+
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == 0);
+    prefix[0] = 6;
+    assert(companion_settings_save(prefix, sizeof prefix) == 0);
+    assert(queued_size == sizeof prefix);
+
+    stored[0] = 5;
+    stored[4] = 19;
+    stored_size = 502;
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == 502);
+    assert(prefix[0] == 5 && prefix[4] == 19);
+    prefix[0] = 6;
+    assert(companion_settings_save(prefix, sizeof prefix) == 0);
+    assert(queued_size == sizeof prefix);
+
+    memcpy(stored, prefix, sizeof prefix);
+    stored_size = (unsigned)preset_catalog_write(stored, sizeof stored, sizeof prefix, &p, 1);
+    tail_size = stored_size - sizeof prefix;
+    assert(tail_size > 0 && tail_size <= sizeof original_tail);
+    memcpy(original_tail, stored + sizeof prefix, tail_size);
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == (int)sizeof prefix);
+    prefix[4] = 27;
+    assert(companion_settings_save(prefix, sizeof prefix) == 0);
+    assert(queued_size == stored_size && queued[4] == 27 && stored[4] == 19);
+    assert(!memcmp(queued + sizeof prefix, original_tail, tail_size));
+    memcpy(stored, queued, queued_size);
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == (int)sizeof prefix);
+    assert(prefix[4] == 27);
+    assert(preset_catalog_open(&reader, stored, stored_size, sizeof prefix) == PRESET_VALID);
+    assert(preset_catalog_next(&reader, &decoded) == PRESET_VALID && decoded.data[0] == 42);
+
+    /* A future catalog version stays intact during a routine settings save. */
+    stored[sizeof prefix + 4] = 3;
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == (int)sizeof prefix);
+    assert(companion_settings_save(prefix, sizeof prefix) == 0);
+    assert(queued_size == stored_size && !memcmp(queued, stored, stored_size));
+}
+
 int main(void)
 {
     uint8_t bytes[1024], before[1024];
@@ -45,5 +112,7 @@ int main(void)
     memcpy(before, bytes, sizeof bytes);
     assert(!preset_catalog_write(bytes, sizeof bytes, 505, records, 2));
     assert(!memcmp(bytes, before, sizeof bytes));
+    check_settings_record();
+    puts("PASS: settings migration and tail preservation.");
     puts("PASS: legacy settings, 9 sample slots, round-trip, truncation, unsupported version, duplicate slots, atomic failure.");
 }

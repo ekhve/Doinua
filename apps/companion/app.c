@@ -229,7 +229,9 @@ static int midi_track(int channel)
     return -1;
 }
 
-static void settings_save(void) { kit_store_save(&set, sizeof set); }
+#include "settingsrecord.c"
+
+static void settings_save(void) { companion_settings_save(&set, sizeof set); }
 
 /* the key the pads use: the song's (locked, or AUTO's when it is sure); looked at when the song is not playing, so
  * the pads never move under the hands */
@@ -884,7 +886,7 @@ void app_init(void)
     int t;
     {                                           /* the settings, as kept (D-045), with each track's template (D-046) */
         settings_t k;
-        int n = kit_store_load(&k, sizeof k);
+        int n = companion_settings_load(&k, sizeof k, SETTINGS_VERSION);
         int j;
         if (n == (int)sizeof k && k.version == SETTINGS_VERSION) set = k;
         else if (n == SETTINGS_V5 && k.version == 5) { k.g_lesson = k.g_step = k.g_stars = 0; k.version = SETTINGS_VERSION; set = k; }   /* before ST-57 */
