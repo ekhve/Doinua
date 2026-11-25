@@ -516,6 +516,8 @@ implement all sounds".)
 | R-339 | While WOBBLE DEPTH is above minimum, the firmware shall sweep the track's low-pass cutoff at the selected SPEED. | D-107, ST-69, UC-07 | A | Draft | Wobble sweeps cutoff on one track |
 | R-340 | While WOBBLE DEPTH is zero, the firmware shall pass the track's samples through the Wobble overlay unchanged. | D-107, ST-69, UC-07 | A | Draft | Wobble sweeps cutoff on one track |
 | R-341 | While the PERFORM DIRT pair shows, when SELECT is turned one step forward, the companion app shall show WOBBLE. | D-072, ST-69, UC-07 | A | Draft | PERFORM opens WOBBLE after DIRT |
+| R-342 | When an FMini sound's cutoff is edited during a held note, the firmware shall apply the edited cutoff to that note. | D-108, ST-69, UC-07 | A | Draft | FMini cutoff edits affect a held note |
+| R-343 | While PERFORM FILTER shows for an FMini sound, when K3 or K4 is turned, the companion app shall adjust the sound's cutoff or resonance respectively. | D-072, ST-69, UC-07 | A | Draft | PERFORM FILTER edits the current FMini sound |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

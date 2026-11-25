@@ -6,6 +6,7 @@ static uint32_t fx_press_at, fx_bend_at;
 static int fx_bend[KIT_NTRACKS], fx_mod[KIT_NTRACKS];
 static int fx_pair = KIT_PERFORM_DUB, fx_pair_track = -1, fx_xy[2] = {0, 64};
 static const char *const fx_pair_text[][3] = {
+    {"FILTER", "X CUTOFF", "Y RESONANCE"},
     {"WAH", "X SWEEP", "Y SHARPNESS"},
     {"DUB", "X ECHO", "Y TIME"},
     {"SPACE", "X REVERB", "Y DARK"},
@@ -201,6 +202,15 @@ static int sound_fx_event(const kit_event_t *e)
         value = fx_mod[track];
         clampi(&value, delta, 0, 127);
         sound_fx_mod(track, value);
+    } else if (fx_pair == KIT_PERFORM_FILTER) {
+        kit_sound_filter_t filter;
+        if (kit_track_filter_of(track, &filter)) {
+            uint8_t *param = knob == 2 ? &filter.cutoff : &filter.resonance;
+            value = *param;
+            clampi(&value, delta, 0, 127);
+            *param = (uint8_t)value;
+            kit_track_filter(track, &filter);
+        }
     } else {
         if (fx_pair_track != track) {
             fx_pair_track = track;
@@ -287,8 +297,10 @@ static void fx_draw_perform(int bend, int mod, int x, int y)
     kit_rect_outline(112, 34, 122, 122, 1, FX_GRID);
     kit_line(173, 35, 173, 154, FX_GRID);
     kit_line(113, 95, 232, 95, FX_GRID);
-    kit_circle(px, py, 12, KIT_RGB(61, 32, 52));
-    kit_circle(px, py, 5, FX_PINK);
+    if (x >= 0 && y >= 0) {
+        kit_circle(px, py, 12, KIT_RGB(61, 32, 52));
+        kit_circle(px, py, 5, FX_PINK);
+    }
 }
 
 static void fx_draw_reverb(int tail_ms, int send, int damp, int pre_ms)
@@ -346,10 +358,17 @@ static void sound_fx_draw(void)
     clampi(&ms, 0, 1, 743);
     v[2] = fx_percent(kit_track_send_of(track, KIT_SEND_DELAY), 127);
     if (perform) {
+        kit_sound_filter_t filter;
         v[0] = fx_percent(fx_bend[track] + 8192, 16383);
         v[1] = fx_percent(fx_mod[track], 127);
-        v[2] = fx_percent(fx_xy[0], 127);
-        v[3] = fx_percent(fx_xy[1], 127);
+        if (fx_pair == KIT_PERFORM_FILTER) {
+            int supported = kit_track_filter_of(track, &filter);
+            v[2] = supported ? fx_percent(filter.cutoff, 127) : -1;
+            v[3] = supported ? fx_percent(filter.resonance, 127) : -1;
+        } else {
+            v[2] = fx_percent(fx_xy[0], 127);
+            v[3] = fx_percent(fx_xy[1], 127);
+        }
     } else if (reverb) {
         v[0] = fx_percent(room.size, 127);
         v[1] = fx_percent(kit_track_send_of(track, KIT_SEND_REVERB), 127);
@@ -397,7 +416,8 @@ static void sound_fx_draw(void)
             if (tenth && raw > 0) *out++ = '+';
             cat(cat_int(cat(cat_int(out, tenth / 10), "."), tenth % 10), " st");
         }
+        else if (v[i] < 0) cat(value, "--");
         else cat(cat_int(value, v[i]), "%");
-        fx_dial(30 + i * 60, labels[i], value, v[i], knob_col[i]);
+        fx_dial(30 + i * 60, labels[i], value, v[i] < 0 ? 0 : v[i], v[i] < 0 ? FX_DIM : knob_col[i]);
     }
 }

@@ -501,6 +501,9 @@ PERFORM and press **HOME** to return to playing. On PERFORM, **SELECT** changes 
 its two controls. For WOBBLE, **K3** sets the cutoff sweep speed and **K4** sets its depth. Turn depth to zero to
 bypass the sweep. The sweep is temporary and applies to the selected track.
 
+On an FMini sound, PERFORM FILTER uses **K3** for cutoff and **K4** for resonance. Reselect the preset to reload
+its original settings. The X and Y values show dashes on sounds that do not have these controls mapped yet.
+
 ### How many notes at once
 
 The FM-1 plays up to 12 notes at once across the four tracks, as long as they fit its processor. Some sounds take more

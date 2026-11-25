@@ -194,6 +194,10 @@ int kit_voices_load(void);      /* API 20: the estimated CPU the voices take, % 
 uint32_t kit_voices_stolen(void);   /* API 20: how many voices were taken or notes dropped since start */
 int kit_track_engine(int track);
 int kit_track_preset(int track);
+/* Native filter controls of the active sound, 0..127. Return 0 for unsupported tracks. */
+typedef struct { uint8_t cutoff, resonance, amount, keytrack; } kit_sound_filter_t;
+int kit_track_filter_of(int track, kit_sound_filter_t *filter);
+int kit_track_filter(int track, const kit_sound_filter_t *filter);
 void kit_track_note_on(int track, int note, int vel);
 void kit_track_note_off(int track, int note);
 void kit_track_notes_off(int track);
@@ -243,7 +247,8 @@ void kit_track_dirt_of(int track, kit_dirt_t *dirt);
 int kit_dirt_bits(int crush);
 int32_t kit_track_dirt_curve(int track, int32_t sample);   /* static Q15 transfer: drive, crush, mix */
 /* One live performance pair. X and Y are 0..127. A negative track clears the overlay. */
-enum { KIT_PERFORM_WAH, KIT_PERFORM_DUB, KIT_PERFORM_SPACE, KIT_PERFORM_DIRT, KIT_PERFORM_WOBBLE, KIT_NPERFORM_FX };
+enum { KIT_PERFORM_FILTER, KIT_PERFORM_WAH, KIT_PERFORM_DUB, KIT_PERFORM_SPACE, KIT_PERFORM_DIRT,
+       KIT_PERFORM_WOBBLE, KIT_NPERFORM_FX };
 void kit_perform_fx(int track, int pair, int x, int y);
 enum { KIT_SFX_PFFT = 0, KIT_SFX_PLOP, KIT_SFX_NEIGH, KIT_SFX_GULL, KIT_SFX_BAA, KIT_SFX_CHIRP,
        KIT_SFX_WHISTLE, KIT_SFX_COUGH, KIT_SFX_SNEEZE, KIT_SFX_WOOF, KIT_SFX_MOO, KIT_SFX_HOOT, KIT_SFX_HOWL, KIT_NSFX };

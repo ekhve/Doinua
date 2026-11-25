@@ -1265,6 +1265,19 @@ Feature: The effects bus (ST-69)
     When SELECT moves forward one step
     Then WOBBLE shows its SPEED and DEPTH controls
 
+  @D-108 @ST-69 @auto @gate:unit
+  Scenario: FMini cutoff edits affect a held note
+    Given an FMini sound with a note held
+    When its cutoff is closed
+    Then the held note becomes quieter without releasing
+    And reselecting the sound restores its original filter settings
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM FILTER edits the current FMini sound
+    Given an FMini sound is selected and PERFORM FILTER is open
+    When K3 and K4 are turned
+    Then FILTER shows the edited cutoff and resonance
+
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

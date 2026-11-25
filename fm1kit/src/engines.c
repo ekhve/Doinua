@@ -6,6 +6,7 @@
  * Each preset's A D S R (0..127) drive a block-rate envelope (KIT_ENV_STEP / KIT_ENV_MUL, tools/gen_tables.py).
  * Integer only, no 64-bit multiplies (felucca-bsp docs/CPU.md). */
 #include <stdint.h>
+#include "kit_internal.h"
 #ifdef __PI32V2__
 void *memset(void *d, int c, unsigned n);       /* felucca-bsp chip/libc.c (no C library on the device) */
 void *memcpy(void *d, const void *s, unsigned n);
@@ -89,6 +90,30 @@ static uint32_t vage;
  * times (1 ms .. 12 s). Velocity as the other engines (fmini-1's default is off; here it also carries the level) */
 static const fmini_x_t *fmx[NPART];             /* the part's extras while it plays FMINI, else 0 */
 static int okp(int pt) { return pt >= 0 && pt < NPART; }
+
+int kit_track_filter_of(int pt, kit_sound_filter_t *filter)
+{
+    const int16_t *p;
+    if (!okp(pt) || !fmx[pt] || !filter) return 0;
+    p = trk[pt].p;
+    *filter = (kit_sound_filter_t){p[P_E0], p[P_E1], p[P_E2], fmini_patch[pt][FG_KBD]};
+    return 1;
+}
+
+int kit_track_filter(int pt, const kit_sound_filter_t *filter)
+{
+    uint32_t k;
+    int16_t *p;
+    if (!okp(pt) || !fmx[pt] || !filter) return 0;
+    k = kit__lock();
+    p = trk[pt].p;
+    p[P_E0] = clamp(filter->cutoff, 0, 127);
+    p[P_E1] = clamp(filter->resonance, 0, 127);
+    p[P_E2] = clamp(filter->amount, 0, 127);
+    fmini_patch[pt][FG_KBD] = clamp(filter->keytrack, 0, 127);
+    kit__unlock(k);
+    return 1;
+}
 static int32_t pitch_of(int pt, int note)          /* 1/16 semitones: FMINI's patch may move the keys an octave */
 {
     int n = note + (fmx[pt] ? fmx[pt]->oct * 12 : 0);

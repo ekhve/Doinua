@@ -97,6 +97,38 @@ static void check_factory_arp(void)
     CHECK(next == count, "all selected FMini factory arpeggios checked");
 }
 
+static void check_live_filter(int preset)
+{
+    kit_sound_filter_t original, current, high = {255, 0, 0, 0}, low = {0, 0, 0, 0};
+    double open, closed;
+    kit__eng_select(0, E, preset);
+    kit__eng_select(1, E, preset);
+    CHECK(kit_track_filter_of(0, &original), "read the native filter of an FMini preset");
+    CHECK(kit_track_filter(0, &high) && kit_track_filter_of(0, &current) && current.cutoff == 127,
+          "the live cutoff is clamped to the engine dial");
+    kit__eng_note_on(0, 72, 100);
+    render(1300, 0, 0);
+    render(200, &open, 0);
+    CHECK(kit_track_filter(0, &low), "close the native filter while a note is held");
+    render(1500, 0, 0);
+    render(200, &closed, 0);
+    CHECK(open > 200 && closed < open / 4, "native cutoff changes held-note audio (%.1f to %.1f RMS)", open, closed);
+    CHECK(kit__eng_has(0, 72), "filter editing keeps the held note");
+    low.resonance = 41;
+    low.amount = 83;
+    low.keytrack = 111;
+    CHECK(kit_track_filter(0, &low) && kit_track_filter_of(0, &current) && !memcmp(&low, &current, sizeof low),
+          "all four native filter controls round-trip");
+    CHECK(kit_track_filter_of(1, &current) && !memcmp(&original, &current, sizeof current),
+          "filter edits leave the other track's patch intact");
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_filter_of(0, &current) && !memcmp(&original, &current, sizeof current),
+          "reselecting a preset restores its native filter settings");
+    kit__eng_select(0, -1, 0);
+    kit__eng_select(1, -1, 0);
+    CHECK(!kit_track_filter_of(0, &current) && !kit_track_filter(0, &low), "unsupported tracks reject filter edits");
+}
+
 int main(void)
 {
     check_factory_arp();
@@ -116,6 +148,7 @@ int main(void)
         CHECK(!kit__eng_nactive(0), "%s ends after its release", kit__eng_preset_name(E, p));
     }
     CHECK(sine >= 0 && pad >= 0, "SINE SOLO and LUSH STRINGS are picks");
+    check_live_filter(sine);
     kit__eng_select(0, E, sine);
     kit__eng_note_on(0, 60, 100);
     render(300, 0, 0);
