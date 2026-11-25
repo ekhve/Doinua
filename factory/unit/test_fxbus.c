@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "kit_internal.h"
 
 uint32_t kit__lock(void) { return 0; }
@@ -149,6 +150,33 @@ int main(void)
         CHECK(in[0] == 8192 && !base_dirt.crush, "DIRT overlays crush without changing the track setting");
         kit_perform_fx(-1, KIT_PERFORM_DIRT, 0, 0);
         CHECK(!kit__fx_sends(0), "clearing the performance overlay restores base routing");
+    }
+
+    {
+        int energies[2] = {0, 0}, test;
+        enum { LEN = KIT_BLOCK * 128 };
+        for (test = 0; test < 2; test++) {
+            int hz = test ? 1000 : 100;
+            kit_perform_fx(-1, KIT_PERFORM_WAH, 0, 0);
+            kit_perform_fx(0, KIT_PERFORM_WAH, 56, 64);
+            for (i = 0; i < LEN; i++)
+                in[i] = (int32_t)(4000 * sin(i * (6.283185307179586 / FS) * hz));
+            run(0, in, LEN);
+            for (i = LEN / 2; i < LEN; i++) energies[test] += abs(out[i]);
+        }
+        CHECK(energies[0] > 0 && energies[1] > 4 * energies[0], "WAH passes the sweep band (%d > %d)",
+              energies[1], energies[0]);
+        kit_perform_fx(-1, KIT_PERFORM_WAH, 0, 0);
+        run(0, in, LEN);
+        CHECK(!memcmp(out, in, LEN * sizeof *in), "clearing WAH restores the input");
+        memset(in, 0, sizeof in);
+        for (i = 0; i < LEN / 2; i++)
+            in[i] = (int32_t)(4500 * sin(i * (6.283185307179586 / FS) * 5657));
+        kit_perform_fx(0, KIT_PERFORM_WAH, 127, 127);
+        run(0, in, N);
+        for (i = N - FS / 2; i < N && !out[i]; i++) {}
+        CHECK(i == N, "WAH stops ringing at maximum sweep and sharpness");
+        kit_perform_fx(-1, KIT_PERFORM_WAH, 0, 0);
     }
 
     kit_track_sends(0, 0, 127, 0, 0);

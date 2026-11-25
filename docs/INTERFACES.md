@@ -32,7 +32,7 @@ delay line limit are applied.
 track's existing send settings. `kit_track_dirt_curve` returns the static transfer for the graph. The actual
 tone filter is frequency-dependent.
 
-`kit_perform_fx` overlays one live DUB, SPACE or DIRT pair on a track. Base send and effect readings stay
+`kit_perform_fx` overlays one live WAH, DUB, SPACE or DIRT pair on a track. Base send and effect readings stay
 available for the editor. Delay timing and feedback are shared while DUB is active.
 
 ```mermaid

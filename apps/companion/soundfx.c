@@ -4,8 +4,9 @@ enum { FXP_NONE, FXP_PERFORM, FXP_DELAY, FXP_REVERB, FXP_DIRT, FXP_COUNT };
 static int fx_page, fx_pressed, fx_long, fx_bend_track = -1;
 static uint32_t fx_press_at, fx_bend_at;
 static int fx_bend[KIT_NTRACKS], fx_mod[KIT_NTRACKS];
-static int fx_pair, fx_pair_track = -1, fx_xy[2] = {0, 64};
+static int fx_pair = KIT_PERFORM_DUB, fx_pair_track = -1, fx_xy[2] = {0, 64};
 static const char *const fx_pair_text[][3] = {
+    {"WAH", "X SWEEP", "Y SHARPNESS"},
     {"DUB", "X ECHO", "Y TIME"},
     {"SPACE", "X REVERB", "Y DARK"},
     {"DIRT", "X DRIVE", "Y CRUSH"}

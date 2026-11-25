@@ -1239,6 +1239,18 @@ Feature: The effects bus (ST-69)
     Given a track with its original effects
     When DUB, SPACE, and DIRT are applied in turn
     Then their audible effects are added while the base settings stay available
+
+  @D-106 @ST-69 @auto @gate:unit
+  Scenario: WAH emphasizes its sweep band
+    Given WAH sweeps near 1 kHz
+    When 100 Hz and 1 kHz tones play at equal input levels
+    Then WAH attenuates the 100 Hz tone more strongly
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM opens WAH one step before DUB
+    Given PERFORM shows DUB
+    When SELECT moves back one step
+    Then WAH shows its SWEEP and SHARPNESS controls
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

@@ -511,6 +511,8 @@ implement all sounds".)
 | R-334 | While DIRT shows, when K2 is turned, the companion app shall change crush for the selected track. | D-072, ST-69, UC-07 | A | Draft | FX opens the track dirt page |
 | R-335 | While PERFORM shows, when SELECT is turned, the companion app shall move to the next or previous performance pair. | D-072, ST-69, UC-07 | A | Draft | PERFORM switches live effect pairs |
 | R-336 | While a DUB performance overlay is applied, the firmware shall retain the base delay settings. | D-105, ST-69, UC-07 | A | Draft | Performance pairs preserve the track settings |
+| R-337 | When WAH is set near 1 kHz, the firmware shall attenuate a 100 Hz test tone more than a 1 kHz tone. | D-106, ST-69, UC-07 | A | Draft | WAH emphasizes its sweep band |
+| R-338 | While the DUB pair shows, when SELECT is turned one step back, the companion app shall show WAH. | D-072, ST-69, UC-07 | A | Draft | PERFORM opens WAH one step before DUB |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

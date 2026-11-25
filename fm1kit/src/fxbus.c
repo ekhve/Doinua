@@ -24,6 +24,7 @@ static uint8_t delay_tone = 127;               /* retain the delay type's origin
 static struct {
     int track;
     uint8_t drive, crush, darkness, delay, reverb, dub, time;
+    int32_t wah_frequency, wah_damping, wah_low, wah_band;
 } perform = {.track = -1};
 static struct {
     uint32_t cho_w, cho_ph, dly_w, dly_start, dly_ph;
@@ -73,13 +74,24 @@ void kit_delay_tone(int tone)
 
 int kit_delay_tone_of(void) { return delay_tone; }
 
+static int32_t wah_frequency(int x)
+{
+    /* 2 * sin(pi * Hz / 44100), Q15, across the lab's 250 Hz to 5.7 kHz sweep. */
+    static const uint16_t coeff[] = {1167, 2178, 4062, 7567, 14043, 25701};
+    int interval = x * 5 / 127, fraction = x * 5 % 127;
+    return fraction ? coeff[interval] + (coeff[interval + 1] - coeff[interval]) * fraction / 127 : coeff[interval];
+}
+
 void kit_perform_fx(int t, int pair, int x, int y)
 {
     uint32_t k = kit__lock();
+    int keep_wah = perform.wah_frequency && perform.track == t && pair == KIT_PERFORM_WAH && x >= 2;
     x = (int)clamp32(x, 0, 127);
     y = (int)clamp32(y, 0, 127);
     perform.track = -1;
     perform.drive = perform.crush = perform.darkness = perform.delay = perform.reverb = perform.dub = 0;
+    perform.wah_frequency = 0;
+    if (!keep_wah) perform.wah_low = perform.wah_band = 0;
     if (t >= 0 && t < KIT_NTRACKS && pair >= 0 && pair < KIT_NPERFORM_FX) {
         if (pair == KIT_PERFORM_DIRT && (x || y)) {
             perform.drive = (uint8_t)x;
@@ -93,6 +105,11 @@ void kit_perform_fx(int t, int pair, int x, int y)
         } else if (x >= 2 && pair == KIT_PERFORM_SPACE) {
             perform.reverb = (uint8_t)x;
             perform.darkness = (uint8_t)(y * 85 / 100);
+            perform.track = t;
+        } else if (x >= 2 && pair == KIT_PERFORM_WAH) {
+            int32_t q = 256 + y * 3507 / 127;
+            perform.wah_frequency = wah_frequency(x);
+            perform.wah_damping = (32768 * 256) / q;
             perform.track = t;
         }
     }
@@ -200,6 +217,23 @@ static void fx_dirt_block(int t, int32_t *x, int32_t drive, int32_t crush, int32
     }
 }
 
+static void fx_wah_block(int32_t *x)
+{
+    int32_t low = perform.wah_low, band = perform.wah_band;
+    int32_t coefficient = perform.wah_frequency, damping = perform.wah_damping;
+    int i;
+    for (i = 0; i < KIT_BLOCK; i++) {
+        int32_t high;
+        low = clamp32(low + mulq15(band, coefficient), -65535, 65535);
+        high = clamp32(x[i], -65535, 65535) - low - mulq15(band, damping);
+        band = clamp32(band + mulq15(high, coefficient), -65535, 65535);
+        if (!x[i] && low >= -16 && low <= 16 && band >= -16 && band <= 16) low = band = 0;
+        x[i] = mulq15(band, damping);
+    }
+    perform.wah_low = low;
+    perform.wah_band = band;
+}
+
 /* track t's block x (Q15, KIT_BLOCK samples): its DRIVE (fmini-1's DIST: a soft clip, its tone darker as it drives
  * harder), into the mix, and its sends into the buses */
 void kit__fx_track(int t, int32_t *x, int32_t *mix)
@@ -208,6 +242,7 @@ void kit__fx_track(int t, int32_t *x, int32_t *mix)
     int32_t d = snd[t][0], c = snd[t][1] * 258, l = snd[t][2], r = snd[t][3];
     int32_t crush = dirt[t].crush, darkness = dirt[t].darkness;
     if (perform.track == t) {
+        if (perform.wah_frequency) fx_wah_block(x);
         d = louder(d, perform.drive);
         l = louder(l, perform.delay);
         r = louder(r, perform.reverb);
