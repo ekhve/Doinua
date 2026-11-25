@@ -205,12 +205,12 @@ sequenceDiagram
     A->>A: pad_next_degree: the progression's next step (ii, colour 9)
     A->>T: kit_triads, kit_colour_chord (ii, minor, 9, voicing)
     T-->>A: Dm9: D3 F3 A3 C4 E4
-    loop each note (block; strum 30 ms apart; arp at eighths)
+    loop each note (block, strum 30 ms apart, or arp at eighths)
         A->>Q: kit_seq_note_on(CHORDS, note, vel)
         Q->>S: kit_track_note_on (sounds now)
         Q-->>Q: armed and playing: remember the start tick
     end
-    A->>A: lights: ii full, V breathing; screen: Dm9, next G13
+    A->>A: lights: ii full, V breathing, screen shows Dm9 and next G13
     P->>A: F5 up
     A->>Q: kit_seq_note_off for each note
     Q-->>Q: adds each note with its start, length and velocity, as played
