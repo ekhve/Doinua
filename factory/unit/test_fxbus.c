@@ -97,6 +97,32 @@ int main(void)
         CHECK(abs(out[i]) <= 32768 && (out[i] > 0) == (in[i] > 0), "DRIVE: a full square is clipped softly under 1.0, its sign kept (%d at %d)", (int)out[i], i);
     for (i = FS / 2; i < N; i++) CHECK(out[i] == 0, "DRIVE: silence stays silence (%d at %d)", (int)out[i], i);
 
+    {
+        enum { BLOCKS = KIT_BLOCK * 16 };
+        kit_dirt_t f = {127, 127, 127}, read;
+        kit_track_sends(0, 0, 0, 0, 0);
+        for (i = 0; i < BLOCKS; i++) in[i] = (i & 1) ? 12000 : -3000;
+        kit_track_dirt(0, &f);
+        CHECK(kit__fx_sends(0) && !kit__fx_sends(1), "DIRT routes only its track");
+        run(0, in, BLOCKS);
+        CHECK(out[0] == 0 && out[1] == 8192, "3-bit crush quantizes the output (%d, %d)", (int)out[0], (int)out[1]);
+        CHECK(kit_track_dirt_curve(0, in[1]) == out[1], "the static curve matches the quantized output");
+        f = (kit_dirt_t){0, 0, 127};
+        kit_track_dirt(0, &f);
+        for (i = 0; i < BLOCKS; i++) in[i] = (i & 1) ? 8000 : -8000;
+        run(0, in, BLOCKS);
+        CHECK(abs(out[BLOCKS - 1]) < 1000, "dark DIRT tone attenuates the alternating input");
+        f = (kit_dirt_t){127, 0, 0};
+        kit_track_dirt(0, &f);
+        kit_track_dirt_of(0, &read);
+        CHECK(read.crush == 127 && read.tone == 0 && read.mix == 0, "DIRT reads back its settings");
+        kit_track_sends(0, 127, 0, 0, 0);
+        run(0, in, BLOCKS);
+        CHECK(!memcmp(out, in, BLOCKS * sizeof *in), "zero DIRT MIX keeps the dry samples");
+        f = (kit_dirt_t){0, 127, 127};
+        kit_track_dirt(0, &f);
+    }
+
     kit_track_sends(0, 0, 127, 0, 0);
     memset(in, 0, sizeof in);
     for (i = 0; i < FS; i++) in[i] = (i / 100) & 1 ? 8000 : -8000;

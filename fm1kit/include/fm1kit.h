@@ -236,6 +236,12 @@ void kit_delay_tone(int tone);
 int kit_delay_tone_of(void);
 /* Rounded delay time of the selected type and setting, within the available delay line. */
 int kit_delay_ms_of(void);
+/* Track DIRT controls, 0..127. DRIVE is the existing drive send. */
+typedef struct { uint8_t crush, tone, mix; } kit_dirt_t;
+void kit_track_dirt(int track, const kit_dirt_t *dirt);
+void kit_track_dirt_of(int track, kit_dirt_t *dirt);
+int kit_dirt_bits(int crush);
+int32_t kit_track_dirt_curve(int track, int32_t sample);   /* static Q15 transfer: drive, crush, mix */
 enum { KIT_SFX_PFFT = 0, KIT_SFX_PLOP, KIT_SFX_NEIGH, KIT_SFX_GULL, KIT_SFX_BAA, KIT_SFX_CHIRP,
        KIT_SFX_WHISTLE, KIT_SFX_COUGH, KIT_SFX_SNEEZE, KIT_SFX_WOOF, KIT_SFX_MOO, KIT_SFX_HOOT, KIT_SFX_HOWL, KIT_NSFX };
 void kit_sfx(int id, int level);          /* level 1..10 */

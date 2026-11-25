@@ -1211,6 +1211,21 @@ Feature: The effects bus (ST-69)
     When FX steps through PERFORM and DELAY to REVERB
     And the room send and pre-delay are raised
     Then a note has an audible room tail
+
+  @D-104 @ST-69 @auto @gate:unit
+  Scenario: Dirt crushes on one track with a dry bypass
+    Given DIRT crush is raised on one track
+    When samples pass through DIRT at full mix
+    Then the output is quantized
+    And zero mix passes the same samples unchanged
+
+  @D-072 @ST-69 @auto
+  Scenario: FX opens the track dirt page
+    Given a synth track is ready to play
+    When FX steps through PERFORM, DELAY and REVERB to DIRT
+    And the crush amount is raised
+    Then the DIRT screen shows the altered transfer curve
+    And the track still sounds with full mix and with zero mix
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

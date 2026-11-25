@@ -14,6 +14,10 @@ static int16_t dly_buf[DLY_LEN] __attribute__((section(".pool")));
 static int16_t cho_buf[CHO_LEN] __attribute__((section(".pool")));
 
 static uint8_t snd[KIT_NTRACKS][4];             /* DRIVE, CHORUS, DELAY, REVERB sends, 0..127 */
+static struct {
+    uint8_t crush, darkness, dry;               /* zero is an open tone and full wet, the original drive */
+    int32_t lp;
+} dirt[KIT_NTRACKS];
 static kit_fx_t bus = { 0, 60, 40, 0, 40, 60, 90 };   /* fmini-1's defaults: STEREO, DEPTH 60, RATE 40; ANALOG, TIME,
                                                        * FEEDBACK 60, MIX 90 */
 static uint8_t delay_tone = 127;               /* retain the delay type's original response until edited */
@@ -73,7 +77,7 @@ static int32_t delay_samples(void)
 
 int kit_delay_ms_of(void) { return (delay_samples() * 10 + 220) / 441; }
 
-static int32_t delay_tone_coefficient(int tone)
+static int32_t tone_coefficient(int tone)
 {
     /* Q15 one-pole coefficients at 400, 800, 1600, 3200, 6400 and 12800 Hz. */
     static const int16_t coefficients[] = { 1815, 3530, 6680, 11998, 19602, 27478 };
@@ -83,12 +87,86 @@ static int32_t delay_tone_coefficient(int tone)
     return fraction ? lower + (coefficients[octave + 1] - lower) * fraction / 126 : lower;
 }
 
-int kit__fx_sends(int t) { return t >= 0 && t < KIT_NTRACKS && (snd[t][0] | snd[t][1] | snd[t][2] | snd[t][3]); }
+void kit_track_dirt(int t, const kit_dirt_t *f)
+{
+    uint32_t k;
+    if (!f || t < 0 || t >= KIT_NTRACKS) return;
+    k = kit__lock();
+    if (!dirt[t].darkness || dirt[t].dry == 127) dirt[t].lp = 0;
+    dirt[t].crush = (uint8_t)clamp32(f->crush, 0, 127);
+    dirt[t].darkness = (uint8_t)(127 - clamp32(f->tone, 0, 127));
+    dirt[t].dry = (uint8_t)(127 - clamp32(f->mix, 0, 127));
+    kit__unlock(k);
+}
+
+void kit_track_dirt_of(int t, kit_dirt_t *f)
+{
+    if (!f || t < 0 || t >= KIT_NTRACKS) return;
+    *f = (kit_dirt_t){dirt[t].crush, (uint8_t)(127 - dirt[t].darkness), (uint8_t)(127 - dirt[t].dry)};
+}
+
+int kit__fx_sends(int t)
+{
+    return t >= 0 && t < KIT_NTRACKS &&
+           (snd[t][0] | snd[t][1] | snd[t][2] | snd[t][3] | dirt[t].crush | dirt[t].darkness);
+}
 
 void kit__fx_begin(void)                        /* a block: the buses' inputs empty */
 {
     int i;
     for (i = 0; i < KIT_BLOCK; i++) cho_in[i] = dly_in[i] = rev_in[i] = 0;
+}
+
+static inline int32_t fx_drive(int32_t x, int32_t gain)
+{
+    int32_t u = clamp32((x >> 4) * gain >> 4, -49152, 49152);
+    int32_t u2 = ((u >> 1) * (u >> 1)) >> 13;
+    int32_t u3 = ((u2 >> 1) * (u >> 1)) >> 13;
+    return clamp32(u - u3 * 4 / 27, -32767, 32767);
+}
+
+int kit_dirt_bits(int crush) { return 16 - (clamp32(crush, 0, 127) * 13 + 63) / 127; }
+
+static inline int32_t dirt_shape(int32_t in, int32_t gain, int32_t mask)
+{
+    int32_t out = gain ? fx_drive(in, gain) : in;
+    if (mask) {
+        int32_t magnitude = out < 0 ? -out : out;
+        magnitude = (magnitude + ((mask + 1) >> 1)) & ~mask;
+        out = clamp32(out < 0 ? -magnitude : magnitude, -32767, 32767);
+    }
+    return out;
+}
+
+int32_t kit_track_dirt_curve(int t, int32_t sample)
+{
+    int32_t wet, gain, mask, shaped;
+    sample = clamp32(sample, -32767, 32767);
+    if (t < 0 || t >= KIT_NTRACKS) return sample;
+    wet = (127 - dirt[t].dry) * 32768 / 127;
+    gain = snd[t][0] ? 256 + snd[t][0] * 8 : 0;
+    mask = (1 << (16 - kit_dirt_bits(dirt[t].crush))) - 1;
+    shaped = dirt_shape(sample, gain, mask);
+    return sample + mulq15(shaped - sample, wet);
+}
+
+static void fx_dirt_block(int t, int32_t *x, int32_t drive)
+{
+    int32_t wet = (127 - dirt[t].dry) * 32768 / 127;
+    int32_t gain = drive ? 256 + drive * 8 : 0;
+    int32_t mask = (1 << (16 - kit_dirt_bits(dirt[t].crush))) - 1;
+    int32_t tone = dirt[t].darkness ? tone_coefficient(127 - dirt[t].darkness) : 0;
+    int i;
+    if (!wet) return;
+    for (i = 0; i < KIT_BLOCK; i++) {
+        int32_t dry = x[i], shaped = dirt_shape(dry, gain, mask);
+        if (tone) {
+            dirt[t].lp += mulq15(shaped - dirt[t].lp, tone);
+            if (!shaped && dirt[t].lp >= -9 && dirt[t].lp <= 9) dirt[t].lp = 0;
+            shaped = dirt[t].lp;
+        }
+        x[i] = dry + mulq15(shaped - dry, wet);
+    }
 }
 
 /* track t's block x (Q15, KIT_BLOCK samples): its DRIVE (fmini-1's DIST: a soft clip, its tone darker as it drives
@@ -97,15 +175,11 @@ void kit__fx_track(int t, int32_t *x, int32_t *mix)
 {
     int i;
     int32_t d = snd[t][0], c = snd[t][1] * 258, l = snd[t][2] * 258, r = snd[t][3] * 258;
-    if (d) {
+    if (dirt[t].crush || dirt[t].darkness || dirt[t].dry) {
+        fx_dirt_block(t, x, d);
+    } else if (d) {
         int32_t g = 256 + d * 8;                /* Q8: 1x .. 5x into the clip */
-        for (i = 0; i < KIT_BLOCK; i++) {
-            int32_t u = clamp32((x[i] >> 4) * g >> 4, -49152, 49152), u2, u3, v;   /* Q15, clipped at +-1.5 */
-            u2 = ((u >> 1) * (u >> 1)) >> 13;   /* u^2, Q15 */
-            u3 = ((u2 >> 1) * (u >> 1)) >> 13;  /* u^3, Q15 */
-            v = u - u3 * 4 / 27;                /* a cubic soft clip: flat at +-1.5, where it reaches 1 (odd: no DC) */
-            x[i] = clamp32(v, -32767, 32767);
-        }
+        for (i = 0; i < KIT_BLOCK; i++) x[i] = fx_drive(x[i], g);
     }
     for (i = 0; i < KIT_BLOCK; i++) {
         mix[i] += x[i];
@@ -174,7 +248,7 @@ void kit__fx_buses(int32_t *mix)
         if (!fx.dly_left) { fx.dly_start = fx.dly_w; fx.dly_lp = fx.dly_hp = 0; fx.dl_q = tgt; }
         fx.dl_q += clamp32(tgt - fx.dl_q, -2048, 2048);   /* a time change bends, as tape */
         kc = ty == 1u ? 26000 : ty == 2u ? 14000 : 11500;  /* the loop's low-pass: DIGITAL ~11 kHz, TAPE ~3.4, ANALOG ~2.6 */
-        if (edited_tone) kc = delay_tone_coefficient(delay_tone);
+        if (edited_tone) kc = tone_coefficient(delay_tone);
         for (i = 0; i < KIT_BLOCK; i++) {
             uint32_t w = fx.dly_w, dq = (uint32_t)fx.dl_q, dd = dq >> 8;
             int32_t a = dly_at(w, dd), b = dly_at(w, dd + 1u), x, in;

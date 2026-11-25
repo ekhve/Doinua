@@ -507,6 +507,8 @@ implement all sounds".)
 | R-330 | While DELAY shows, when K3 is turned, the companion app shall change the selected track's delay send. | D-072, ST-69, UC-07 | A | Draft | FX opens a live performance page and delay |
 | R-331 | When room pre-delay is set to 100 ms, the firmware shall delay the wet signal by an additional 100 ms. | D-103, ST-69, UC-07 | A | Draft | Room pre-delay delays only the wet onset |
 | R-332 | While REVERB shows, when K2 is turned, the companion app shall change the selected track's reverb send. | D-072, ST-69, UC-07 | A | Draft | FX opens a live reverb page |
+| R-333 | While DIRT MIX is zero, the firmware shall pass the track's samples through the dirt processor unchanged. | D-104, ST-69, UC-07 | A | Draft | Dirt crushes on one track with a dry bypass |
+| R-334 | While DIRT shows, when K2 is turned, the companion app shall change crush for the selected track. | D-072, ST-69, UC-07 | A | Draft | FX opens the track dirt page |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

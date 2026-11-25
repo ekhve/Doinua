@@ -28,6 +28,10 @@ delay line limit are applied.
 `kit_reverb_shape` sets the shared room size, damping and pre-delay. `kit_reverb_shape_of` returns those settings.
 `kit_reverb_tail_ms_of` reports the tail processing window, excluding pre-delay.
 
+`kit_track_dirt` and `kit_track_dirt_of` control a track's CRUSH, TONE and MIX. DRIVE still comes from the
+track's existing send settings. `kit_track_dirt_curve` returns the static transfer for the graph. The actual
+tone filter is frequency-dependent.
+
 ```mermaid
 classDiagram
     class App {

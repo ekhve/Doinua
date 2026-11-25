@@ -151,6 +151,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-100 | Unicorn Jump uses Music box for its bell, and the Night Train uses Soft Flute for REED. Both games reduce the level of their melody and feedback, with a smaller reverb send to the room. The notes and game timing stay the same. | Owner feedback of 2026-11-22, November work order, ST-93. |
 | D-102 | API 42 exposes the shared DELAY TONE and effective delay time for Sound Edit v3. Tone filters the wet output and feedback loop. The default retains the original delay response for existing presets. The display uses the actual timing, including the delay line limit. | D-072 and Sound Edit v3, issue #17. The factory lead chose a fixed-point one-pole filter. |
 | D-103 | API 42 exposes the shared room size, damping and up to 120 ms of wet pre-delay. REVERB's SEND changes only the track's contribution. The half-rate pre-delay uses an 8 KiB ring in the audio pool. Preset room settings retain the original tail allowance until SIZE is edited. | D-072 and Sound Edit v3, issue #17. The factory lead chose to keep the existing room topology and use the actual tail window in the display. |
+| D-104 | API 42 exposes per-track DIRT crush, tone and mix alongside DRIVE. The existing drive remains the default. Edited dirt adds quantization, low-pass tone and a dry/wet blend before the track's sends. | D-072 and Sound Edit v3, issue #17. The factory lead used the existing soft clip and delay tone coefficients. |
 
 ## Known gaps (next)
 

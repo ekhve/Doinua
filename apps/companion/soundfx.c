@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Sound Edit Lab v3 (D-072): live FX controls over the track's playing page. */
-enum { FXP_NONE, FXP_PERFORM, FXP_DELAY, FXP_REVERB, FXP_COUNT };
+enum { FXP_NONE, FXP_PERFORM, FXP_DELAY, FXP_REVERB, FXP_DIRT, FXP_COUNT };
 static int fx_page, fx_pressed, fx_long, fx_bend_track = -1;
 static uint32_t fx_press_at, fx_bend_at;
 static int fx_bend[KIT_NTRACKS], fx_mod[KIT_NTRACKS];
@@ -12,6 +12,7 @@ static int fx_bend[KIT_NTRACKS], fx_mod[KIT_NTRACKS];
 #define FX_PINK KIT_RGB(255, 107, 154)
 #define FX_CYAN KIT_RGB(111, 214, 255)
 #define FX_ROOM KIT_RGB(154, 208, 255)
+#define FX_ORANGE KIT_RGB(255, 122, 89)
 
 static int sound_fx_open(void) { return fx_page != FXP_NONE; }
 
@@ -100,6 +101,23 @@ static void fx_adjust_reverb(int knob, int delta)
     kit_reverb_shape(&shape);
 }
 
+static void fx_adjust_dirt(int knob, int delta)
+{
+    kit_dirt_t setting;
+    int value;
+    uint8_t *control;
+    if (knob == 0) {
+        fx_adjust_send(KIT_SEND_DRIVE, delta);
+        return;
+    }
+    kit_track_dirt_of(track, &setting);
+    control = knob == 1 ? &setting.crush : knob == 2 ? &setting.tone : &setting.mix;
+    value = *control;
+    clampi(&value, delta, 0, 127);
+    *control = (uint8_t)value;
+    kit_track_dirt(track, &setting);
+}
+
 static int sound_fx_event(const kit_event_t *e)
 {
     int knob, delta, value;
@@ -145,6 +163,8 @@ static int sound_fx_event(const kit_event_t *e)
         fx_adjust_delay(knob, delta);
     } else if (fx_page == FXP_REVERB) {
         fx_adjust_reverb(knob, delta);
+    } else if (fx_page == FXP_DIRT) {
+        fx_adjust_dirt(knob, delta);
     } else if (knob == 0) {
         value = fx_bend[track];
         clampi(&value, e->delta * 512, -8192, 8191);
@@ -251,24 +271,44 @@ static void fx_draw_reverb(int tail_ms, int send, int damp, int pre_ms)
     }
 }
 
+static void fx_draw_dirt(void)
+{
+    int i, prev = 148;
+    kit_rect_outline(4, 34, 232, 120, 1, FX_GRID);
+    kit_line(10, 148, 230, 40, FX_GRID);
+    for (i = 0; i <= 110; i++) {
+        int32_t sample = i * 65534 / 110 - 32767;
+        int y = 94 - kit_track_dirt_curve(track, sample) * 54 / 32767;
+        if (i) kit_line(8 + 2 * i, prev, 10 + 2 * i, y, FX_ORANGE);
+        prev = y;
+    }
+    kit_text(10, 38, "INPUT TO OUTPUT", KIT_FONT_TINY, KIT_ALIGN_LEFT, FX_DIM);
+}
+
 static void sound_fx_draw(void)
 {
     static const kit_color_t knob_col[] = { KIT_RGB(255, 107, 107), KIT_RGB(255, 209, 102), FX_CYAN, KIT_RGB(199, 155, 255) };
     static const char *const delay_labels[] = { "TIME", "FEEDBACK", "SEND", "TONE" };
     static const char *const perform_labels[] = { "BEND", "MOD", "X", "Y" };
     static const char *const reverb_labels[] = { "SIZE", "SEND", "DAMP", "PRE-DELAY" };
+    static const char *const dirt_labels[] = { "DRIVE", "CRUSH", "TONE", "MIX" };
+    static const char *const pages[] = { "PERFORM", "DELAY", "REVERB", "DIRT" };
+    static const kit_color_t page_colors[] = { FX_PINK, FX_CYAN, FX_ROOM, FX_ORANGE };
+    static const char *const *const page_labels[] = { perform_labels, delay_labels, reverb_labels, dirt_labels };
     kit_fx_t bus;
     kit_reverb_shape_t room;
+    kit_dirt_t dirt;
     int i, v[4], ms = kit_delay_ms_of(), tail = kit_reverb_tail_ms_of();
-    int perform = fx_page == FXP_PERFORM, reverb = fx_page == FXP_REVERB;
+    int perform = fx_page == FXP_PERFORM, reverb = fx_page == FXP_REVERB, dirt_page = fx_page == FXP_DIRT;
     int tone = kit_delay_tone_of();
-    const char *const *labels = perform ? perform_labels : reverb ? reverb_labels : delay_labels;
-    const char *page = perform ? "PERFORM" : reverb ? "REVERB" : "DELAY";
-    kit_color_t color = perform ? FX_PINK : reverb ? FX_ROOM : FX_CYAN;
+    const char *const *labels = page_labels[fx_page - 1];
+    const char *page = pages[fx_page - 1];
+    kit_color_t color = page_colors[fx_page - 1];
     char title[32], value[16];
     const char *name = kit_preset_name(kit_track_engine(track), kit_track_preset(track));
     kit_fx_bus_of(&bus);
     kit_reverb_shape_of(&room);
+    kit_track_dirt_of(track, &dirt);
     clampi(&ms, 0, 1, 743);
     v[2] = fx_percent(kit_track_send_of(track, KIT_SEND_DELAY), 127);
     if (perform) {
@@ -280,6 +320,11 @@ static void sound_fx_draw(void)
         v[1] = fx_percent(kit_track_send_of(track, KIT_SEND_REVERB), 127);
         v[2] = room.damp;
         v[3] = fx_percent(room.pre_ms, 120);
+    } else if (dirt_page) {
+        v[0] = fx_percent(kit_track_send_of(track, KIT_SEND_DRIVE), 127);
+        v[1] = fx_percent(dirt.crush, 127);
+        v[2] = fx_percent(dirt.tone, 127);
+        v[3] = fx_percent(dirt.mix, 127);
     } else {
         v[0] = fx_percent(ms, 743);
         v[1] = fx_percent(bus.dly_fb > 120 ? 120 : bus.dly_fb, 120);
@@ -293,6 +338,7 @@ static void sound_fx_draw(void)
         kit_rect(6 + i * 57, 25, 53, 3, i == fx_page - 1 ? color : FX_GRID);
     if (perform) fx_draw_perform(v[0], v[1], v[2], v[3]);
     else if (reverb) fx_draw_reverb(tail, v[1], room.damp, room.pre_ms);
+    else if (dirt_page) fx_draw_dirt();
     else fx_draw_delay(ms, v[1], v[2], v[3]);
     for (i = 0; i < 4; i++) {
         if (reverb && i == 0) {
@@ -302,8 +348,12 @@ static void sound_fx_draw(void)
             out = cat_int(out, tenths % 10);
             cat(out, " s");
         } else if (reverb && i == 3) cat(cat_int(value, room.pre_ms), " ms");
-        else if (!perform && !reverb && i == 0) cat(cat_int(value, ms), " ms");
-        else if (!perform && !reverb && i == 3 && tone == 127) cat(value, "TYPE");
+        else if (dirt_page && i == 1) {
+            int bits = kit_dirt_bits(dirt.crush);
+            if (bits == 16) cat(value, "OFF");
+            else cat(cat_int(value, bits), " bit");
+        } else if (fx_page == FXP_DELAY && i == 0) cat(cat_int(value, ms), " ms");
+        else if (fx_page == FXP_DELAY && i == 3 && tone == 127) cat(value, "TYPE");
         else if (perform && i == 0) {
             int raw = fx_bend[track];
             int tenth = ((raw < 0 ? -raw : raw) * 20 + 4096) / 8192;
