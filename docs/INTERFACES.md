@@ -39,6 +39,9 @@ pitch, cutoff or volume. `kit_track_lfo_centihz` reads the rate's nominal freque
 `kit_track_mod_shape` applies temporary signed offsets to FMini's cutoff, resonance and LFO rate and to the track's
 drive, delay and reverb sends. The offsets leave the patch values available to the editors.
 
+`kit_track_spectrum` selects one FMini track for pre-effects capture. `kit_track_spectrum_read` returns 24 band levels
+from 0 to 100 when a new window is ready. `kit_track_spectrum_position` maps a nominal cutoff to the same horizontal axis.
+
 The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_of`. At 127 the delay retains the
 original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
 delay line limit are applied.

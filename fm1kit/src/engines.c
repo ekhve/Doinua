@@ -96,6 +96,8 @@ static uint32_t vage;
 static const fmini_x_t *fmx[NPART];             /* the part's extras while it plays FMINI, else 0 */
 static int okp(int pt) { return pt >= 0 && pt < NPART; }
 
+#include "fmini/spectrum.c"
+
 void kit_track_mod_shape(int pt, const kit_sound_mod_t *mod)
 {
     uint32_t lock;
@@ -374,6 +376,7 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     if (!okp(pt))
         return;
     kit__fx_mod(pt, 0, 0, 0);
+    if (pt == spectrum_track) spectrum_count = 0;
     kit__obv_select(pt, i == ENG_I_OBV ? p : -1);
     kit__bs2_select(pt, i == ENG_I_BS2 ? p : -1);
     kit__juno_select(pt, i == ENG_I_JUNO ? p : -1);   /* the Juno (or none) */
@@ -733,6 +736,7 @@ static void render_part(int pt, int32_t *mix, int n)
                                                      * peaks above the other engines' (a few patches reach twice: MINI BASS)
                                                      * taken down 4:1 over FM_KNEE, so one note never clips the mix */
             int32_t lv = FM_LEVEL_Q12[x->level & 127];
+            if (pt == spectrum_track && spectrum_count < SPECTRUM_SIZE) spectrum_capture(out);
             for (i = 0; i < CTL; i++) {
                 int32_t o = ((out[i] >> 4) * lv) >> 8;
                 if (o > FM_KNEE) o = FM_KNEE + ((o - FM_KNEE) >> 2);

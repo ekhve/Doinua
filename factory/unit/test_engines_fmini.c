@@ -244,6 +244,34 @@ static void check_wheel_filter(int preset)
     kit__eng_select(0, -1, 0);
 }
 
+static void check_live_spectrum(int preset)
+{
+    uint8_t bands[KIT_SPECTRUM_BANDS];
+    int i, peak = 0;
+    kit__eng_select(0, E, preset);
+    kit__eng_select(1, E, preset);
+    kit_track_spectrum(0);
+    kit__eng_note_on(1, 72, 100);
+    render(45, 0, 0);
+    CHECK(kit_track_spectrum_read(bands), "spectrum publishes a window from the selected track");
+    for (i = 0; i < KIT_SPECTRUM_BANDS; i++) peak |= bands[i];
+    CHECK(!peak, "a different track has no energy in the selected spectrum");
+    peak = 0;
+    kit__eng_note_on(0, 60, 100);
+    render(700, 0, 0);
+    kit_track_spectrum_read(bands);
+    render(40, 0, 0);
+    CHECK(kit_track_spectrum_read(bands), "spectrum publishes a held note's capture");
+    for (i = 0; i < KIT_SPECTRUM_BANDS; i++) if (bands[i] > bands[peak]) peak = i;
+    CHECK(peak >= 4 && peak <= 6 && bands[peak] > 45,
+          "a C4 sine peaks near 262 Hz (band %d, level %d)", peak, bands[peak]);
+    kit_track_spectrum(-1);
+    render(40, 0, 0);
+    CHECK(!kit_track_spectrum_read(bands), "no spectrum window is reported when capture is off");
+    kit__eng_select(0, -1, 0);
+    kit__eng_select(1, -1, 0);
+}
+
 int main(void)
 {
     check_factory_arp();
@@ -268,6 +296,7 @@ int main(void)
     check_live_envelopes(sine);
     check_live_lfo(sine);
     check_wheel_filter(sine);
+    check_live_spectrum(sine);
     kit__eng_select(0, E, sine);
     kit__eng_note_on(0, 60, 100);
     render(300, 0, 0);

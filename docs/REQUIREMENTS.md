@@ -529,6 +529,8 @@ implement all sounds".)
 | R-352 | While a note is held on an FMini track, when the LFO adds volume modulation, the firmware shall vary the note's level. | D-113, ST-46, UC-07 | A | Draft | FMini LFO changes a held sound |
 | R-353 | While an FMini MOD route targets cutoff with negative amount, when the modulation wheel is raised, the companion app shall lower the active cutoff. | D-114, ST-46, UC-07 | A | Draft | MOD applies a signed cutoff route |
 | R-354 | While the modulation wheel offsets the track's effects, the firmware shall retain the base effect sends. | D-114, ST-46, UC-07 | A | Draft | Wheel offsets preserve base FX sends |
+| R-355 | While FMini FILTER shows, the companion app shall display the selected track's live spectrum. | D-115, ST-46, UC-07 | A | Draft | FILTER shows the FMini spectrum while playing |
+| R-356 | While a C4 sine sounds on the selected FMini track, the firmware shall report the largest spectrum value in the band nearest its fundamental. | D-115, ST-46, UC-07 | A | Draft | Spectrum measures the selected FMini track |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

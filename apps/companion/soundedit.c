@@ -8,6 +8,9 @@ static sed_mod_t sed_mod[KIT_NTRACKS];
 static const char *const sed_mod_targets[] = { "VIBRATO", "CUTOFF", "RESO", "LFO RATE", "DRIVE", "DELAY", "REVERB" };
 static int sed_page = -1, sed_press_track = -1;
 static uint32_t sed_press_at;
+static int sed_spectrum_track = -1;
+static uint32_t sed_spectrum_at;
+static uint8_t sed_spectrum[KIT_SPECTRUM_BANDS];
 static const char *const sed_waves[] = { "TRI", "SHARK", "SAW", "SQR", "PLS W", "PLS N", "SIN" };
 static const char *const sed_modes[] = { "POLY", "MONO", "LEGATO" };
 static const char *const sed_lfo_waves[] = { "SIN", "TRI", "SAW", "SQR" };
@@ -61,6 +64,29 @@ static void sound_edit_close(void)
     if (!sound_edit_open()) return;
     sed_page = -1;
     dirty = 1;
+}
+
+static void sound_edit_frame(uint32_t now)
+{
+    int i, input;
+    if (!sound_fx_available()) sound_edit_close();
+    input = !asleep && !sb_open && sed_page == SED_FILTER && kit_track_engine(track) == KIT_ENGINE_FMINI ? track : -1;
+    if (input != sed_spectrum_track) {
+        sed_spectrum_track = input;
+        kit_track_spectrum(input);
+        for (i = 0; i < KIT_SPECTRUM_BANDS; i++) sed_spectrum[i] = 0;
+        sed_spectrum_at = now;
+    }
+    if (input >= 0 && now - sed_spectrum_at >= 80u) {
+        uint8_t next[KIT_SPECTRUM_BANDS];
+        sed_spectrum_at = now;
+        if (kit_track_spectrum_read(next)) {
+            for (i = 0; i < KIT_SPECTRUM_BANDS; i++) {
+                if (next[i] != sed_spectrum[i]) dirty = 1;
+                sed_spectrum[i] = next[i];
+            }
+        }
+    }
 }
 
 static void sound_edit_press(void)
@@ -236,10 +262,16 @@ static void sed_draw_osc(const kit_sound_osc_t *osc)
     }
 }
 
-/* A cutoff and resonance sketch. A live spectrum needs a separate audio tap. */
+/* The live sound is behind the nominal cutoff and resonance curve. */
 static void sed_draw_filter(const kit_sound_filter_t *filter, kit_color_t color)
 {
-    int x, last = 80, cutoff = (int)filter->cutoff * 216 / 127;
+    int x, last = 80, cutoff = kit_track_spectrum_position(track, filter->cutoff) * 220 / 100;
+    for (x = 0; x < KIT_SPECTRUM_BANDS; x++) {
+        int left = 10 + x * 220 / KIT_SPECTRUM_BANDS;
+        int right = 10 + (x + 1) * 220 / KIT_SPECTRUM_BANDS;
+        int height = sed_spectrum[x] * 101 / 100;
+        if (height) kit_rect(left, 150 - height, right - left - 1, height, KIT_RGB(52, 65, 88));
+    }
     for (x = 0; x <= 220; x++) {
         int distance = x - cutoff;
         int y = 80 + (distance > 0 ? distance * 2 : 0);

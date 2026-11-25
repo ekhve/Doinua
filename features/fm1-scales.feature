@@ -1335,6 +1335,19 @@ Feature: The effects bus (ST-69)
     When signed wheel offsets change those sends
     Then the audible send changes and the base settings remain available
 
+  @D-115 @ST-46 @auto
+  Scenario: FILTER shows the FMini spectrum while playing
+    Given FMini FILTER is open
+    When a note plays on the selected track
+    Then its spectrum shows behind the cutoff curve
+
+  @D-115 @ST-46 @auto @gate:unit
+  Scenario: Spectrum measures the selected FMini track
+    Given a C4 sine plays on the selected track
+    When the spectrum window is read
+    Then it peaks near the note's fundamental
+    And sound from another track does not appear in the selected spectrum
+
 
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends

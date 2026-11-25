@@ -2436,7 +2436,7 @@ void app_frame(uint32_t now_ms)
     }
     if (game_on() && (mode != MODE_GAME || picker)) game_leave();   /* the game closes: the tracks' sounds back */
     sound_fx_frame(now_ms);
-    if (!sound_fx_available()) sound_edit_close();
+    sound_edit_frame(now_ms);
     if (mode == MODE_GAME && !picker && !help) { game_frame(now_ms); return; }   /* the game draws every frame */
     if (G.on && (mode != MODE_GUIDED || picker)) g_leave();   /* the guided mode closes: the tracks' sounds and levels back */
     if (mode == MODE_GUIDED && !picker && !help) { guided_frame(now_ms); return; }   /* the guided mode draws every frame */

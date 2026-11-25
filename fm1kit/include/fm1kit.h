@@ -198,6 +198,11 @@ int kit_track_preset(int track);
 typedef struct { uint8_t cutoff, resonance, amount, keytrack; } kit_sound_filter_t;
 int kit_track_filter_of(int track, kit_sound_filter_t *filter);
 int kit_track_filter(int track, const kit_sound_filter_t *filter);
+/* Selected FMini track's pre-effects spectrum. A negative track disables capture. */
+#define KIT_SPECTRUM_BANDS 24
+void kit_track_spectrum(int track);
+int kit_track_spectrum_read(uint8_t bands[KIT_SPECTRUM_BANDS]);
+int kit_track_spectrum_position(int track, int cutoff);   /* nominal cutoff on the spectrum axis, 0..100 */
 /* First two oscillators of an editable sound. Detune is signed cents, mix is oscillator 2's share (0..127). */
 enum { KIT_OSC_TRI, KIT_OSC_SHARK, KIT_OSC_SAW, KIT_OSC_SQR, KIT_OSC_WIDE, KIT_OSC_NARROW, KIT_OSC_SINE, KIT_OSC_NWAVES };
 enum { KIT_OSC_WAVE1, KIT_OSC_WAVE2, KIT_OSC_DETUNE, KIT_OSC_MIX };

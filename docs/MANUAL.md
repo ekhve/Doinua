@@ -508,6 +508,7 @@ Tap **EDIT** to open OSC, then tap **EDIT** again or turn **SELECT** to reach FI
 return to OSC. On an FMini sound, the four knobs on OSC change the first two waves, oscillator 2 detune and their
 balance. On FILTER they change cutoff, resonance, envelope amount and key tracking. The cutoff and resonance
 also appear on PERFORM FILTER. **HOME** returns to playing.
+FILTER draws the current FMini track's live spectrum before delay and reverb.
 
 Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
 preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.
