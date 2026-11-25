@@ -1,0 +1,20 @@
+{
+  "scenario": "FX opens a live performance page and delay",
+  "name": "companion, ST-69: FX opens PERFORM, then DELAY, while the track still plays",
+  "app": "companion",
+  "ms": 6200,
+  "keys": "900:FX,960:FX^,1250:FX,1310:FX^,1600:e2:+5,1750:e3:-15,1880:e4:+32,2180:e5:-26,2550:C4@100,2650:C4^,3500:FX,4130:FX^,4200:FX,4260:FX^,4370:e0:-1,4530:C4@100,4660:e2:+6,4860:HOME,4920:HOME^,5100:C4^",
+  "checks": [
+    {"type": "screen", "at": 1100},
+    {"type": "screen", "at": 1500},
+    {"type": "screen", "at": 2450},
+    {"type": "sound", "from": 2580, "to": 2640},
+    {"type": "sound", "from": 2910, "to": 2980},
+    {"type": "screen", "at": 4075},
+    {"type": "screen", "at": 4470},
+    {"type": "sound", "from": 4580, "to": 4630},
+    {"type": "screen", "at": 4770},
+    {"type": "screen", "at": 5025},
+    {"type": "silence", "from": 6000, "to": 6150}
+  ]
+}

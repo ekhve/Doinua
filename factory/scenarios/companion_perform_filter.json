@@ -1,0 +1,15 @@
+{
+  "scenario": "PERFORM FILTER edits the current FMini sound",
+  "name": "companion, ST-69: PERFORM FILTER reads and changes the active FMini filter",
+  "app": "companion",
+  "ms": 9500,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:FX,3670:FX^,3890:e0:-2,4300:C5@100,5100:e4:-32,5600:e5:+10,7000:C5^",
+  "checks": [
+    {"type": "screen", "at": 4090},
+    {"type": "sound", "from": 4450, "to": 5000, "rms": 100},
+    {"type": "screen", "at": 5900},
+    {"type": "level_ratio", "a": [4450, 5000], "b": [6200, 6950], "ratio": 0.055, "tol": 0.3},
+    {"type": "peak", "from": 4250, "to": 7000, "max_dbfs": -1},
+    {"type": "silence", "from": 9200, "to": 9440}
+  ]
+}

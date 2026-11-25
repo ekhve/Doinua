@@ -1,0 +1,15 @@
+{
+  "scenario": "PERFORM opens WOBBLE after DIRT",
+  "name": "companion, ST-69: WOBBLE starts with zero depth, then sweeps cutoff",
+  "app": "companion",
+  "ms": 6000,
+  "keys": "900:FX,960:FX^,1200:e0:+3,1600:e4:+8,2000:e5:+25,2650:C4@100,3900:C4^,4450:e5:-30,4900:C4@100,5250:C4^",
+  "checks": [
+    {"type": "screen", "at": 1420},
+    {"type": "screen", "at": 2350},
+    {"type": "sound", "from": 2700, "to": 3800, "rms": 100},
+    {"type": "peak", "from": 2600, "to": 4300, "max_dbfs": -1},
+    {"type": "sound", "from": 4950, "to": 5200},
+    {"type": "silence", "from": 5800, "to": 5950}
+  ]
+}

@@ -150,6 +150,46 @@ int main(void)
     kit_track_note_on(KIT_TRACK_DRUMS, 42, 127);
     CHECK(V(3) == 2, "a hat alongside it");
 
+    {
+        enum { N = KIT_BLOCK * 256 };
+        static int16_t dry[N], room[N], later[N], brighter[N];
+        kit_reverb_shape_t shape;
+        int early, delayed;
+        kit_all_notes_off();
+        for (i = 0; i < 300 && kit__synth_active(); i++) energy(8);
+        kit_reverb_shape_of(&shape);
+        CHECK(shape.damp == 70 && shape.pre_ms == 0 && kit_reverb_tail_ms_of() == 500, "original room defaults");
+        kit_sfx(KIT_SFX_PLOP, 8);
+        kit__synth_render(dry, N);
+        kit_reverb(75);
+        kit_sfx(KIT_SFX_PLOP, 8);
+        kit__synth_render(room, N);
+        kit_reverb(0);
+        shape.pre_ms = 100;
+        kit_reverb_shape(&shape);
+        kit_reverb(75);
+        kit_sfx(KIT_SFX_PLOP, 8);
+        kit__synth_render(later, N);
+        for (early = 0; early < N && room[early] == dry[early]; early++) {}
+        for (delayed = 0; delayed < N && later[delayed] == dry[delayed]; delayed++) {}
+        CHECK(early < N && delayed < N && delayed - early == KIT_FS / 10,
+              "100 ms pre-delay moves only the wet onset (%d -> %d)", early, delayed);
+        kit_reverb(0);
+        shape.damp = 10;
+        kit_reverb_shape(&shape);
+        kit_reverb(75);
+        kit_sfx(KIT_SFX_PLOP, 8);
+        kit__synth_render(brighter, N);
+        CHECK(memcmp(later, brighter, sizeof later) != 0, "damping changes the reflected sound");
+        kit_reverb(0);
+        shape.pre_ms = 255;
+        shape.damp = 255;
+        shape.size = 127;
+        kit_reverb_shape(&shape);
+        kit_reverb_shape_of(&shape);
+        CHECK(shape.pre_ms == 120 && shape.damp == 100 && kit_reverb_tail_ms_of() == 4400, "room controls' upper bounds");
+    }
+
     printf("%s: synth tracks, %d failed\n", fails ? "FAIL" : "PASS", fails);
     return fails != 0;
 }

@@ -229,9 +229,18 @@ static int rl_event(const kit_event_t *e)
     if (rl_open && e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_OCT_UP) { rl_ask = 1; dirty = 1; return 1; }
     if (rl_open && e->type == KIT_EV_BTN_UP && e->id == KIT_BTN_OCT_UP) return 1;
     if (rl_open && e->type == KIT_EV_ENC && e->id >= KIT_ENC_KNOB1 && e->id <= KIT_ENC_KNOB4) { rl_knob(e->id, e->delta); dirty = 1; return 1; }
-    if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_EDIT) { edit_used = 0; erase_snap = 0; erase_from = -1; return 1; }
+    if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_EDIT) {
+        edit_used = 0;
+        erase_snap = 0;
+        erase_from = -1;
+        sound_edit_press();
+        return 1;
+    }
     if (e->type == KIT_EV_BTN_UP && e->id == KIT_BTN_EDIT) {
-        if (!edit_used && is_manual()) lights_offs[track] = !lights_offs[track];   /* EDIT alone: the lights (manual chords) */
+        if (!edit_used) {
+            if (is_manual()) lights_offs[track] = !lights_offs[track];
+            else sound_edit_release();
+        }
         erase_keys = 0;
         dirty = 1;
         return 1;

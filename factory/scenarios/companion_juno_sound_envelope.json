@@ -1,0 +1,16 @@
+{
+  "scenario": "Juno envelope edits appear on both pages",
+  "name": "companion, ST-46: the two Juno envelope pages share the native ADSR",
+  "app": "companion",
+  "ms": 8800,
+  "keys": "1000:e6:+1,1600:e6:+2,2200:e2:+1,4650:ENV,4720:ENV^,5180:e5:+24,5750:ENV,5820:ENV^,6300:C5@100,6900:C5^,7900:HOME,7970:HOME^",
+  "checks": [
+    {"type": "screen", "at": 4900},
+    {"type": "screen", "at": 5550},
+    {"type": "screen", "at": 6100},
+    {"type": "screen", "at": 6700},
+    {"type": "sound", "from": 6500, "to": 6800},
+    {"type": "screen", "at": 7280},
+    {"type": "peak", "from": 6300, "to": 7800, "max_dbfs": -1}
+  ]
+}

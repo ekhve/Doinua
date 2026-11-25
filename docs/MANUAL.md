@@ -494,8 +494,37 @@ press HOME). The list holds the sounds you picked in the audition, as their engi
 ### Effects
 
 Every sound brings its own effects, as it was made: its chorus, its echo and its reverb (and some a little drive), so
-it sounds like it did in the audition. The echo and the reverb ring on a moment after you let go. The FX pages to change
-a sound's effects come later.
+it sounds like it did in the audition. The echo and the reverb ring on a moment after you let go.
+
+On a Producer sound track, tap **FX** to step through PERFORM, DELAY, REVERB and DIRT. Hold **FX** to return to
+PERFORM and press **HOME** to return to playing. On PERFORM, **SELECT** changes the X/Y pair and **K3/K4** move
+its two controls. For WOBBLE, **K3** sets the cutoff sweep speed and **K4** sets its depth. Turn depth to zero to
+bypass the sweep. The sweep is temporary and applies to the selected track.
+
+On FMini and Juno-106 sounds, PERFORM FILTER uses **K3** for cutoff and **K4** for resonance. Reselect the preset to reload
+its original settings. The X and Y values show dashes on sounds that do not have these controls mapped yet.
+
+Tap **EDIT** to open OSC, then tap **EDIT** again or turn **SELECT** to reach FILTER. Hold **EDIT** and release to
+return to OSC. On an FMini sound, the four knobs on OSC change the first two waves, oscillator 2 detune and their
+balance. On FILTER they change cutoff, resonance, envelope amount and key tracking. The cutoff and resonance
+also appear on PERFORM FILTER. **HOME** returns to playing.
+FILTER draws the selected FMini or Juno-106 track's live spectrum before the shared delay and reverb.
+
+Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
+preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.
+Juno-106 shows **SHARED ADSR** on both pages. Changes on either page appear on the other. The preset's VCA
+mode determines whether the amp follows this envelope or the key gate.
+
+On VOICE, choose POLY, MONO or LEGATO, then set the glide time, when it slides, and the pitch-bend range. Bend defaults
+to two semitones. Changing the mode releases the track's currently sounding notes. VOICE is available for Basic, the
+shared Felucca engines and FMini.
+
+On FMini, press **LFO** to edit rate, depth, target and wave. Pitch, cutoff and volume are available as targets on
+the mono FM-1. At zero depth only the preset's original modulation routes apply.
+
+On FMini's **MOD** page, choose two destinations and their signed amounts. PERFORM MOD and MIDI CC1 apply the
+same routes. Bringing MOD to zero returns the sound to its base settings. Reselecting the sound restores the
+original vibrato route.
 
 ### How many notes at once
 

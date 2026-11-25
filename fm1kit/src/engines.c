@@ -6,6 +6,7 @@
  * Each preset's A D S R (0..127) drive a block-rate envelope (KIT_ENV_STEP / KIT_ENV_MUL, tools/gen_tables.py).
  * Integer only, no 64-bit multiplies (felucca-bsp docs/CPU.md). */
 #include <stdint.h>
+#include "kit_internal.h"
 #ifdef __PI32V2__
 void *memset(void *d, int c, unsigned n);       /* felucca-bsp chip/libc.c (no C library on the device) */
 void *memcpy(void *d, const void *s, unsigned n);
@@ -19,12 +20,15 @@ void *memcpy(void *d, const void *s, unsigned n);
 #include "felucca_engine.h"
 int kit__track_pitch(int track);               /* synth.c: the track's bend and vibrato, 1/16 semitones */
 
-enum { P_ATK, P_REL, P_FTYPE, P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7, P_COUNT };
+enum { P_ATK, P_REL, P_FTYPE, P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7, P_FREL, P_COUNT };
+/* A factory FMini contour uses its decay time for release until the release dial is edited. */
+#define FM_ENV_FOLLOW_DECAY 255
 typedef struct track {
     int16_t p[P_COUNT];
     voice_t v[NVOICE];
     int32_t lfo_val, lfo_fade, mw;  /* the part's LFO this block (Q15), its fade-in (Q15), the mod wheel (FMINI reads them) */
     uint32_t lfo_ph;
+    int8_t mod_cutoff, mod_resonance, mod_rate;
 } track_t;
 static track_t trk[NPART];
 
@@ -80,6 +84,8 @@ typedef struct {                    /* a part's sound: its engine, preset and en
     uint32_t atk_step, dec_mul, rel_mul;
     int32_t sus_level;
     int32_t last_amp[NVOICE];
+    uint8_t fmini_amp[4];
+    kit_sound_lfo_t fmini_lfo;
 } part_t;
 static part_t part[NPART];
 static uint32_t vage;
@@ -89,6 +95,173 @@ static uint32_t vage;
  * times (1 ms .. 12 s). Velocity as the other engines (fmini-1's default is off; here it also carries the level) */
 static const fmini_x_t *fmx[NPART];             /* the part's extras while it plays FMINI, else 0 */
 static int okp(int pt) { return pt >= 0 && pt < NPART; }
+
+#include "fmini/spectrum.c"
+
+int kit_track_motion_of(int pt, kit_sound_motion_t *motion)
+{
+    const voice_t *latest = 0;
+    uint32_t lock, contour;
+    int i;
+    if (kit__juno_on(pt)) return kit__juno_motion_of(pt, motion);
+    if (!okp(pt) || !fmx[pt] || !motion) return 0;
+    lock = kit__lock();
+    for (i = 0; i < NVOICE; i++) {
+        const voice_t *v = &trk[pt].v[i];
+        if (v->active && (!latest || (int32_t)(v->age - latest->age) > 0)) latest = v;
+    }
+    if (latest) {
+        contour = (uint32_t)latest->s[7];
+        *motion = (kit_sound_motion_t){latest->stage, clamp(latest->env >> 17, 0, 127),
+                                       contour >> 24, clamp((contour & 0xffffff) >> 16, 0, 127),
+                                       trk[pt].lfo_ph >> 24};
+    }
+    kit__unlock(lock);
+    return latest != 0;
+}
+
+void kit_track_mod_shape(int pt, const kit_sound_mod_t *mod)
+{
+    uint32_t lock;
+    if (!okp(pt) || !mod) return;
+    lock = kit__lock();
+    trk[pt].mod_cutoff = clamp(mod->cutoff, -127, 127);
+    trk[pt].mod_resonance = clamp(mod->resonance, -127, 127);
+    trk[pt].mod_rate = clamp(mod->rate, -127, 127);
+    kit__fx_mod(pt, mod->drive, mod->delay, mod->reverb);
+    kit__unlock(lock);
+}
+
+int kit_track_lfo_of(int pt, kit_sound_lfo_t *lfo)
+{
+    if (!okp(pt) || !fmx[pt] || !lfo) return 0;
+    *lfo = part[pt].fmini_lfo;
+    return 1;
+}
+
+int kit_track_lfo(int pt, const kit_sound_lfo_t *lfo)
+{
+    uint32_t lock;
+    if (!okp(pt) || !fmx[pt] || !lfo) return 0;
+    lock = kit__lock();
+    part[pt].fmini_lfo = (kit_sound_lfo_t){clamp(lfo->rate, 0, 127), clamp(lfo->depth, 0, 127),
+                                          clamp(lfo->target, 0, KIT_LFO_NTARGETS - 1),
+                                          clamp(lfo->wave, 0, KIT_LFO_NWAVES - 1)};
+    kit__unlock(lock);
+    return 1;
+}
+
+int kit_track_lfo_centihz(int pt, int dial)
+{
+    return okp(pt) && fmx[pt] ? FM_LFO_CHZ[clamp(dial, 0, 127)] : 0;
+}
+
+int kit_track_envelope_of(int pt, int kind, uint8_t values[4])
+{
+    if (kind != KIT_ENV_FILTER && kind != KIT_ENV_AMP) return 0;
+    if (kit__juno_on(pt)) return kit__juno_envelope_of(pt, values);
+    if (!okp(pt) || !fmx[pt] || !values) return 0;
+    if (kind == KIT_ENV_FILTER) {
+        const int16_t *p = trk[pt].p;
+        values[0] = p[P_E3]; values[1] = p[P_E4]; values[2] = p[P_E5]; values[3] = p[P_FREL];
+    } else memcpy(values, part[pt].fmini_amp, 4);
+    if (values[3] == FM_ENV_FOLLOW_DECAY) values[3] = values[1];
+    return 1;
+}
+
+int kit_track_envelope(int pt, int kind, int control, int value)
+{
+    static const uint8_t filter_controls[] = { P_E3, P_E4, P_E5, P_FREL };
+    uint32_t lock;
+    if ((unsigned)control > KIT_ENV_RELEASE || (kind != KIT_ENV_FILTER && kind != KIT_ENV_AMP)) return 0;
+    if (kit__juno_on(pt)) return kit__juno_envelope(pt, control, clamp(value, 0, 127));
+    if (!okp(pt) || !fmx[pt]) return 0;
+    lock = kit__lock();
+    value = clamp(value, 0, 127);
+    if (kind == KIT_ENV_FILTER) trk[pt].p[filter_controls[control]] = value;
+    else part[pt].fmini_amp[control] = value;
+    kit__unlock(lock);
+    return 1;
+}
+
+int kit_track_envelope_ms(int pt, int time_dial)
+{
+    return okp(pt) && fmx[pt] ? FM_ENV_MS[clamp(time_dial, 0, 127)] : 0;
+}
+
+int kit_track_envelope_stage_ms(int pt, int control, int time_dial)
+{
+    if (control != KIT_ENV_ATTACK && control != KIT_ENV_DECAY && control != KIT_ENV_RELEASE) return 0;
+    if (kit__juno_on(pt)) return kit__juno_envelope_ms(control, clamp(time_dial, 0, 127));
+    return kit_track_envelope_ms(pt, time_dial);
+}
+
+int kit_track_filter_of(int pt, kit_sound_filter_t *filter)
+{
+    const int16_t *p;
+    if (kit__juno_on(pt)) return kit__juno_filter_of(pt, filter);
+    if (!okp(pt) || !fmx[pt] || !filter) return 0;
+    p = trk[pt].p;
+    *filter = (kit_sound_filter_t){p[P_E0], p[P_E1], p[P_E2], fmini_patch[pt][FG_KBD]};
+    return 1;
+}
+
+int kit_track_filter(int pt, const kit_sound_filter_t *filter)
+{
+    uint32_t k;
+    int16_t *p;
+    if (kit__juno_on(pt)) return kit__juno_filter(pt, filter);
+    if (!okp(pt) || !fmx[pt] || !filter) return 0;
+    k = kit__lock();
+    p = trk[pt].p;
+    p[P_E0] = clamp(filter->cutoff, 0, 127);
+    p[P_E1] = clamp(filter->resonance, 0, 127);
+    p[P_E2] = clamp(filter->amount, 0, 127);
+    fmini_patch[pt][FG_KBD] = clamp(filter->keytrack, 0, 127);
+    kit__unlock(k);
+    return 1;
+}
+
+int kit_track_osc_of(int pt, kit_sound_osc_t *osc)
+{
+    const uint8_t *g;
+    int level1, level2;
+    if (!okp(pt) || !fmx[pt] || !osc) return 0;
+    g = fmini_patch[pt];
+    level1 = g[FG_SW1] & FS_O1 ? g[FG_L1] : 0;
+    level2 = g[FG_SW1] & FS_O2 ? g[FG_L2] : 0;
+    *osc = (kit_sound_osc_t){g[FG_W1], g[FG_W2], level1 + level2 ? level2 * 127 / (level1 + level2) : 0,
+                            fmini_det(g, FG_DC2L)};
+    return 1;
+}
+
+int kit_track_osc(int pt, int control, int value)
+{
+    uint8_t *g;
+    uint32_t lock;
+    if (!okp(pt) || !fmx[pt] || control < KIT_OSC_WAVE1 || control > KIT_OSC_MIX) return 0;
+    lock = kit__lock();
+    g = fmini_patch[pt];
+    if (control == KIT_OSC_DETUNE) {
+        int cents = clamp(value, -700, 700);
+        int magnitude = cents < 0 ? -cents : cents;
+        g[FG_DC2L] = magnitude & 127;
+        g[FG_DC2H] = (magnitude >> 7) | (cents < 0 ? 8 : 0);
+    } else if (control == KIT_OSC_MIX) {
+        int mix = clamp(value, 0, 127);
+        int total = (g[FG_SW1] & FS_O1 ? g[FG_L1] : 0) + (g[FG_SW1] & FS_O2 ? g[FG_L2] : 0);
+        int larger = mix > 63 ? mix : 127 - mix;
+        if (!total) total = 127;
+        total = clamp(total, 1, 127 * 127 / larger);
+        g[FG_L2] = (total * mix + 63) / 127;
+        g[FG_L1] = total - g[FG_L2];
+        g[FG_SW1] = (g[FG_SW1] & ~(FS_O1 | FS_O2)) | (g[FG_L1] ? FS_O1 : 0) | (g[FG_L2] ? FS_O2 : 0);
+    } else {
+        g[control == KIT_OSC_WAVE1 ? FG_W1 : FG_W2] = clamp(value, 0, KIT_OSC_NWAVES - 1);
+    }
+    kit__unlock(lock);
+    return 1;
+}
 static int32_t pitch_of(int pt, int note)          /* 1/16 semitones: FMINI's patch may move the keys an octave */
 {
     int n = note + (fmx[pt] ? fmx[pt]->oct * 12 : 0);
@@ -235,6 +408,8 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     uint32_t k;
     if (!okp(pt))
         return;
+    kit__fx_mod(pt, 0, 0, 0);
+    if (pt == spectrum_track) spectrum_count = 0;
     kit__obv_select(pt, i == ENG_I_OBV ? p : -1);
     kit__bs2_select(pt, i == ENG_I_BS2 ? p : -1);
     kit__juno_select(pt, i == ENG_I_JUNO ? p : -1);   /* the Juno (or none) */
@@ -251,7 +426,12 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     if (i == ENG_I_CF_VA) kit_va_select((unsigned)pt, (unsigned)p);
     if (i == ENG_I_FMINI) {                         /* its patch and extras */
         memcpy(fmini_patch[pt], FMB_PATCH[p], FG_SIZE);
+        memcpy(P->fmini_amp, P->pre->env, 3);
+        P->fmini_amp[KIT_ENV_RELEASE] = FM_ENV_FOLLOW_DECAY;
+        t->p[P_FREL] = FM_ENV_FOLLOW_DECAY;
         fmx[pt] = &FMB_X[p];
+        P->fmini_lfo.rate = fmx[pt]->lfo[0] & 127;
+        P->fmini_lfo.wave = fmx[pt]->lfo[1] < KIT_LFO_NWAVES ? fmx[pt]->lfo[1] : KIT_LFO_SINE;
         t->lfo_fade = 32767;
     }
     for (k = 0; k < 8u; k++)
@@ -457,7 +637,7 @@ static inline int32_t env_mul(int32_t x, uint32_t m)   /* x (Q24, >= 0) * m (Q16
 
 static int32_t env_tick_fmini(const part_t *P, voice_t *v)   /* FMINI's (fmini-1 voice.c, FMini-only build) */
 {
-    const uint8_t *e = P->pre->env;
+    const uint8_t *e = P->fmini_amp;
     int32_t sus = (int32_t)(e[2] & 127) << 17;
     switch (v->stage) {
     case 1:
@@ -471,7 +651,7 @@ static int32_t env_tick_fmini(const part_t *P, voice_t *v)   /* FMINI's (fmini-1
         v->env += mulq16(sus - v->env, FM_ENV_EXP[e[1] & 127]);
         break;
     case 3:
-        v->env -= mulq16(v->env, FM_ENV_EXP[e[1] & 127]);   /* the release: the DECAY's time */
+        v->env -= mulq16(v->env, FM_ENV_EXP[e[3] == FM_ENV_FOLLOW_DECAY ? e[1] & 127 : e[3]]);
         if (v->env < (1 << 12)) { v->env = 0; v->stage = 0; v->active = 0; }
         break;
     default:
@@ -517,17 +697,27 @@ static void render_part(int pt, int32_t *mix, int n)
     for (b = 0; b < n; b += CTL) {
         const fmini_x_t *x = fmx[pt];
         int32_t lfo = 0;
+        int32_t lfo_pitch = 0, lfo_cutoff = 0, lfo_volume = 0;
         if (x) {                                    /* FMINI: the part's LFO, a block at a time (fmini-1 voice.c) */
             uint32_t ph;
-            t->lfo_ph += FM_LFO_INC[x->lfo[0] & 127];
+            kit_sound_lfo_t setting = P->fmini_lfo;
+            int rate = t->mod_rate ? clamp(setting.rate + t->mod_rate, 0, 127) : setting.rate;
+            t->lfo_ph += FM_LFO_INC[rate];
             ph = t->lfo_ph;
-            t->lfo_val = x->lfo[1] == 1 ? osc_tri(ph) : x->lfo[1] == 2 ? (int32_t)(ph >> 16) - 32768
-                       : x->lfo[1] == 3 ? (ph < 0x80000000u ? 32767 : -32767) : osc_sine(ph);
+            t->lfo_val = setting.wave == KIT_LFO_TRI ? osc_tri(ph) : setting.wave == KIT_LFO_SAW ? (int32_t)(ph >> 16) - 32768
+                       : setting.wave == KIT_LFO_SQUARE ? (ph < 0x80000000u ? 32767 : -32767) : osc_sine(ph);
             if (t->lfo_fade < 32767) {
                 int32_t st = (int32_t)(FM_ENV_LIN[x->lfo[2] & 127] >> 9);
                 t->lfo_fade = x->lfo[2] ? clamp(t->lfo_fade + (st ? st : 1), 0, 32767) : 32767;
             }
             lfo = mulq15(t->lfo_val, t->lfo_fade);
+            if (setting.depth) {
+                int32_t depth = setting.depth * 258;
+                /* The added route has its own depth. Preset fade still applies to factory paths. */
+                if (setting.target == KIT_LFO_PITCH) lfo_pitch = mulq15(t->lfo_val, depth) * 13 / 32768;
+                else if (setting.target == KIT_LFO_CUTOFF) lfo_cutoff = mulq15(mulq15(t->lfo_val, depth), 12000);
+                else lfo_volume = mulq15((t->lfo_val + 32768) >> 1, depth);
+            }
         }
         if (cur->block)
             cur->block(t);
@@ -548,6 +738,7 @@ static void render_part(int pt, int32_t *mix, int n)
             if (!cur->ownenv) a = (a * v->vel) / 127;                 /* (FMINI too: on the FM-1 the velocity also carries the track's level) */
             if (x && x->mod[1])                     /* LFO -> amplitude */
                 a = mulq15(a, 32767 - mulq15((lfo + 32768) >> 1, x->mod[1] * 258));
+            if (lfo_volume) a = mulq15(a, 32767 - lfo_volume);
             if (cur->amp)
                 a = cur->amp(t, v, a);
             if (!v->active)
@@ -559,15 +750,15 @@ static void render_part(int pt, int32_t *mix, int n)
             base = pitch_inc((uint32_t)clamp((v->pitch_cur >> GQ) + pb, 0, 2047));
             memset(&m, 0, sizeof m);
             m.pitch16 = (v->pitch_cur >> GQ) + pb;
-            if (x && (x->mod[0] || x->mod[2])) {    /* LFO -> pitch, contour -> pitch */
-                m.pitch16 = clamp(m.pitch16 + ((lfo * x->mod[0] * 3) >> 15) + ((a * x->mod[2] * 3) >> 15), 0, 2047);
+            if (x && (lfo_pitch || x->mod[0] || x->mod[2])) {    /* LFO -> pitch, contour -> pitch */
+                m.pitch16 = clamp(m.pitch16 + lfo_pitch + ((lfo * x->mod[0] * 3) >> 15) + ((a * x->mod[2] * 3) >> 15), 0, 2047);
                 base = pitch_inc((uint32_t)m.pitch16);
             }
             m.inc = base;
             m.amp0 = P->last_amp[k];
             m.amp1 = a;
             m.envq15 = cur->ownenv ? 0 : a;
-            m.cutoff = 0;
+            m.cutoff = lfo_cutoff;
             m.shape = 64 << 8;
             P->last_amp[k] = a;
             cur->render(t, v, out, CTL, &m);
@@ -578,6 +769,7 @@ static void render_part(int pt, int32_t *mix, int n)
                                                      * peaks above the other engines' (a few patches reach twice: MINI BASS)
                                                      * taken down 4:1 over FM_KNEE, so one note never clips the mix */
             int32_t lv = FM_LEVEL_Q12[x->level & 127];
+            if (kit__spectrum_wants(pt)) kit__spectrum_capture(out, CTL);
             for (i = 0; i < CTL; i++) {
                 int32_t o = ((out[i] >> 4) * lv) >> 8;
                 if (o > FM_KNEE) o = FM_KNEE + ((o - FM_KNEE) >> 2);

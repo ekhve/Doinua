@@ -300,7 +300,8 @@ int kit_voices_load(void) { uint32_t k = kit__lock(); int l = load_now(); kit__u
 uint32_t kit_voices_stolen(void) { return stolen; }
 
 /* ---- a MIDI keyboard's controls (API 17, D-044): bend, vibrato, sustain ---- */
-static int16_t bend16[KIT_NTRACKS];             /* 1/16 semitones, -32..32 */
+static int16_t bend16[KIT_NTRACKS], bend_raw[KIT_NTRACKS];
+static uint8_t bend_range[KIT_NTRACKS];         /* zero until set: the original two semitones */
 static uint8_t mod_depth[KIT_NTRACKS];
 static uint16_t lfo_ph[KIT_NTRACKS];
 static uint8_t sus_on[KIT_NTRACKS];
@@ -332,9 +333,13 @@ static uint16_t rv_ci[RV_NC], rv_ai[RV_NA];
 static int32_t rv_lp[RV_NC], rv_prev;
 static volatile uint8_t rv_level, rv_room = 85;  /* the wet share 0..100; the combs' feedback, % */
 static uint8_t rv_sent;                         /* the sends fed it last block (D-093) */
-static uint32_t rv_tail;                        /* samples of its tail still to run after the sends stop (0.5 s) */
+static uint32_t rv_tail;                        /* samples of its tail still to run after the sends stop */
+static uint16_t rv_tail_ms = 500;
+static kit_reverb_shape_t rv_shape = {77, 70, 0};
+#define RV_PRE_LEN 4096u
+static int16_t rv_pre[RV_PRE_LEN] KIT_BIG;
+static uint16_t rv_pre_write, rv_pre_count;
 static void rv_clear(void);
-#define RV_DAMP 9830                            /* the combs' low-pass: 0.3 of the new sample (Q15) */
 
 static int16_t sat16(int32_t x) { return (int16_t)(x > 32767 ? 32767 : x < -32768 ? -32768 : x); }
 /* x / 32768 towards zero: a floor (>> 15) rounds every small negative down, so a comb's last -1s go round for ever
@@ -354,28 +359,64 @@ int kit_reverb_of(void) { return rv_level; }
 
 void kit__rv_room(int size)                     /* the bus's DECAY (D-093): the combs' feedback 70 .. 95 % */
 {
-    rv_room = (uint8_t)(70 + (size < 0 ? 0 : size > 127 ? 127 : size) * 25 / 127);
+    rv_shape.size = (uint8_t)(size < 0 ? 0 : size > 127 ? 127 : size);
+    rv_room = (uint8_t)(70 + rv_shape.size * 25 / 127);
+    rv_tail_ms = 500;
 }
+
+void kit_reverb_shape(const kit_reverb_shape_t *shape)
+{
+    uint32_t k;
+    int size, pre;
+    if (!shape) return;
+    k = kit__lock();
+    size = shape->size > 127 ? 127 : shape->size;
+    if (size != rv_shape.size) {
+        kit__rv_room(size);
+        rv_tail_ms = (uint16_t)(400 + size * 4000 / 127);
+    }
+    rv_shape.damp = shape->damp > 100 ? 100 : shape->damp;
+    pre = shape->pre_ms > 120 ? 120 : shape->pre_ms;
+    if (!pre || !rv_shape.pre_ms) rv_pre_count = 0;
+    rv_shape.pre_ms = (uint8_t)pre;
+    kit__unlock(k);
+}
+
+void kit_reverb_shape_of(kit_reverb_shape_t *shape) { if (shape) *shape = rv_shape; }
+int kit_reverb_tail_ms_of(void) { return rv_tail_ms; }
+
 static void rv_clear(void)
 {
     int i, j;
     for (i = 0; i < RV_NC; i++) { for (j = 0; j < RV_CLEN[i]; j++) RV_C[i][j] = 0; rv_ci[i] = 0; rv_lp[i] = 0; }
     for (i = 0; i < RV_NA; i++) { for (j = 0; j < RV_ALEN[i]; j++) RV_A[i][j] = 0; rv_ai[i] = 0; }
     rv_prev = 0;
+    rv_pre_write = rv_pre_count = 0;
 }
 /* KIT_BLOCK samples of the mix: the reverb added. send: the tracks' sends (fxbus.c, D-093), or 0: the whole mix at
  * kit_reverb's level, as before */
 static void rv_block(int32_t *mix, const int32_t *send)
 {
     int32_t fb = (int32_t)rv_room * 32768 / 100, wet = send ? 768 : (int32_t)rv_level * 3 * 256 / 100;   /* wet: Q8, up to x 3 */
+    int32_t damp = (100 - rv_shape.damp) * 32768 / 100;
+    uint32_t pre = (uint32_t)rv_shape.pre_ms * 2205u / 100u;
     int j, i;
+    if (damp < 1638) damp = 1638;               /* a dark room still lets the combs decay */
     for (j = 0; j < KIT_BLOCK; j += 2) {
         int32_t in = send ? ((mix[j] + mix[j + 1]) / 100 * rv_level + send[j] + send[j + 1]) >> 4
                           : (mix[j] + mix[j + 1]) >> 4, out = 0, y;   /* the pair, at an eighth (the combs add up) */
+        if (pre) {
+            uint32_t w = rv_pre_write;
+            y = pre <= rv_pre_count ? rv_pre[(w - pre) & (RV_PRE_LEN - 1u)] : 0;
+            rv_pre[w] = sat16(in);
+            rv_pre_write = (uint16_t)((w + 1u) & (RV_PRE_LEN - 1u));
+            if (rv_pre_count < RV_PRE_LEN) rv_pre_count++;
+            in = y;
+        }
         for (i = 0; i < RV_NC; i++) {
             int16_t *b = RV_C[i];
             y = b[rv_ci[i]];
-            rv_lp[i] += q15z((y - rv_lp[i]) * RV_DAMP);
+            rv_lp[i] += q15z((y - rv_lp[i]) * damp);
             b[rv_ci[i]] = sat16(in + q15z(rv_lp[i] * fb));
             if (++rv_ci[i] >= RV_CLEN[i]) rv_ci[i] = 0;
             out += y;
@@ -591,10 +632,28 @@ static const uint16_t PITCH_MUL[97] = {
 
 void kit_track_bend(int t, int value)
 {
+    int steps;
     if (!okt(t)) return;
     if (value < -8192) value = -8192;
     if (value > 8191) value = 8191;
-    bend16[t] = (int16_t)(value >= 0 ? (value * 32 + 4096) / 8191 : -((-value * 32 + 4096) / 8192));
+    bend_raw[t] = (int16_t)value;
+    steps = kit_track_bend_range_of(t) * 16;
+    bend16[t] = (int16_t)(value >= 0 ? (value * steps + 4096) / 8191 : -((-value * steps + 4096) / 8192));
+}
+
+int kit_track_bend_range_of(int t)
+{
+    return okt(t) && bend_range[t] ? bend_range[t] : 2;
+}
+
+void kit_track_bend_range(int t, int semitones)
+{
+    uint32_t lock;
+    if (!okt(t)) return;
+    lock = kit__lock();
+    bend_range[t] = (uint8_t)(semitones < 1 ? 1 : semitones > 12 ? 12 : semitones);
+    kit_track_bend(t, bend_raw[t]);
+    kit__unlock(lock);
 }
 
 void kit_track_mod(int t, int depth)
@@ -608,15 +667,24 @@ int kit__track_pitch(int t)                     /* the bend, and the vibrato at 
     if (!okt(t)) return 0;
     tri = lfo_ph[t] < 32768u ? (int)lfo_ph[t] : 65535 - (int)lfo_ph[t];   /* 0..32767 */
     p = bend16[t] + tune16 + (tri - 16384) * mod_depth[t] * 8 / (16384 * 127);
-    return p < -48 ? -48 : p > 48 ? 48 : p;
+    return p;
 }
 
-static uint32_t pitch_scale(uint32_t inc, int p)  /* inc * 2^(p / 192), with no 64-bit multiply */
+static uint32_t pitch_scale_step(uint32_t inc, int p)
 {
     uint32_t m = PITCH_MUL[p + 48];
     return (inc >> 15) * m + (((inc & 0x7FFFu) * m) >> 15);
 }
 
+static uint32_t pitch_scale(uint32_t inc, int p)
+{
+    /* Extended bends fold an octave first. The default range retains the original single multiply. */
+    if (p > 96) { inc <<= 1; p -= 192; }
+    if (p < -96) { inc >>= 1; p += 192; }
+    if (p > 48) { inc = pitch_scale_step(inc, 48); p -= 48; }
+    if (p < -48) { inc = pitch_scale_step(inc, -48); p += 48; }
+    return pitch_scale_step(inc, p);
+}
 /* ---- glide and mono (API 27, ST-46, D-073) ---- */
 /* (tr_vmode, tr_slide: declared above, with the tracks' sounds) */
 static uint16_t tr_glide[KIT_NTRACKS];               /* ms, 0: none */
@@ -1071,7 +1139,11 @@ void kit__synth_render(int16_t *out, int n)
             int sent = 0;
             for (j = 0; j < KIT_BLOCK && !sent; j++) sent = rs[j] != 0;
             if (sent && !rv_sent && !rv_level) rv_clear();     /* from silence, not an old tail */
-            if (sent || (rv_sent && rv_tail)) { rv_block(mix, rs); rv_tail = sent ? 22050 : rv_tail > KIT_BLOCK ? rv_tail - KIT_BLOCK : 0; }
+            if (sent || (rv_sent && rv_tail)) {
+                rv_block(mix, rs);
+                rv_tail = sent ? (uint32_t)(rv_tail_ms + rv_shape.pre_ms) * 441u / 10u
+                               : rv_tail > KIT_BLOCK ? rv_tail - KIT_BLOCK : 0;
+            }
             else if (rv_level) rv_block(mix, 0);
             rv_sent = (uint8_t)(sent || rv_tail);
         }

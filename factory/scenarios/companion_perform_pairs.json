@@ -1,0 +1,16 @@
+{
+  "scenario": "PERFORM switches live effect pairs",
+  "name": "companion, ST-69: SELECT steps from DUB through SPACE and DIRT",
+  "app": "companion",
+  "ms": 7500,
+  "keys": "900:FX,960:FX^,1180:e4:+24,1480:e5:+5,1900:C4@100,2000:C4^,2900:e0:+1,3230:e4:+24,4000:C4@100,4100:C4^,5100:e0:+1,5300:e4:+20,5520:e5:+24,6000:C4@100,6150:C4^",
+  "checks": [
+    {"type": "screen", "at": 1770},
+    {"type": "sound", "from": 2270, "to": 2340},
+    {"type": "screen", "at": 3650},
+    {"type": "sound", "from": 4180, "to": 4240},
+    {"type": "screen", "at": 5850},
+    {"type": "sound", "from": 6050, "to": 6140},
+    {"type": "silence", "from": 7120, "to": 7400}
+  ]
+}

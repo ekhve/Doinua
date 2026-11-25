@@ -502,6 +502,41 @@ implement all sounds".)
 |---|---|---|---|---|---|
 | R-314 | When a track sends to the delay, the firmware shall repeat the track's sound after the delay's time. | D-093, ST-69 | A | Draft | The effects bus delays, drives and choruses a track's sound by its sends, and ends |
 | R-315 | When an FMini sound is chosen for a track, the firmware shall set the track's effect sends from the sound's patch. | D-093, ST-69 | A | Draft | An FMini sound plays its note in tune and stops when released |
+| R-328 | When DELAY TONE is lowered, the firmware shall soften a short impulse in the delayed signal. | D-102, ST-69, UC-07 | A | Draft | Delay tone softens the echo |
+| R-329 | When FX is tapped on a synth track's playing page, the companion app shall show the PERFORM page. | D-072, ST-69, UC-07 | A | Draft | FX opens a live performance page and delay |
+| R-330 | While DELAY shows, when K3 is turned, the companion app shall change the selected track's delay send. | D-072, ST-69, UC-07 | A | Draft | FX opens a live performance page and delay |
+| R-331 | When room pre-delay is set to 100 ms, the firmware shall delay the wet signal by an additional 100 ms. | D-103, ST-69, UC-07 | A | Draft | Room pre-delay delays only the wet onset |
+| R-332 | While REVERB shows, when K2 is turned, the companion app shall change the selected track's reverb send. | D-072, ST-69, UC-07 | A | Draft | FX opens a live reverb page |
+| R-333 | While DIRT MIX is zero, the firmware shall pass the track's samples through the dirt processor unchanged. | D-104, ST-69, UC-07 | A | Draft | Dirt crushes on one track with a dry bypass |
+| R-334 | While DIRT shows, when K2 is turned, the companion app shall change crush for the selected track. | D-072, ST-69, UC-07 | A | Draft | FX opens the track dirt page |
+| R-335 | While PERFORM shows, when SELECT is turned, the companion app shall move to the next or previous performance pair. | D-072, ST-69, UC-07 | A | Draft | PERFORM switches live effect pairs |
+| R-336 | While a DUB performance overlay is applied, the firmware shall retain the base delay settings. | D-105, ST-69, UC-07 | A | Draft | Performance pairs preserve the track settings |
+| R-337 | When WAH is set near 1 kHz, the firmware shall attenuate a 100 Hz test tone more than a 1 kHz tone. | D-106, ST-69, UC-07 | A | Draft | WAH emphasizes its sweep band |
+| R-338 | While the DUB pair shows, when SELECT is turned one step back, the companion app shall show WAH. | D-072, ST-69, UC-07 | A | Draft | PERFORM opens WAH one step before DUB |
+| R-339 | While WOBBLE DEPTH is above minimum, the firmware shall sweep the track's low-pass cutoff at the selected SPEED. | D-107, ST-69, UC-07 | A | Draft | Wobble sweeps cutoff on one track |
+| R-340 | While WOBBLE DEPTH is zero, the firmware shall pass the track's samples through the Wobble overlay unchanged. | D-107, ST-69, UC-07 | A | Draft | Wobble sweeps cutoff on one track |
+| R-341 | While the PERFORM DIRT pair shows, when SELECT is turned one step forward, the companion app shall show WOBBLE. | D-072, ST-69, UC-07 | A | Draft | PERFORM opens WOBBLE after DIRT |
+| R-342 | When an FMini sound's cutoff is edited during a held note, the firmware shall apply the edited cutoff to that note. | D-108, ST-69, UC-07 | A | Draft | FMini cutoff edits affect a held note |
+| R-343 | While PERFORM FILTER shows for an FMini sound, when K3 or K4 is turned, the companion app shall adjust the sound's cutoff or resonance respectively. | D-072, ST-69, UC-07 | A | Draft | PERFORM FILTER edits the current FMini sound |
+| R-344 | While an FMini track is on its playing page, when EDIT is tapped, the companion app shall show OSC. | D-072, ST-46, UC-07 | A | Draft | EDIT opens the native FMini oscillator and filter |
+| R-345 | While the FMini FILTER page shows, when K1 is turned, the companion app shall update the same cutoff shown by PERFORM FILTER. | D-110, ST-46, UC-07 | A | Draft | EDIT opens the native FMini oscillator and filter |
+| R-346 | While an FMini oscillator sounds, when its waveform is edited, the firmware shall apply the waveform to the held note. | D-110, ST-46, UC-07 | A | Draft | FMini oscillator edits affect a held note |
+| R-347 | When ENV is pressed from F.ENV on a Producer sound track, the companion app shall show A.ENV. | D-072, ST-46, UC-07 | A | Draft | ENV opens the native FMini contours |
+| R-348 | When the release of an FMini amp envelope is edited, the firmware shall apply its selected time to the note's release. | D-111, ST-46, UC-07 | A | Draft | FMini envelope edits change the amp release |
+| R-349 | While VOICE shows for a supported sound, when K4 is turned, the companion app shall change the track's pitch bend range. | D-112, ST-46, UC-07 | A | Draft | VOICE changes the track bend range |
+| R-350 | While a supported track's bend range is 12 semitones, when pitch bend reaches its upper endpoint, the firmware shall raise the sounding note by one octave. | D-112, ST-46, UC-07 | A | Draft | VOICE changes the track bend range |
+| R-351 | When LFO is pressed on a Producer sound track, the companion app shall open LFO. | D-072, ST-46, UC-07 | A | Draft | LFO opens the editable FMini modulation |
+| R-352 | While a note is held on an FMini track, when the LFO adds volume modulation, the firmware shall vary the note's level. | D-113, ST-46, UC-07 | A | Draft | FMini LFO changes a held sound |
+| R-353 | While an FMini MOD route targets cutoff with negative amount, when the modulation wheel is raised, the companion app shall lower the active cutoff. | D-114, ST-46, UC-07 | A | Draft | MOD applies a signed cutoff route |
+| R-354 | While the modulation wheel offsets the track's effects, the firmware shall retain the base effect sends. | D-114, ST-46, UC-07 | A | Draft | Wheel offsets preserve base FX sends |
+| R-355 | While FMini FILTER shows, the companion app shall display the selected track's live spectrum. | D-115, ST-46, UC-07 | A | Draft | FILTER shows the FMini spectrum while playing |
+| R-356 | While a C4 sine sounds on the selected FMini track, the firmware shall report the largest spectrum value in the band nearest its fundamental. | D-115, ST-46, UC-07 | A | Draft | Spectrum measures the selected FMini track |
+| R-357 | While an FMini note sounds on the selected track, the companion app shall display its envelope marker on the selected envelope page. | D-116, ST-46, UC-07 | A | Draft | Sound Edit plots the sounding note's markers |
+| R-358 | While an FMini note is releasing, the firmware shall report the falling envelope level. | D-116, ST-46, UC-07 | A | Draft | FMini motion reports live contour and phase |
+| R-359 | While EDIT FILTER shows on a Juno-106 track, when K1 is turned, the companion app shall change the same cutoff shown on PERFORM FILTER. | D-117, ST-46, UC-07 | A | Draft | Juno EDIT FILTER shares the active cutoff |
+| R-360 | While a selected Juno-106 note sounds, the firmware shall publish its energy in the selected track spectrum. | D-117, ST-46, UC-07 | A | Draft | Juno native filter edits affect a held note |
+| R-361 | While an envelope page shows on a Juno-106 track, when an envelope knob is turned, the companion app shall edit the native ADSR shared by both envelope pages. | D-118, ST-46, UC-07 | A | Draft | Juno envelope edits appear on both pages |
+| R-362 | While the selected Juno-106 voice is releasing, the firmware shall report its native envelope level. | D-118, ST-46, UC-07 | A | Draft | Juno reports its shared native envelope |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 
