@@ -1,6 +1,6 @@
 # fm1kit, the platform
 
-**API version 37** (`FM1KIT_API` in `fm1kit/include/fm1kit.h`). The header is the contract. This page
+**API version 43** (`FM1KIT_API` in `fm1kit/include/fm1kit.h`). The header is the contract. This page
 explains it and records why it is the way it is.
 
 ## Shape of an app
@@ -165,6 +165,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-115 | EDIT FILTER shows a live, 24-band spectrum from the selected FMini track before the effects sends. Its nominal cutoff curve shares the spectrum axis. | D-072 and Sound Edit v3, issue #17. The factory lead captures only while FILTER is visible, using a 256-sample window at 11,025 Hz and fixed-point analysis outside the audio interrupt. |
 | D-116 | F.ENV and A.ENV show the active contour levels and LFO shows the running phase of the selected FMini track. The newest sounding voice supplies the envelope readings. Idle screens keep their previous appearance. | D-072 and Sound Edit v3, issue #17. The factory lead chose to sample the actual engine state from the app rather than animate from key timers. |
 | D-117 | EDIT FILTER and PERFORM FILTER share the Juno-106's native cutoff and resonance. EDIT also reaches envelope amount and key tracking. The spectrum includes Juno's native chorus and precedes the shared effects. | D-072 and Sound Edit v3, issue #17. Uses the FM-106 setters and nominal cutoff ladder coefficients. |
+| D-118 | API 43 maps F.ENV and A.ENV to the Juno-106's shared ADSR. Both show its native shape and the newest active voice's live envelope. The original VCA mode stays in effect. | D-072 and Sound Edit v3, issue #17. The shared label reflects the native envelope topology. |
 
 ## Known gaps (next)
 

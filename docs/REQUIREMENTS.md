@@ -535,6 +535,8 @@ implement all sounds".)
 | R-358 | While an FMini note is releasing, the firmware shall report the falling envelope level. | D-116, ST-46, UC-07 | A | Draft | FMini motion reports live contour and phase |
 | R-359 | While EDIT FILTER shows on a Juno-106 track, when K1 is turned, the companion app shall change the same cutoff shown on PERFORM FILTER. | D-117, ST-46, UC-07 | A | Draft | Juno EDIT FILTER shares the active cutoff |
 | R-360 | While a selected Juno-106 note sounds, the firmware shall publish its energy in the selected track spectrum. | D-117, ST-46, UC-07 | A | Draft | Juno native filter edits affect a held note |
+| R-361 | While an envelope page shows on a Juno-106 track, when an envelope knob is turned, the companion app shall edit the native ADSR shared by both envelope pages. | D-118, ST-46, UC-07 | A | Draft | Juno envelope edits appear on both pages |
+| R-362 | While the selected Juno-106 voice is releasing, the firmware shall report its native envelope level. | D-118, ST-46, UC-07 | A | Draft | Juno reports its shared native envelope |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

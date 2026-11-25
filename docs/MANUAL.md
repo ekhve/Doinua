@@ -512,6 +512,8 @@ FILTER draws the selected FMini or Juno-106 track's live spectrum before the sha
 
 Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
 preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.
+Juno-106 shows **SHARED ADSR** on both pages. Changes on either page appear on the other. The preset's VCA
+mode determines whether the amp follows this envelope or the key gate.
 
 On VOICE, choose POLY, MONO or LEGATO, then set the glide time, when it slides, and the pitch-bend range. Bend defaults
 to two semitones. Changing the mode releases the track's currently sounding notes. VOICE is available for Basic, the

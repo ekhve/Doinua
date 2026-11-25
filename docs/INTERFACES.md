@@ -17,7 +17,7 @@ playbook's analysis set: these events feed `When` and `If` requirements). Archit
 
 ---
 
-## IF-01 — fm1kit API (`fm1kit/include/fm1kit.h`, FM1KIT_API 42)
+## IF-01 — fm1kit API (`fm1kit/include/fm1kit.h`, FM1KIT_API 43)
 
 The header is the contract; `PLATFORM.md` explains it and records every change (rule 6 of `CLAUDE.md`).
 
@@ -28,7 +28,9 @@ amount and key tracking. They return zero for unsupported tracks. The values are
 cents and oscillator balance. They return zero for unsupported tracks. The edits last until the sound is reloaded.
 
 `kit_track_envelope` and `kit_track_envelope_of` access FMini's live filter and amp attack, decay, sustain and release.
-`kit_track_envelope_ms` reads the nominal time on FMini's 1 ms to 12 s dial. Factory releases follow decay until edited.
+`kit_track_envelope_ms` reads the nominal time on FMini's 1 ms to 12 s dial. FMini factory releases follow decay until edited.
+On Juno-106, both envelope pages access the same native ADSR. `kit_track_envelope_stage_ms` gives the
+nominal time for attack, decay or release. The Juno decay and release values show the nominal time constant.
 
 `kit_track_bend_range` and `kit_track_bend_range_of` set and read the track's pitch bend range from 1 to 12 semitones.
 Two semitones is the default. The track's current wheel position is scaled immediately when the range changes.
@@ -39,7 +41,7 @@ pitch, cutoff or volume. `kit_track_lfo_centihz` reads the rate's nominal freque
 `kit_track_mod_shape` applies temporary signed offsets to FMini's cutoff, resonance and LFO rate and to the track's
 drive, delay and reverb sends. The offsets leave the patch values available to the editors.
 
-`kit_track_spectrum` selects one FMini track for pre-effects capture. `kit_track_spectrum_read` returns 24 band levels
+`kit_track_spectrum` selects one FMini or Juno-106 track for capture before the shared effects. `kit_track_spectrum_read` returns 24 band levels
 from 0 to 100 when a new window is ready. `kit_track_spectrum_position` maps a nominal cutoff to the same horizontal axis.
 
 `kit_track_motion_of` reads the newest sounding FMini voice's amp and filter contour stages and levels alongside

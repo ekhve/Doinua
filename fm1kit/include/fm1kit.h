@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 42
+#define FM1KIT_API 43
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -214,7 +214,8 @@ enum { KIT_ENV_FILTER, KIT_ENV_AMP };
 enum { KIT_ENV_ATTACK, KIT_ENV_DECAY, KIT_ENV_SUSTAIN, KIT_ENV_RELEASE };
 int kit_track_envelope_of(int track, int kind, uint8_t values[4]);
 int kit_track_envelope(int track, int kind, int control, int value);
-int kit_track_envelope_ms(int track, int time_dial);
+int kit_track_envelope_ms(int track, int time_dial);      /* FMini's common time dial */
+int kit_track_envelope_stage_ms(int track, int control, int time_dial);
 /* FMini LFO rate and depth use 0..127. The editable route has zero depth in factory presets. */
 enum { KIT_LFO_SINE, KIT_LFO_TRI, KIT_LFO_SAW, KIT_LFO_SQUARE, KIT_LFO_NWAVES };
 enum { KIT_LFO_PITCH, KIT_LFO_CUTOFF, KIT_LFO_VOLUME, KIT_LFO_NTARGETS };

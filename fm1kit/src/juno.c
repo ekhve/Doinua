@@ -59,6 +59,63 @@ void kit__juno_select(int t, int p)             /* p < 0: the track plays no Jun
 
 int kit__juno_on(int t) { return okj(t) && jn_on[t]; }
 
+enum { JN_ENV_ATTACK = 16 };                   /* D, S and R follow in the native table */
+
+int kit__juno_envelope_of(int t, uint8_t values[4])
+{
+    int i;
+    if (!values) return 0;
+    for (i = 0; i < 4; i++) values[i] = fm106_param_get(&jn[t], JN_ENV_ATTACK + i);
+    return 1;
+}
+
+int kit__juno_envelope(int t, int control, int value)
+{
+    uint32_t lock = kit__lock();
+    fm106_param_set(&jn[t], JN_ENV_ATTACK + control, value);
+    kit__unlock(lock);
+    return 1;
+}
+
+int kit__juno_envelope_ms(int control, int dial)
+{
+    unsigned ticks = 0;
+    if (control == KIT_ENV_ATTACK) {
+        unsigned step = FM106_ENV_ATK[dial];
+        if (step == FM106_ENV_MAX) return 0;    /* attack switches immediately to decay */
+        ticks = (FM106_ENV_MAX + step - 1) / step;
+    } else {
+        unsigned level = FM106_ENV_MAX;
+        /* Nominal time constant, measured with the native decay arithmetic. */
+        while (level > 6027u) {
+            level = fm106_adsr_calc_decay(level, FM106_ENV_DEC_REL[dial]);
+            ticks++;
+        }
+    }
+    return (ticks * 4234u + 500) / 1000;       /* firmware envelope tick, in microseconds */
+}
+
+int kit__juno_motion_of(int t, kit_sound_motion_t *motion)
+{
+    const fm106_voice_t *latest = 0;
+    uint32_t lock;
+    int i;
+    if (!motion) return 0;
+    lock = kit__lock();
+    for (i = 0; i < FM106_NUM_VOICES; i++) {
+        const fm106_voice_t *v = &jn[t].voice[i];
+        if (v->adsr.stage != FM106_ENV_IDLE && (!latest || (int32_t)(v->age - latest->age) > 0)) latest = v;
+    }
+    if (latest) {
+        uint8_t stage = latest->adsr.stage == FM106_ENV_RELEASE ? 3 :
+                        latest->adsr.stage == FM106_ENV_ATTACK ? 1 : 2;
+        uint8_t level = latest->adsr.env14 >> 7;
+        *motion = (kit_sound_motion_t){stage, level, stage, level, 0};
+    }
+    kit__unlock(lock);
+    return latest != 0;
+}
+
 /* Native FM-106 parameter IDs for EDIT FILTER. */
 enum { JN_FILTER_CUTOFF = 10, JN_FILTER_RESONANCE = 11, JN_FILTER_ENV_AMOUNT = 12, JN_FILTER_KEY_TRACK = 14 };
 

@@ -89,6 +89,42 @@ static void check_live_filter(int preset)
     CHECK(kit_track_filter_of(0, &readback) && !memcmp(&original, &readback, sizeof original), "reloading recalls the factory filter");
 }
 
+static void check_shared_envelope(int preset)
+{
+    uint8_t original[4] = {0}, filter[4] = {0}, amp[4] = {0};
+    kit_sound_motion_t held = {0}, release = {0};
+
+    if (preset < 0) return;
+    kit__eng_select(0, E, preset);
+    kit__eng_select(1, E, preset);
+    CHECK(kit_track_envelope_of(0, KIT_ENV_FILTER, original), "read the native ADSR");
+    CHECK(kit_track_envelope(0, KIT_ENV_FILTER, KIT_ENV_ATTACK, 0), "edit Juno attack from F.ENV");
+    CHECK(kit_track_envelope(0, KIT_ENV_AMP, KIT_ENV_SUSTAIN, 100), "edit Juno sustain from A.ENV");
+    CHECK(kit_track_envelope(0, KIT_ENV_AMP, KIT_ENV_RELEASE, 80), "edit Juno release from A.ENV");
+    CHECK(kit_track_envelope_of(0, KIT_ENV_FILTER, filter) && kit_track_envelope_of(0, KIT_ENV_AMP, amp) &&
+          !memcmp(filter, amp, sizeof amp) && filter[0] == 0 && filter[2] == 100 && filter[3] == 80,
+          "both pages see the same native ADSR");
+    CHECK(kit_track_envelope_of(1, KIT_ENV_AMP, amp) && !memcmp(original, amp, sizeof amp), "the ADSR is per track");
+    CHECK(kit_track_envelope_stage_ms(0, KIT_ENV_ATTACK, 0) == 0 &&
+          kit_track_envelope_stage_ms(0, KIT_ENV_ATTACK, 127) > 3000 &&
+          kit_track_envelope_stage_ms(0, KIT_ENV_RELEASE, 80) > kit_track_envelope_stage_ms(0, KIT_ENV_RELEASE, 0),
+          "native ADSR stage times follow their dials");
+    CHECK(!kit_track_motion_of(0, &held), "the Juno is idle before a note");
+    kit__eng_note_on(0, 72, 100);
+    render(300, 0, 0);
+    CHECK(kit_track_motion_of(0, &held) && held.amp_stage == 2 && held.amp_level >= 100 &&
+          held.amp_level == held.filter_level, "the two markers report the same held ADSR");
+    kit__eng_note_off(0, 72);
+    render(100, 0, 0);
+    CHECK(kit_track_motion_of(0, &release) && release.amp_stage == 3 && release.filter_stage == 3 &&
+          release.amp_level < held.amp_level && release.amp_level == release.filter_level,
+          "the two markers follow the same decreasing release");
+    for (int i = 0; i < 10 && kit_track_motion_of(0, &release); i++) render(1000, 0, 0);
+    CHECK(!kit_track_motion_of(0, &release), "both markers clear at the end of release");
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_envelope_of(0, KIT_ENV_AMP, amp) && !memcmp(original, amp, sizeof amp), "reloading recalls the original ADSR");
+}
+
 int main(void)
 {
     int p, i, flute = find("Flutes"), pad = find("Synth Pad"), n0;
@@ -150,6 +186,7 @@ int main(void)
     render(300, &r, 0);
     CHECK(r > 100 && !kit__eng_has(1, 60), "another engine on the track takes the Juno off it (rms %.0f)", r);
     check_live_filter(find("Combo Organ"));
+    check_shared_envelope(flute);
     printf("engines juno: %s\n", fails ? "FAILED" : "ok");
     return fails != 0;
 }

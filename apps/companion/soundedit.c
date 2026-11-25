@@ -101,7 +101,8 @@ static void sound_edit_frame(uint32_t now)
     if (!sound_fx_available()) sound_edit_close();
     visible = !asleep && !sb_open;
     engine = kit_track_engine(track);
-    sed_update_motion(now, visible && engine == KIT_ENGINE_FMINI);
+    sed_update_motion(now, visible && (engine == KIT_ENGINE_FMINI ||
+                      (engine == KIT_ENGINE_JUNO && (sed_page == SED_FENV || sed_page == SED_AENV))));
     input = visible && sed_page == SED_FILTER &&
             (engine == KIT_ENGINE_FMINI || engine == KIT_ENGINE_JUNO) ? track : -1;
     if (input != sed_spectrum_track) {
@@ -491,9 +492,11 @@ static void sound_edit_draw(void)
         if (supported) {
             for (i = 0; i < 4; i++) {
                 values[i] = fx_percent(env[i], 127);
-                if (i != KIT_ENV_SUSTAIN) times[i] = kit_track_envelope_ms(track, env[i]);
+                if (i != KIT_ENV_SUSTAIN) times[i] = kit_track_envelope_stage_ms(track, i, env[i]);
             }
             sed_draw_env(env, times, color);
+            if (kit_track_engine(track) == KIT_ENGINE_JUNO)
+                kit_text(120, 50, "SHARED ADSR", KIT_FONT_TINY, KIT_ALIGN_CENTER, FX_DIM);
         }
     } else if (sed_page == SED_FILTER) {
         supported = kit_track_filter_of(track, &filter);

@@ -103,6 +103,7 @@ int kit_track_motion_of(int pt, kit_sound_motion_t *motion)
     const voice_t *latest = 0;
     uint32_t lock, contour;
     int i;
+    if (kit__juno_on(pt)) return kit__juno_motion_of(pt, motion);
     if (!okp(pt) || !fmx[pt] || !motion) return 0;
     lock = kit__lock();
     for (i = 0; i < NVOICE; i++) {
@@ -157,12 +158,13 @@ int kit_track_lfo_centihz(int pt, int dial)
 
 int kit_track_envelope_of(int pt, int kind, uint8_t values[4])
 {
+    if (kind != KIT_ENV_FILTER && kind != KIT_ENV_AMP) return 0;
+    if (kit__juno_on(pt)) return kit__juno_envelope_of(pt, values);
     if (!okp(pt) || !fmx[pt] || !values) return 0;
     if (kind == KIT_ENV_FILTER) {
         const int16_t *p = trk[pt].p;
         values[0] = p[P_E3]; values[1] = p[P_E4]; values[2] = p[P_E5]; values[3] = p[P_FREL];
-    } else if (kind == KIT_ENV_AMP) memcpy(values, part[pt].fmini_amp, 4);
-    else return 0;
+    } else memcpy(values, part[pt].fmini_amp, 4);
     if (values[3] == FM_ENV_FOLLOW_DECAY) values[3] = values[1];
     return 1;
 }
@@ -171,8 +173,9 @@ int kit_track_envelope(int pt, int kind, int control, int value)
 {
     static const uint8_t filter_controls[] = { P_E3, P_E4, P_E5, P_FREL };
     uint32_t lock;
-    if (!okp(pt) || !fmx[pt] || (unsigned)control > KIT_ENV_RELEASE ||
-        (kind != KIT_ENV_FILTER && kind != KIT_ENV_AMP)) return 0;
+    if ((unsigned)control > KIT_ENV_RELEASE || (kind != KIT_ENV_FILTER && kind != KIT_ENV_AMP)) return 0;
+    if (kit__juno_on(pt)) return kit__juno_envelope(pt, control, clamp(value, 0, 127));
+    if (!okp(pt) || !fmx[pt]) return 0;
     lock = kit__lock();
     value = clamp(value, 0, 127);
     if (kind == KIT_ENV_FILTER) trk[pt].p[filter_controls[control]] = value;
@@ -184,6 +187,13 @@ int kit_track_envelope(int pt, int kind, int control, int value)
 int kit_track_envelope_ms(int pt, int time_dial)
 {
     return okp(pt) && fmx[pt] ? FM_ENV_MS[clamp(time_dial, 0, 127)] : 0;
+}
+
+int kit_track_envelope_stage_ms(int pt, int control, int time_dial)
+{
+    if (control != KIT_ENV_ATTACK && control != KIT_ENV_DECAY && control != KIT_ENV_RELEASE) return 0;
+    if (kit__juno_on(pt)) return kit__juno_envelope_ms(control, clamp(time_dial, 0, 127));
+    return kit_track_envelope_ms(pt, time_dial);
 }
 
 int kit_track_filter_of(int pt, kit_sound_filter_t *filter)

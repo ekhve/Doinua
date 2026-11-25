@@ -1471,3 +1471,15 @@ Feature: FMini factory arpeggios (ST-77)
     Given the selected track plays a held Juno-106 note
     When I sample the selected track spectrum
     Then the bands show the held note's energy
+
+  @D-118 @ST-46 @auto
+  Scenario: Juno envelope edits appear on both pages
+    Given a Juno-106 sound on the selected track
+    When I edit release on F.ENV
+    Then A.ENV shows the same release
+
+  @D-118 @ST-46 @auto @gate:unit
+  Scenario: Juno reports its shared native envelope
+    Given a selected Juno-106 voice is releasing
+    When I read its shared native envelope
+    Then both envelope levels follow the voice
