@@ -213,10 +213,12 @@ int kit_track_envelope_ms(int track, int time_dial);
 void kit_track_note_on(int track, int note, int vel);
 void kit_track_note_off(int track, int note);
 void kit_track_notes_off(int track);
-/* A MIDI keyboard's controls on a track (API 17, D-044). Bend: -8192..8191, two semitones each way. Mod: 0..127, a
+/* A MIDI keyboard's controls on a track (API 17, D-044). Bend: -8192..8191, two semitones each way by default. Mod: 0..127, a
  * vibrato (5.5 Hz) up to half a semitone each way. Sustain: while on, the track's note-offs wait, then all go at once
  * when it goes off (kit_track_notes_off clears them). The drums neither bend nor wobble. */
 void kit_track_bend(int track, int value);
+void kit_track_bend_range(int track, int semitones);       /* 1..12, retained for the track */
+int kit_track_bend_range_of(int track);
 void kit_track_mod(int track, int depth);
 void kit_track_sustain(int track, int on);
 /* API 18 (D-045): a click (a short blip on its own voice, never on a track: 1 kHz, 2 kHz accented), level 1..10; and

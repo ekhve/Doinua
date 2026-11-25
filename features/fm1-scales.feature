@@ -1304,6 +1304,12 @@ Feature: The effects bus (ST-69)
     When the second note has a longer release
     Then the second note keeps sounding longer after it is let go
 
+  @D-112 @ST-46 @auto
+  Scenario: VOICE changes the track bend range
+    Given a Basic sound is playing
+    When VOICE sets BEND RANGE to 12 semitones
+    Then full upward pitch bend raises the note by an octave
+
 
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends

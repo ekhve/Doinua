@@ -512,6 +512,10 @@ also appear on PERFORM FILTER. **HOME** returns to playing.
 Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
 preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.
 
+On VOICE, choose POLY, MONO or LEGATO, then set the glide time, when it slides, and the pitch-bend range. Bend defaults
+to two semitones. Changing the mode releases the track's currently sounding notes. VOICE is available for Basic, the
+shared Felucca engines and FMini.
+
 ### How many notes at once
 
 The FM-1 plays up to 12 notes at once across the four tracks, as long as they fit its processor. Some sounds take more

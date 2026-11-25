@@ -300,7 +300,8 @@ int kit_voices_load(void) { uint32_t k = kit__lock(); int l = load_now(); kit__u
 uint32_t kit_voices_stolen(void) { return stolen; }
 
 /* ---- a MIDI keyboard's controls (API 17, D-044): bend, vibrato, sustain ---- */
-static int16_t bend16[KIT_NTRACKS];             /* 1/16 semitones, -32..32 */
+static int16_t bend16[KIT_NTRACKS], bend_raw[KIT_NTRACKS];
+static uint8_t bend_range[KIT_NTRACKS];         /* zero until set: the original two semitones */
 static uint8_t mod_depth[KIT_NTRACKS];
 static uint16_t lfo_ph[KIT_NTRACKS];
 static uint8_t sus_on[KIT_NTRACKS];
@@ -631,10 +632,28 @@ static const uint16_t PITCH_MUL[97] = {
 
 void kit_track_bend(int t, int value)
 {
+    int steps;
     if (!okt(t)) return;
     if (value < -8192) value = -8192;
     if (value > 8191) value = 8191;
-    bend16[t] = (int16_t)(value >= 0 ? (value * 32 + 4096) / 8191 : -((-value * 32 + 4096) / 8192));
+    bend_raw[t] = (int16_t)value;
+    steps = kit_track_bend_range_of(t) * 16;
+    bend16[t] = (int16_t)(value >= 0 ? (value * steps + 4096) / 8191 : -((-value * steps + 4096) / 8192));
+}
+
+int kit_track_bend_range_of(int t)
+{
+    return okt(t) && bend_range[t] ? bend_range[t] : 2;
+}
+
+void kit_track_bend_range(int t, int semitones)
+{
+    uint32_t lock;
+    if (!okt(t)) return;
+    lock = kit__lock();
+    bend_range[t] = (uint8_t)(semitones < 1 ? 1 : semitones > 12 ? 12 : semitones);
+    kit_track_bend(t, bend_raw[t]);
+    kit__unlock(lock);
 }
 
 void kit_track_mod(int t, int depth)
@@ -648,15 +667,24 @@ int kit__track_pitch(int t)                     /* the bend, and the vibrato at 
     if (!okt(t)) return 0;
     tri = lfo_ph[t] < 32768u ? (int)lfo_ph[t] : 65535 - (int)lfo_ph[t];   /* 0..32767 */
     p = bend16[t] + tune16 + (tri - 16384) * mod_depth[t] * 8 / (16384 * 127);
-    return p < -48 ? -48 : p > 48 ? 48 : p;
+    return p;
 }
 
-static uint32_t pitch_scale(uint32_t inc, int p)  /* inc * 2^(p / 192), with no 64-bit multiply */
+static uint32_t pitch_scale_step(uint32_t inc, int p)
 {
     uint32_t m = PITCH_MUL[p + 48];
     return (inc >> 15) * m + (((inc & 0x7FFFu) * m) >> 15);
 }
 
+static uint32_t pitch_scale(uint32_t inc, int p)
+{
+    /* Extended bends fold an octave first. The default range retains the original single multiply. */
+    if (p > 96) { inc <<= 1; p -= 192; }
+    if (p < -96) { inc >>= 1; p += 192; }
+    if (p > 48) { inc = pitch_scale_step(inc, 48); p -= 48; }
+    if (p < -48) { inc = pitch_scale_step(inc, -48); p += 48; }
+    return pitch_scale_step(inc, p);
+}
 /* ---- glide and mono (API 27, ST-46, D-073) ---- */
 /* (tr_vmode, tr_slide: declared above, with the tracks' sounds) */
 static uint16_t tr_glide[KIT_NTRACKS];               /* ms, 0: none */

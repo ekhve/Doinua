@@ -443,7 +443,7 @@ static void sound_fx_draw(void)
         else if (fx_page == FXP_DELAY && i == 3 && tone == 127) cat(value, "TYPE");
         else if (perform && i == 0) {
             int raw = fx_bend[track];
-            int tenth = ((raw < 0 ? -raw : raw) * 20 + 4096) / 8192;
+            int tenth = ((raw < 0 ? -raw : raw) * kit_track_bend_range_of(track) * 10 + 4096) / 8192;
             char *out = value;
             if (tenth && raw < 0) *out++ = '-';
             if (tenth && raw > 0) *out++ = '+';

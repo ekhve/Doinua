@@ -159,6 +159,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-109 | Use a thin continuous 270-degree arc, a muted inner ring and a short radial pointer for the Sound Edit and FX knobs. | Knob shape approved by the owner in chat on 2026-11-25 after reviewing the fm1-emu PERFORM FILTER comparison from `304d1f7` (frames at 4090 and 5900 ms). |
 | D-110 | Sound EDIT starts with OSC and FILTER. FMini OSC edits the first two native waves, oscillator 2 detune and the first two oscillators' mixer balance. Both FILTER views edit the same native track settings. | D-072, D-109 and Sound Edit v3, issue #17. The factory lead used native wave choices and tuning limits, with the third oscillator and noise left at their preset values. |
 | D-111 | Sound EDIT adds FMini's filter and amp contours. A factory preset's release follows its decay until the release control is edited. This sets an independent time on that contour. Reselecting a preset reloads its factory envelope. | D-072 and Sound Edit v3, issue #17. The factory lead kept FMini's factory envelope law and derived the displayed times from the same control table. |
+| D-112 | The VOICE page uses existing track voicing modes and glide rules. Its bend range of 1 to 12 semitones sets the same scale for panel BEND and MIDI pitch bend. The original range is two semitones. | D-072, D-073 and Sound Edit v3, issue #17. The factory lead exposes controls on Basic, the six shared Felucca engines and FMini. The other synth adapters keep their current voice behavior. |
 
 ## Known gaps (next)
 
