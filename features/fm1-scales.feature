@@ -1291,6 +1291,19 @@ Feature: The effects bus (ST-69)
     When its waveform changes
     Then the held note uses the new waveform
 
+  @D-072 @D-111 @ST-46 @auto
+  Scenario: ENV opens the native FMini contours
+    Given a Producer track plays an FMini sound
+    When ENV is pressed twice
+    Then the first press opens F.ENV and the second opens A.ENV
+    And the amp release is editable
+
+  @D-111 @ST-46 @auto @gate:unit
+  Scenario: FMini envelope edits change the amp release
+    Given two notes play with the same FMini attack and sustain
+    When the second note has a longer release
+    Then the second note keeps sounding longer after it is let go
+
 
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends

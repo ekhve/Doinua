@@ -204,6 +204,12 @@ enum { KIT_OSC_WAVE1, KIT_OSC_WAVE2, KIT_OSC_DETUNE, KIT_OSC_MIX };
 typedef struct { uint8_t wave1, wave2, mix; int16_t detune; } kit_sound_osc_t;
 int kit_track_osc_of(int track, kit_sound_osc_t *osc);
 int kit_track_osc(int track, int control, int value);
+/* Native envelopes of an editable sound. Controls are 0..127; times use the engine's dial scale. */
+enum { KIT_ENV_FILTER, KIT_ENV_AMP };
+enum { KIT_ENV_ATTACK, KIT_ENV_DECAY, KIT_ENV_SUSTAIN, KIT_ENV_RELEASE };
+int kit_track_envelope_of(int track, int kind, uint8_t values[4]);
+int kit_track_envelope(int track, int kind, int control, int value);
+int kit_track_envelope_ms(int track, int time_dial);
 void kit_track_note_on(int track, int note, int vel);
 void kit_track_note_off(int track, int note);
 void kit_track_notes_off(int track);

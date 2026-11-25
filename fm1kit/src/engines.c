@@ -20,7 +20,9 @@ void *memcpy(void *d, const void *s, unsigned n);
 #include "felucca_engine.h"
 int kit__track_pitch(int track);               /* synth.c: the track's bend and vibrato, 1/16 semitones */
 
-enum { P_ATK, P_REL, P_FTYPE, P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7, P_COUNT };
+enum { P_ATK, P_REL, P_FTYPE, P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7, P_FREL, P_COUNT };
+/* A factory FMini contour uses its decay time for release until the release dial is edited. */
+#define FM_ENV_FOLLOW_DECAY 255
 typedef struct track {
     int16_t p[P_COUNT];
     voice_t v[NVOICE];
@@ -81,6 +83,7 @@ typedef struct {                    /* a part's sound: its engine, preset and en
     uint32_t atk_step, dec_mul, rel_mul;
     int32_t sus_level;
     int32_t last_amp[NVOICE];
+    uint8_t fmini_amp[4];
 } part_t;
 static part_t part[NPART];
 static uint32_t vage;
@@ -90,6 +93,37 @@ static uint32_t vage;
  * times (1 ms .. 12 s). Velocity as the other engines (fmini-1's default is off; here it also carries the level) */
 static const fmini_x_t *fmx[NPART];             /* the part's extras while it plays FMINI, else 0 */
 static int okp(int pt) { return pt >= 0 && pt < NPART; }
+
+int kit_track_envelope_of(int pt, int kind, uint8_t values[4])
+{
+    if (!okp(pt) || !fmx[pt] || !values) return 0;
+    if (kind == KIT_ENV_FILTER) {
+        const int16_t *p = trk[pt].p;
+        values[0] = p[P_E3]; values[1] = p[P_E4]; values[2] = p[P_E5]; values[3] = p[P_FREL];
+    } else if (kind == KIT_ENV_AMP) memcpy(values, part[pt].fmini_amp, 4);
+    else return 0;
+    if (values[3] == FM_ENV_FOLLOW_DECAY) values[3] = values[1];
+    return 1;
+}
+
+int kit_track_envelope(int pt, int kind, int control, int value)
+{
+    static const uint8_t filter_controls[] = { P_E3, P_E4, P_E5, P_FREL };
+    uint32_t lock;
+    if (!okp(pt) || !fmx[pt] || (unsigned)control > KIT_ENV_RELEASE ||
+        (kind != KIT_ENV_FILTER && kind != KIT_ENV_AMP)) return 0;
+    lock = kit__lock();
+    value = clamp(value, 0, 127);
+    if (kind == KIT_ENV_FILTER) trk[pt].p[filter_controls[control]] = value;
+    else part[pt].fmini_amp[control] = value;
+    kit__unlock(lock);
+    return 1;
+}
+
+int kit_track_envelope_ms(int pt, int time_dial)
+{
+    return okp(pt) && fmx[pt] ? FM_ENV_MS[clamp(time_dial, 0, 127)] : 0;
+}
 
 int kit_track_filter_of(int pt, kit_sound_filter_t *filter)
 {
@@ -317,6 +351,9 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     if (i == ENG_I_CF_VA) kit_va_select((unsigned)pt, (unsigned)p);
     if (i == ENG_I_FMINI) {                         /* its patch and extras */
         memcpy(fmini_patch[pt], FMB_PATCH[p], FG_SIZE);
+        memcpy(P->fmini_amp, P->pre->env, 3);
+        P->fmini_amp[KIT_ENV_RELEASE] = FM_ENV_FOLLOW_DECAY;
+        t->p[P_FREL] = FM_ENV_FOLLOW_DECAY;
         fmx[pt] = &FMB_X[p];
         t->lfo_fade = 32767;
     }
@@ -523,7 +560,7 @@ static inline int32_t env_mul(int32_t x, uint32_t m)   /* x (Q24, >= 0) * m (Q16
 
 static int32_t env_tick_fmini(const part_t *P, voice_t *v)   /* FMINI's (fmini-1 voice.c, FMini-only build) */
 {
-    const uint8_t *e = P->pre->env;
+    const uint8_t *e = P->fmini_amp;
     int32_t sus = (int32_t)(e[2] & 127) << 17;
     switch (v->stage) {
     case 1:
@@ -537,7 +574,7 @@ static int32_t env_tick_fmini(const part_t *P, voice_t *v)   /* FMINI's (fmini-1
         v->env += mulq16(sus - v->env, FM_ENV_EXP[e[1] & 127]);
         break;
     case 3:
-        v->env -= mulq16(v->env, FM_ENV_EXP[e[1] & 127]);   /* the release: the DECAY's time */
+        v->env -= mulq16(v->env, FM_ENV_EXP[e[3] == FM_ENV_FOLLOW_DECAY ? e[1] & 127 : e[3]]);
         if (v->env < (1 << 12)) { v->env = 0; v->stage = 0; v->active = 0; }
         break;
     default:

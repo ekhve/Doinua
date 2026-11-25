@@ -154,6 +154,42 @@ static void check_live_osc(int preset)
     CHECK(!kit_track_osc_of(0, &current) && !kit_track_osc(0, KIT_OSC_MIX, 0), "unsupported tracks reject oscillator edits");
 }
 
+static void check_live_envelopes(int preset)
+{
+    uint8_t amp[4], filter[4];
+    double quick, slow;
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_envelope_of(0, KIT_ENV_AMP, amp) && amp[KIT_ENV_RELEASE] == amp[KIT_ENV_DECAY],
+          "the factory amp release follows its decay");
+    CHECK(kit_track_envelope_of(0, KIT_ENV_FILTER, filter) && filter[KIT_ENV_RELEASE] == filter[KIT_ENV_DECAY],
+          "the factory filter release follows its decay");
+    kit_track_envelope(0, KIT_ENV_FILTER, KIT_ENV_RELEASE, 121);
+    kit_track_envelope(0, KIT_ENV_FILTER, KIT_ENV_DECAY, 31);
+    CHECK(kit_track_envelope_of(0, KIT_ENV_FILTER, filter) && filter[KIT_ENV_RELEASE] == 121 && filter[KIT_ENV_DECAY] == 31,
+          "editing filter release makes it independent of decay");
+    kit_track_envelope(0, KIT_ENV_AMP, KIT_ENV_ATTACK, 0);
+    kit_track_envelope(0, KIT_ENV_AMP, KIT_ENV_SUSTAIN, 127);
+    kit_track_envelope(0, KIT_ENV_AMP, KIT_ENV_RELEASE, 0);
+    kit__eng_note_on(0, 60, 100);
+    render(200, 0, 0);
+    kit__eng_note_off(0, 60);
+    render(40, 0, 0);
+    render(60, &quick, 0);
+    kit__eng_note_on(0, 60, 100);
+    render(200, 0, 0);
+    kit_track_envelope(0, KIT_ENV_AMP, KIT_ENV_RELEASE, 98);
+    kit__eng_note_off(0, 60);
+    render(40, 0, 0);
+    render(60, &slow, 0);
+    CHECK(quick < 20 && slow > 1000, "amp release time applies to audio (%.1f vs %.1f RMS)", quick, slow);
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_envelope_of(0, KIT_ENV_AMP, amp) && amp[KIT_ENV_RELEASE] == amp[KIT_ENV_DECAY],
+          "reselecting the preset restores its coupled release");
+    CHECK(kit_track_envelope_ms(0, 0) == 1 && kit_track_envelope_ms(0, 127) == 12000,
+          "the displayed time uses the engine's envelope dial scale");
+    kit__eng_select(0, -1, 0);
+}
+
 int main(void)
 {
     check_factory_arp();
@@ -175,6 +211,7 @@ int main(void)
     CHECK(sine >= 0 && pad >= 0, "SINE SOLO and LUSH STRINGS are picks");
     check_live_filter(sine);
     check_live_osc(sine);
+    check_live_envelopes(sine);
     kit__eng_select(0, E, sine);
     kit__eng_note_on(0, 60, 100);
     render(300, 0, 0);

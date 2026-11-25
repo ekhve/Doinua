@@ -521,6 +521,8 @@ implement all sounds".)
 | R-344 | While an FMini track is on its playing page, when EDIT is tapped, the companion app shall show OSC. | D-072, ST-46, UC-07 | A | Draft | EDIT opens the native FMini oscillator and filter |
 | R-345 | While the FMini FILTER page shows, when K1 is turned, the companion app shall update the same cutoff shown by PERFORM FILTER. | D-110, ST-46, UC-07 | A | Draft | EDIT opens the native FMini oscillator and filter |
 | R-346 | While an FMini oscillator sounds, when its waveform is edited, the firmware shall apply the waveform to the held note. | D-110, ST-46, UC-07 | A | Draft | FMini oscillator edits affect a held note |
+| R-347 | When ENV is pressed from F.ENV on a Producer sound track, the companion app shall show A.ENV. | D-072, ST-46, UC-07 | A | Draft | ENV opens the native FMini contours |
+| R-348 | When the release of an FMini amp envelope is edited, the firmware shall apply its selected time to the note's release. | D-111, ST-46, UC-07 | A | Draft | FMini envelope edits change the amp release |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

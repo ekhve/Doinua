@@ -27,6 +27,9 @@ amount and key tracking. They return zero for unsupported tracks. The values are
 `kit_track_osc` and `kit_track_osc_of` access the active FMini patch's two oscillator waves, oscillator 2 detune in
 cents and oscillator balance. They return zero for unsupported tracks. The edits last until the sound is reloaded.
 
+`kit_track_envelope` and `kit_track_envelope_of` access FMini's live filter and amp attack, decay, sustain and release.
+`kit_track_envelope_ms` reads the nominal time on FMini's 1 ms to 12 s dial. Factory releases follow decay until edited.
+
 The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_of`. At 127 the delay retains the
 original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
 delay line limit are applied.

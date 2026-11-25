@@ -509,6 +509,9 @@ return to OSC. On an FMini sound, the four knobs on OSC change the first two wav
 balance. On FILTER they change cutoff, resonance, envelope amount and key tracking. The cutoff and resonance
 also appear on PERFORM FILTER. **HOME** returns to playing.
 
+Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
+preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.
+
 ### How many notes at once
 
 The FM-1 plays up to 12 notes at once across the four tracks, as long as they fit its processor. Some sounds take more

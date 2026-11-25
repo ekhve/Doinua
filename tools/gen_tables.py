@@ -42,6 +42,7 @@ with open(out, "w") as f:
         f.write("  " + ",".join(str(v) for v in env_mul[i:i + 8]) + ",\n")
     f.write("};\n")
     for name, ctype, vals, suf in (("FM_ENV_LIN", "uint32_t", fm_lin, "u"), ("FM_ENV_EXP", "uint16_t", fm_exp, ""),
+                                   ("FM_ENV_MS", "uint16_t", [round(ms) for ms in fm_ms], ""),
                                    ("FM_LFO_INC", "uint32_t", fm_lfo, "u"), ("FM_LEVEL_Q12", "uint16_t", fm_lvl, "")):
         f.write(f"static const {ctype} {name}[128] = {{\n")
         for i in range(0, 128, 8):
