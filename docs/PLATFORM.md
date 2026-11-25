@@ -150,6 +150,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-099 | API 41 imports the selected FMini programs' factory arpeggios into Companion. It preserves the patch's note order, rate, octave span, gate, swing, and probability. The track uses song tempo. The saved ARP layout keeps its existing field order and sizes. | Work order ST-77. fmini-1 at 649a8bb (fmini_app.c, seq.c, fx.c). |
 | D-100 | Unicorn Jump uses Music box for its bell, and the Night Train uses Soft Flute for REED. Both games reduce the level of their melody and feedback, with a smaller reverb send to the room. The notes and game timing stay the same. | Owner feedback of 2026-11-22, November work order, ST-93. |
 | D-102 | API 42 exposes the shared DELAY TONE and effective delay time for Sound Edit v3. Tone filters the wet output and feedback loop. The default retains the original delay response for existing presets. The display uses the actual timing, including the delay line limit. | D-072 and Sound Edit v3, issue #17. The factory lead chose a fixed-point one-pole filter. |
+| D-103 | API 42 exposes the shared room size, damping and up to 120 ms of wet pre-delay. REVERB's SEND changes only the track's contribution. The half-rate pre-delay uses an 8 KiB ring in the audio pool. Preset room settings retain the original tail allowance until SIZE is edited. | D-072 and Sound Edit v3, issue #17. The factory lead chose to keep the existing room topology and use the actual tail window in the display. |
 
 ## Known gaps (next)
 

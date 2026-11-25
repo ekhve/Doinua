@@ -1198,6 +1198,19 @@ Feature: The effects bus (ST-69)
     Then the track's note and its echo sound
     And holding FX returns to PERFORM
     And HOME returns to the track
+
+  @D-103 @ST-69 @auto @gate:unit
+  Scenario: Room pre-delay delays only the wet onset
+    Given a dry sound and the same sound with a room send
+    When the room pre-delay is set to 100 ms
+    Then the wet onset moves by 100 ms and the dry sound starts as before
+
+  @D-072 @ST-69 @auto
+  Scenario: FX opens a live reverb page
+    Given a synth track is ready to play
+    When FX steps through PERFORM and DELAY to REVERB
+    And the room send and pre-delay are raised
+    Then a note has an audible room tail
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

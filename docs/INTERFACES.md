@@ -25,6 +25,9 @@ The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_
 original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
 delay line limit are applied.
 
+`kit_reverb_shape` sets the shared room size, damping and pre-delay. `kit_reverb_shape_of` returns those settings.
+`kit_reverb_tail_ms_of` reports the tail processing window, excluding pre-delay.
+
 ```mermaid
 classDiagram
     class App {

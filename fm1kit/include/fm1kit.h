@@ -214,6 +214,11 @@ void kit_tune(int cents);
  * WOOF a dog's bark, MOO a cow, HOOT an owl (two hoots), HOWL a coyote. */
 void kit_reverb(int level);
 int kit_reverb_of(void);
+/* Shared room shape: SIZE 0..127, DAMP 0..100 percent, PRE-DELAY 0..120 ms. */
+typedef struct { uint8_t size, damp, pre_ms; } kit_reverb_shape_t;
+void kit_reverb_shape(const kit_reverb_shape_t *shape);
+void kit_reverb_shape_of(kit_reverb_shape_t *shape);
+int kit_reverb_tail_ms_of(void);            /* send tail processing time before pre-delay */
 /* API 36 (D-093): the effects bus (ST-69), after Felucca's and fmini-1's: each track's DRIVE, then its sends into
  * three shared buses, CHORUS, DELAY and REVERB (the reverb above, fed by the sends as well as by kit_reverb's
  * level). A track's sends are 0..127; kit_track_sound sets them from the sound's preset (its FX(DIST, CHORUS, DELAY,
