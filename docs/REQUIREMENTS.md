@@ -518,6 +518,9 @@ implement all sounds".)
 | R-341 | While the PERFORM DIRT pair shows, when SELECT is turned one step forward, the companion app shall show WOBBLE. | D-072, ST-69, UC-07 | A | Draft | PERFORM opens WOBBLE after DIRT |
 | R-342 | When an FMini sound's cutoff is edited during a held note, the firmware shall apply the edited cutoff to that note. | D-108, ST-69, UC-07 | A | Draft | FMini cutoff edits affect a held note |
 | R-343 | While PERFORM FILTER shows for an FMini sound, when K3 or K4 is turned, the companion app shall adjust the sound's cutoff or resonance respectively. | D-072, ST-69, UC-07 | A | Draft | PERFORM FILTER edits the current FMini sound |
+| R-344 | While an FMini track is on its playing page, when EDIT is tapped, the companion app shall show OSC. | D-072, ST-46, UC-07 | A | Draft | EDIT opens the native FMini oscillator and filter |
+| R-345 | While the FMini FILTER page shows, when K1 is turned, the companion app shall update the same cutoff shown by PERFORM FILTER. | D-110, ST-46, UC-07 | A | Draft | EDIT opens the native FMini oscillator and filter |
+| R-346 | While an FMini oscillator sounds, when its waveform is edited, the firmware shall apply the waveform to the held note. | D-110, ST-46, UC-07 | A | Draft | FMini oscillator edits affect a held note |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

@@ -1,0 +1,19 @@
+{
+  "scenario": "EDIT opens the native FMini oscillator and filter",
+  "name": "companion, ST-46: OSC and FILTER edit the FMini sound while playing",
+  "app": "companion",
+  "ms": 11000,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:EDIT,3670:EDIT^,3950:e2:+2,4350:e0:+1,4700:C5@100,5400:e2:-32,6800:C5^,7000:FX,7070:FX^,7290:e0:-2,7900:EDIT,8550:EDIT^,9100:HOME,9170:HOME^,9650:C5@100,10100:C5^",
+  "checks": [
+    {"type": "screen", "at": 3830},
+    {"type": "screen", "at": 4160},
+    {"type": "screen", "at": 4550},
+    {"type": "sound", "from": 4860, "to": 5280},
+    {"type": "level_ratio", "a": [4860, 5280], "b": [6300, 6770], "ratio": 0.075, "tol": 0.25},
+    {"type": "screen", "at": 6200},
+    {"type": "screen", "at": 7600},
+    {"type": "screen", "at": 8810},
+    {"type": "screen", "at": 9450},
+    {"type": "peak", "from": 4700, "to": 7000, "max_dbfs": -1}
+  ]
+}

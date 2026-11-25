@@ -842,6 +842,10 @@ static int sound_fx_event(const kit_event_t *e);
 static void sound_fx_close(void);
 static void sound_fx_bend(int t, int value);
 static void sound_fx_mod(int t, int value);
+static void sound_edit_press(void);
+static void sound_edit_release(void);
+static int sound_edit_event(const kit_event_t *e);
+static void sound_edit_close(void);
 static int dr_src_kit(int t, int p);
 static int rl_open;                             /* (reclayer.c) */
 static void rl_close(void);                     /* (reclayer.c) the layer and its question closed (R-241) */
@@ -915,6 +919,7 @@ static int guided_event(const kit_event_t *e);
 static void home_tap(void)
 {
     sound_fx_close();
+    sound_edit_close();
     if (confirm) {                              /* confirmed: switch, the song kept */
         chord_release();
         marp_off();
@@ -1066,6 +1071,8 @@ void app_event(const kit_event_t *e)
     if (mode_event(e))
         return;
     if (sound_fx_event(e))
+        return;
+    if (sound_edit_event(e))
         return;
     if (sq_event(e))                            /* the sequencer's pages (ST-85) */
         return;
@@ -2406,6 +2413,7 @@ static void keyboard_lights(void)
 #include "songsave.c"
 #include "sbrowse.c"
 #include "soundfx.c"
+#include "soundedit.c"
 
 void app_frame(uint32_t now_ms)
 {
@@ -2425,6 +2433,7 @@ void app_frame(uint32_t now_ms)
     }
     if (game_on() && (mode != MODE_GAME || picker)) game_leave();   /* the game closes: the tracks' sounds back */
     sound_fx_frame(now_ms);
+    if (!sound_fx_available()) sound_edit_close();
     if (mode == MODE_GAME && !picker && !help) { game_frame(now_ms); return; }   /* the game draws every frame */
     if (G.on && (mode != MODE_GUIDED || picker)) g_leave();   /* the guided mode closes: the tracks' sounds and levels back */
     if (mode == MODE_GUIDED && !picker && !help) { guided_frame(now_ms); return; }   /* the guided mode draws every frame */
@@ -2518,7 +2527,7 @@ void app_frame(uint32_t now_ms)
         int px = 6 + kit_seq_tick() * 228 / (song.bars * KIT_TICKS_PER_BAR);
         if (px != tl_px) { tl_px = px; dirty = 1; }
     }
-    if (!dirty && !help && !song_page && !asleep && !sound_fx_open() && kit_seq_playing() && !(sq_view >= 0 && mode == MODE_PRODUCER)
+    if (!dirty && !help && !song_page && !asleep && !sound_fx_open() && !sound_edit_open() && kit_seq_playing() && !(sq_view >= 0 && mode == MODE_PRODUCER)
         && !(mode == MODE_PRODUCER && !pd && (is_play() || is_ideas() || is_auto()))) {   /* only the playhead moved: redraw the loop's line (the chords' pages have none, as the lab, D-084) */
         int px = TL_X0 + kit_seq_tick() * (TL_X1 - TL_X0) / (song.bars * KIT_TICKS_PER_BAR);
         if (px != tl_px) draw_timeline();
@@ -2536,6 +2545,7 @@ void app_frame(uint32_t now_ms)
     else if (sq_view == SQV_SEQ && mode == MODE_PRODUCER) sq_seq_draw();
     else if (sq_view == SQV_STEPS && mode == MODE_PRODUCER) st_draw();
     else if (sound_fx_open()) sound_fx_draw();
+    else if (sound_edit_open()) sound_edit_draw();
     else if (ar_page()) ar_draw();              /* ARP on: its page (ST-77) */
     else if (pd) draw_pad();
     else if (is_ideas()) ci_draw();
@@ -2546,9 +2556,9 @@ void app_frame(uint32_t now_ms)
     else if (is_melody()) draw_melody();
     else if (is_drums()) { if (drt[track].page == DR_IDEAS) draw_drums_ideas(); else if (drt[track].page == DR_AUTO) draw_drums_auto(); else draw_drums(); }
     else draw_keyboard();
-    if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open()) draw_rec_layer();
+    if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open() && !sound_edit_open()) draw_rec_layer();
     if (!asleep && !help) draw_count();
-    if (!asleep && !help && !sound_fx_open()) exp_draw(now_ms);
+    if (!asleep && !help && !sound_fx_open() && !sound_edit_open()) exp_draw(now_ms);
     if (sb_open && !asleep && !help && !song_page) sb_draw();   /* the Sound Browser over the page (ST-68) */
     if (sq_view == SQV_SONG && !help && !song_page) sq_lights();
     else if (sq_view == SQV_STEPS && !help && !song_page) st_lights();
@@ -2564,6 +2574,7 @@ void app_frame(uint32_t now_ms)
     kit_btn_light(KIT_BTN_SCL, pd || is_ideas() || is_auto() || (is_bass() && basses[track].page != BASS_PLAY) || (is_melody() && mels[track].page != MEL_PLAY) || (is_drums() && drt[track].page != DR_PLAY) ? KIT_LIGHT_ON : KIT_LIGHT_OFF);
     kit_btn_light(KIT_BTN_SEQ, sq_view >= 0 ? KIT_LIGHT_ON : KIT_LIGHT_OFF);   /* in the sequencer's pages */
     kit_btn_light(KIT_BTN_FX, sound_fx_open() ? KIT_LIGHT_ON : KIT_LIGHT_OFF);
+    if (sound_edit_open()) kit_btn_light(KIT_BTN_EDIT, KIT_LIGHT_ON);
     kit_btn_light(KIT_BTN_PLAY, kit_seq_playing() ? KIT_LIGHT_ON : kit_seq_counting() ? KIT_LIGHT_BREATH : KIT_LIGHT_OFF);
     kit_btn_light(KIT_BTN_REC, armed ? (kit_seq_playing() ? KIT_LIGHT_ON : KIT_LIGHT_BREATH) : KIT_LIGHT_OFF);
 }

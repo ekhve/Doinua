@@ -24,6 +24,9 @@ The header is the contract; `PLATFORM.md` explains it and records every change (
 `kit_track_filter` and `kit_track_filter_of` read and write the active FMini patch's native cutoff, resonance, contour
 amount and key tracking. They return zero for unsupported tracks. The values are live until the sound is reloaded.
 
+`kit_track_osc` and `kit_track_osc_of` access the active FMini patch's two oscillator waves, oscillator 2 detune in
+cents and oscillator balance. They return zero for unsupported tracks. The edits last until the sound is reloaded.
+
 The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_of`. At 127 the delay retains the
 original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
 delay line limit are applied.

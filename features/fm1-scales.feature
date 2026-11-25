@@ -1278,6 +1278,20 @@ Feature: The effects bus (ST-69)
     When K3 and K4 are turned
     Then FILTER shows the edited cutoff and resonance
 
+  @D-072 @D-110 @ST-46 @auto
+  Scenario: EDIT opens the native FMini oscillator and filter
+    Given an FMini sound is selected
+    When EDIT opens OSC and SELECT moves to FILTER
+    Then K1 sets the same native cutoff shown in PERFORM FILTER
+    And HOME returns to playing
+
+  @D-110 @ST-46 @auto @gate:unit
+  Scenario: FMini oscillator edits affect a held note
+    Given oscillator 1 of an FMini sound is playing a note
+    When its waveform changes
+    Then the held note uses the new waveform
+
+
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

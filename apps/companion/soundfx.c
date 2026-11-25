@@ -148,6 +148,7 @@ static int sound_fx_event(const kit_event_t *e)
 {
     int knob, delta, value;
     if (e->id == KIT_BTN_FX && e->type == KIT_EV_BTN_DOWN && sound_fx_available()) {
+        sound_edit_close();
         fx_pressed = 1;
         fx_long = 0;
         fx_press_at = kit_ms();

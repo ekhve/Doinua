@@ -504,6 +504,11 @@ bypass the sweep. The sweep is temporary and applies to the selected track.
 On an FMini sound, PERFORM FILTER uses **K3** for cutoff and **K4** for resonance. Reselect the preset to reload
 its original settings. The X and Y values show dashes on sounds that do not have these controls mapped yet.
 
+Tap **EDIT** to open OSC, then tap **EDIT** again or turn **SELECT** to reach FILTER. Hold **EDIT** and release to
+return to OSC. On an FMini sound, the four knobs on OSC change the first two waves, oscillator 2 detune and their
+balance. On FILTER they change cutoff, resonance, envelope amount and key tracking. The cutoff and resonance
+also appear on PERFORM FILTER. **HOME** returns to playing.
+
 ### How many notes at once
 
 The FM-1 plays up to 12 notes at once across the four tracks, as long as they fit its processor. Some sounds take more

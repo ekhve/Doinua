@@ -129,6 +129,31 @@ static void check_live_filter(int preset)
     CHECK(!kit_track_filter_of(0, &current) && !kit_track_filter(0, &low), "unsupported tracks reject filter edits");
 }
 
+static void check_live_osc(int preset)
+{
+    kit_sound_osc_t original, current;
+    double sine, square;
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_osc_of(0, &original), "read FMini's native oscillator settings");
+    CHECK(kit_track_osc(0, KIT_OSC_MIX, 0) && kit_track_osc(0, KIT_OSC_WAVE1, KIT_OSC_SINE),
+          "isolate oscillator 1 on its sine wave");
+    kit__eng_note_on(0, 72, 100);
+    render(1300, 0, 0);
+    render(200, &sine, 0);
+    CHECK(kit_track_osc(0, KIT_OSC_WAVE1, KIT_OSC_SQR), "switch the held oscillator to square");
+    render(200, &square, 0);
+    CHECK(sine > 200 && square > 200 && fabs(square - sine) > sine * 0.1 && kit__eng_has(0, 72),
+          "wave change reaches the held note (%.1f to %.1f RMS)", sine, square);
+    CHECK(kit_track_osc(0, KIT_OSC_DETUNE, -245) && kit_track_osc(0, KIT_OSC_MIX, 127) &&
+          kit_track_osc_of(0, &current) && current.detune == -245 && current.mix == 127,
+          "detune and the oscillator 2 balance endpoint round-trip");
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_osc_of(0, &current) && current.wave1 == original.wave1 && current.wave2 == original.wave2 &&
+          current.detune == original.detune && current.mix == original.mix, "preset selection restores oscillator settings");
+    kit__eng_select(0, -1, 0);
+    CHECK(!kit_track_osc_of(0, &current) && !kit_track_osc(0, KIT_OSC_MIX, 0), "unsupported tracks reject oscillator edits");
+}
+
 int main(void)
 {
     check_factory_arp();
@@ -149,6 +174,7 @@ int main(void)
     }
     CHECK(sine >= 0 && pad >= 0, "SINE SOLO and LUSH STRINGS are picks");
     check_live_filter(sine);
+    check_live_osc(sine);
     kit__eng_select(0, E, sine);
     kit__eng_note_on(0, 60, 100);
     render(300, 0, 0);

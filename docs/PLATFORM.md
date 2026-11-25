@@ -157,6 +157,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-107 | API 42 adds WOBBLE as a track low-pass performance overlay. X sets the lab's LFO rate range and Y sets sweep depth and wet blend. Minimum depth bypasses the filter. | D-072 and Sound Edit v3, issue #17. The factory lead chose a sine-like cutoff sweep before the track sends that preserves native engine filter and LFO settings. |
 | D-108 | API 42 exposes live native filter settings for sound editing. FMini reads and writes its actual cutoff, emphasis, contour and keyboard tracking. Cutoff and resonance on PERFORM FILTER use these same settings. Reselecting a preset reloads its original values. | D-072 and Sound Edit v3, issue #17. The factory lead chose to reuse the engine's smoothed filter controls, and to show unavailable values for engines with no mapped controls yet. |
 | D-109 | Use a thin continuous 270-degree arc, a muted inner ring and a short radial pointer for the Sound Edit and FX knobs. | Knob shape approved by the owner in chat on 2026-11-25 after reviewing the fm1-emu PERFORM FILTER comparison from `304d1f7` (frames at 4090 and 5900 ms). |
+| D-110 | Sound EDIT starts with OSC and FILTER. FMini OSC edits the first two native waves, oscillator 2 detune and the first two oscillators' mixer balance. Both FILTER views edit the same native track settings. | D-072, D-109 and Sound Edit v3, issue #17. The factory lead used native wave choices and tuning limits, with the third oscillator and noise left at their preset values. |
 
 ## Known gaps (next)
 

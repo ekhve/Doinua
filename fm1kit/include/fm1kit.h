@@ -198,6 +198,12 @@ int kit_track_preset(int track);
 typedef struct { uint8_t cutoff, resonance, amount, keytrack; } kit_sound_filter_t;
 int kit_track_filter_of(int track, kit_sound_filter_t *filter);
 int kit_track_filter(int track, const kit_sound_filter_t *filter);
+/* First two oscillators of an editable sound. Detune is signed cents, mix is oscillator 2's share (0..127). */
+enum { KIT_OSC_TRI, KIT_OSC_SHARK, KIT_OSC_SAW, KIT_OSC_SQR, KIT_OSC_WIDE, KIT_OSC_NARROW, KIT_OSC_SINE, KIT_OSC_NWAVES };
+enum { KIT_OSC_WAVE1, KIT_OSC_WAVE2, KIT_OSC_DETUNE, KIT_OSC_MIX };
+typedef struct { uint8_t wave1, wave2, mix; int16_t detune; } kit_sound_osc_t;
+int kit_track_osc_of(int track, kit_sound_osc_t *osc);
+int kit_track_osc(int track, int control, int value);
 void kit_track_note_on(int track, int note, int vel);
 void kit_track_note_off(int track, int note);
 void kit_track_notes_off(int track);

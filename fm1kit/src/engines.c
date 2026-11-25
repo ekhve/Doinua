@@ -114,6 +114,47 @@ int kit_track_filter(int pt, const kit_sound_filter_t *filter)
     kit__unlock(k);
     return 1;
 }
+
+int kit_track_osc_of(int pt, kit_sound_osc_t *osc)
+{
+    const uint8_t *g;
+    int level1, level2;
+    if (!okp(pt) || !fmx[pt] || !osc) return 0;
+    g = fmini_patch[pt];
+    level1 = g[FG_SW1] & FS_O1 ? g[FG_L1] : 0;
+    level2 = g[FG_SW1] & FS_O2 ? g[FG_L2] : 0;
+    *osc = (kit_sound_osc_t){g[FG_W1], g[FG_W2], level1 + level2 ? level2 * 127 / (level1 + level2) : 0,
+                            fmini_det(g, FG_DC2L)};
+    return 1;
+}
+
+int kit_track_osc(int pt, int control, int value)
+{
+    uint8_t *g;
+    uint32_t lock;
+    if (!okp(pt) || !fmx[pt] || control < KIT_OSC_WAVE1 || control > KIT_OSC_MIX) return 0;
+    lock = kit__lock();
+    g = fmini_patch[pt];
+    if (control == KIT_OSC_DETUNE) {
+        int cents = clamp(value, -700, 700);
+        int magnitude = cents < 0 ? -cents : cents;
+        g[FG_DC2L] = magnitude & 127;
+        g[FG_DC2H] = (magnitude >> 7) | (cents < 0 ? 8 : 0);
+    } else if (control == KIT_OSC_MIX) {
+        int mix = clamp(value, 0, 127);
+        int total = (g[FG_SW1] & FS_O1 ? g[FG_L1] : 0) + (g[FG_SW1] & FS_O2 ? g[FG_L2] : 0);
+        int larger = mix > 63 ? mix : 127 - mix;
+        if (!total) total = 127;
+        total = clamp(total, 1, 127 * 127 / larger);
+        g[FG_L2] = (total * mix + 63) / 127;
+        g[FG_L1] = total - g[FG_L2];
+        g[FG_SW1] = (g[FG_SW1] & ~(FS_O1 | FS_O2)) | (g[FG_L1] ? FS_O1 : 0) | (g[FG_L2] ? FS_O2 : 0);
+    } else {
+        g[control == KIT_OSC_WAVE1 ? FG_W1 : FG_W2] = clamp(value, 0, KIT_OSC_NWAVES - 1);
+    }
+    kit__unlock(lock);
+    return 1;
+}
 static int32_t pitch_of(int pt, int note)          /* 1/16 semitones: FMINI's patch may move the keys an octave */
 {
     int n = note + (fmx[pt] ? fmx[pt]->oct * 12 : 0);
