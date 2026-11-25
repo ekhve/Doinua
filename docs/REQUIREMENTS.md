@@ -503,6 +503,8 @@ implement all sounds".)
 | R-314 | When a track sends to the delay, the firmware shall repeat the track's sound after the delay's time. | D-093, ST-69 | A | Draft | The effects bus delays, drives and choruses a track's sound by its sends, and ends |
 | R-315 | When an FMini sound is chosen for a track, the firmware shall set the track's effect sends from the sound's patch. | D-093, ST-69 | A | Draft | An FMini sound plays its note in tune and stops when released |
 | R-328 | When DELAY TONE is lowered, the firmware shall soften a short impulse in the delayed signal. | D-102, ST-69, UC-07 | A | Draft | Delay tone softens the echo |
+| R-329 | When FX is tapped on a synth track's playing page, the companion app shall show the PERFORM page. | D-072, ST-69, UC-07 | A | Draft | FX opens a live performance page and delay |
+| R-330 | While DELAY shows, when K3 is turned, the companion app shall change the selected track's delay send. | D-072, ST-69, UC-07 | A | Draft | FX opens a live performance page and delay |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

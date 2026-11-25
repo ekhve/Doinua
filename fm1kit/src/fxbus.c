@@ -64,6 +64,15 @@ void kit_delay_tone(int tone)
 
 int kit_delay_tone_of(void) { return delay_tone; }
 
+static int32_t delay_samples(void)
+{
+    uint32_t ms = 10u + (uint32_t)bus.dly_time * bus.dly_time * 1390u / 16129u;
+    if (bus.dly_type == 3u) ms = 31u + ms / 10u;
+    return clamp32((int32_t)(ms * 441u / 10u), 2, (int32_t)DLY_LEN - 4);
+}
+
+int kit_delay_ms_of(void) { return (delay_samples() * 10 + 220) / 441; }
+
 static int32_t delay_tone_coefficient(int tone)
 {
     /* Q15 one-pole coefficients at 400, 800, 1600, 3200, 6400 and 12800 Hz. */
@@ -157,11 +166,11 @@ void kit__fx_buses(int32_t *mix)
         if (!fx.cho_left) fx.cho_lp = 0;
     }
     if (dly || fx.dly_left) {                     /* DELAY: ANALOG, DIGITAL, TAPE, SLAP (fmini-1's, mono) */
-        uint32_t ty = bus.dly_type, ms = 10u + (uint32_t)bus.dly_time * bus.dly_time * 1390u / 16129u;   /* fmini-1's dly_ms */
+        uint32_t ty = bus.dly_type;
         int32_t tgt, fb = (bus.dly_fb > 120 ? 120 : bus.dly_fb) * 230, dmix = bus.dly_mix * 258, kc, loud = 0;
         int edited_tone = delay_tone < 127;
-        if (ty == 3u) { ms = 31u + ms / 10u; fb /= 3; }  /* SLAP: one short echo, a repeat or two */
-        tgt = (int32_t)clamp32((int32_t)(ms * 441u / 10u), 2, (int32_t)DLY_LEN - 4) << 8;
+        if (ty == 3u) fb /= 3;                    /* SLAP: one short echo, a repeat or two */
+        tgt = delay_samples() << 8;
         if (!fx.dly_left) { fx.dly_start = fx.dly_w; fx.dly_lp = fx.dly_hp = 0; fx.dl_q = tgt; }
         fx.dl_q += clamp32(tgt - fx.dl_q, -2048, 2048);   /* a time change bends, as tape */
         kc = ty == 1u ? 26000 : ty == 2u ? 14000 : 11500;  /* the loop's low-pass: DIGITAL ~11 kHz, TAPE ~3.4, ANALOG ~2.6 */

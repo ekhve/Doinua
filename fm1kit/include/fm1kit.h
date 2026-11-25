@@ -229,6 +229,8 @@ void kit_fx_bus_of(kit_fx_t *fx);
 /* Shared delay tone: 0 is darkest, 126 brightest, 127 uses the delay type's original tone. */
 void kit_delay_tone(int tone);
 int kit_delay_tone_of(void);
+/* Rounded delay time of the selected type and setting, within the available delay line. */
+int kit_delay_ms_of(void);
 enum { KIT_SFX_PFFT = 0, KIT_SFX_PLOP, KIT_SFX_NEIGH, KIT_SFX_GULL, KIT_SFX_BAA, KIT_SFX_CHIRP,
        KIT_SFX_WHISTLE, KIT_SFX_COUGH, KIT_SFX_SNEEZE, KIT_SFX_WOOF, KIT_SFX_MOO, KIT_SFX_HOOT, KIT_SFX_HOWL, KIT_NSFX };
 void kit_sfx(int id, int level);          /* level 1..10 */

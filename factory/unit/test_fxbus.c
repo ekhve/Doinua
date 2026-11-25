@@ -45,6 +45,16 @@ int main(void)
     for (i = 101; i < N; i++) CHECK(out[i] == 0, "no sends: nothing after (%d at %d)", (int)out[i], i);
 
     kit_fx_bus(&f);
+    CHECK(kit_delay_ms_of() == d, "displayed time matches DIGITAL delay");
+    f.dly_type = 3;
+    kit_fx_bus(&f);
+    CHECK(kit_delay_ms_of() == 31 + d / 10, "displayed time follows SLAP scaling");
+    f.dly_type = 1;
+    f.dly_time = 127;
+    kit_fx_bus(&f);
+    CHECK(kit_delay_ms_of() == 743, "displayed time accounts for the delay line limit");
+    f.dly_time = 64;
+    kit_fx_bus(&f);
     kit_track_sends(0, 0, 0, 127, 0);
     memset(out, 0, sizeof out);
     run(0, in, N);

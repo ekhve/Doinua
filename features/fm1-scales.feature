@@ -1189,6 +1189,15 @@ Feature: The effects bus (ST-69)
     When its tone is changed from brightest to darkest
     Then the first echo has a lower peak at the same delay time
     And the dry impulse keeps its level
+
+  @D-072 @ST-69 @auto
+  Scenario: FX opens a live performance page and delay
+    Given a synth track is ready to play
+    When FX opens PERFORM and another tap opens DELAY
+    And K3 raises the delay send
+    Then the track's note and its echo sound
+    And holding FX returns to PERFORM
+    And HOME returns to the track
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

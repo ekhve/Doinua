@@ -22,7 +22,8 @@ playbook's analysis set: these events feed `When` and `If` requirements). Archit
 The header is the contract; `PLATFORM.md` explains it and records every change (rule 6 of `CLAUDE.md`).
 
 The shared delay tone is set and read with `kit_delay_tone` and `kit_delay_tone_of`. At 127 the delay retains the
-original response of its selected type.
+original response of its selected type. `kit_delay_ms_of` returns the rounded delay time after the type and
+delay line limit are applied.
 
 ```mermaid
 classDiagram
