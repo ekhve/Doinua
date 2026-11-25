@@ -164,6 +164,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-114 | MOD gives FMini two signed mod-wheel routes to vibrato, cutoff, resonance, LFO rate, drive, delay or reverb. MIDI CC1 and PERFORM MOD use the same routes. The default keeps the existing vibrato. Reselecting a sound restores the routes to their defaults. | D-072 and Sound Edit v3, issue #17. The factory lead applied these offsets temporarily so the native sound and base sends stay available to the editor. |
 | D-115 | EDIT FILTER shows a live, 24-band spectrum from the selected FMini track before the effects sends. Its nominal cutoff curve shares the spectrum axis. | D-072 and Sound Edit v3, issue #17. The factory lead captures only while FILTER is visible, using a 256-sample window at 11,025 Hz and fixed-point analysis outside the audio interrupt. |
 | D-116 | F.ENV and A.ENV show the active contour levels and LFO shows the running phase of the selected FMini track. The newest sounding voice supplies the envelope readings. Idle screens keep their previous appearance. | D-072 and Sound Edit v3, issue #17. The factory lead chose to sample the actual engine state from the app rather than animate from key timers. |
+| D-117 | EDIT FILTER and PERFORM FILTER share the Juno-106's native cutoff and resonance. EDIT also reaches envelope amount and key tracking. The spectrum includes Juno's native chorus and precedes the shared effects. | D-072 and Sound Edit v3, issue #17. Uses the FM-106 setters and nominal cutoff ladder coefficients. |
 
 ## Known gaps (next)
 

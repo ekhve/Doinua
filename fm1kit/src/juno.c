@@ -59,6 +59,45 @@ void kit__juno_select(int t, int p)             /* p < 0: the track plays no Jun
 
 int kit__juno_on(int t) { return okj(t) && jn_on[t]; }
 
+/* Native FM-106 parameter IDs for EDIT FILTER. */
+enum { JN_FILTER_CUTOFF = 10, JN_FILTER_RESONANCE = 11, JN_FILTER_ENV_AMOUNT = 12, JN_FILTER_KEY_TRACK = 14 };
+
+int kit__juno_filter_of(int t, kit_sound_filter_t *filter)
+{
+    const fm106_engine_t *e;
+    if (!kit__juno_on(t) || !filter) return 0;
+    e = &jn[t];
+    *filter = (kit_sound_filter_t){fm106_param_get(e, JN_FILTER_CUTOFF), fm106_param_get(e, JN_FILTER_RESONANCE),
+                                   fm106_param_get(e, JN_FILTER_ENV_AMOUNT), fm106_param_get(e, JN_FILTER_KEY_TRACK)};
+    return 1;
+}
+
+int kit__juno_filter(int t, const kit_sound_filter_t *filter)
+{
+    fm106_engine_t *e;
+    uint32_t lock;
+    if (!kit__juno_on(t) || !filter) return 0;
+    lock = kit__lock();
+    e = &jn[t];
+    fm106_param_set(e, JN_FILTER_CUTOFF, filter->cutoff > 127 ? 127 : filter->cutoff);
+    fm106_param_set(e, JN_FILTER_RESONANCE, filter->resonance > 127 ? 127 : filter->resonance);
+    fm106_param_set(e, JN_FILTER_ENV_AMOUNT, filter->amount > 127 ? 127 : filter->amount);
+    fm106_param_set(e, JN_FILTER_KEY_TRACK, filter->keytrack > 127 ? 127 : filter->keytrack);
+    kit__unlock(lock);
+    return 1;
+}
+
+unsigned kit__juno_cutoff_bin(int cutoff)
+{
+    unsigned g = FM106_VCF_G1[(unsigned)(cutoff < 0 ? 0 : cutoff > 127 ? 127 : cutoff) * 32];
+    unsigned tangent, angle;
+    if (g >= 9600) return 129u * 256;             /* at or above the spectrum's Nyquist frequency */
+    /* Invert the ladder coefficient g = tan(w)/(1+tan(w)) for w <= pi/8. */
+    tangent = g * 4096 / (32767 - g);
+    angle = tangent * 4096 / (4096 + (tangent * tangent >> 12) * 28 / 100);
+    return angle * 2608 >> 7;                    /* w in Q12 to spectrum bin in Q8 */
+}
+
 void kit__juno_note_on(int t, int note, int vel)
 {
     if (!kit__juno_on(t) || note < 0 || note > 127) return;
@@ -125,6 +164,7 @@ static void jn_render(int t, int32_t *mix, int n)
     fm106_engine_t *e;
     uint32_t i, vi, any = 0, lfo_ph, lfo_step, delay_samples, ramp_samples = 11025u;
     int keys;
+    int capture = kit__spectrum_wants(t);
     float vca_scale;
     e = &jn[t];
     /* the LFO, as FM-106's audio render makes it (its delay and the quarter-second ramp) */
@@ -154,7 +194,10 @@ static void jn_render(int t, int32_t *mix, int n)
     e->lfo_val = g_lfo_buf[n - 1];
     for (vi = 0; vi < FM106_NUM_VOICES && !any; vi++) any = jn_sounding(&e->voice[vi]);
     if (!any) {                                 /* silent: once the chorus's and HPF's tails are out (~0.1 s), nothing to do */
-        if (jn_quiet[t] >= 4096u) return;
+        if (jn_quiet[t] >= 4096u) {
+            if (capture) kit__spectrum_capture(0, n);
+            return;
+        }
         jn_quiet[t] = (uint16_t)(jn_quiet[t] + (uint32_t)n);
     } else
         jn_quiet[t] = 0;
@@ -179,7 +222,9 @@ static void jn_render(int t, int32_t *mix, int n)
         if (o > JUNO_KNEE) o = JUNO_KNEE + ((o - JUNO_KNEE) >> 2);           /* FMini's 4:1 knee (D-086) */
         else if (o < -JUNO_KNEE) o = -JUNO_KNEE + ((o + JUNO_KNEE) >> 2);
         mix[i] += o;
+        if (capture) jn_tmp[i] = o;
     }
+    if (capture) kit__spectrum_capture(jn_tmp, n);
 }
 
 /* adds n samples of track t's Juno into mix, in FM-106's blocks of at most 256 */

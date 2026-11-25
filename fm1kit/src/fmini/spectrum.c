@@ -12,7 +12,7 @@ static const uint8_t spectrum_edges[KIT_SPECTRUM_BANDS + 1] = {
 void kit_track_spectrum(int pt)
 {
     uint32_t lock;
-    int target = okp(pt) && fmx[pt] ? pt : -1;
+    int target = okp(pt) && (fmx[pt] || kit__juno_on(pt)) ? pt : -1;
     if (target == spectrum_track) return;
     lock = kit__lock();
     spectrum_track = target;
@@ -20,12 +20,17 @@ void kit_track_spectrum(int pt)
     kit__unlock(lock);
 }
 
-static void spectrum_capture(const int32_t *out)
+int kit__spectrum_wants(int pt)
 {
-    unsigned i;
-    /* Average four samples before downsampling. CTL divides a window exactly. */
-    for (i = 0; i < CTL; i += SPECTRUM_DECIMATION) {
-        int32_t sum = (out[i] >> 2) + (out[i + 1] >> 2) + (out[i + 2] >> 2) + (out[i + 3] >> 2);
+    return pt == spectrum_track && spectrum_count < SPECTRUM_SIZE;
+}
+
+void kit__spectrum_capture(const int32_t *out, int count)
+{
+    int i;
+    /* Both renderers deliver complete groups of four samples. NULL supplies silence. */
+    for (i = 0; i + 3 < count && spectrum_count < SPECTRUM_SIZE; i += SPECTRUM_DECIMATION) {
+        int32_t sum = out ? (out[i] >> 2) + (out[i + 1] >> 2) + (out[i + 2] >> 2) + (out[i + 3] >> 2) : 0;
         spectrum_samples[spectrum_count++] = clamp(sum, -32767, 32767);
     }
 }
@@ -99,11 +104,13 @@ int kit_track_spectrum_read(uint8_t bands[KIT_SPECTRUM_BANDS])
 int kit_track_spectrum_position(int pt, int cutoff)
 {
     unsigned i, bin_q8;
-    uint32_t inc;
-    if (!okp(pt) || !fmx[pt]) return 0;
-    inc = pitch_inc((uint32_t)clamp(FMINI_CUT[clamp(cutoff, 0, 127)], 0, 2047));
-    /* With 256 points and 4:1 decimation, frequency in bins is phase increment * 1024 / 2^32. */
-    bin_q8 = inc >> 14;
+    if (!okp(pt)) return 0;
+    if (kit__juno_on(pt)) bin_q8 = kit__juno_cutoff_bin(cutoff);
+    else if (fmx[pt]) {
+        uint32_t inc = pitch_inc((uint32_t)clamp(FMINI_CUT[clamp(cutoff, 0, 127)], 0, 2047));
+        /* 256 FFT points with 4:1 decimation gives frequency in bins as phase increment * 1024 / 2^32. */
+        bin_q8 = inc >> 14;
+    } else return 0;
     for (i = 0; i < KIT_SPECTRUM_BANDS; i++) {
         unsigned lower = spectrum_edges[i] * 256u, upper = spectrum_edges[i + 1] * 256u;
         if (bin_q8 < lower) return 0;

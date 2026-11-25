@@ -1459,3 +1459,15 @@ Feature: FMini factory arpeggios (ST-77)
     Given Pluck Arp is selected for the melody track
     When C4 is held
     Then the track plays the factory's up-down pattern across its three octaves
+
+  @D-117 @ST-46 @auto
+  Scenario: Juno EDIT FILTER shares the active cutoff
+    Given a Juno-106 sound on the selected track
+    When I turn cutoff on EDIT FILTER with a note held
+    Then the cutoff shown on PERFORM FILTER changes
+
+  @D-117 @ST-46 @auto @gate:unit
+  Scenario: Juno native filter edits affect a held note
+    Given the selected track plays a held Juno-106 note
+    When I sample the selected track spectrum
+    Then the bands show the held note's energy

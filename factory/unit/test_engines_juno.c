@@ -57,6 +57,38 @@ static int find(const char *name)
     return -1;
 }
 
+static void check_live_filter(int preset)
+{
+    kit_sound_filter_t original, edit, readback;
+    uint8_t bands[KIT_SPECTRUM_BANDS];
+    double open, closed;
+    int i, energy = 0;
+
+    CHECK(preset >= 0, "Combo Organ is in the factory bank");
+    if (preset < 0) return;
+    kit__eng_select(0, E, preset);
+    kit__eng_select(1, E, preset);
+    CHECK(kit_track_filter_of(0, &original), "read the Juno's native filter");
+    edit = (kit_sound_filter_t){127, 0, 3, 110};
+    CHECK(kit_track_filter(0, &edit), "edit the Juno's native filter");
+    CHECK(kit_track_filter_of(0, &readback) && !memcmp(&edit, &readback, sizeof edit), "native filter reads back all four values");
+    CHECK(kit_track_filter_of(1, &readback) && !memcmp(&original, &readback, sizeof original), "another track retains the factory filter");
+    CHECK(kit_track_spectrum_position(0, 127) > kit_track_spectrum_position(0, 0), "Juno cutoff advances on the spectrum axis");
+    kit_track_spectrum(0);
+    kit__eng_note_on(0, 72, 100);
+    render(320, &open, 0);
+    CHECK(kit_track_spectrum_read(bands), "the Juno produced a spectrum window");
+    for (i = 0; i < KIT_SPECTRUM_BANDS; i++) energy += bands[i];
+    CHECK(energy > 0, "a Juno note appears on the selected track's spectrum");
+    edit.cutoff = 0;
+    kit_track_filter(0, &edit);
+    render(400, &closed, 0);
+    CHECK(open > 200 && closed < open / 8, "closing the filter changes a held note (%.0f to %.0f)", open, closed);
+    kit_track_spectrum(-1);
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_filter_of(0, &readback) && !memcmp(&original, &readback, sizeof original), "reloading recalls the factory filter");
+}
+
 int main(void)
 {
     int p, i, flute = find("Flutes"), pad = find("Synth Pad"), n0;
@@ -117,6 +149,7 @@ int main(void)
     kit__eng_note_on(0, 60, 100);
     render(300, &r, 0);
     CHECK(r > 100 && !kit__eng_has(1, 60), "another engine on the track takes the Juno off it (rms %.0f)", r);
+    check_live_filter(find("Combo Organ"));
     printf("engines juno: %s\n", fails ? "FAILED" : "ok");
     return fails != 0;
 }

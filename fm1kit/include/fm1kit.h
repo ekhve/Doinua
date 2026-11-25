@@ -198,7 +198,7 @@ int kit_track_preset(int track);
 typedef struct { uint8_t cutoff, resonance, amount, keytrack; } kit_sound_filter_t;
 int kit_track_filter_of(int track, kit_sound_filter_t *filter);
 int kit_track_filter(int track, const kit_sound_filter_t *filter);
-/* Selected FMini track's pre-effects spectrum. A negative track disables capture. */
+/* Selected FMini or Juno-106 track's spectrum before the shared effects. A negative track disables capture. */
 #define KIT_SPECTRUM_BANDS 24
 void kit_track_spectrum(int track);
 int kit_track_spectrum_read(uint8_t bands[KIT_SPECTRUM_BANDS]);

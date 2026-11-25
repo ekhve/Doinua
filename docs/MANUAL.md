@@ -501,14 +501,14 @@ PERFORM and press **HOME** to return to playing. On PERFORM, **SELECT** changes 
 its two controls. For WOBBLE, **K3** sets the cutoff sweep speed and **K4** sets its depth. Turn depth to zero to
 bypass the sweep. The sweep is temporary and applies to the selected track.
 
-On an FMini sound, PERFORM FILTER uses **K3** for cutoff and **K4** for resonance. Reselect the preset to reload
+On FMini and Juno-106 sounds, PERFORM FILTER uses **K3** for cutoff and **K4** for resonance. Reselect the preset to reload
 its original settings. The X and Y values show dashes on sounds that do not have these controls mapped yet.
 
 Tap **EDIT** to open OSC, then tap **EDIT** again or turn **SELECT** to reach FILTER. Hold **EDIT** and release to
 return to OSC. On an FMini sound, the four knobs on OSC change the first two waves, oscillator 2 detune and their
 balance. On FILTER they change cutoff, resonance, envelope amount and key tracking. The cutoff and resonance
 also appear on PERFORM FILTER. **HOME** returns to playing.
-FILTER draws the current FMini track's live spectrum before delay and reverb.
+FILTER draws the selected FMini or Juno-106 track's live spectrum before the shared delay and reverb.
 
 Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
 preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.

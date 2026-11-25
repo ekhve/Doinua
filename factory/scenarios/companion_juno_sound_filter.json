@@ -1,0 +1,16 @@
+{
+  "scenario": "Juno EDIT FILTER shares the active cutoff",
+  "name": "companion, ST-46: Juno Combo Organ shows and edits its own filter",
+  "app": "companion",
+  "ms": 8500,
+  "keys": "1000:e6:+1,1600:e6:+2,2200:e2:+1,2800:FX,2870:FX^,3090:e0:-2,3300:e4:+24,3570:e5:-24,3900:EDIT,3970:EDIT^,4180:e0:+1,4600:C5@100,5600:e2:-32,6700:FX,6770:FX^,7350:C5^",
+  "checks": [
+    {"type": "screen", "at": 4460},
+    {"type": "sound", "from": 5020, "to": 5480},
+    {"type": "screen", "at": 5440},
+    {"type": "silence", "from": 6200, "to": 6500},
+    {"type": "screen", "at": 6420},
+    {"type": "screen", "at": 7100},
+    {"type": "peak", "from": 4600, "to": 7350, "max_dbfs": -1}
+  ]
+}

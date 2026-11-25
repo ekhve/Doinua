@@ -21,7 +21,7 @@ playbook's analysis set: these events feed `When` and `If` requirements). Archit
 
 The header is the contract; `PLATFORM.md` explains it and records every change (rule 6 of `CLAUDE.md`).
 
-`kit_track_filter` and `kit_track_filter_of` read and write the active FMini patch's native cutoff, resonance, contour
+`kit_track_filter` and `kit_track_filter_of` read and write the active FMini or Juno-106 patch's native cutoff, resonance, contour
 amount and key tracking. They return zero for unsupported tracks. The values are live until the sound is reloaded.
 
 `kit_track_osc` and `kit_track_osc_of` access the active FMini patch's two oscillator waves, oscillator 2 detune in

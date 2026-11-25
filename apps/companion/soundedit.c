@@ -97,11 +97,13 @@ static void sed_update_motion(uint32_t now, int visible)
 
 static void sound_edit_frame(uint32_t now)
 {
-    int i, input, visible;
+    int i, input, visible, engine;
     if (!sound_fx_available()) sound_edit_close();
-    visible = !asleep && !sb_open && kit_track_engine(track) == KIT_ENGINE_FMINI;
-    sed_update_motion(now, visible);
-    input = visible && sed_page == SED_FILTER ? track : -1;
+    visible = !asleep && !sb_open;
+    engine = kit_track_engine(track);
+    sed_update_motion(now, visible && engine == KIT_ENGINE_FMINI);
+    input = visible && sed_page == SED_FILTER &&
+            (engine == KIT_ENGINE_FMINI || engine == KIT_ENGINE_JUNO) ? track : -1;
     if (input != sed_spectrum_track) {
         sed_spectrum_track = input;
         kit_track_spectrum(input);

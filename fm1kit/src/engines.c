@@ -189,6 +189,7 @@ int kit_track_envelope_ms(int pt, int time_dial)
 int kit_track_filter_of(int pt, kit_sound_filter_t *filter)
 {
     const int16_t *p;
+    if (kit__juno_on(pt)) return kit__juno_filter_of(pt, filter);
     if (!okp(pt) || !fmx[pt] || !filter) return 0;
     p = trk[pt].p;
     *filter = (kit_sound_filter_t){p[P_E0], p[P_E1], p[P_E2], fmini_patch[pt][FG_KBD]};
@@ -199,6 +200,7 @@ int kit_track_filter(int pt, const kit_sound_filter_t *filter)
 {
     uint32_t k;
     int16_t *p;
+    if (kit__juno_on(pt)) return kit__juno_filter(pt, filter);
     if (!okp(pt) || !fmx[pt] || !filter) return 0;
     k = kit__lock();
     p = trk[pt].p;
@@ -757,7 +759,7 @@ static void render_part(int pt, int32_t *mix, int n)
                                                      * peaks above the other engines' (a few patches reach twice: MINI BASS)
                                                      * taken down 4:1 over FM_KNEE, so one note never clips the mix */
             int32_t lv = FM_LEVEL_Q12[x->level & 127];
-            if (pt == spectrum_track && spectrum_count < SPECTRUM_SIZE) spectrum_capture(out);
+            if (kit__spectrum_wants(pt)) kit__spectrum_capture(out, CTL);
             for (i = 0; i < CTL; i++) {
                 int32_t o = ((out[i] >> 4) * lv) >> 8;
                 if (o > FM_KNEE) o = FM_KNEE + ((o - FM_KNEE) >> 2);
