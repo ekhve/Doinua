@@ -24,7 +24,9 @@ static uint8_t delay_tone = 127;               /* retain the delay type's origin
 static struct {
     int track;
     uint8_t drive, crush, darkness, delay, reverb, dub, time;
-    int32_t wah_frequency, wah_damping, wah_low, wah_band;
+    uint8_t wobble_depth;
+    uint32_t wobble_phase, wobble_step;
+    int32_t wah_frequency, wah_damping, filter_low, filter_band;
 } perform = {.track = -1};
 static struct {
     uint32_t cho_w, cho_ph, dly_w, dly_start, dly_ph;
@@ -82,16 +84,27 @@ static int32_t wah_frequency(int x)
     return fraction ? coeff[interval] + (coeff[interval + 1] - coeff[interval]) * fraction / 127 : coeff[interval];
 }
 
+static uint32_t wobble_step(int x)
+{
+    /* Phase increments per 32 samples at 44.1 kHz, from the lab's 0.1 * 200^(0.25 + 0.6 * x). */
+    static const uint32_t step[] = {1172003, 1743837, 2594677, 3860651, 5744308, 8547025, 12717222, 18922107, 28154430};
+    int interval = x * 8 / 127, fraction = x * 8 % 127;
+    return fraction ? step[interval] + (step[interval + 1] - step[interval]) * fraction / 127 : step[interval];
+}
+
 void kit_perform_fx(int t, int pair, int x, int y)
 {
     uint32_t k = kit__lock();
     int keep_wah = perform.wah_frequency && perform.track == t && pair == KIT_PERFORM_WAH && x >= 2;
+    int keep_wobble = perform.wobble_depth && perform.track == t && pair == KIT_PERFORM_WOBBLE && y >= 2;
     x = (int)clamp32(x, 0, 127);
     y = (int)clamp32(y, 0, 127);
     perform.track = -1;
     perform.drive = perform.crush = perform.darkness = perform.delay = perform.reverb = perform.dub = 0;
     perform.wah_frequency = 0;
-    if (!keep_wah) perform.wah_low = perform.wah_band = 0;
+    perform.wobble_depth = 0;
+    if (!keep_wah && !keep_wobble) perform.filter_low = perform.filter_band = 0;
+    if (!keep_wobble) perform.wobble_phase = 0;
     if (t >= 0 && t < KIT_NTRACKS && pair >= 0 && pair < KIT_NPERFORM_FX) {
         if (pair == KIT_PERFORM_DIRT && (x || y)) {
             perform.drive = (uint8_t)x;
@@ -110,6 +123,10 @@ void kit_perform_fx(int t, int pair, int x, int y)
             int32_t q = 256 + y * 3507 / 127;
             perform.wah_frequency = wah_frequency(x);
             perform.wah_damping = (32768 * 256) / q;
+            perform.track = t;
+        } else if (y >= 2 && pair == KIT_PERFORM_WOBBLE) {
+            perform.wobble_step = wobble_step(x);
+            perform.wobble_depth = (uint8_t)y;
             perform.track = t;
         }
     }
@@ -217,10 +234,9 @@ static void fx_dirt_block(int t, int32_t *x, int32_t drive, int32_t crush, int32
     }
 }
 
-static void fx_wah_block(int32_t *x)
+static void fx_perform_filter(int32_t *x, int32_t coefficient, int32_t damping, int32_t lowpass_mix)
 {
-    int32_t low = perform.wah_low, band = perform.wah_band;
-    int32_t coefficient = perform.wah_frequency, damping = perform.wah_damping;
+    int32_t low = perform.filter_low, band = perform.filter_band;
     int i;
     for (i = 0; i < KIT_BLOCK; i++) {
         int32_t high;
@@ -228,10 +244,22 @@ static void fx_wah_block(int32_t *x)
         high = clamp32(x[i], -65535, 65535) - low - mulq15(band, damping);
         band = clamp32(band + mulq15(high, coefficient), -65535, 65535);
         if (!x[i] && low >= -16 && low <= 16 && band >= -16 && band <= 16) low = band = 0;
-        x[i] = mulq15(band, damping);
+        x[i] = lowpass_mix ? x[i] + mulq15(low - x[i], lowpass_mix) : mulq15(band, damping);
     }
-    perform.wah_low = low;
-    perform.wah_band = band;
+    perform.filter_low = low;
+    perform.filter_band = band;
+}
+
+static void fx_wobble_block(int32_t *x)
+{
+    int32_t lfo = tri(perform.wobble_phase);
+    int32_t depth = perform.wobble_depth * 32768 / 127;
+    /* Shape the triangle toward a sine; low-pass sweeps roughly 200–3800 Hz at maximum depth. */
+    int32_t magnitude = lfo < 0 ? -lfo : lfo;
+    int32_t smooth = lfo + mulq15(lfo, 32768 - magnitude);
+    int32_t coefficient = 9500 + mulq15(mulq15(smooth, depth), 8566);
+    fx_perform_filter(x, coefficient, 32768, depth);
+    perform.wobble_phase += perform.wobble_step;
 }
 
 /* track t's block x (Q15, KIT_BLOCK samples): its DRIVE (fmini-1's DIST: a soft clip, its tone darker as it drives
@@ -242,7 +270,8 @@ void kit__fx_track(int t, int32_t *x, int32_t *mix)
     int32_t d = snd[t][0], c = snd[t][1] * 258, l = snd[t][2], r = snd[t][3];
     int32_t crush = dirt[t].crush, darkness = dirt[t].darkness;
     if (perform.track == t) {
-        if (perform.wah_frequency) fx_wah_block(x);
+        if (perform.wah_frequency) fx_perform_filter(x, perform.wah_frequency, perform.wah_damping, 0);
+        if (perform.wobble_depth) fx_wobble_block(x);
         d = louder(d, perform.drive);
         l = louder(l, perform.delay);
         r = louder(r, perform.reverb);

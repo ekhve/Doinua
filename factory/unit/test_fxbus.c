@@ -179,6 +179,38 @@ int main(void)
         kit_perform_fx(-1, KIT_PERFORM_WAH, 0, 0);
     }
 
+    {
+        enum { LEN = KIT_BLOCK * 512 };
+        int tone, window, energy[2][2] = {{0, 0}, {0, 0}};
+        for (tone = 0; tone < 2; tone++) {
+            int hz = tone ? 3000 : 80;
+            for (i = 0; i < LEN; i++) in[i] = (int32_t)(4000 * sin(i * (6.283185307179586 / FS) * hz));
+            kit_perform_fx(-1, KIT_PERFORM_WOBBLE, 0, 0);
+            kit_perform_fx(0, KIT_PERFORM_WOBBLE, 127, 127);
+            run(0, in, LEN);
+            for (window = 0; window < 2; window++) {
+                int start = window ? 2150 : 4700;
+                for (i = start; i < start + 400; i++) energy[tone][window] += abs(out[i]);
+            }
+        }
+        CHECK(energy[0][0] > energy[0][1] / 2 && energy[0][1] > energy[0][0] / 2,
+              "WOBBLE keeps the low-frequency fundamental through the cycle");
+        CHECK(energy[1][0] > 5 * energy[1][1], "WOBBLE varies cutoff (%d > %d)", energy[1][0], energy[1][1]);
+        kit_perform_fx(-1, KIT_PERFORM_WOBBLE, 0, 0);
+        kit_perform_fx(0, KIT_PERFORM_WOBBLE, 0, 127);
+        run(0, in, LEN);
+        {
+            int slow = 0;
+            for (i = 2150; i < 2550; i++) slow += abs(out[i]);
+            CHECK(slow > 4 * energy[1][1], "WOBBLE SPEED changes the cutoff cycle");
+        }
+        run(1, in, LEN);
+        CHECK(!memcmp(out, in, LEN * sizeof *in), "WOBBLE affects only its selected track");
+        kit_perform_fx(0, KIT_PERFORM_WOBBLE, 127, 0);
+        run(0, in, LEN);
+        CHECK(!memcmp(out, in, LEN * sizeof *in), "zero WOBBLE depth bypasses the filter");
+    }
+
     kit_track_sends(0, 0, 127, 0, 0);
     memset(in, 0, sizeof in);
     for (i = 0; i < FS; i++) in[i] = (i / 100) & 1 ? 8000 : -8000;

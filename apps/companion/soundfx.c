@@ -9,7 +9,8 @@ static const char *const fx_pair_text[][3] = {
     {"WAH", "X SWEEP", "Y SHARPNESS"},
     {"DUB", "X ECHO", "Y TIME"},
     {"SPACE", "X REVERB", "Y DARK"},
-    {"DIRT", "X DRIVE", "Y CRUSH"}
+    {"DIRT", "X DRIVE", "Y CRUSH"},
+    {"WOBBLE", "X SPEED", "Y DEPTH"}
 };
 
 #define FX_INK KIT_RGB(233, 236, 242)
@@ -55,8 +56,8 @@ static int fx_time_limit(const kit_fx_t *bus) { return bus->dly_type == 3 ? 127 
 
 static void fx_reset_pair(void)
 {
-    fx_xy[0] = 0;
-    fx_xy[1] = fx_pair == KIT_PERFORM_DIRT ? 0 : 64;
+    fx_xy[0] = fx_pair == KIT_PERFORM_WOBBLE ? 64 : 0;
+    fx_xy[1] = fx_pair == KIT_PERFORM_DIRT || fx_pair == KIT_PERFORM_WOBBLE ? 0 : 64;
     kit_perform_fx(-1, fx_pair, 0, 0);
 }
 

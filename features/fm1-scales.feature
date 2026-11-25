@@ -1251,6 +1251,20 @@ Feature: The effects bus (ST-69)
     Given PERFORM shows DUB
     When SELECT moves back one step
     Then WAH shows its SWEEP and SHARPNESS controls
+
+  @D-107 @ST-69 @auto @gate:unit
+  Scenario: Wobble sweeps cutoff on one track
+    Given WOBBLE is active on the selected track
+    When SPEED and DEPTH are changed
+    Then the cutoff cycles at that speed and bypasses at zero depth
+    And the other track keeps its original samples
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM opens WOBBLE after DIRT
+    Given PERFORM shows DIRT
+    When SELECT moves forward one step
+    Then WOBBLE shows its SPEED and DEPTH controls
+
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

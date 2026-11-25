@@ -494,8 +494,12 @@ press HOME). The list holds the sounds you picked in the audition, as their engi
 ### Effects
 
 Every sound brings its own effects, as it was made: its chorus, its echo and its reverb (and some a little drive), so
-it sounds like it did in the audition. The echo and the reverb ring on a moment after you let go. The FX pages to change
-a sound's effects come later.
+it sounds like it did in the audition. The echo and the reverb ring on a moment after you let go.
+
+On a Producer sound track, tap **FX** to step through PERFORM, DELAY, REVERB and DIRT. Hold **FX** to return to
+PERFORM and press **HOME** to return to playing. On PERFORM, **SELECT** changes the X/Y pair and **K3/K4** move
+its two controls. For WOBBLE, **K3** sets the cutoff sweep speed and **K4** sets its depth. Turn depth to zero to
+bypass the sweep. The sweep is temporary and applies to the selected track.
 
 ### How many notes at once
 

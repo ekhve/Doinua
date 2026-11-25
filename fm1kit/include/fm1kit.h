@@ -243,7 +243,7 @@ void kit_track_dirt_of(int track, kit_dirt_t *dirt);
 int kit_dirt_bits(int crush);
 int32_t kit_track_dirt_curve(int track, int32_t sample);   /* static Q15 transfer: drive, crush, mix */
 /* One live performance pair. X and Y are 0..127. A negative track clears the overlay. */
-enum { KIT_PERFORM_WAH, KIT_PERFORM_DUB, KIT_PERFORM_SPACE, KIT_PERFORM_DIRT, KIT_NPERFORM_FX };
+enum { KIT_PERFORM_WAH, KIT_PERFORM_DUB, KIT_PERFORM_SPACE, KIT_PERFORM_DIRT, KIT_PERFORM_WOBBLE, KIT_NPERFORM_FX };
 void kit_perform_fx(int track, int pair, int x, int y);
 enum { KIT_SFX_PFFT = 0, KIT_SFX_PLOP, KIT_SFX_NEIGH, KIT_SFX_GULL, KIT_SFX_BAA, KIT_SFX_CHIRP,
        KIT_SFX_WHISTLE, KIT_SFX_COUGH, KIT_SFX_SNEEZE, KIT_SFX_WOOF, KIT_SFX_MOO, KIT_SFX_HOOT, KIT_SFX_HOWL, KIT_NSFX };

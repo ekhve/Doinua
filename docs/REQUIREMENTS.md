@@ -513,6 +513,9 @@ implement all sounds".)
 | R-336 | While a DUB performance overlay is applied, the firmware shall retain the base delay settings. | D-105, ST-69, UC-07 | A | Draft | Performance pairs preserve the track settings |
 | R-337 | When WAH is set near 1 kHz, the firmware shall attenuate a 100 Hz test tone more than a 1 kHz tone. | D-106, ST-69, UC-07 | A | Draft | WAH emphasizes its sweep band |
 | R-338 | While the DUB pair shows, when SELECT is turned one step back, the companion app shall show WAH. | D-072, ST-69, UC-07 | A | Draft | PERFORM opens WAH one step before DUB |
+| R-339 | While WOBBLE DEPTH is above minimum, the firmware shall sweep the track's low-pass cutoff at the selected SPEED. | D-107, ST-69, UC-07 | A | Draft | Wobble sweeps cutoff on one track |
+| R-340 | While WOBBLE DEPTH is zero, the firmware shall pass the track's samples through the Wobble overlay unchanged. | D-107, ST-69, UC-07 | A | Draft | Wobble sweeps cutoff on one track |
+| R-341 | While the PERFORM DIRT pair shows, when SELECT is turned one step forward, the companion app shall show WOBBLE. | D-072, ST-69, UC-07 | A | Draft | PERFORM opens WOBBLE after DIRT |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 

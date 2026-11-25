@@ -154,6 +154,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-104 | API 42 exposes per-track DIRT crush, tone and mix alongside DRIVE. The existing drive remains the default. Edited dirt adds quantization, low-pass tone and a dry/wet blend before the track's sends. | D-072 and Sound Edit v3, issue #17. The factory lead used the existing soft clip and delay tone coefficients. |
 | D-105 | API 42 adds live DUB, SPACE and DIRT performance pairs. The overlay applies to one track. DUB temporarily overrides the shared delay's timing and feedback. The app retains the pair across page changes and clears the overlay on pair selection, when PERFORM takes focus on another track, or when leaving Producer. | D-072 and Sound Edit v3, issue #17. The factory lead chose to keep the base effect settings separate from the live overlay. |
 | D-106 | API 42 adds WAH as a track band-pass performance overlay. X sweeps the band and Y changes its sharpness. At minimum X the overlay bypasses the band-pass. | D-072 and Sound Edit v3, issue #17. The factory lead chose a normalized fixed-point state-variable filter. |
+| D-107 | API 42 adds WOBBLE as a track low-pass performance overlay. X sets the lab's LFO rate range and Y sets sweep depth and wet blend. Minimum depth bypasses the filter. | D-072 and Sound Edit v3, issue #17. The factory lead chose a sine-like cutoff sweep before the track sends that preserves native engine filter and LFO settings. |
 
 ## Known gaps (next)
 
