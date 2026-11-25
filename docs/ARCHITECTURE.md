@@ -167,7 +167,7 @@ plays). The song's key is read again when the song stops (D-034), so pages never
 
 On a pitched Producer track, Sound Edit and Sound FX are alternate panels over the current track page.
 The track's playing mode and transport stay active while either panel is open. Held-key releases still reach the
-instrument. The panel closes when the player changes the track template or enters a view that takes over the controls.
+instrument. The panel closes when the player switches tracks or enters a view that takes over the controls.
 
 ```mermaid
 stateDiagram-v2
