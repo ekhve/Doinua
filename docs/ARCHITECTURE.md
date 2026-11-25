@@ -163,6 +163,35 @@ stateDiagram-v2
 Orthogonal to these, the transport: **stopped**, **playing**, and **armed** (REC: the current track records while it
 plays). The song's key is read again when the song stops (D-034), so pages never move under the hands.
 
+### Producer sound panels
+
+On a pitched Producer track, Sound Edit and Sound FX are alternate panels over the current track page.
+The track's playing mode and transport stay active while either panel is open. Held-key releases still reach the
+instrument. The panel closes when the player changes the track template or enters a view that takes over the controls.
+
+```mermaid
+stateDiagram-v2
+    state "Track page" as Track
+    state "Sound Edit" as Edit
+    state "Sound FX" as FX
+    Track --> Edit: EDIT, ENV, or LFO
+    Track --> FX: FX
+    Edit --> FX: FX
+    FX --> Edit: EDIT, ENV, or LFO
+    Edit --> Track: HOME
+    FX --> Track: HOME
+```
+
+| Panel | Page order and controls |
+| --- | --- |
+| Sound Edit | EDIT steps through OSC, FILTER, F.ENV, A.ENV, VOICE, LFO and MOD. SELECT steps in either direction. Hold EDIT to return to OSC. ENV toggles the two envelope pages and LFO opens LFO directly. |
+| Sound FX | FX steps through PERFORM, DELAY, REVERB and DIRT. Hold FX to return to PERFORM. SELECT chooses the X/Y pair on PERFORM and changes pages elsewhere. |
+
+Plain EDIT enters the panel when the player releases it. When EDIT is used as a chord for recording or sequencing,
+the relevant sequencer interaction takes precedence. On Sound Edit FILTER, the meter reads the selected FMini or
+Juno-106 track before the shared effects. Both Juno envelope pages access its shared ADSR. In Sound FX, DELAY and
+REVERB expose shared effects plus the current track's send. DIRT acts on the current track.
+
 ### An interaction: one finger plays a chord while recording
 
 ```mermaid

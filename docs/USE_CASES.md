@@ -79,10 +79,11 @@ makes the unicorn jump a fence; a wrong one gives a soft bonk and the game waits
 doesn't need to.
 
 ### UC-07 — Just play
-**Stories:** ST-03, ST-04. **Actor:** Producer.
+**Stories:** ST-03, ST-04, ST-46, ST-69. **Actor:** Producer.
 
 Someone wants the FM-1 as a plain instrument: four tracks, any key, no help. They pick each track's sound, play and
-record freely, and use the help only when they want it.
+record freely, and use the help only when they want it. On a pitched track, they can open Sound Edit or FX to shape
+the sound while playing. HOME returns to the track.
 
 ### UC-08 — Name what I play (proposed, 2026-11-12: to confirm)
 **Stories:** ST-14. **Actor:** Producer, or anyone learning chords.
