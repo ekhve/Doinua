@@ -22,6 +22,10 @@ static kit_fx_t bus = { 0, 60, 40, 0, 40, 60, 90 };   /* fmini-1's defaults: STE
                                                        * FEEDBACK 60, MIX 90 */
 static uint8_t delay_tone = 127;               /* retain the delay type's original response until edited */
 static struct {
+    int track;
+    uint8_t drive, crush, darkness, delay, reverb, dub, time;
+} perform = {.track = -1};
+static struct {
     uint32_t cho_w, cho_ph, dly_w, dly_start, dly_ph;
     int32_t cho_lp, dly_lp, dly_hp, dl_q;
     uint32_t cho_left, dly_left;                /* samples to run on after the last sound in or out (a line's length) */
@@ -29,6 +33,7 @@ static struct {
 static int32_t cho_in[KIT_BLOCK], dly_in[KIT_BLOCK], rev_in[KIT_BLOCK];
 
 static int32_t clamp32(int32_t v, int32_t lo, int32_t hi) { return v < lo ? lo : v > hi ? hi : v; }
+static int32_t louder(int32_t a, int32_t b) { return a > b ? a : b; }
 /* a * b / 32768, rounded (b <= 32768: 32-bit, rule 8). Rounded, not floored: a loop's last -1 dies out instead of
  * going round for ever (a floor rounds every small negative down) */
 static int32_t mulq15(int32_t a, int32_t b) { return (a >> 15) * b + (((a & 32767) * b + 16384) >> 15); }
@@ -68,14 +73,40 @@ void kit_delay_tone(int tone)
 
 int kit_delay_tone_of(void) { return delay_tone; }
 
-static int32_t delay_samples(void)
+void kit_perform_fx(int t, int pair, int x, int y)
 {
-    uint32_t ms = 10u + (uint32_t)bus.dly_time * bus.dly_time * 1390u / 16129u;
+    uint32_t k = kit__lock();
+    x = (int)clamp32(x, 0, 127);
+    y = (int)clamp32(y, 0, 127);
+    perform.track = -1;
+    perform.drive = perform.crush = perform.darkness = perform.delay = perform.reverb = perform.dub = 0;
+    if (t >= 0 && t < KIT_NTRACKS && pair >= 0 && pair < KIT_NPERFORM_FX) {
+        if (pair == KIT_PERFORM_DIRT && (x || y)) {
+            perform.drive = (uint8_t)x;
+            perform.crush = (uint8_t)y;
+            perform.track = t;
+        } else if (x >= 2 && pair == KIT_PERFORM_DUB) {
+            perform.delay = (uint8_t)(x * 4 / 5);
+            perform.dub = 1;
+            perform.time = (uint8_t)y;
+            perform.track = t;
+        } else if (x >= 2 && pair == KIT_PERFORM_SPACE) {
+            perform.reverb = (uint8_t)x;
+            perform.darkness = (uint8_t)(y * 85 / 100);
+            perform.track = t;
+        }
+    }
+    kit__unlock(k);
+}
+
+static int32_t delay_samples(int time)
+{
+    uint32_t ms = 10u + (uint32_t)time * time * 1390u / 16129u;
     if (bus.dly_type == 3u) ms = 31u + ms / 10u;
     return clamp32((int32_t)(ms * 441u / 10u), 2, (int32_t)DLY_LEN - 4);
 }
 
-int kit_delay_ms_of(void) { return (delay_samples() * 10 + 220) / 441; }
+int kit_delay_ms_of(void) { return (delay_samples(bus.dly_time) * 10 + 220) / 441; }
 
 static int32_t tone_coefficient(int tone)
 {
@@ -108,7 +139,7 @@ void kit_track_dirt_of(int t, kit_dirt_t *f)
 int kit__fx_sends(int t)
 {
     return t >= 0 && t < KIT_NTRACKS &&
-           (snd[t][0] | snd[t][1] | snd[t][2] | snd[t][3] | dirt[t].crush | dirt[t].darkness);
+           (snd[t][0] | snd[t][1] | snd[t][2] | snd[t][3] | dirt[t].crush | dirt[t].darkness | (perform.track == t));
 }
 
 void kit__fx_begin(void)                        /* a block: the buses' inputs empty */
@@ -150,12 +181,12 @@ int32_t kit_track_dirt_curve(int t, int32_t sample)
     return sample + mulq15(shaped - sample, wet);
 }
 
-static void fx_dirt_block(int t, int32_t *x, int32_t drive)
+static void fx_dirt_block(int t, int32_t *x, int32_t drive, int32_t crush, int32_t darkness)
 {
     int32_t wet = (127 - dirt[t].dry) * 32768 / 127;
     int32_t gain = drive ? 256 + drive * 8 : 0;
-    int32_t mask = (1 << (16 - kit_dirt_bits(dirt[t].crush))) - 1;
-    int32_t tone = dirt[t].darkness ? tone_coefficient(127 - dirt[t].darkness) : 0;
+    int32_t mask = (1 << (16 - kit_dirt_bits(crush))) - 1;
+    int32_t tone = darkness ? tone_coefficient(127 - darkness) : 0;
     int i;
     if (!wet) return;
     for (i = 0; i < KIT_BLOCK; i++) {
@@ -174,9 +205,19 @@ static void fx_dirt_block(int t, int32_t *x, int32_t drive)
 void kit__fx_track(int t, int32_t *x, int32_t *mix)
 {
     int i;
-    int32_t d = snd[t][0], c = snd[t][1] * 258, l = snd[t][2] * 258, r = snd[t][3] * 258;
-    if (dirt[t].crush || dirt[t].darkness || dirt[t].dry) {
-        fx_dirt_block(t, x, d);
+    int32_t d = snd[t][0], c = snd[t][1] * 258, l = snd[t][2], r = snd[t][3];
+    int32_t crush = dirt[t].crush, darkness = dirt[t].darkness;
+    if (perform.track == t) {
+        d = louder(d, perform.drive);
+        l = louder(l, perform.delay);
+        r = louder(r, perform.reverb);
+        crush = louder(crush, perform.crush);
+        darkness = louder(darkness, perform.darkness);
+    }
+    l *= 258;
+    r *= 258;
+    if (crush || darkness || dirt[t].dry) {
+        fx_dirt_block(t, x, d, crush, darkness);
     } else if (d) {
         int32_t g = 256 + d * 8;                /* Q8: 1x .. 5x into the clip */
         for (i = 0; i < KIT_BLOCK; i++) x[i] = fx_drive(x[i], g);
@@ -242,9 +283,14 @@ void kit__fx_buses(int32_t *mix)
     if (dly || fx.dly_left) {                     /* DELAY: ANALOG, DIGITAL, TAPE, SLAP (fmini-1's, mono) */
         uint32_t ty = bus.dly_type;
         int32_t tgt, fb = (bus.dly_fb > 120 ? 120 : bus.dly_fb) * 230, dmix = bus.dly_mix * 258, kc, loud = 0;
+        int time = bus.dly_time;
         int edited_tone = delay_tone < 127;
+        if (perform.dub) {
+            fb = louder(fb, 70 * 230);
+            time = ty == 3u ? perform.time : perform.time * 93 / 127;
+        }
         if (ty == 3u) fb /= 3;                    /* SLAP: one short echo, a repeat or two */
-        tgt = delay_samples() << 8;
+        tgt = delay_samples(time) << 8;
         if (!fx.dly_left) { fx.dly_start = fx.dly_w; fx.dly_lp = fx.dly_hp = 0; fx.dl_q = tgt; }
         fx.dl_q += clamp32(tgt - fx.dl_q, -2048, 2048);   /* a time change bends, as tape */
         kc = ty == 1u ? 26000 : ty == 2u ? 14000 : 11500;  /* the loop's low-pass: DIGITAL ~11 kHz, TAPE ~3.4, ANALOG ~2.6 */

@@ -1226,6 +1226,19 @@ Feature: The effects bus (ST-69)
     And the crush amount is raised
     Then the DIRT screen shows the altered transfer curve
     And the track still sounds with full mix and with zero mix
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM switches live effect pairs
+    Given PERFORM is open with DUB selected
+    When X and Y are turned and a note is played
+    Then the note echoes
+    And SELECT steps through SPACE and DIRT
+
+  @D-105 @ST-69 @auto @gate:unit
+  Scenario: Performance pairs preserve the track settings
+    Given a track with its original effects
+    When DUB, SPACE, and DIRT are applied in turn
+    Then their audible effects are added while the base settings stay available
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus

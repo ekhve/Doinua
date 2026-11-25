@@ -123,6 +123,34 @@ int main(void)
         kit_track_dirt(0, &f);
     }
 
+    {
+        kit_fx_t base;
+        kit_dirt_t base_dirt;
+        int old_time = kit_delay_ms_of();
+        kit_track_sends(0, 0, 0, 0, 0);
+        memset(in, 0, sizeof in);
+        in[100] = 22000;
+        kit_perform_fx(0, KIT_PERFORM_DUB, 127, 0);
+        CHECK(kit__fx_sends(0) && !kit__fx_sends(1), "DUB routes the selected track only");
+        run(0, in, N);
+        CHECK(out[541] > 0 && kit_delay_ms_of() == old_time, "DUB overlays a ten ms echo without changing TIME");
+        kit_fx_bus_of(&base);
+        CHECK(base.dly_time == 64 && base.dly_fb == 60 && !kit_track_send_of(0, KIT_SEND_DELAY), "DUB preserves base delay settings");
+        kit_perform_fx(0, KIT_PERFORM_SPACE, 127, 0);
+        kit__fx_begin();
+        in[0] = 8000;
+        kit__fx_track(0, in, out);
+        CHECK(kit__fx_rev_in()[0] > 7000 && !kit_track_send_of(0, KIT_SEND_REVERB), "SPACE overlays reverb send");
+        kit_perform_fx(0, KIT_PERFORM_DIRT, 0, 127);
+        kit__fx_begin();
+        in[0] = 12000;
+        kit__fx_track(0, in, out);
+        kit_track_dirt_of(0, &base_dirt);
+        CHECK(in[0] == 8192 && !base_dirt.crush, "DIRT overlays crush without changing the track setting");
+        kit_perform_fx(-1, KIT_PERFORM_DIRT, 0, 0);
+        CHECK(!kit__fx_sends(0), "clearing the performance overlay restores base routing");
+    }
+
     kit_track_sends(0, 0, 127, 0, 0);
     memset(in, 0, sizeof in);
     for (i = 0; i < FS; i++) in[i] = (i / 100) & 1 ? 8000 : -8000;

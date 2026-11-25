@@ -4,6 +4,12 @@ enum { FXP_NONE, FXP_PERFORM, FXP_DELAY, FXP_REVERB, FXP_DIRT, FXP_COUNT };
 static int fx_page, fx_pressed, fx_long, fx_bend_track = -1;
 static uint32_t fx_press_at, fx_bend_at;
 static int fx_bend[KIT_NTRACKS], fx_mod[KIT_NTRACKS];
+static int fx_pair, fx_pair_track = -1, fx_xy[2] = {0, 64};
+static const char *const fx_pair_text[][3] = {
+    {"DUB", "X ECHO", "Y TIME"},
+    {"SPACE", "X REVERB", "Y DARK"},
+    {"DIRT", "X DRIVE", "Y CRUSH"}
+};
 
 #define FX_INK KIT_RGB(233, 236, 242)
 #define FX_BG KIT_RGB(14, 16, 23)
@@ -45,6 +51,23 @@ static int sound_fx_available(void)
 }
 
 static int fx_time_limit(const kit_fx_t *bus) { return bus->dly_type == 3 ? 127 : 93; }
+
+static void fx_reset_pair(void)
+{
+    fx_xy[0] = 0;
+    fx_xy[1] = fx_pair == KIT_PERFORM_DIRT ? 0 : 64;
+    kit_perform_fx(-1, fx_pair, 0, 0);
+}
+
+static void fx_show_page(int page)
+{
+    fx_page = page;
+    if (page == FXP_PERFORM && fx_pair_track != track) {
+        fx_pair_track = track;
+        fx_reset_pair();
+    }
+    dirty = 1;
+}
 
 static void fx_adjust_send(int which, int delta)
 {
@@ -132,9 +155,7 @@ static int sound_fx_event(const kit_event_t *e)
     if (e->id == KIT_BTN_FX && e->type == KIT_EV_BTN_UP && fx_pressed) {
         fx_pressed = 0;
         if (sound_fx_available() && !fx_long) {
-            fx_page++;
-            if (fx_page == FXP_COUNT) fx_page = FXP_PERFORM;
-            dirty = 1;
+            fx_show_page(fx_page + 1 == FXP_COUNT ? FXP_PERFORM : fx_page + 1);
         }
         return 1;
     }
@@ -148,10 +169,13 @@ static int sound_fx_event(const kit_event_t *e)
         return 0;
     }
     if (e->id == KIT_ENC_SELECT) {
-        if (fx_page != FXP_PERFORM) {
+        if (fx_page == FXP_PERFORM) {
+            wrap(&fx_pair, e->delta, KIT_NPERFORM_FX);
+            fx_reset_pair();
+        } else {
             int page = fx_page - FXP_PERFORM;
             wrap(&page, e->delta, FXP_COUNT - FXP_PERFORM);
-            fx_page = page + FXP_PERFORM;
+            fx_show_page(page + FXP_PERFORM);
         }
         dirty = 1;
         return 1;
@@ -176,8 +200,12 @@ static int sound_fx_event(const kit_event_t *e)
         clampi(&value, delta, 0, 127);
         sound_fx_mod(track, value);
     } else {
-        /* DUB uses X for the track's echo send and Y for the bus's delay time. */
-        fx_adjust_delay(knob == 2 ? 2 : 0, delta);
+        if (fx_pair_track != track) {
+            fx_pair_track = track;
+            fx_reset_pair();
+        }
+        clampi(&fx_xy[knob - 2], delta, 0, 127);
+        kit_perform_fx(track, fx_pair, fx_xy[0], fx_xy[1]);
     }
     dirty = 1;
     return 1;
@@ -185,6 +213,10 @@ static int sound_fx_event(const kit_event_t *e)
 
 static void sound_fx_frame(uint32_t now)
 {
+    if (mode != MODE_PRODUCER && fx_pair_track >= 0) {
+        fx_pair_track = -1;
+        fx_reset_pair();
+    }
     if (!sound_fx_available()) {
         sound_fx_close();
         fx_pressed = 0;
@@ -192,8 +224,7 @@ static void sound_fx_frame(uint32_t now)
     }
     if (fx_pressed && !fx_long && now - fx_press_at >= HOLD_MS) {
         fx_long = 1;
-        fx_page = FXP_PERFORM;
-        dirty = 1;
+        fx_show_page(FXP_PERFORM);
     }
     if (fx_bend_track >= 0 && now - fx_bend_at >= 180u) {
         int t = fx_bend_track;
@@ -247,9 +278,10 @@ static void fx_draw_perform(int bend, int mod, int x, int y)
     kit_text(8, 72, "MOD", KIT_FONT_TINY, KIT_ALIGN_LEFT, FX_DIM);
     kit_rect(8, 86, 90, 8, FX_GRID);
     if (mod) kit_rect(8, 86, mod * 90 / 100, 8, KIT_RGB(255, 209, 102));
-    kit_text(8, 106, "DUB", KIT_FONT_SMALL, KIT_ALIGN_LEFT, FX_PINK);
-    kit_text(8, 124, "X ECHO", KIT_FONT_TINY, KIT_ALIGN_LEFT, FX_CYAN);
-    kit_text(8, 136, "Y TIME", KIT_FONT_TINY, KIT_ALIGN_LEFT, KIT_RGB(199, 155, 255));
+    kit_text(8, 106, fx_pair_text[fx_pair][0], KIT_FONT_SMALL, KIT_ALIGN_LEFT, FX_PINK);
+    kit_text(8, 124, fx_pair_text[fx_pair][1], KIT_FONT_TINY, KIT_ALIGN_LEFT, FX_CYAN);
+    kit_text(8, 136, fx_pair_text[fx_pair][2], KIT_FONT_TINY, KIT_ALIGN_LEFT, KIT_RGB(199, 155, 255));
+    kit_text(8, 148, "SELECT pair", KIT_FONT_TINY, KIT_ALIGN_LEFT, FX_DIM);
     kit_rect_outline(112, 34, 122, 122, 1, FX_GRID);
     kit_line(173, 35, 173, 154, FX_GRID);
     kit_line(113, 95, 232, 95, FX_GRID);
@@ -314,7 +346,8 @@ static void sound_fx_draw(void)
     if (perform) {
         v[0] = fx_percent(fx_bend[track] + 8192, 16383);
         v[1] = fx_percent(fx_mod[track], 127);
-        v[3] = fx_percent(ms, 743);
+        v[2] = fx_percent(fx_xy[0], 127);
+        v[3] = fx_percent(fx_xy[1], 127);
     } else if (reverb) {
         v[0] = fx_percent(room.size, 127);
         v[1] = fx_percent(kit_track_send_of(track, KIT_SEND_REVERB), 127);
