@@ -223,6 +223,10 @@ typedef struct {
     uint32_t plen, ppos, pinc;
     int32_t penv;
     uint16_t pdec;
+    /* the pad's shape (API 45): its level (Q15), the outer envelope in samples, its group, its reverb send (Q15) */
+    int32_t oamp, rsend, olast, orelv;
+    uint32_t oatt, ohold, odec, opos, orel;     /* orel: where the release started (0: not yet) */
+    uint8_t group, okey, ofull;
 } dvoice_t;
 static dvoice_t dv[KIT_NVOICES];
 static const uint16_t METAL_R[6] = { 128, 192, 266, 348, 435, 525 };   /* 2, 3, 4.16, 5.43, 6.79, 8.21 x 64 */
@@ -302,6 +306,83 @@ static void drum_start(int i, int kit, int pad, int tune, int decay)   /* decay:
     d->choke = p.slot == SL_HATO;
 }
 
+static int drum_is_hat(int key) { int s = pad_of(0, key).slot; return s == SL_HATC || s == SL_HATO; }
+static uint32_t ms_smp(uint32_t ms) { return ms * (KIT_FS / 1000u); }
+/* the pad's shape at its start: level and velocity (vel_sens 0..10), attack, hold (or FULL, KEY) and decay, group, send */
+static void drum_shape(int i, int level, int vel_sens, int vel, int att, int hold, int dec, int group, int reverb)
+{
+    dvoice_t *d = &dv[i];
+    int32_t follow = 10 * 127 - vel_sens * (127 - vel);   /* x/1270 of the level */
+    d->oamp = (int32_t)((uint32_t)level * 4096u * (uint32_t)follow / 1270u);   /* level 8: 32768 at full velocity */
+    d->oatt = ms_smp((uint32_t)att);
+    d->ofull = hold == KIT_DRUM_HOLD_FULL;
+    d->okey = hold == KIT_DRUM_HOLD_KEY;
+    d->ohold = d->ofull || d->okey ? 0 : ms_smp((uint32_t)hold);
+    d->odec = ms_smp((uint32_t)dec);
+    if (d->odec < 1) d->odec = 1;
+    d->opos = 0;
+    d->orel = 0;
+    d->olast = d->oatt ? 0 : 32767;
+    d->group = (uint8_t)group;
+    d->rsend = reverb * 258;
+}
+static void drum_cut(int i)                     /* a mute group stops it: a 5 ms fade from where it is */
+{
+    dvoice_t *d = &dv[i];
+    d->ofull = d->okey = 0;
+    d->orel = d->opos ? d->opos : 1;
+    d->orelv = d->olast;
+    d->odec = ms_smp(5);
+}
+/* the outer envelope at sample p, Q15 (0..32767); -1: it is over. 32-bit only (no 64-bit multiplies, CLAUDE.md rule 8) */
+static int32_t drum_env(dvoice_t *d, uint32_t p, int gate)
+{
+    uint32_t r;
+    if (d->orel) {                              /* released (HOLD key let go, or cut by its group): orelv down to 0 */
+        r = p - d->orel;
+        if (r >= d->odec) return -1;
+        return d->orelv - (int32_t)((uint32_t)d->orelv * (r >> 4) / ((d->odec >> 4) + 1u));
+    }
+    if (p < d->oatt) return (int32_t)(p * 32767u / d->oatt);
+    if (d->ofull) return 32767;
+    if (d->okey) {
+        if (gate) return 32767;
+        d->orel = p ? p : 1;
+        d->orelv = 32767;
+        return 32767;
+    }
+    p -= d->oatt;
+    if (p < d->ohold) return 32767;
+    p -= d->ohold;
+    if (p >= d->odec) return -1;
+    return 32767 - (int32_t)(32767u * (p >> 4) / ((d->odec >> 4) + 1u));
+}
+static int drum_render(int i, int32_t *mix, int32_t amp);
+/* voice i: a block through its pad's level, envelope and reverb send, into dst and rev; 0 when it has gone silent */
+static int drum_play(int i, int32_t *dst, int32_t *rev)
+{
+    static int32_t tmp[KIT_BLOCK];
+    dvoice_t *d = &dv[i];
+    int j, alive;
+    int32_t e0 = d->olast, e1, de, e;
+    for (j = 0; j < KIT_BLOCK; j++) tmp[j] = 0;
+    alive = drum_render(i, tmp, d->oamp > 32767 ? 32767 : d->oamp);
+    e1 = drum_env(d, d->opos + KIT_BLOCK, vs[i].gate);
+    if (e1 < 0) { e1 = 0; alive = 0; }
+    d->olast = e1;
+    de = (e1 - e0) / KIT_BLOCK;
+    e = e0;
+    for (j = 0; j < KIT_BLOCK; j++) {
+        int32_t s = ((tmp[j] >> 1) * (e >> 1)) >> 13;
+        if (d->oamp > 32768) s += s >> 2;     /* levels 9 and 10: louder than the kit plays it */
+        dst[j] += s;
+        if (d->rsend) rev[j] += ((s >> 1) * (d->rsend >> 1)) >> 13;
+        e += de;
+    }
+    d->opos += KIT_BLOCK;
+    return alive;
+}
+
 /* one block of voice i into mix; returns 0 when it has gone silent */
 static int drum_render(int i, int32_t *mix, int32_t amp)
 {
@@ -314,6 +395,7 @@ static int drum_render(int i, int32_t *mix, int32_t amp)
         for (j = 0; j < KIT_BLOCK; j++) {
             uint32_t at = d->ppos >> 16, f = d->ppos & 0xFFFFu;
             int32_t a, b, s;
+            if (d->okey && vs[i].gate && at + 1 >= d->plen * 92u / 100u) { d->ppos = (d->plen * 55u / 100u) << 16; continue; }   /* HOLD key: its end loops */
             if (at + 1 >= d->plen) { d->pcm = 0; break; }
             a = d->pcm[at]; b = d->pcm[at + 1];
             s = a + (((b - a) * (int32_t)(f >> 1)) >> 15);
