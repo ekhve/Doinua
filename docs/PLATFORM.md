@@ -166,6 +166,7 @@ factory can require the device's screen to equal the host's pixel for pixel.
 | D-116 | F.ENV and A.ENV show the active contour levels and LFO shows the running phase of the selected FMini track. The newest sounding voice supplies the envelope readings. Idle screens keep their previous appearance. | D-072 and Sound Edit v3, issue #17. The factory lead chose to sample the actual engine state from the app rather than animate from key timers. |
 | D-117 | EDIT FILTER and PERFORM FILTER share the Juno-106's native cutoff and resonance. EDIT also reaches envelope amount and key tracking. The spectrum includes Juno's native chorus and precedes the shared effects. | D-072 and Sound Edit v3, issue #17. Uses the FM-106 setters and nominal cutoff ladder coefficients. |
 | D-118 | API 43 maps F.ENV and A.ENV to the Juno-106's shared ADSR. Both show its native shape and the newest active voice's live envelope. The original VCA mode stays in effect. | D-072 and Sound Edit v3, issue #17. The shared label reflects the native envelope topology. |
+| D-121 | Sampler (ST-95, issue #22): **three kits of 7 s** (MY KIT 1-3, 16 pads each, Felucca's sample-slot size, format and flash place) and **two kits at once** (another track can take a SAMPLES template playing a MY KIT; kits play from flash, the 12 shared voices are the limit). Still open: REC held + a key, and per-pad extras (reverse, choke, loop while held); the Sampler Lab v2 shows both for the owner to study. | The owner, 2026-11-26. No firmware until the open two are answered. |
 
 ## Known gaps (next)
 

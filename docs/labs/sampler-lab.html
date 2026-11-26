@@ -62,7 +62,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 
 <div class="wrap">
   <h1>Sampler Lab</h1>
-  <p class="lead">Version 1, from your answers of 2026-11-20. Your <b>phone</b> plays into the FM-1 over USB; on the <b>DRUMS</b> track you record it, chop it onto the pads, shape each pad and save the pads as one of your own kits. Press <b>Start sound</b>. An example is loaded: a take of the drum break, already chopped into <b>MY KIT 1</b>. Recordings go through the same 4-bit ADPCM the FM-1 would store, so what you hear is the real quality.</p>
+  <p class="lead">Version 2 (2026-11-26): kits and two kits at once decided; the REC + key scenario and the per-pad extras added for you to study. Version 1 came from your answers of 2026-11-20. Your <b>phone</b> plays into the FM-1 over USB; on the <b>DRUMS</b> track you record it, chop it onto the pads, shape each pad and save the pads as one of your own kits. Press <b>Start sound</b>. An example is loaded: a take of the drum break, already chopped into <b>MY KIT 1</b>. Recordings go through the same 4-bit ADPCM the FM-1 would store, so what you hear is the real quality.</p>
 
   <div class="phone" role="group" aria-label="Your phone, playing into the FM-1 over USB">
     <button class="start" id="start">Start sound</button>
@@ -126,12 +126,58 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
       <div class="drop" id="drop">Drop an audio file here, or <label style="text-decoration:underline;cursor:pointer">choose one<input type="file" id="file" accept="audio/*" hidden></label></div>
       <div id="loadInfo"></div>
     </div>
-    <div class="card q"><h3>Questions for you</h3><ol>
-      <li><b>Three kits of 7 s or four of 5 s?</b> I recommend <b>three of 7 s</b>: the same size and format as Felucca's sample slots in the same place, so a kit survives a firmware switch and Felucca's editor can fill it. Four kits would make each 5.3 s, and only our own loader would work.</li>
-      <li><b>REC held + a key</b> on the DRUMS page to record one pad: keep it? (It is the fastest way to a kick, and it never touches your takes.)</li>
-      <li><b>Two kits at once (the mini-MPC):</b> let another track (CHORDS or MELODY) switch to a SAMPLES template that plays a second MY KIT on its white keys. Kits cost no RAM; the limit is voices (12 shared). Want it?</li>
-      <li><b>More per pad?</b> Today: tune, attack, decay, level. Candidates: <i>reverse</i>, <i>choke</i> (a closed hat stops the open one), <i>loop while held</i>. Which ones?</li>
+    <div class="card q"><h3>Decided (the owner, 26 November 2026)</h3><ol>
+      <li><b>Three kits of 7 s</b> (MY KIT 1, 2, 3; 16 pads each on the white keys), Felucca's own sample-slot size and
+      format in the same flash place: a kit survives a switch to Felucca and back, and Felucca's editor can fill it.</li>
+      <li><b>Two kits at once</b> (the mini-MPC): any other track can take a <b>SAMPLES</b> template that plays a MY KIT on
+      its white keys (drums on DRUMS, vocal chops on MELODY, say). Kits play straight from flash: no RAM; the 12 shared
+      voices are the limit.</li>
+    </ol><h3>Open: for you to study</h3><ol>
+      <li><b>REC held + a key</b> on the DRUMS page: the usage scenario is in <a href="#scen">"Recording one pad, step by
+      step"</a> below. Keep it, change it, or drop it?</li>
+      <li><b>More per pad</b>: try <i>reverse</i>, <i>choke</i> and <i>loop while held</i> on any pad in <a href="#cand">"Per-pad
+      extras: try them"</a> below. Which ones?</li>
     </ol></div>
+    <div class="card" id="scen"><h3>Recording one pad, step by step (REC held + a key)</h3>
+      <p>The fastest way from a sound on your phone to a pad, without the TAKE and CHOP pages. You are making a beat on the
+      DRUMS page with MY KIT 2 and want your own kick on the first white key.</p>
+      <ol>
+        <li><b>Get the sound ready.</b> The phone is plugged in by USB and GLO · USB AUDIO · IN is <i>hear</i>, so you hear the
+        phone through the FM-1. Find the kick on the phone; don't play it yet.</li>
+        <li><b>Hold REC.</b> Nothing records yet. The screen's top line turns red and reads <i>REC + KEY: RECORD A PAD</i>; the
+        white keys light (the 16 pads), the empty ones dim. (A short tap on REC still does what it always did: arms the
+        song's recording. Only <b>holding</b> it and then pressing a key records a pad.)</li>
+        <li><b>Still holding REC, hold the white key</b> (C3, PAD 1). Recording starts at once; the key blinks red and a
+        level meter and a counter (0.0 → 2.0 s) show on the screen.</li>
+        <li><b>Play the kick on the phone</b>, while both are held.</li>
+        <li><b>Let go of the key</b> (or the 2 s run out). Recording stops. The silence before the hit is cut, so the pad
+        starts right on the kick. The FM-1 plays the new pad once and shows <i>PAD 1 · C3: 0.42 s · SAVE held keeps it</i>.</li>
+        <li><b>Let go of REC.</b> Play C3: your kick. Not happy? Do it again: it replaces the pad.</li>
+        <li><b>Keep it:</b> hold SAVE (on the KIT page, or SAVE held from DRUMS): MY KIT 2 is written to the flash. Until then
+        the pad is in RAM only and is gone at power-off, as an unsaved song.</li>
+      </ol>
+      <p><b>What it never does:</b> it does not touch your takes (TAKE and CHOP stay as they were), nor the song's notes (no
+      note goes into the sequence while REC is held). <b>When it says no:</b> with USB IN <i>off</i> (<i>"USB IN is off:
+      GLO"</i>); with the kit full (<i>"MY KIT 2 is full (7 s)"</i>); on the factory kit, which is fixed.</p>
+      <p><b>To decide:</b> keep it as it is; or make it a separate mode (REC held on DRUMS only arms pad recording, the next
+      key press records), which is easier to explain to a child but one step longer; or drop it and record only through
+      TAKE → CHOP.</p>
+    </div>
+    <div class="card" id="cand"><h3>Per-pad extras: try them</h3>
+      <p>Press a key to choose a pad (its name shows here), then switch the extras on and play it. Each would be a second row
+      on the PAD page on the FM-1 (SELECT moves to it: K1 REVERSE, K2 CHOKE, K3 LOOP), stored with the kit (a byte a pad:
+      no flash or RAM to speak of, and no extra CPU).</p>
+      <p id="candPad" style="font-weight:700">No pad chosen yet</p>
+      <p><label><input type="checkbox" id="cRev"> <b>Reverse</b>: the sample plays backwards (a reversed cymbal swells into the
+      beat). For: swells, risers, special effects. Costs nothing.</label></p>
+      <p><label><b>Choke group</b> <select id="cChoke"><option value="0">none</option><option value="1">A</option><option value="2">B</option></select>:
+      pads in the same group cut each other off, as a closed hat stops the open one on a drum machine. For: hats, and any
+      two sounds that should not ring together. Try: on FACTORY 808 put PAD 3 (closed hat) and PAD 4 (open hat) in group A,
+      then play the open hat and the closed one right after.</label></p>
+      <p><label><input type="checkbox" id="cLoop"> <b>Loop while held</b>: the sample repeats while you hold the key and stops
+      when you let go (try it on the chord stab, or a long take). For: pads, drones, held vocal notes. In the firmware it
+      also needs a loop start and end on CHOP (here: the whole sample loops), so it is the most work of the three.</label></p>
+    </div>
   </div>
 </div>
 
@@ -186,7 +232,7 @@ function adpcm(x) {
 SOURCES.forEach(s => s[1].forEach((v, i, a) => a[i] = Math.max(-1, Math.min(1, v))));
 
 // ------------------------------------------------------------------ the model
-const pad = (d) => ({ d, tune: 0, att: 0, dec: 9, lvl: 8 });          // dec index into DECS (9 = none), lvl 0..10
+const pad = (d) => ({ d, tune: 0, att: 0, dec: 9, lvl: 8, rev: false, choke: 0, loop: false });   // rev, choke (0 none, 1 A, 2 B), loop: the candidates          // dec index into DECS (9 = none), lvl 0..10
 const DECS = [.02, .04, .07, .1, .15, .25, .4, .7, 1.2, Infinity];
 const ATTS = [0, 2, 5, 10, 20, 40, 80, 150];
 const FACT = [kick(), snare(), hat(.035), hat(.18), clap(), tom(), rim(), shaker()].map(adpcm);
@@ -231,14 +277,19 @@ function startAudio() {
   $("start").textContent = "Sound on"; routePhone();
 }
 function buf(d) { const b = ac.createBuffer(1, Math.max(1, d.length), SR); b.copyToChannel(d, 0); return b; }
+const voices = new Map(), choked = { 1: [], 2: [] };   // key -> looping voice; choke group -> its sounding voices
 function playPad(p, k) {
   if (!ac || !p) return; const s = ac.createBufferSource(), g = ac.createGain(), T = ac.currentTime + .005;
-  s.buffer = buf(p.d); s.playbackRate.value = Math.pow(2, p.tune / 12);
+  s.buffer = buf(p.rev ? p.d.slice().reverse() : p.d); s.playbackRate.value = Math.pow(2, p.tune / 12);
+  if (p.choke) { choked[p.choke].forEach(v => { try { v.g.gain.setTargetAtTime(0, T, .008); v.s.stop(T + .05); } catch (e) {} }); choked[p.choke] = []; }
+  if (p.loop && k !== undefined) { s.loop = true; voices.set(k, { s, g }); }
   const lv = p.lvl / 10, at = ATTS[p.att] / 1000, dc = DECS[p.dec];
   g.gain.setValueAtTime(at ? 0 : lv, T); if (at) g.gain.linearRampToValueAtTime(lv, T + at);
   if (isFinite(dc)) g.gain.setTargetAtTime(0, T + at, dc / 3);
   s.connect(g); g.connect(master); s.start(T);
+  if (p.choke) choked[p.choke].push({ s, g });
 }
+function stopLoop(k) { const v = voices.get(k); if (!v || !ac) return; const T = ac.currentTime; v.g.gain.setTargetAtTime(0, T, .02); v.s.stop(T + .15); voices.delete(k); }
 function playRaw(d, s, e) { if (!ac) return; const n = ac.createBufferSource(); n.buffer = buf(d.slice(s, e)); n.connect(master); n.start(); st.prev = { t0: ac.currentTime, s, e }; n.onended = () => st.prev = null; }
 function routePhone() { if (!ac) return; const hear = st.usb.in === 1 || (st.usb.in === 2 && st.rec); phoneGain.gain.setTargetAtTime(st.usb.in === 0 ? 0 : hear ? Math.pow(10, st.usb.lvl / 20) : 0, ac.currentTime, .01); }
 function phoneData() { return SOURCES[st.phone.src][1]; }
@@ -315,10 +366,10 @@ function press(i) {
   if (st.editHeld && st.page !== "drums" && !kit().fixed) { st.editUsed = true; if (kit().pads[p]) { kit().pads[p] = null; kit().dirty = true; flash(padName(p) + " cleared"); } return; }
   if (st.page === "drums" && st.recHeld) { quickStart(p); return; }
   if (st.page === "chop" && st.recOn) { assign(p); return; }
-  st.padSel = p; playPad(kit().pads[p]);
+  st.padSel = p; playPad(kit().pads[p], i); showCand();
   if (!kit().pads[p] && st.page !== "kit") flash(padName(p) + " is empty");
 }
-function release(i) { st.held.delete(i); if (st.quick && padOfKey(i) === st.quick.p) quickStop(); }
+function release(i) { st.held.delete(i); stopLoop(i); if (st.quick && padOfKey(i) === st.quick.p) quickStop(); }
 function knob(k, d) {
   startAudio(); const P = st.page;
   if (P === "drums") { if (k === 0) selKit(d); return; }
@@ -612,5 +663,15 @@ function frame() {
   requestAnimationFrame(frame);
 }
 frame();
+// the per-pad extras card
+function showCand() {
+  const p = kit().pads[st.padSel];
+  $("candPad").textContent = p ? padName(st.padSel) + " (" + kit().name + ")" : padName(st.padSel) + " is empty";
+  $("cRev").checked = !!(p && p.rev); $("cChoke").value = p ? p.choke : 0; $("cLoop").checked = !!(p && p.loop);
+}
+const setCand = (f) => () => { const p = kit().pads[st.padSel]; if (!p) { flash(padName(st.padSel) + " is empty"); return; } f(p); playPad(p); };
+$("cRev").onchange = setCand(p => p.rev = $("cRev").checked);
+$("cChoke").onchange = setCand(p => p.choke = +$("cChoke").value);
+$("cLoop").onchange = setCand(p => p.loop = $("cLoop").checked);
 })();
 </script>

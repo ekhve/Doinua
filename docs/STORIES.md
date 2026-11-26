@@ -100,6 +100,7 @@ requirements (`REQUIREMENTS.md`). On the board, a story is raised as a Story iss
 | ST-90 | As a producer, I want punch-in effects (stutter, filter, reverb and delay throws, crush) on all tracks or on one, recorded with the song, so that I perform a beat. | FX: punch-in on PERFORM | UC-10, UC-20 | backlog, drafts for the owner (REQUIREMENTS-PLANNED.md) |
 | ST-91 | As anyone, I want GLO held to explain the page I am on, and every page to show the sequence REC records into, so that the screens can stay simple without leaving me lost. | help and the top line | all | backlog, drafts for the owner (REQUIREMENTS-PLANNED.md) |
 | ST-93 | As a player, I want Unicorn Jump and the Night Train to sound softer so their music and effects are less strident. | November work order, D-100 | UC-18 | in progress |
+| ST-95 | As a producer, I want to record sounds from my phone, chop them onto the pads and keep them as my own kits (three of 7 s), and play a second kit on another track, so that I make beats from my own sounds. | sampler (`docs/labs/sampler-lab.html`), D-121 | UC-10 | lab: two choices open (issue #22) |
 
 **Cross-track hints (ST-12, the owner, 2026-11-08).** What one track has recorded helps the next: recorded chords light
 their root on the bass keys at their moment, and later the chord's notes on the melody keys and the bass's notes on the
