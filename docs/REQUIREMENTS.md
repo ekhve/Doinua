@@ -577,6 +577,7 @@ Terms used in requirements. A **subject** may stand before `shall` (reqlint R3);
 | **the guided mode** | subject | The companion app's Guided mode (`apps/companion/guided.c`, D-068): lessons for a grown-up who never made a beat, a step at a time, on layout E |
 | **the chord play page** | subject | The CHORDS track's PLAY page of the companion app (`apps/companion`, D-042): it names the chord of the notes held |
 | **the player** | subject | fm1kit's sequence player (`kit_play_*`, `fm1kit/src/player.c`) |
+| **drum map** | term | The fixed place of each drum sound on the 27 keys, the same on every kit (F3 KICK 1 ... G5 CRASH; `fm1kit/src/drums.c`, D-053): AUTO and IDEAS play a kit through it, so a sample placed on a key plays as that key's drum (D-121) |
 | **the song** | subject | fm1kit's song: key, tempo, bars and four tracks of notes (`kit_song_t`, `fm1kit/src/seq.c`) |
 | **the recorder** | subject | fm1kit's recording into an armed track (`kit_seq_record`, `kit_seq_note_on/off`) |
 | **the song player** | subject | fm1kit's looped playback of a song (`kit_seq_play`, `kit_seq_stop`) |
