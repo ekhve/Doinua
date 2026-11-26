@@ -77,6 +77,25 @@ static inline int companion_preset_find(unsigned size, unsigned slot, preset_rec
     return PRESET_ABSENT;
 }
 
+/* Scan once and select the first unused nonzero slot. Slot identity is
+ * independent of browser order and does not change on overwrite. */
+static inline int companion_preset_next_slot(unsigned size)
+{
+    uint8_t used[32] = {0};
+    preset_reader_t reader;
+    preset_record_t item;
+    unsigned slot;
+    int state = preset_catalog_open(&reader, companion_settings_record,
+                                    companion_settings_record_size, size);
+    if (state == PRESET_ABSENT) return 1;
+    if (state != PRESET_VALID) return PRESET_EDIT_INVALID;
+    while (preset_catalog_next(&reader, &item) == PRESET_VALID)
+        used[item.slot >> 3] |= 1u << (item.slot & 7);
+    for (slot = 1; slot <= 255; ++slot)
+        if (!(used[slot >> 3] & (1u << (slot & 7)))) return (int)slot;
+    return PRESET_EDIT_FULL;
+}
+
 static inline int companion_preset_save(const void *settings, unsigned size,
                                         const preset_record_t *item, int overwrite)
 {

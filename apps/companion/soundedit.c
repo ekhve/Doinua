@@ -60,8 +60,11 @@ static void sound_mod_apply(int t, int value)
     if (t == track && sed_page == SED_MOD) dirty = 1;
 }
 
+static void preset_workflow_forget(int t);
+
 static void sound_mod_reset(int t)
 {
+    preset_workflow_forget(t);
     sed_env_edits[t] = 0;
     sed_osc_edits[t] = 0;
     sed_mod[t] = sed_mod_default;
@@ -69,6 +72,7 @@ static void sound_mod_reset(int t)
 }
 
 #include "presetpatch.c"
+#include "presetworkflow.c"
 
 static void sound_edit_close(void)
 {

@@ -46,6 +46,30 @@ static void finish_write(int result)
 
 #include "../apps/companion/settingsrecord.c"
 
+enum { SETTINGS_VERSION = 6, KIT_NTRACKS = 4 };
+static uint8_t set[505];
+static int snd[KIT_NTRACKS];
+static uint8_t edited[KIT_NTRACKS];
+
+static int sound_index(int engine, int base) { return engine * 10 + base; }
+static int preset_patch_capture(int t, preset_record_t *item)
+{
+    item->engine = 8;
+    item->base = 1;
+    item->data_len = 1;
+    item->data[0] = edited[t];
+    return 1;
+}
+static void preset_workflow_forget(int t);
+static int preset_patch_recall(int t, const preset_record_t *item)
+{
+    preset_workflow_forget(t);
+    edited[t] = item->data[0];
+    return 1;
+}
+
+#include "../apps/companion/presetworkflow.c"
+
 static void check_settings_record(void)
 {
     uint8_t prefix[505] = {0}, original_tail[128];
@@ -178,6 +202,41 @@ static void check_preset_save(void)
     assert(found.data[0] == 42);
 }
 
+static void check_preset_workflow(void)
+{
+    preset_record_t item;
+    stored_size = 0;
+    pending = 0;
+    set[0] = SETTINGS_VERSION;
+    assert(companion_settings_load(set, sizeof set, SETTINGS_VERSION) == 0);
+    edited[0] = 24;
+    assert(preset_workflow_save(0, 0, "First", 5) == COMPANION_PRESET_PENDING);
+    assert(preset_track_slot[0] == 0);
+    assert(preset_workflow_recall(1, 1) == COMPANION_PRESET_BUSY);
+    finish_write(0);
+    preset_workflow_poll();
+    assert(preset_track_slot[0] == 1 && companion_preset_next_slot(sizeof set) == 2);
+    edited[0] = 48;
+    assert(preset_workflow_save(0, 2, 0, 0) == PRESET_EDIT_SLOT);
+    assert(preset_workflow_save(0, 1, 0, 0) == COMPANION_PRESET_PENDING);
+    finish_write(KIT_STORE_ERR_FULL);
+    assert(preset_workflow_recall(1, 1) == PRESET_VALID);
+    assert(edited[1] == 24 && snd[1] == sound_index(8, 1) && preset_track_slot[1] == 1);
+
+    assert(preset_workflow_save(0, 1, 0, 0) == COMPANION_PRESET_PENDING);
+    finish_write(0);
+    assert(preset_workflow_recall(1, 1) == PRESET_VALID && edited[1] == 48);
+    assert(companion_preset_find(sizeof set, 1, &item) == PRESET_VALID);
+    assert(item.name_len == 5 && !memcmp(item.name, "First", 5));
+    assert(preset_workflow_save(0, 0, "Second", 6) == COMPANION_PRESET_PENDING);
+    preset_workflow_forget(0);  /* track selected a different factory patch while Store finished */
+    finish_write(0);
+    preset_workflow_poll();
+    assert(preset_track_slot[0] == 0 && preset_track_slot[1] == 1);
+    assert(companion_preset_next_slot(sizeof set) == 3);
+    assert(preset_workflow_recall(0, 2) == PRESET_VALID && preset_track_slot[0] == 2);
+}
+
 int main(void)
 {
     uint8_t bytes[1024], before[1024];
@@ -223,8 +282,10 @@ int main(void)
     check_settings_record();
     check_catalog_edits();
     check_preset_save();
+    check_preset_workflow();
     puts("PASS: settings migration and tail preservation.");
     puts("PASS: Save As, confirmed overwrite with variable length, and unchanged bytes on rejected edits.");
     puts("PASS: queued preset save, retry, durable recall, failed write rollback, and interruption.");
+    puts("PASS: Save As and overwrite identity, rollback, slot recall, and track changes during save.");
     puts("PASS: legacy settings, 9 sample slots, round-trip, truncation, unsupported version, duplicate slots, atomic failure.");
 }
