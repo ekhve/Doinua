@@ -376,10 +376,13 @@ The FM-1 talks MIDI over USB (in and out) and on its TRS jack (in only: the jack
 
 ## 8. The drums (DRUMS)
 
-ALGORITHM to DRUMS. Every key is its own sound: **27 a kit**, kicks low on the left, snares and claps, the hats in the
-middle, toms and the kit's own percussion, a crash at the top. Play a key and the screen names its sound (kick1,
-snare2, conga1); the keys' colours show where each kind lives (red kicks, amber snares and claps, teal hats and
-shakers, purple toms and percussion). OCT− and OCT+ do not move the drums.
+ALGORITHM to DRUMS. Every key is its own sound: **27 a kit**, laid out on the **drum map**, the same on every kit. The
+first octave, **F3 to E4**, holds the 12 sounds AUTO and IDEAS play, as on General MIDI and the MPC, so you can drum them
+with one hand: **F3 kick**, **F#3 hat**, **G3 snare**, **G#3 open hat**, **A3 clap**, **A#3 shaker**, **B3 rim**, **C4 tom 1**,
+**C#4 ghost**, **D4 tom 2**, **D#4 perc**, **E4 tom 3**. **F4 to G5** hold the rest: more kicks, snares and hats, the kit's
+own percussion, a crash at the top. Play a key and the screen names it: its role on the first octave (KICK, with its
+sound, kick1, under it), its sound above (kick2, conga1). The keys' colours show where each kind lives (red kicks, amber
+snares and claps, teal hats and shakers, purple toms and percussion). OCT− and OCT+ do not move the drums.
 
 | Control | Does |
 |---|---|
@@ -418,10 +421,10 @@ one: the song starts and the beat plays on your kit; let go and it stops. REC re
 | **K4 GHOSTS** | **off**, **soft**, **more**: the quiet snares between the beats |
 
 A MIDI keyboard on channel 10 plays the drums too: its notes F3 to G5 are the 27 keys, and General MIDI's drum notes
-(36 kick, 38 snare, 42 hat ...) play the kit's kick, snare and hat. **Your own kit**: put your sounds in `kits/user/` named `01-kick1.wav` (the number is the key, 01 for F3 to 27 for
+(36 kick, 38 snare, 42 hat ...) play the kit's kick, snare and hat. **Your own kit**: put your sounds in `kits/user/` named `01-kick1.wav` (the number is the key on the drum map, 01 kick, 02 hat, 03 snare … for F3 to 27 for
 G5; the rest is the name the screen shows) with a `LICENSE` file saying whose they are, and build the firmware. They
 are the fifth kit, **USER**. Without the `LICENSE` file the build stops. `kits/user/README.md` has the details.
-The firmware comes with a USER kit already: the owner's own kick (F3), snare (A3) and hat (F4), free for anyone (CC0);
+The firmware comes with a USER kit already: the owner's own kick (F3), snare (G3) and hat (F#3), free for anyone (CC0);
 the other keys play Dusty's sounds. Replace or add files to make it yours.
 
 ## 9. The sequencer: SONG (SEQ)

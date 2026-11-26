@@ -203,7 +203,7 @@ static void a_step(void)
         A.apple.vy += (220 << 8) * dt / 1000; A.apple.x += A.apple.vx * dt / 1000; A.apple.y += A.apple.vy * dt / 1000;
         if ((A.apple.y >> 8) >= A.apple.ty) {
             int i2 = A.apple.i;
-            kit_track_note_on(KIT_TRACK_DRUMS, KIT_DRUM_LO + 20, 90); kit_track_note_off(KIT_TRACK_DRUMS, KIT_DRUM_LO + 20);   /* bonk */
+            kit_track_note_on(KIT_TRACK_DRUMS, KIT_DRUM_LO + kit_drum_key_of(20), 90); kit_track_note_off(KIT_TRACK_DRUMS, KIT_DRUM_LO + kit_drum_key_of(20));   /* bonk */
             kit_sfx(KIT_SFX_BAA, 8);
             A.sheep[i2].stars = 1400; A.sheep[i2].up = 1; A.sheep[i2].next = 1600; A.apple.used = 0;
         }

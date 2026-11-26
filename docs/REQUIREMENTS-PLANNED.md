@@ -39,10 +39,6 @@ owner on 2026-11-26 ("Approve all, implement").
 
 | ID | Requirement | Source | Mode | Status | Verified by |
 |---|---|---|---|---|---|
-| R-363 | The companion app shall play the 12 drum sounds AUTO and IDEAS use on the keys F3 to E4 of each kit, in the drum map's order: F3 kick, F#3 hat, G3 snare, G#3 open hat, A3 clap, A#3 shaker, B3 rim, C4 tom 1, C#4 ghost, D4 tom 2, D#4 perc, E4 tom 3. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
-| R-364 | When a key from F3 to E4 is played on a drums track, the companion app shall show the key's drum map role. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
-| R-365 | When a key from F4 to G5 is played on a drums track, the companion app shall show the name of its sound. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
-| R-366 | While a drums track plays AUTO or IDEAS, the companion app shall play each drum part on its drum map key. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
 | R-367 | While a drums track's PLAY page shows, when K1 turns, the companion app shall change the level of the key played last. | D-121, replaces R-129, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
 | R-368 | While a drums track's PLAY page shows, when K2 turns, the companion app shall change the reverb send of the key played last. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
 | R-369 | While a drums track's PLAY page shows, when K3 turns, the companion app shall change the track's GRID. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |

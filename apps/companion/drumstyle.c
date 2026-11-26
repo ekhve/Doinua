@@ -6,7 +6,7 @@
 #include "fm1kit.h"
 
 enum { DS_KICK = 0, DS_SNARE, DS_CLAP, DS_GHOST, DS_RIM, DS_HATC, DS_HATO, DS_SHAKER, DS_TOML, DS_TOMM, DS_TOMH, DS_PERC, DS_NSLOTS };
-static const uint8_t DS_PAD[DS_NSLOTS] = { 0, 4, 9, 11, 7, 12, 15, 17, 19, 20, 21, 22 };   /* the slot's key: kick1 snare1 clap1 ... */
+static const uint8_t DS_PAD[DS_NSLOTS] = { 0, 2, 4, 8, 6, 1, 3, 5, 7, 9, 11, 10 };   /* drum map v2 (D-121): F3 kick, G3 snare, A3 clap, C#4 ghost, B3 rim, F#3 hat, G#3 open, A#3 shaker, C4 D4 E4 toms, D#4 perc */
 enum { DV_MAIN = 0, DV_BUSY, DV_FILL, DV_BREAK, DV_DROP, DV_N };
 static const char *const DV_NAMES[DV_N] = { "main", "busy", "fill", "break", "drop" };
 

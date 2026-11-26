@@ -104,8 +104,8 @@ int kit_drum_pad_of(int note)                   /* F3..G5 the 27 pads; General M
     static const int8_t GM[18] = { 0, 0, 7, 4, 9, 5, 19, 12, 19, 14, 20, 15, 20, 21, 26, 21, 22, 26 };   /* 35..52 */
     static const int8_t PC[12] = { 0, 7, 4, 9, 5, 19, 12, 20, 14, 21, 15, 26 };
     if (note >= KIT_DRUM_LO && note < KIT_DRUM_LO + KIT_DRUM_PADS) return note - KIT_DRUM_LO;
-    if (note >= 35 && note <= 52) return GM[note - 35];
-    return note < 0 ? 0 : PC[note % 12];
+    if (note >= 35 && note <= 52) return kit_drum_key_of(GM[note - 35]);   /* GM and PC name sounds; the drum map puts them on keys */
+    return kit_drum_key_of(note < 0 ? 0 : PC[note % 12]);
 }
 static uint8_t tr_vmode[KIT_NTRACKS], tr_slide[KIT_NTRACKS];   /* API 27: each track's voice mode and slide (kit_track_voice) */
 static int is_part(int t) { return tr_engine[t] != KIT_ENGINE_BASIC && tr_engine[t] != KIT_ENGINE_DRUMS; }

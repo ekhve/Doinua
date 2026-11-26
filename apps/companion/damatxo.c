@@ -59,7 +59,7 @@ static void d_note(int n, int ms)
     if (D.off_at[k]) kit_track_note_off(D_MEL, D.off_n[k]);
     D.off_n[k] = (uint8_t)n; D.off_at[k] = D.t + (uint32_t)ms; if (!D.off_at[k]) D.off_at[k] = 1;
 }
-static void d_hit(int pad, int vel) { kit_track_note_on(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad, vel); kit_track_note_off(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad); }
+static void d_hit(int sound, int vel) { int pad = kit_drum_key_of(sound); kit_track_note_on(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad, vel); kit_track_note_off(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad); }
 /* G minor: Gm, Cm, D, F; the one holding the note (kept while the note is in it) */
 static const uint8_t D_CH[4][4] = { { 55, 58, 62, 43 }, { 55, 60, 63, 48 }, { 54, 57, 62, 50 }, { 53, 57, 60, 41 } };
 static const int8_t D_CHORD_OF[12] = { 2, 1, 3, 2, 1, 4, 3, 1, 1, 3, 1, 1 };   /* a pitch class's chord: 1 Gm 2 Cm 3 D 4 F */

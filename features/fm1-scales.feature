@@ -1483,3 +1483,13 @@ Feature: FMini factory arpeggios (ST-77)
     Given a selected Juno-106 voice is releasing
     When I read its shared native envelope
     Then both envelope levels follow the voice
+
+Feature: The drum map v2 (ST-95, D-121, D-122)
+
+  @D-122 @ST-95 @UC-21 @gate:unit @auto
+  Scenario: The drum map puts AUTO's sounds on the first octave
+    Given a drums track on Dusty
+    When F3, F#3 and G3 are played, then F4
+    Then they sound the kick, the hat and the snare, and the screen names them KICK, HAT, SNARE, then F4's sound name
+    And AUTO's beat plays its kick on F3, its snare on G3 and its hats on F#3
+

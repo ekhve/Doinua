@@ -2,7 +2,8 @@
 /* The drum kits (drums.c in synth.c, API 23, D-053): four kits of 27 sounds named as sound files, each distinct in a
  * kit; F3..G5 are the pads, General MIDI drums map onto them; the groups; a pitched sound names its note (the owner's
  * example: the 808's kick4 tuned up to A1); every sound of every kit plays, within the output, and falls silent by
- * itself; a pad can take any kit's sound (My kit); the closed hat chokes the open one. */
+ * itself; a pad can take any kit's sound (My kit); the closed hat chokes the open one. The drum map v2 (D-121, D-122, ST-95):
+ * the 12 sounds AUTO and IDEAS play on F3..E4 (kick, hat, snare, open hat, clap, shaker, rim, tom 1, ghost, tom 2, perc, tom 3). */
 #include <stdio.h>
 #include <string.h>
 #include "kit_internal.h"
@@ -77,12 +78,18 @@ int main(void)
             for (q = p + 1; q < KIT_DRUM_PADS; q++)
                 CHECK(strcmp(kit_drum_name(k, p), kit_drum_name(k, q)), "%s: %s twice", kit_drum_kit_name(k), kit_drum_name(k, p));
     CHECK(!strcmp(kit_drum_kit_name(0), "Dusty") && !strcmp(kit_drum_kit_name(1), "808") && kit_preset_count(KIT_ENGINE_DRUMS) == 4, "the four kits");
-    CHECK(!strcmp(kit_drum_name(0, 0), "kick1") && !strcmp(kit_drum_name(3, 22), "conga1") && !strcmp(kit_drum_name(1, 26), "crash1"), "names as files");
-    CHECK(kit_drum_pad_of(53) == 0 && kit_drum_pad_of(79) == 26 && kit_drum_pad_of(36) == 0 && kit_drum_pad_of(38) == 4 && kit_drum_pad_of(42) == 12,
+    CHECK(!strcmp(kit_drum_name(0, 0), "kick1") && !strcmp(kit_drum_name(3, 10), "conga1") && !strcmp(kit_drum_name(1, 26), "crash1"), "names as files");
+    {   /* the drum map: F3..E4 the 12 sounds AUTO and IDEAS play, in order (Dusty's perc is tamb1) */
+        static const char *const MAP[12] = { "kick1", "hat1", "snare1", "open1", "clap1", "shaker1", "rim1", "tom1", "ghost1", "tom2", "tamb1", "tom3" };
+        for (p = 0; p < 12; p++) CHECK(!strcmp(kit_drum_name(0, p), MAP[p]), "drum map: key %d is %s (%s)", p, MAP[p], kit_drum_name(0, p));
+        CHECK(kit_drum_key_of(0) == 0 && kit_drum_key_of(4) == 2 && kit_drum_key_of(12) == 1 && kit_drum_key_of(26) == 26, "kit_drum_key_of: kick1 F3, snare1 G3, hat1 F#3, crash1 G5");
+        for (p = 0; p < KIT_DRUM_PADS; p++) for (q = 0; q < KIT_DRUM_PADS; q++) if (p != q) CHECK(kit_drum_key_of(p) != kit_drum_key_of(q), "two sounds on one key (%d %d)", p, q);
+    }
+    CHECK(kit_drum_pad_of(53) == 0 && kit_drum_pad_of(79) == 26 && kit_drum_pad_of(36) == 0 && kit_drum_pad_of(38) == 2 && kit_drum_pad_of(42) == 1,
           "F3..G5 the pads; GM 36 kick, 38 snare, 42 hat");
-    CHECK(kit_drum_group(0, 0) == 0 && kit_drum_group(0, 4) == 1 && kit_drum_group(0, 12) == 2 && kit_drum_group(0, 19) == 3, "groups");
-    CHECK(kit_drum_note(1, 3, 0) == 28 && kit_drum_note(1, 3, 5) == 33, "808 kick4: E1 (28), tuned up five A1 (33) (%d %d)", kit_drum_note(1, 3, 0), kit_drum_note(1, 3, 5));
-    CHECK(kit_drum_note(0, 12, 0) < 0, "a hat has no note");
+    CHECK(kit_drum_group(0, 0) == 0 && kit_drum_group(0, 2) == 1 && kit_drum_group(0, 1) == 2 && kit_drum_group(0, 7) == 3, "groups");
+    CHECK(kit_drum_note(1, 23, 0) == 28 && kit_drum_note(1, 23, 5) == 33, "808 kick4: E1 (28), tuned up five A1 (33) (%d %d)", kit_drum_note(1, 23, 0), kit_drum_note(1, 23, 5));
+    CHECK(kit_drum_note(0, 1, 0) < 0, "a hat has no note");
     for (k = 0; k < KIT_DRUM_KITS; k++) {
         kit_track_sound(t, KIT_ENGINE_DRUMS, k);
         for (p = 0; p < KIT_DRUM_PADS; p++) {
@@ -99,7 +106,7 @@ int main(void)
     }
     /* My kit: pad 0 plays the Latin kit's conga1 */
     kit_track_sound(t, KIT_ENGINE_DRUMS, 0);
-    kit_drum_pad_set(t, 0, 3, 22, 0, 64);
+    kit_drum_pad_set(t, 0, 3, 10, 0, 64);
     {
         long a, b;
         kit_track_note_on(t, KIT_DRUM_LO, 127); a = run(40, 0); run(KIT_FS / KIT_BLOCK * 3, 0);
@@ -108,9 +115,9 @@ int main(void)
         CHECK(a != b, "a pad plays another kit's sound, and back (%ld %ld)", a, b);
     }
     /* the closed hat chokes the open one */
-    kit_track_note_on(t, KIT_DRUM_LO + 15, 127);   /* open1 */
+    kit_track_note_on(t, KIT_DRUM_LO + 3, 127);    /* open1 (G#3) */
     run(4, 0);
-    kit_track_note_on(t, KIT_DRUM_LO + 12, 127);   /* hat1 */
+    kit_track_note_on(t, KIT_DRUM_LO + 1, 127);    /* hat1 (F#3) */
     CHECK(kit__track_voices(t) == 1, "the closed hat chokes the open (%d)", kit__track_voices(t));
     printf("%s: drum kits, %d failed\n", fails ? "FAIL" : "PASS", fails);
     return fails != 0;
