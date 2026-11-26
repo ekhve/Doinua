@@ -11,11 +11,13 @@ int kit__track_pitch(int t) { (void)t; return 0; }
 int main(void)
 {
     const int engine = KIT_ENGINE_BS2 - 2;
+    enum { UPSTREAM_PRESETS = 11, PRESETS = UPSTREAM_PRESETS + 1 };
     int32_t block[256];
     _Static_assert(KIT_ENGINE_BS2 == 10, "saved Bass Something 2 engine ID");
     assert(engine < kit__eng_count());
     assert(!strcmp(kit__eng_name(engine), "Bass Something 2"));
-    assert(kit__eng_npresets(engine) == 11);
+    assert(kit__eng_npresets(engine) == PRESETS);
+    assert(!strcmp(kit__eng_preset_name(engine, UPSTREAM_PRESETS), "Clean Punch"));
     int matches = 0;
     for (int i = 0; i < SB_NALL; ++i) {
         const sb_entry_t *entry = &SB_ALL[i];
@@ -23,8 +25,8 @@ int main(void)
         assert(!strcmp(entry->preset, kit__eng_preset_name(engine, matches)));
         ++matches;
     }
-    assert(matches == 11);
-    for (int p = 0; p < 11; ++p) {
+    assert(matches == PRESETS);
+    for (int p = 0; p < PRESETS; ++p) {
         int peak = 0;
         kit__eng_select(0, engine, p);
         kit__eng_note_on(0, 57, 100);
