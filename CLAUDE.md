@@ -17,8 +17,9 @@ emulator is missing, run `tools/setup.sh` first.
    UBOOT paths and the boot guard in `fm1kit/src/device.c`, `factory/safety.py`, `tools/build.py`'s
    checks. A change there can make an FM-1 impossible to update.
 4. **Never approve screens yourself** (`factory/run.py --approve`, `factory/approved/`). That is a
-   person's call. New screens show as "new" until then. The owner approves them with the **Approve screens** workflow
-   (Actions > Run workflow, owner only, D-078); it pushes the references to `screens-approved-<run>` and you open the PR.
+   person's call. New screens show as "new" until then. The owner approves them in the conversation (D-123: the owner does not run
+   workflows); on that say-so you run the **Approve screens** workflow (D-078), record the owner's words on the PR, and
+   fast-forward the branch to the `screens-approved-<run>` it pushes.
 5. **Never weaken a gate to get green**: no wider tolerances, no deleted checks, no skipped scenarios.
    If a check is wrong, say so and why.
 6. **The API is versioned.** A change to `fm1kit.h` bumps `FM1KIT_API` and is recorded as a decision in

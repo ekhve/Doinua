@@ -56,6 +56,9 @@ static int dr_custom(int t)                     /* a key plays another sound tha
 }
 static int dr_src_kit(int t, int p) { return dr_pads[t][p].kit < 0 ? dr_kit(t) : dr_pads[t][p].kit; }
 static const char *dr_name(int t, int p) { return kit_drum_name(dr_src_kit(t, p), dr_pads[t][p].src); }
+/* the drum map v2 (D-121, R-364): F3..E4 hold the 12 sounds AUTO and IDEAS play; their keys are named by their role */
+static const char *const DR_ROLE[12] = { "KICK", "HAT", "SNARE", "OPEN HAT", "CLAP", "SHAKER", "RIM", "TOM 1", "GHOST", "TOM 2", "PERC", "TOM 3" };
+static const char *dr_title(int t, int p) { return p >= 0 && p < 12 ? DR_ROLE[p] : dr_name(t, p); }
 static const char *dr_kit_title(int t) { return dr_custom(t) ? "My kit" : kit_drum_kit_name(dr_kit(t)); }
 
 static uint32_t dr_repeat_ms(int ticks) { return (uint32_t)ticks * 60000u / ((uint32_t)song.bpm * KIT_TICKS_PER_BEAT); }
@@ -235,16 +238,17 @@ static void draw_drums(void)
     card(1, "TUNE", v, d->tune != 0);
     card(2, "DECAY", DR_DECAY_NAMES[d->decay], d->decay != 4);
     card(3, "FX", DR_FX_NAMES[kit_track_fx_of(track)], kit_track_fx_of(track) != KIT_FX_OFF);
-    q = cat(s, kit_drum_kit_name(dr_src_kit(track, p)));
+    q = s; if (p < 12) q = cat(cat(q, dr_name(track, p)), ", ");   /* a role key: its sound, then the kit */
+    q = cat(q, kit_drum_kit_name(dr_src_kit(track, p)));
     if (dr_pads[track][p].kit >= 0 || dr_pads[track][p].src != p) q = cat(q, "  on this key");
     if (song.count[track]) {                    /* a beat recorded: its bar, each hit where the feel puts it (R-143) */
-        int w = kit_text(8, 68, dr_name(track, p), KIT_FONT_MEDIUM, KIT_ALIGN_LEFT, FG);
+        int w = kit_text(8, 68, dr_title(track, p), KIT_FONT_MEDIUM, KIT_ALIGN_LEFT, FG);
         kit_text(16 + w, 74, s, KIT_FONT_XSMALL, KIT_ALIGN_LEFT, dr_shown_until ? ACC : MUTED);
         dr_rec_graph(96);
         dr_keys(150, 90);
         return;
     }
-    kit_text(8, 74, dr_name(track, p), KIT_FONT_LARGE, KIT_ALIGN_LEFT, FG);
+    kit_text(8, 74, dr_title(track, p), KIT_FONT_LARGE, KIT_ALIGN_LEFT, FG);
     kit_text(8, 116, s, KIT_FONT_XSMALL, KIT_ALIGN_LEFT, dr_shown_until ? ACC : MUTED);
     kit_text(8, 134, "PRESETS: the kit   key + PRESETS: its sound", KIT_FONT_TINY, KIT_ALIGN_LEFT, MUTED);
     dr_keys(150, 90);

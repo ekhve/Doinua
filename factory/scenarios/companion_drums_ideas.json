@@ -1,6 +1,6 @@
 {
   "scenario": "A drum beat falls onto its keys to learn",
-  "name": "companion, DRUMS IDEAS, Boom bap, SPEED 70 %: PLAY plays the beat at 63 of 90 BPM (the top line), its hits falling onto the keys of their sounds; the hat (F4) lights as it lands",
+  "name": "companion, DRUMS IDEAS, Boom bap, SPEED 70 %: PLAY plays the beat at 63 of 90 BPM (the top line), its hits falling onto the keys of their sounds; the hat (F#3, drum map v2) lights as it lands",
   "app": "companion",
   "ms": 4200,
   "keys": "900:e1:+3,1000:SCL,1050:SCL^,1100:e4:-1,1120:e4:-1,1140:e4:-1,1160:e4:-1,1300:PLAY,1350:PLAY^",
@@ -19,7 +19,7 @@
       "from": 1790,
       "to": 1840,
       "keys": {
-        "F4": "on"
+        "F#3": "on"
       }
     }
   ]

@@ -47,10 +47,10 @@ static const g_style_t G_STYLE[G_NSTYLES] = {
     { "REGGAETON", 94, 3, 4, "8000800080008000", "0007007000070070", "0000000000000000", "3020302030203020", "0000000000000000" },
     { "TRAP", 140, 1, 4, "9000000000800000", "0000000090000000", "0000000000000000", "7050705070507055", "0000000000000000" },
 };
-#define G_KICK 0                                /* the pads: kick1, ghost1, hat1, open1 */
-#define G_GHOST 11
-#define G_HAT 12
-#define G_OPEN 15
+#define G_KICK kit_drum_key_of(0)                /* the sounds kick1, ghost1, hat1, open1, on their drum map keys */
+#define G_GHOST kit_drum_key_of(11)
+#define G_HAT kit_drum_key_of(12)
+#define G_OPEN kit_drum_key_of(15)
 /* the song (the lab's first): Am7 | Fmaj7 | Am7 | Fmaj7, the bass on root and octave, a sparse hook */
 static const uint8_t G_CHORD[2][4] = { { 57, 60, 64, 67 }, { 53, 57, 60, 64 } };
 static const uint8_t G_BASS[2][7][3] = {           /* step (1..16), note, length in steps */
@@ -113,7 +113,7 @@ static void g_build(void)
     if (!g_melody_yours())
         for (i = 0; i < 12; i++) kit_song_add(&g_song, KIT_TRACK_MELODY, G_MEL[i][0] * KIT_TICKS_PER_BAR + (G_MEL[i][1] - 1) * G_SIXT, G_MEL[i][3] * G_SIXT - 1, G_MEL[i][2] + t, 100);
     g_add_drum(d->k, G_KICK, 'k');
-    g_add_drum(d->s, d->snare_pad, 's');
+    g_add_drum(d->s, kit_drum_key_of(d->snare_pad), 's');
     g_add_drum(d->g, G_GHOST, 's');
     g_add_drum(d->h, G_HAT, 'h');
     g_add_drum(d->o, G_OPEN, 'h');
@@ -199,7 +199,7 @@ static void g_key_down(int k, int vel)
 {
     int n = KIT_DRUM_LO + k, d = g_drum_key(n);
     if (G.step == GS_SOLO && d) {               /* one drum on its own */
-        int pad = d == 'k' ? G_KICK : d == 's' ? g_drums()->snare_pad : G_HAT;
+        int pad = d == 'k' ? G_KICK : d == 's' ? kit_drum_key_of(g_drums()->snare_pad) : G_HAT;
         kit_track_note_on(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad, 110); kit_track_note_off(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad);
         G.solo = d; G.solo_seen |= (uint8_t)(d == 'k' ? 1 : d == 's' ? 2 : 4); g_build(); return;
     }
@@ -328,7 +328,7 @@ static void g_draw_seq(int y0)
             int b = nt->start / KIT_TICKS_PER_BAR, st = (nt->start % KIT_TICKS_PER_BAR) / G_SIXT, len = (nt->len + G_SIXT - 1) / G_SIXT, w;
             if (b != bar) continue;
             if (r < 3) {
-                int pad = nt->note - KIT_DRUM_LO, row = pad <= 3 ? 0 : pad <= 11 ? 1 : 2, h = 2 + (rh - 5) * nt->vel / 127;
+                int pad = nt->note - KIT_DRUM_LO, row = kit_drum_group(0, pad) == 0 ? 0 : kit_drum_group(0, pad) == 1 ? 1 : 2, h = 2 + (rh - 5) * nt->vel / 127;
                 if (row != r) continue;
                 kit_rect(gx + st * cw + 1, y + rh - 3 - h, cw - 3, h, col);
                 continue;

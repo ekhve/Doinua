@@ -101,7 +101,7 @@ static void t_play_note(int trk, int n, int vel, int ms)
     kit_track_note_on(trk, n, vel);
     t_off_at(trk, n, ms);
 }
-static void t_hit(int pad, int vel) { kit_track_note_on(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad, vel); kit_track_note_off(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad); }
+static void t_hit(int sound, int vel) { int pad = kit_drum_key_of(sound); kit_track_note_on(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad, vel); kit_track_note_off(KIT_TRACK_DRUMS, KIT_DRUM_LO + pad); }
 enum { T_S_WOOF = 1, T_S_HOWL, T_S_NEIGH, T_S_BELL, T_S_WHISTLE, T_S_BOOM };
 static void t_later(int ms, int what)
 {

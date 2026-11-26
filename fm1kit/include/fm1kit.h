@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 43
+#define FM1KIT_API 44
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -157,6 +157,7 @@ const char *kit_drum_name(int kit, int pad);    /* "kick1" */
 int kit_drum_group(int kit, int pad);           /* 0 kick, 1 snare, claps and rims, 2 hats, shakers, cymbals, 3 the rest */
 int kit_drum_note(int kit, int pad, int tune);  /* the note a pitched sound sounds, tuned tune semitones; -1: unpitched */
 int kit_drum_pad_of(int note);                  /* the pad a note plays */
+int kit_drum_key_of(int sound);                 /* API 44: the key (pad) a kit sound is on in the drum map (0 kick1, 4 snare1, 12 hat1 ...) */
 void kit_drum_pad_set(int track, int pad, int kit, int src, int tune, int decay);   /* pad plays kit's (-1: the track's
                                                  * kit's) sound src, tune -12..12 semitones, decay 16..255 x/64 */
 #define KIT_NVOICES 12

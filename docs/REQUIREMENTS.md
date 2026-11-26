@@ -562,6 +562,15 @@ implement all sounds".)
 |---|---|---|---|---|---|
 | R-297 | When the FM-1 is switched on, the companion app shall load the song it held when it was switched off. | D-085, ST-89 | A | Approved (owner) | The song is there after a power-off |
 
+**The drum map v2** (story ST-95; D-121, D-122.)
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-363 | The companion app shall play the 12 drum sounds AUTO and IDEAS use on the keys F3 to E4 of each kit, in the drum map's order: F3 kick, F#3 hat, G3 snare, G#3 open hat, A3 clap, A#3 shaker, B3 rim, C4 tom 1, C#4 ghost, D4 tom 2, D#4 perc, E4 tom 3. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
+| R-364 | When a key from F3 to E4 is played on a drums track, the companion app shall show the key's drum map role. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
+| R-365 | When a key from F4 to G5 is played on a drums track, the companion app shall show the name of its sound. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
+| R-366 | While a drums track plays AUTO or IDEAS, the companion app shall play each drum part on its drum map key. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
+
 ## Glossary
 
 Terms used in requirements. A **subject** may stand before `shall` (reqlint R3); the others are defined terms.

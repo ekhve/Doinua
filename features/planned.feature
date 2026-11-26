@@ -48,13 +48,6 @@ Feature: The sequencer (ST-85 to ST-91, drafts for the owner)
 
 Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2026-11-26, from the Sampler Lab v11)
 
-  @ST-95 @UC-21 @planned @approved:owner
-  Scenario: The drum map puts AUTO's sounds on the first octave
-    Given a drums track on Dusty
-    When F3, F#3 and G3 are played, then F4
-    Then they sound the kick, the hat and the snare, and the screen names them KICK, HAT, SNARE, then F4's sound name
-    And AUTO's beat plays its kick on F3, its snare on G3 and its hats on F#3
-
   @ST-96 @UC-10 @planned @approved:owner
   Scenario: PLAY sets the key's level and reverb, and the track's grid and feel
     Given a drums track's PLAY page, the snare played last

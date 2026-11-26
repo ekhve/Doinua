@@ -152,7 +152,7 @@ static void u_bell(int n)                      /* a bell, held 300 ms */
     if (U.off_at[k]) kit_track_note_off(U_BELL, U.off_n[k]);
     U.off_n[k] = (uint8_t)n; U.off_at[k] = kit_ms() + 300; if (!U.off_at[k]) U.off_at[k] = 1;
 }
-static void u_hit(int pad, int vel) { kit_track_note_on(U_DRUM, KIT_DRUM_LO + pad, vel); kit_track_note_off(U_DRUM, KIT_DRUM_LO + pad); }
+static void u_hit(int sound, int vel) { int pad = kit_drum_key_of(sound); kit_track_note_on(U_DRUM, KIT_DRUM_LO + pad, vel); kit_track_note_off(U_DRUM, KIT_DRUM_LO + pad); }
 
 /* the pad and the bass: the song's I, IV or V (i, iv, v in a minor key), the one with the fence's note (kept while the
  * note is in it), voiced close between B2 and A#3 (in C: C3 E3 G3, C3 F3 A3, B2 D3 G3), the root an octave and a half
