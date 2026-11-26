@@ -19,7 +19,7 @@ owner approved in D-072). Older drafts were not kept.
 | `sequencer-lab.html`, `sequencer-study.html` | SONG, SEQUENCE, STEPS, MOTION | D-081..D-083 (MOTION open) |
 | `sound-browser-lab.html` | the Sound Browser | D-087 |
 | `sound-edit-lab.html` | sound editing and FX pages (v3: OSC FILTER ENV LFO MOD; FX PERFORM DELAY REVERB DIRT) | **next** (D-072 navigation) |
-| `sampler-lab.html` | the sampler | v8: the DRUMS track with the sampler, LEVELS on ENV, a take's note or key, TUNE in notes; D-121, issue #22 |
+| `sampler-lab.html` | the sampler | v10: the DRUMS track as a mini MPC: sampler, ENV pages NOTES/CHORDS/VELOCITY, note/key/tempo found, fit by speed or slices; D-121, issue #22 |
 | `beat-guide-lab.html`, `guide-lab.html`, `guide-screens.html` | guided lessons | D-07x guided mode, lesson 1 built |
 | `controls-map.html` | every screen, button and way out | audit |
 | `unicorn-lab.html`, `train-*.html`, `damatxo-lab.html`, `aldapa-lab.html` | the games | built (the owner found the unicorn and train sounds too strident) |
