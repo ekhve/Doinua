@@ -491,6 +491,15 @@ sound: the list stays open while a key is held, and closes by itself 2 seconds a
 press HOME). The list holds the sounds you picked in the audition, as their engines arrive: now FMini's 66, the Juno-106's 28
 (FM-106's engine), the 11 Bass Something 2 patches, 19 OberVave programs, nine CoralFlower VA sounds and five of ours. The DRUMS track's PRESETS still chooses its kit.
 
+### Saving an edited preset
+
+1. Open **EDIT** on a pitched Producer track and adjust the sound. Press **SAVE** to open the preset options.
+2. Use **SELECT** to choose **Save As**, then press **SAVE**. Turn **SELECT** to move through the name and **K1** to change the current character. Names can use up to 12 characters. Press **SAVE** to keep it or **HOME** to cancel.
+3. Wait for **Preset saved** before switching off. Press **PLAY** to stop playback if storage is waiting for the sound to go quiet.
+4. Turn **PRESETS** to open the Sound Browser. Use **K1** to reach **USER** and **PRESETS** to select your sound. Press **SAVE** from Sound Edit on a user preset to choose **Overwrite**, **Save As**, or **Cancel**. **Cancel** is selected when the options open.
+
+The preset keeps the edited sound, its track sends and DIRT settings. Shared chorus, delay and room settings belong to the song. Live performance effects stay temporary.
+
 ### Effects
 
 Every sound brings its own effects, as it was made: its chorus, its echo and its reverb (and some a little drive), so
