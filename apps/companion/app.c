@@ -850,6 +850,7 @@ static void sound_mod_apply(int t, int value);
 static void sound_edit_press(void);
 static void sound_edit_release(void);
 static int sound_edit_event(const kit_event_t *e);
+static int preset_panel_event(const kit_event_t *e);
 static void sound_edit_close(void);
 static int dr_src_kit(int t, int p);
 static int rl_open;                             /* (reclayer.c) */
@@ -1071,6 +1072,8 @@ void app_event(const kit_event_t *e)
     }
     if (eat && panel) return;
     if (e->type == KIT_EV_ENC) exp_knob(e->id);  /* explain the card once the page shows its new value (ST-43) */
+    if (preset_panel_event(e))
+        return;
     if (sb_event(e))                            /* the Sound Browser: PRESETS, and K1 and HOME while it shows (ST-68) */
         return;
     if (mode_event(e))
@@ -2423,6 +2426,7 @@ static void keyboard_lights(void)
 void app_frame(uint32_t now_ms)
 {
     preset_workflow_poll();
+    preset_panel_frame();
     harm_sync();
     if (!picker && !home_long && kit_btn_held(KIT_BTN_HOME) && now_ms - home_at >= HOLD_MS) {
         home_long = 1;                          /* HOME held: the mode picker */
@@ -2565,6 +2569,7 @@ void app_frame(uint32_t now_ms)
     if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open() && !sound_edit_open()) draw_rec_layer();
     if (!asleep && !help) draw_count();
     if (!asleep && !help && !sound_fx_open() && !sound_edit_open()) exp_draw(now_ms);
+    if (!asleep && !help && !song_page) preset_panel_draw();
     if (sb_open && !asleep && !help && !song_page) sb_draw();   /* the Sound Browser over the page (ST-68) */
     if (sq_view == SQV_SONG && !help && !song_page) sq_lights();
     else if (sq_view == SQV_STEPS && !help && !song_page) st_lights();

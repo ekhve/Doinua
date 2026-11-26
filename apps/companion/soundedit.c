@@ -73,6 +73,7 @@ static void sound_mod_reset(int t)
 
 #include "presetpatch.c"
 #include "presetworkflow.c"
+#include "presetpanel.c"
 
 static void sound_edit_close(void)
 {
@@ -461,7 +462,8 @@ static void sound_edit_draw(void)
     const char *const *labels = page_labels[sed_page];
     const char *page = names[sed_page];
     kit_color_t color = page_colors[sed_page];
-    const char *preset = kit_preset_name(kit_track_engine(track), kit_track_preset(track));
+    char user_name[PRESET_NAME_MAX + 1];
+    const char *preset = preset_track_name(track, user_name);
     kit_clear(FX_BG);
     sb_fit(title, preset, 220 - kit_text_width(page, KIT_FONT_XSMALL), KIT_FONT_SMALL);
     kit_text(6, 4, title, KIT_FONT_SMALL, KIT_ALIGN_LEFT, FX_INK);

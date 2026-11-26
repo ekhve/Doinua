@@ -537,6 +537,7 @@ implement all sounds".)
 | R-360 | While a selected Juno-106 note sounds, the firmware shall publish its energy in the selected track spectrum. | D-117, ST-46, UC-07 | A | Draft | Juno native filter edits affect a held note |
 | R-361 | While an envelope page shows on a Juno-106 track, when an envelope knob is turned, the companion app shall edit the native ADSR shared by both envelope pages. | D-118, ST-46, UC-07 | A | Draft | Juno envelope edits appear on both pages |
 | R-362 | While the selected Juno-106 voice is releasing, the firmware shall report its native envelope level. | D-118, ST-46, UC-07 | A | Draft | Juno reports its shared native envelope |
+| R-380 | While Sound Edit is open for a pitched track, when SAVE is pressed, the Companion app shall show the preset save options with Cancel selected. | D-119, UC-07 | A | Draft | Sound Edit opens the preset save panel |
 
 **The Sound Browser (ST-68)** (D-087; drafts for the owner, from the Sound Browser Lab approved on 2026-11-21.)
 
