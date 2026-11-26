@@ -72,7 +72,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 
 <div class="wrap">
   <h1>Sampler Lab</h1>
-  <p class="lead">Version 7 (2026-11-26): <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
+  <p class="lead">Version 8 (2026-11-26): a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
   tempo); the bar's rows share the screen; GRID off … 1/32; velocity; SOUND with ATTACK, HOLD, DECAY; the track's FX as PUNCH
   (COMP, CLIP), DIRT and SPACE (DELAY and REVERB together); CHOP's put mode silent. Press <b>Start sound</b>, then try the
   <a href="#scen">usage scenarios</a>.</p>
@@ -174,7 +174,19 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         <b>Tab</b> to CHOP, K4 SLICES 1, <b>Enter</b>, press <b>p</b> twice (G#4). <b>Esc</b>, touch <b>p</b>, <b>]</b>: ROOT E2 (found).
         SCALE: play a bass line on the white keys, in key.</li>
       </ol>
-      <h4>7. Sample a kick (LFO)</h4><ol>
+      <h4>7. Know your sample's note or key, and tune it</h4><ol>
+        <li><b>A note.</b> Phone: <i>Piano note, C#3 (a little sharp)</i>. PRESETS to MY KIT 2, <b>Tab</b> (TAKE), <b>Enter</b>, wait, <b>Enter</b>:
+        the take says <i>NOTE C#3 +15c (found)</i>.</li>
+        <li><b>Tab</b> (CHOP), <b>Enter</b>, <b>k k</b>: on F4. <b>Esc</b>, touch <b>k</b>, <b>Shift</b> twice (EDIT → SOUND): <b>K1 TUNE</b>
+        shows <i>C#3 +15c</i>. <b>Shift+1</b> once: <i>C#3</i> (in tune); once more: <i>C3</i>. Play <b>k</b>: a C.</li>
+        <li><b>]</b> (LEVELS): <i>ROOT C3</i>; the scales and chords start from C.</li>
+        <li><b>A key.</b> Phone: <i>Chord loop, A minor</i>. TAKE, record it (two rounds): <i>KEY A minor (found) · SELECT: song key</i>.
+        <b>↑</b> (SELECT): <i>Song key → A minor?</i> <b>Space</b> (PLAY): yes. LEVELS and the other tracks' help now use A minor.</li>
+        <li>Put the loop on a key: on SOUND its TUNE shows <i>Am</i>; turning moves it a semitone (Bbm, Bm…). The loop's speed changes
+        with its pitch, as a record does.</li>
+        <li><b>A drum</b> (a kick, a break) says <i>no clear note or key</i>: TUNE stays in semitones.</li>
+      </ol>
+      <h4>7b. Sample a kick (LFO)</h4><ol>
         <li>Phone: <i>808 kick</i>. PRESETS to MY KIT 2. <b>Tab</b> (LFO): TAKE. <b>2</b>: IN LEVEL. <b>Enter</b>: armed, it records on
         sound; <b>Enter</b>: stop.</li>
         <li><b>Tab</b>: CHOP, K4 SLICES 1. <b>Enter</b>: put mode (red). Press <b>a</b>: <i>F3 · KICK: press again to store</i>; press
@@ -198,6 +210,9 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
       <li><b>Velocity</b> per pad (KIT · K2): fixed, or 1–10 (7 at first).</li>
       <li><b>LEVELS on ENV</b>: a pad across the keys, TUNE, SCALE, CHORDS, VELOCITY, in the song's key, with the sample's root found;
       the theory is the one MELODY, BASS and CHORDS use. MELODY, BASS and CHORDS do not change.</li>
+      <li><b>Note and key of a take</b>: a single sound's note (with cents), a loop's key (24 keys); a key can become the song's key
+      (SELECT on TAKE, it asks). <b>TUNE</b> shows the note (or key) a pad sounds; its first turn snaps it in tune, then a semitone a turn.
+      Changing the pitch changes the speed (no time-stretch for now).</li>
     </ol><h3>From v6</h3><ol>
       <li><b>SOUND</b>: TUNE, ATTACK, HOLD, DECAY in ms; LEVEL moves to KIT and PLAY.</li>
       <li><b>FX</b>: PUNCH (COMP, CLIP), DIRT (off, Drive, Lofi, Tape, Crush), SPACE (DELAY with off, FEEDBACK, REVERB). The compressor is
@@ -299,7 +314,12 @@ const stab = () => mk(1.2, (a, n) => { const fs = [261.6, 329.6, 392, 493.9]; fo
 const withLead = (a, s) => { const b = new Float32Array(a.length + Math.round(s * SR)); b.set(a, Math.round(s * SR)); return b; };
 function sung(f, sec) { return mk(sec, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR, v = f * (1 + .006 * Math.sin(2 * Math.PI * 5.5 * t)); ph += 2 * Math.PI * v / SR; let s = 0; for (let h = 1; h <= 12; h++) s += Math.sin(ph * h) * Math.exp(-Math.pow((f * h - 700) / 500, 2)) / h; a[i] = s * .5 * Math.min(1, t / .04) * Math.min(1, (sec - t) / .15); } }); }
 function pluck(f, sec) { return lp(mk(sec, (a, n) => { for (let i = 0; i < n; i++) { const t = i / SR; a[i] = (((t * f) % 1) * 2 - 1) * .6 * Math.exp(-t / .35); } }), .12); }
-const SOURCES = [["Drum break, 95 BPM (2 bars)", brk()], ["808 kick", withLead(kickG(120, 42, .3, .05), .6)], ["Kick, snare, hat, clap, one by one", oneByOne()], ["Hi-hats, recorded quiet", quietHats()], ["Chord stab", withLead(clip(stab()), .4)], ["Sung note, A3", withLead(clip(sung(220, 1.4)), .5)], ["Bass pluck, E2", withLead(clip(pluck(82.41, 1.2)), .5)]];
+function piano(m, cents, sec) { const f = 440 * Math.pow(2, (m - 69 + cents / 100) / 12); return mk(sec, (a, n) => { for (let i = 0; i < n; i++) { const t = i / SR; let s = 0; for (let h = 1; h <= 8; h++) s += Math.sin(2 * Math.PI * f * h * Math.sqrt(1 + .0004 * h * h) * t) * Math.exp(-t * (1.2 + h * .7)) / (h * 1.3); a[i] = s * .45 * Math.min(1, t / .004); } }); }
+function chordLoop() {           // Am, Dm, E, Am: a bar each half, piano-ish, with the bass
+  const ch = [[57, 60, 64, 45], [57, 62, 65, 50], [56, 59, 64, 52], [57, 60, 64, 45]], L = .8, a = new Float32Array(Math.round(4 * L * SR));
+  ch.forEach((c, j) => c.forEach(m => mix(a, piano(m, 0, L + .2), Math.round(j * L * SR), .5))); return clip(a);
+}
+const SOURCES = [["Drum break, 95 BPM (2 bars)", brk()], ["808 kick", withLead(kickG(120, 42, .3, .05), .6)], ["Kick, snare, hat, clap, one by one", oneByOne()], ["Hi-hats, recorded quiet", quietHats()], ["Chord stab", withLead(clip(stab()), .4)], ["Sung note, A3", withLead(clip(sung(220, 1.4)), .5)], ["Bass pluck, E2", withLead(clip(pluck(82.41, 1.2)), .5)], ["Piano note, C#3 (a little sharp)", withLead(clip(piano(49, 8, 1.6)), .5)], ["Chord loop, A minor (Am Dm E Am)", chordLoop()]];
 
 // IMA ADPCM, encoded and decoded: what the FM-1 keeps is what you hear
 const STEP = [7,8,9,10,11,12,13,14,16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552,1707,1878,2066,2272,2499,2749,3024,3327,3660,4026,4428,4871,5358,5894,6484,7132,7845,8630,9493,10442,11487,12635,13899,15289,16818,18500,20350,22385,24623,27086,29794,32767];
@@ -496,6 +516,7 @@ function stopRec() {
   const a = captured(r.t0, Math.min(ac.currentTime, r.t0 + RAM_S));
   if (a.length < SR * .05 || peakOf(a, 0, a.length) < .003) { flash("Nothing heard"); return; }
   dropTake(); take = { id: ++takeId, d: adpcm(a), used: false };
+  { const f = detectRoot(take.d); if (f !== null) take.note = f; else take.key = detectKey(take.d); }
   setSlices(st.chop.n);
 }
 function dropTake() {
@@ -575,14 +596,39 @@ function detectRoot(d) {          // the sample's pitch (YIN): 60 ms from just a
   const a = df[tau - 1], b = df[tau], c = df[tau + 1], sh = (a - c) / (2 * (a - 2 * b + c) || 1);
   return 69 + 12 * Math.log2(SR / (tau + sh) / 440);
 }
+const KMAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88], KMIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+function detectKey(d) {
+  const ch = new Float64Array(12), F = 2048, end = Math.min(d.length, 8 * SR);
+  for (let s0 = 0; s0 + F <= end; s0 += F) for (let m = 40; m < 84; m++) {      // Goertzel at each note from E2 to B5
+    const w = 2 * Math.PI * 440 * Math.pow(2, (m - 69) / 12) / SR, c = 2 * Math.cos(w); let a = 0, b = 0;
+    for (let i = 0; i < F; i++) { const q = d[s0 + i] + c * a - b; b = a; a = q; }
+    ch[m % 12] += a * a + b * b - c * a * b;
+  }
+  const corr = (p, t) => { let mx = 0, my = 0; for (let i = 0; i < 12; i++) { mx += ch[i]; my += p[i]; } mx /= 12; my /= 12; let n = 0, dx = 0, dy = 0; for (let i = 0; i < 12; i++) { const x = ch[(i + t) % 12] - mx, y = p[i] - my; n += x * y; dx += x * x; dy += y * y; } return n / Math.sqrt(dx * dy + 1e-12); };
+  let best = { r: -1 }; for (let t = 0; t < 12; t++) { const a = corr(KMAJ, t), b = corr(KMIN, t); if (a > best.r) best = { r: a, tonic: t, minor: false }; if (b > best.r) best = { r: b, tonic: t, minor: true }; }
+  return best.r > .6 ? best : null;
+}
+const keyName = k => PCN[k.tonic] + (k.minor ? " minor" : " major");
+function analyse(x) {             // a pad's pitch: a note (one sound), or a key (a loop), or nothing (a drum)
+  if (x.root !== undefined) return; const d = render(x), f = detectRoot(d);
+  if (f !== null) { x.root = f; x.found = true; return; }
+  const k = detectKey(d); if (k) { x.key = k; x.root = 48 + k.tonic; x.found = true; return; }
+  x.root = 60; x.found = false;
+}
+// what the pad sounds, as TUNE shows it: a note with its cents, a key, or semitones
+function tuneLabel(x) {
+  if (x.root === undefined) analyse(x);
+  if (x.key) { const t = ((x.key.tonic + Math.round(x.tune)) % 12 + 12) % 12; return PCN[t] + (x.key.minor ? "m" : ""); }
+  if (!x.found) return (x.tune > 0 ? "+" : "") + Math.round(x.tune * 10) / 10;
+  const m = x.root + x.tune, c = Math.round((m - Math.round(m)) * 100); return nn(m) + (c ? (c > 0 ? " +" : " ") + c + "c" : "");
+}
 const nn = m => PCN[((Math.round(m) % 12) + 12) % 12] + (Math.floor(Math.round(m) / 12) - 1);
 function lvEnter() {
-  const x = key(st.sel); LV.pad = st.sel;
-  if (x.root === undefined) { const f = detectRoot(render(x)); x.root = f === null ? 60 : f; x.found = f !== null; }
+  const x = key(st.sel); LV.pad = st.sel; analyse(x);
   stopRaw(); st.page = "levels"; LV.last = "";
 }
 function lvNotes(i) {             // what key i plays: semitones from the sample's own pitch, a velocity, and a name
-  const x = key(LV.pad), root = x.root, sc = SCALES[LV.scale][1], wi = WH.indexOf(i);
+  const x = key(LV.pad), root = x.root + x.tune, sc = SCALES[LV.scale][1], wi = WH.indexOf(i);
   const deg = d => { const o = Math.floor(d / sc.length); return o * 12 + sc[d - o * sc.length]; };
   let t = root + ((LV.tonic - Math.round(root) % 12) + 24) % 12; if (t - root > 6) t -= 12;     // the song's key nearest the sample's pitch
   if (LV.mode === 0) return { s: [i - 12], v: null, name: nn(root + i - 12) };
@@ -676,7 +722,10 @@ function knob(k, d) {
     const tab = EDITTABS[st.tab];
     if (tab === "KIT") { if (k === 0) x.lvl = clampI(x.lvl + d, 0, 10); if (k === 1) x.vel = clampI(x.vel + d, 0, 10); if (k < 2) touch(); }
     if (tab === "SOUND") {
-      if (k === 0) x.tune = clampI(x.tune + d, -12, 12);
+      if (k === 0) { analyse(x);                       // TUNE in notes: the first turn snaps to the exact note, then a semitone a turn
+        const m = x.root + x.tune, off = m - Math.round(m);
+        if (x.found && !x.key) x.tune = Math.abs(off) > .005 ? Math.round(m) - x.root : clampI(Math.round(m) + d - x.root, -12.5, 12.5);
+        else x.tune = clampI(Math.round(x.tune) + d, -12, 12); }
       if (k === 1) x.att = clampI(x.att + d, 0, ATTS.length - 1);
       if (k === 2) x.hold = clampI(x.hold + d, 0, HOLDS.length - 1);
       if (k === 3) x.dec = clampI(x.dec + d, 0, DECS.length - 1);
@@ -695,7 +744,7 @@ function knob(k, d) {
     if (tab === "PAD FX") { const f = ["dirt", "dly", "rvb", "tfx"][k]; x[f] = clampI(x[f] + d, 0, 10); touch(); }
   }
 }
-function closeOver() { st.save = null; st.pick = null; st.layer = false; st.ask = null; }
+function closeOver() { st.askKey = false; st.save = null; st.pick = null; st.layer = false; st.ask = null; }
 function editTap() {
   if (st.save || st.pick || st.layer) return;
   if (st.page === "edit") st.tab = (st.tab + 1) % EDITTABS.length; else { stopRaw(); st.page = "edit"; st.tab = 0; routePhone(); }
@@ -723,6 +772,7 @@ function playBtn() {
   startAudio(); if (st.save) return;
   if (st.pick) { const p = st.pick; st.pick = null; st.kit = p.to; if (placeAt(p.i0, p.all)) { st.place.key = -1; st.place.done = p.i0; } return; }
   if (st.page === "chop") { if (!take) return; if (st.prev) { stopRaw(); return; } const s = st.chop.sl[st.chop.cur]; if (s) playRaw(take.d, s[0], s[1]); return; }
+  if (st.page === "take" && st.askKey) { LV.tonic = take.key.tonic; LV.scale = take.key.minor ? 1 : 0; st.askKey = false; flash("Song key: " + keyName(take.key)); return; }
   if (st.page === "take") { if (!take) return; if (st.prev) { stopRaw(); return; } playRaw(take.d, 0, take.d.length); return; }
   transport();
 }
@@ -741,6 +791,7 @@ function sel(d) {
     const c = st.chop; c.cur = (c.cur + d + c.sl.length) % c.sl.length; if (st.place) { st.place.key = -1; st.place.done = -1; } playSel(); return;
   }
   if (st.page === "levels") { LV.tonic = (LV.tonic + d + 12) % 12; return; }
+  if (st.page === "take" && take && take.key && !st.rec) { st.askKey = true; return; }
   if (editing() && EDITTABS[st.tab] === "SOUND") { const x = key(st.sel); x.grp = (x.grp + d + 5) % 5; touch(); }
 }
 function oct(d) {
@@ -930,13 +981,13 @@ function draw() {
   else if (P === "levels") {
     const px = key(LV.pad); T("DRUMS", 6, 12, 11, S.armed ? C.rec : C.acc, 700); T("LEVELS", 52, 12, 9, C.fg, 700); T(kit().name + " · " + BPM, 234, 12, 9, C.mute, 600, "right"); g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
     T(keyNote(LV.pad) + " · " + (isAuto(LV.pad) ? ROLE[LV.pad] : soundName(px)), 6, 36, 11, C.fg, 700);
-    T("ROOT " + nn(px.root) + (px.found ? " (found)" : " (set)"), 234, 36, 8.5, px.found ? C.ok : C.mute, 700, "right");
+    T("ROOT " + nn(px.root + px.tune) + (px.found ? " (found)" : " (set)"), 234, 36, 8.5, px.found ? C.ok : C.mute, 700, "right");
     T("KEY " + PCN[LV.tonic] + " " + SCALES[LV.scale][0] + "  (SELECT)", 6, 52, 8.5, C.mute, 600);
     g.fillStyle = C.card; rr(6, 62, 228, 74, 6); g.fill();
     T(LV.last || (LV.mode === 0 ? "every key a semitone" : LV.mode === 3 ? "16 white keys, soft to hard" : "the white keys: " + (LV.mode === 1 ? "the scale" : "its chords")), 120, 99, LV.last ? 24 : 9, LV.last ? C.fg : C.mute, 700, "center");
     strip(146, 30, i => { const L = lvNotes(i); return L && LV.mode !== 3 && LV.mode !== 0 && ((Math.round(L.s[0] + px.root) % 12) + 12) % 12 === LV.tonic; });
     T(LV.mode === 0 ? "F4 plays it as recorded" : LV.mode === 3 ? "" : "lit: the key's tonic", 120, 186, 8, C.mute, 600, "center");
-    knobRow(KNOBS.levels, [LVM[LV.mode], LV.mode === 1 || LV.mode === 2 ? SCALES[LV.scale][0] : "-", nn(px.root), LV.mode === 2 ? CHORDT[LV.chord][0] : "-"]);
+    knobRow(KNOBS.levels, [LVM[LV.mode], LV.mode === 1 || LV.mode === 2 ? SCALES[LV.scale][0] : "-", nn(px.root + px.tune), LV.mode === 2 ? CHORDT[LV.chord][0] : "-"]);
   } else if (P === "edit") {
     const tab = EDITTABS[st.tab]; top(EDITTABS, tab); keyHead(38);
     if (tab === "KIT") {
@@ -950,7 +1001,7 @@ function draw() {
       const d = render(x); g.fillStyle = C.card; rr(6, 62, 228, 100, 5); g.fill(); wave(d, 0, d.length, 10, 66, 220, 92, x.smp ? C.acc : "#6f7a8c", x.lvl / 8);
       envLine(x, d, 10, 66, 220, 92);
       T("MUTE GROUP " + (x.grp ? " ABCD"[x.grp] : "off") + "  (SELECT)", 6, 174, 9, x.grp ? C.fg : C.mute, 700);
-      knobRow(KNOBS.SOUND, [(x.tune > 0 ? "+" : "") + x.tune, ATTS[x.att] + " ms", isFinite(HOLDS[x.hold]) ? HOLDS[x.hold] + " ms" : "full", isFinite(HOLDS[x.hold]) ? DECS[x.dec] + " ms" : "-"]);
+      knobRow(KNOBS.SOUND, [tuneLabel(x), ATTS[x.att] + " ms", isFinite(HOLDS[x.hold]) ? HOLDS[x.hold] + " ms" : "full", isFinite(HOLDS[x.hold]) ? DECS[x.dec] + " ms" : "-"]);
     }
     if (tab === "TRIM") {
       if (!x.smp) { T("A synth sound: nothing to trim", 120, 110, 9.5, C.mute, 600, "center"); knobRow(KNOBS.TRIM, ["-", "-", "-", "-"]); }
@@ -987,11 +1038,14 @@ function draw() {
     g.fillStyle = lv > 1 ? C.rec : C.ok; rr(6, 48, Math.max(2, 228 * Math.min(1, lv)), 10, 3); g.fill();
     g.fillStyle = C.fg; g.fillRect(6 + 228 * .5, 46, 1, 14); g.fillRect(6 + 228 * .89, 46, 1, 14);
     g.fillStyle = st.peak > 1 ? C.rec : C.fg; g.fillRect(6 + 228 * Math.min(1, st.peak) - 1, 47, 2, 12);
+    if (take && !R) { if (take.note !== undefined) T("NOTE " + nn(take.note) + ((c => c ? (c > 0 ? " +" : " ") + c + "c" : "")(Math.round((take.note - Math.round(take.note)) * 100))) + " (found)", 6, 68, 8.5, C.ok, 700);
+      else if (take.key) T("KEY " + keyName(take.key) + " (found) · SELECT: song key", 6, 68, 8.5, C.ok, 700); else T("no clear note or key", 6, 68, 8, C.mute, 600); }
     if (st.phone.on && (st.peak > 1 || st.peak < .25)) T(st.peak > 1 ? "too loud" : "too quiet", 234, 68, 8, st.peak > 1 ? C.rec : "#f0a83c", 700, "right");
     g.fillStyle = C.card; rr(6, 78, 228, 96, 5); g.fill();
     if (R && !R.armed) { const t = ac.currentTime - R.t0; if (t >= RAM_S) stopRec(); else { const a = captured(R.t0, ac.currentTime); wave(a, 0, a.length, 10, 82, Math.min(220, 220 * t / RAM_S), 88, C.rec); } }
     else if (take) { wave(take.d, 0, take.d.length, 10, 82, 220, 88, C.acc); if (st.prev) { const xx = 10 + 220 * Math.min(1, (ac.currentTime - st.prev.t0) * SR / take.d.length); g.fillStyle = C.ok; g.fillRect(xx, 78, 1.5, 96); } }
     knobRow(KNOBS.take, ["", db(st.usb.lvl), st.onSound ? "on sound" : "at once", ""]);
+    if (st.askKey) { g.fillStyle = "#0a0d13"; rr(16, 80, 208, 90, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T("The song is in " + PCN[LV.tonic] + " " + SCALES[LV.scale][0], 120, 98, 8.5, C.mute, 600, "center"); T("Song key → " + keyName(take.key) + "?", 120, 122, 12, C.fg, 700, "center"); T("PLAY: yes · HOME: no", 120, 150, 8.5, C.mute, 600, "center"); }
   } else if (P === "chop") {
     top(["TAKE", "CHOP"], "CHOP");
     if (!take) { T("No take yet", 120, 100, 10, C.mute, 600, "center"); knobRow(KNOBS.chop, ["-", "-", "-", String(SLN[st.chop.n])]); }
