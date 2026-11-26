@@ -151,9 +151,10 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         <li><b>TRIM</b> (samples): on MY KIT 1 touch <b>w</b> (a quiet hat): K4 GAIN up to MAX.</li>
       </ol>
       <h4>5. Effects: the kit's and each pad's (FX, PAD FX)</h4>
-      <p><b>FX</b> holds the effects for the whole kit, always there; <b>PAD FX</b> (EDIT) says how much of each one a pad gets. The
-      same four names, in the same order: <b>PUNCH</b>, <b>COLOR</b>, <b>DELAY</b>, <b>REVERB</b>. Every pad gets all of PUNCH and COLOR
-      (10) and no DELAY or REVERB (0) to begin with.</p><ol>
+      <p><b>FX</b> holds the four effects of the kit, each one running once: <b>PUNCH</b>, <b>COLOR</b>, <b>DELAY</b>, <b>REVERB</b>.
+      <b>PAD FX</b> (EDIT) is each pad's <b>sends</b> to them, the same names in the same order: the pad keeps its dry sound and sends an
+      amount to each (PUNCH as parallel compression, COLOR as parallel saturation). Pads start sending 10 to PUNCH and COLOR and 0 to
+      DELAY and REVERB, so turning an effect up in FX reaches the whole kit; turn a pad's send down to keep it clean.</p><ol>
         <li><b>`</b> (FX): <b>PUNCH</b>: K1 COMP, K2 SPEED (fast, medium, slow), K3 CLIP, K4 SHAPE (soft, hard). FX again: <b>COLOR</b>:
         K1 TAPE, K2 LOFI, K3 DRIVE, K4 CRUSH; they add up, so tape and lo-fi on the whole kit is two knobs. FX again: <b>SPACE</b>: K1 DELAY
         time, K2 FEEDBACK, K3 REVERB type (room, plate, hall, spring), K4 SIZE.</li>
@@ -229,7 +230,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
       Changing the pitch changes the speed (no time-stretch for now).</li>
     </ol><h3>From v6</h3><ol>
       <li><b>SOUND</b>: TUNE (a note, or semitones for a drum), ATTACK, HOLD (fine steps, full, key), DECAY.</li>
-      <li><b>FX</b> for the whole kit, always there: PUNCH (COMP, SPEED, CLIP, SHAPE), COLOR (TAPE, LOFI, DRIVE, CRUSH, they add up), SPACE (DELAY time, FEEDBACK, REVERB type, SIZE). <b>PAD FX</b>: how much of PUNCH, COLOR, DELAY, REVERB each pad gets (10, 10, 0, 0 at first). KIT: sounds grouped by kit (K3).</li>
+      <li><b>FX</b> for the whole kit, always there: PUNCH (COMP, SPEED, CLIP, SHAPE), COLOR (TAPE, LOFI, DRIVE, CRUSH, they add up), SPACE (DELAY time, FEEDBACK, REVERB type, SIZE). <b>PAD FX</b>: each pad's sends to PUNCH, COLOR, DELAY, REVERB (10, 10, 0, 0 at first); each effect runs once (as the effects bus does, D-093). KIT: sounds grouped by kit (K3).</li>
       <li><b>CHOP put mode</b>: silent; SELECT plays; K4 PUT one or all.</li>
     </ol></div>
 
@@ -405,13 +406,13 @@ const EDITTABS = ["KIT", "SOUND", "TRIM", "PAD FX"];
 const editing = () => st.page === "edit", sampling = () => st.page === "take" || st.page === "chop";
 
 // ------------------------------------------------------------------ audio
-let ac = null, master, phoneGain, phoneNode = null, an, bus, bP, bC, bPC, dlyIn, dlyNode, dlyFb, rvbIn, rvbNode;
+let ac = null, master, phoneGain, phoneNode = null, an, bus, bP, bC, dlyIn, dlyNode, dlyFb, rvbIn, rvbNode;
 function startAudio() {
   if (ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
   master = ac.createGain(); master.gain.value = .8; master.connect(ac.destination);
   an = ac.createAnalyser(); an.fftSize = 512; phoneGain = ac.createGain(); an.connect(phoneGain); phoneGain.connect(master);
   bus = ac.createGain(); bus.connect(master);
-  bP = ac.createGain(); bC = ac.createGain(); bPC = ac.createGain();     // pads into: PUNCH only, COLOR only, PUNCH then COLOR
+  bP = ac.createGain(); bC = ac.createGain();     // two sends, one effect each: PUNCH and COLOR (as DELAY and REVERB)
   dlyIn = ac.createGain(); dlyNode = ac.createDelay(1.5); dlyFb = ac.createGain(); dlyIn.connect(dlyNode); dlyNode.connect(dlyFb); dlyFb.connect(dlyNode); dlyNode.connect(master);
   rvbIn = ac.createGain(); rvbNode = ac.createConvolver(); rvbIn.connect(rvbNode); rvbNode.connect(master);
   $("start").textContent = "Sound on"; routePhone(); setFx();
@@ -419,7 +420,7 @@ function startAudio() {
 function shaper(f) { const w = ac.createWaveShaper(), c = new Float32Array(1024); for (let i = 0; i < 1024; i++) c[i] = f(i / 511.5 - 1); w.curve = c; return w; }
 let fxNodes = [];
 function setFx() {          // the track's chain: PUNCH (COMP, CLIP) and COLOR (TAPE, LOFI, DRIVE, CRUSH); DELAY and REVERB sends
-  if (!ac) return; [bP, bC, bPC].forEach(b => b.disconnect()); fxNodes.forEach(n => n.disconnect()); fxNodes = [];
+  if (!ac) return; [bP, bC].forEach(b => b.disconnect()); fxNodes.forEach(n => n.disconnect()); fxNodes = [];
   const f = st.fx, lpf = q => { const b = ac.createBiquadFilter(); b.type = "lowpass"; b.frequency.value = q; return b; };
   const punch = () => { const c = []; if (f.comp) { const k = ac.createDynamicsCompressor(), sp = [[.001, .06], [.008, .12], [.03, .25]][f.speed]; k.threshold.value = -f.comp * 3; k.ratio.value = 2 + f.comp * .6; k.attack.value = sp[0]; k.release.value = sp[1]; k.knee.value = 4; const m = ac.createGain(); m.gain.value = Math.pow(10, f.comp * 1.4 / 20); c.push(k, m); }
     if (f.clip) { const kk = 1 + f.clip * .5; c.push(shaper(f.shape ? (x => Math.max(-1, Math.min(1, x * kk)) * .9) : (x => Math.tanh(kk * x) / Math.tanh(kk)))); } return c; };
@@ -429,7 +430,7 @@ function setFx() {          // the track's chain: PUNCH (COMP, CLIP) and COLOR (
     if (f.drive) { const k = 1 + f.drive * .6; c.push(shaper(x => Math.tanh(k * x) / Math.tanh(k) * .9)); }
     if (f.crush) { const q = Math.max(2, 16 - f.crush * 1.3); c.push(shaper(x => Math.round(x * q) / q)); } return c; };
   const wire = (from, nodes) => { let p = from; nodes.forEach(n => { p.connect(n); p = n; fxNodes.push(n); }); return p; };
-  wire(bP, punch()).connect(master); wire(bC, color()).connect(master); wire(bPC, [...punch(), ...color()]).connect(master);
+  if (punchOn()) wire(bP, punch()).connect(master); if (colorOn()) wire(bC, color()).connect(master);     // each effect once (silent at 0); the pads send to it, their dry sound stays
   dlyNode.delayTime.value = DLYB[f.dtime] * 60 / BPM; dlyFb.gain.value = f.dfb * .08;
   const n = Math.round([.5, 1.6, 2.8, 1.2][f.rtype] * (.4 + f.rsize * .12) * ac.sampleRate), b = ac.createBuffer(2, n, ac.sampleRate);
   for (let ch = 0; ch < 2; ch++) { const x = b.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { const t = i / n; let v = (Math.random() * 2 - 1) * Math.pow(1 - t, 3);
@@ -455,9 +456,8 @@ function playKey(i, at = 0, v = 100, semi = 0, choke = true, gm = 0, hk = -1) { 
   g.gain.setValueAtTime(at0 ? 0 : lv, T); if (at0) g.gain.linearRampToValueAtTime(lv, T + at0);
   if (isFinite(ho)) { g.gain.setValueAtTime(lv, T + at0 + ho + .0005); g.gain.linearRampToValueAtTime(0, T + at0 + ho + de); }
   s.connect(g);
-  const P_ = x.pp / 10, C_ = x.pc / 10, route = (amt, to) => { if (amt <= 0) return; const q = ac.createGain(); q.gain.value = amt; g.connect(q); q.connect(to); };
-  route((1 - P_) * (1 - C_), bus); route(P_ * (1 - C_), bP); route((1 - P_) * C_, bC); route(P_ * C_, bPC);     // each pad: how much of PUNCH and COLOR
-  route(x.dly / 10, dlyIn); route(x.rvb / 10, rvbIn);
+  const route = (amt, to) => { if (amt <= 0) return; const q = ac.createGain(); q.gain.value = amt; g.connect(q); q.connect(to); };
+  route(1, bus); route(x.pp / 10 * .8, bP); route(x.pc / 10 * .8, bC); route(x.dly / 10, dlyIn); route(x.rvb / 10, rvbIn);     // the dry sound, then four sends
   s.start(T);
   if (x.grp && choke) groups[x.grp].push({ s, g });
   const vo = { s, g, de, sus }; if (sus && hk >= 0) (heldV[hk] = heldV[hk] || []).push(vo); return vo;
@@ -1122,7 +1122,7 @@ function draw() {
     }
     if (tab === "PAD FX") {
       [["PUNCH", x.pp, punchOn() ? "comp, clip" : "off in FX"], ["COLOR", x.pc, colorOn() ? "tape, lofi, drive, crush" : "off in FX"], ["DELAY", x.dly, DLYN[st.fx.dtime]], ["REVERB", x.rvb, RVBN[st.fx.rtype]]].forEach(([a, v, s2], j) => { const y = 64 + j * 26, off = s2 === "off in FX"; T(a, 10, y, 9, off ? C.mute : C.fg, 700); T(s2, 10, y + 10, 7, off ? C.rec : C.mute, 500); level10(92, y - 2, 120, v); T(String(v), 230, y, 9, C.acc, 700, "right"); });
-      T("how much of the track's FX this pad gets", 120, 176, 7.5, C.mute, 600, "center");
+      T("sends: how much of each effect this pad gets", 120, 176, 7.5, C.mute, 600, "center");
       knobRow(KNOBS["PAD FX"], [String(x.pp), String(x.pc), String(x.dly), String(x.rvb)]);
     }
   } else if (P === "fx") {
