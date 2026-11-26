@@ -3,7 +3,7 @@
   "name": "hello, ST-73: PRESETS selects CoralFlower Punch Bass",
   "app": "hello",
   "ms": 6500,
-  "keys": "900:e6:+100,1900:e6:+68,3000:C4@100,3900:C4^",
+  "keys": "900:e6:+100,1900:e6:+69,3000:C4@100,3900:C4^",
   "checks": [
     {"type": "silence", "from": 800, "to": 2900},
     {"type": "sound", "from": 3150, "to": 3800}

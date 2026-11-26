@@ -11,20 +11,30 @@ int kit__track_pitch(int t) { (void)t; return 0; }
 int main(void)
 {
     const int engine = KIT_ENGINE_BS2 - 2;
+    enum { UPSTREAM_PRESETS = 11, PRESETS = UPSTREAM_PRESETS + 1 };
     int32_t block[256];
     _Static_assert(KIT_ENGINE_BS2 == 10, "saved Bass Something 2 engine ID");
     assert(engine < kit__eng_count());
     assert(!strcmp(kit__eng_name(engine), "Bass Something 2"));
-    assert(kit__eng_npresets(engine) == 11);
-    int matches = 0;
+    assert(kit__eng_npresets(engine) == PRESETS);
+    assert(!strcmp(kit__eng_preset_name(engine, UPSTREAM_PRESETS), "Clean Punch"));
+    int upstream = 0, clean_punch = 0;
     for (int i = 0; i < SB_NALL; ++i) {
         const sb_entry_t *entry = &SB_ALL[i];
         if (strcmp(SB_ENGINE[entry->engine], kit__eng_name(engine))) continue;
-        assert(!strcmp(entry->preset, kit__eng_preset_name(engine, matches)));
-        ++matches;
+        if (!strcmp(entry->preset, "Clean Punch")) {
+            /* The browser groups sounds by category. The saved engine ID is independent. */
+            assert(!strcmp(SB_GROUP[entry->group], "Bass"));
+            assert(i + 1 == SB_NALL || SB_ALL[i + 1].group != entry->group);
+            ++clean_punch;
+            continue;
+        }
+        assert(upstream < UPSTREAM_PRESETS);
+        assert(!strcmp(entry->preset, kit__eng_preset_name(engine, upstream)));
+        ++upstream;
     }
-    assert(matches == 11);
-    for (int p = 0; p < 11; ++p) {
+    assert(upstream == UPSTREAM_PRESETS && clean_punch == 1);
+    for (int p = 0; p < PRESETS; ++p) {
         int peak = 0;
         kit__eng_select(0, engine, p);
         kit__eng_note_on(0, 57, 100);

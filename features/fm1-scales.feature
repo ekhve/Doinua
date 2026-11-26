@@ -1483,3 +1483,11 @@ Feature: FMini factory arpeggios (ST-77)
     Given a selected Juno-106 voice is releasing
     When I read its shared native envelope
     Then both envelope levels follow the voice
+
+Feature: Clean Punch (ST-94)
+
+  @D-101 @ST-94 @auto
+  Scenario: Clean Punch plays low notes in tune and releases them
+    Given Clean Punch is selected in the Sound Browser's Bass group
+    When C3 is played, D3 overlaps it, and D3 is released
+    Then C3 and D3 sound within 15 cents of their pitches and the output returns to silence within 400 ms

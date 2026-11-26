@@ -489,6 +489,13 @@ implement all sounds".)
 | R-324 | When Unicorn Jump plays the first three notes of Twinkle Twinkle in Listen mode, the companion app shall keep the mix peak at or below −10 dBFS. | D-100, UC-18, ST-93 | A | Draft | In Unicorn Jump PLAY runs the song by itself, each fence's key lit as its note sounds |
 | R-325 | When the Night Train whistles and plays the first note of Funiculì with music off, the companion app shall keep the mix peak at or below −20 dBFS. | D-100, UC-18, ST-93 | A | Draft | K3 changes the train's song to Funiculì, funiculà |
 
+**Clean Punch (ST-94, Draft).**
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-326 | When Clean Punch plays C3, the firmware shall sound the note within 15 cents of its pitch. | D-101, ST-94, UC-07 | A | Draft | Clean Punch plays low notes in tune and releases them |
+| R-327 | When a Clean Punch note is released, the firmware shall return its output to silence within 400 milliseconds. | D-101, ST-94, UC-07 | A | Draft | Clean Punch plays low notes in tune and releases them |
+
 **FM-106's Juno-106 engine (ST-71b)** (D-090; drafts for the owner, from "Let's go with the other engines!", 2026-11-22.)
 
 | ID | Requirement | Source | Mode | Status | Verified by |

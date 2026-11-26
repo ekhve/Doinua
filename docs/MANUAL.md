@@ -491,6 +491,9 @@ sound: the list stays open while a key is held, and closes by itself 2 seconds a
 press HOME). The list holds the sounds you picked in the audition, as their engines arrive: now FMini's 66, the Juno-106's 28
 (FM-106's engine), the 11 Bass Something 2 patches, 19 OberVave programs, nine CoralFlower VA sounds and five of ours. The DRUMS track's PRESETS still chooses its kit.
 
+**Clean Punch**, at the end of Bass, is an original dry mono preset with a sine sub and a short glide between
+overlapping notes.
+
 ### Effects
 
 Every sound brings its own effects, as it was made: its chorus, its echo and its reverb (and some a little drive), so

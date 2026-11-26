@@ -79,6 +79,7 @@ requirements (`REQUIREMENTS.md`). On the board, a story is raised as a Story iss
 | ST-70 | As a producer, I want fmini-1's Minimoog engine with the 66 patches I picked, playing chords when the CPU allows, so that I have its basses, leads and pads. | sounds: the fmini engine (D-070) | UC-07 | built (D-086): the engine and the 66 sounds; their effects come with ST-69, their arpeggios with ST-77 |
 | ST-71 | As a producer, I want the Prophet engine with the 32 sounds I picked (Sequential's, copied, and Tessera's ORACLE), so that I have its pads, brass and the whiny lead. | sounds: the Prophet engine (#100, D-069) | UC-07 | backlog |
 | ST-92 | As a player, I want my 11 Bass Something 2 patches in PRESETS with one voice per track. | November work order, D-095 | UC-07 | in progress |
+| ST-94 | As a producer, I want a clean monophonic sub bass with a punchy attack so I can anchor a sparse bassline. | Clean Punch (issue #7, D-101) | UC-07 | in progress |
 | ST-72 | As a producer, I want OberVave's engine with the 19 programs I picked, arpeggios included, so that I have its arps, leads and pads. | sounds: the OberVave engine | UC-07 | backlog |
 | ST-73 | As a producer, I want the VA engine (ChoralRoot's, in CoralFlower) with the 9 pads and basses I picked, so that I have its chord pads. | sounds: the VA engine | UC-07 | backlog |
 | ST-74 | As a child or a producer, I want the VOICE engine with TALKBOX, WOW BASS and the choirs I picked, so that the FM-1 talks and sings. | sounds: the VOICE engine | UC-07 | backlog |
