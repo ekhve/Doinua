@@ -71,6 +71,49 @@ static void check_settings_record(void)
     assert(queued_size == stored_size && !memcmp(queued, stored, stored_size));
 }
 
+static void check_catalog_edits(void)
+{
+    enum { PREFIX = 505 };
+    uint8_t bytes[1024], before[1024];
+    preset_record_t first = {1, 8, 2, 4, 1, {'B', 'a', 's', 's'}, {42}};
+    preset_record_t second = {2, 8, 5, 3, 2, {'S', 'u', 'b'}, {12, 15}};
+    preset_record_t edited = first, decoded;
+    preset_reader_t reader;
+    int first_size, size, grown;
+
+    memset(bytes, 0xa5, sizeof bytes);
+    memcpy(before, bytes, sizeof before);
+    assert(preset_catalog_edit(bytes, PREFIX, sizeof bytes, PREFIX, &first, 1) == PRESET_EDIT_SLOT);
+    assert(preset_catalog_edit(bytes, PREFIX, PREFIX + PRESET_HEADER, PREFIX, &first, 0) == PRESET_EDIT_FULL);
+    assert(!memcmp(bytes, before, sizeof bytes));
+    first_size = preset_catalog_edit(bytes, PREFIX, sizeof bytes, PREFIX, &first, 0);
+    assert(first_size == PREFIX + PRESET_HEADER + 10);
+    size = preset_catalog_edit(bytes, first_size, sizeof bytes, PREFIX, &second, 0);
+    assert(size == first_size + 10);
+    assert(!memcmp(bytes, before, PREFIX));
+    memcpy(before, bytes, sizeof before);
+    edited.data_len = PRESET_DATA_MAX;
+    edited.data[PRESET_DATA_MAX - 1] = 17;
+    assert(preset_catalog_edit(bytes, size, sizeof bytes, PREFIX, &edited, 0) == PRESET_EDIT_SLOT);
+    assert(preset_catalog_edit(bytes, size, size, PREFIX, &edited, 1) == PRESET_EDIT_FULL);
+    assert(!memcmp(bytes, before, sizeof bytes));
+    grown = preset_catalog_edit(bytes, size, sizeof bytes, PREFIX, &edited, 1);
+    assert(grown == size + PRESET_DATA_MAX - 1);
+    assert(preset_catalog_open(&reader, bytes, grown, PREFIX) == PRESET_VALID);
+    assert(preset_catalog_next(&reader, &decoded) == PRESET_VALID);
+    assert(!memcmp(&edited, &decoded, sizeof edited));
+    assert(preset_catalog_next(&reader, &decoded) == PRESET_VALID);
+    assert(!memcmp(&second, &decoded, sizeof second));
+    assert(preset_catalog_next(&reader, &decoded) == PRESET_ABSENT);
+    assert(preset_catalog_edit(bytes, grown, sizeof bytes, PREFIX, &first, 1) == size);
+    assert(!memcmp(bytes, before, size));
+
+    bytes[PREFIX + 4] = 3;
+    memcpy(before, bytes, sizeof before);
+    assert(preset_catalog_edit(bytes, size, sizeof bytes, PREFIX, &first, 1) == PRESET_EDIT_INVALID);
+    assert(!memcmp(bytes, before, sizeof bytes));
+}
+
 int main(void)
 {
     uint8_t bytes[1024], before[1024];
@@ -113,6 +156,8 @@ int main(void)
     assert(!preset_catalog_write(bytes, sizeof bytes, 505, records, 2));
     assert(!memcmp(bytes, before, sizeof bytes));
     check_settings_record();
+    check_catalog_edits();
     puts("PASS: settings migration and tail preservation.");
+    puts("PASS: Save As, confirmed overwrite with variable length, and unchanged bytes on rejected edits.");
     puts("PASS: legacy settings, 9 sample slots, round-trip, truncation, unsupported version, duplicate slots, atomic failure.");
 }

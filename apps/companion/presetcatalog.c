@@ -84,12 +84,25 @@ static int preset_catalog_open(preset_reader_t *reader, const uint8_t *record,
     return PRESET_VALID;
 }
 
+static uint8_t *preset_record_write(uint8_t *out, const preset_record_t *item)
+{
+    unsigned i;
+    *out++ = item->slot;
+    *out++ = item->engine;
+    *out++ = item->base;
+    *out++ = item->name_len;
+    *out++ = item->data_len;
+    for (i = 0; i < item->name_len; ++i) *out++ = item->name[i];
+    for (i = 0; i < item->data_len; ++i) *out++ = item->data[i];
+    return out;
+}
+
 /* The settings prefix is already in out. Failure leaves the entire buffer intact. */
 static int preset_catalog_write(uint8_t *out, unsigned capacity, unsigned settings_size,
                                 const preset_record_t *items, unsigned count)
 {
     uint8_t seen[32] = {0};
-    unsigned end = settings_size, i, k, mask;
+    unsigned end = settings_size, i, mask;
     if (end > capacity || count > 255) return 0;
     if (!count) return (int)end;
     if (capacity - end < PRESET_HEADER) return 0;
@@ -106,15 +119,58 @@ static int preset_catalog_write(uint8_t *out, unsigned capacity, unsigned settin
     out += settings_size;
     for (i = 0; i < sizeof preset_magic; ++i) *out++ = preset_magic[i];
     *out++ = count;
-    for (i = 0; i < count; ++i) {
-        const preset_record_t *item = &items[i];
-        *out++ = item->slot;
-        *out++ = item->engine;
-        *out++ = item->base;
-        *out++ = item->name_len;
-        *out++ = item->data_len;
-        for (k = 0; k < item->name_len; ++k) *out++ = item->name[k];
-        for (k = 0; k < item->data_len; ++k) *out++ = item->data[k];
-    }
+    for (i = 0; i < count; ++i) out = preset_record_write(out, &items[i]);
     return (int)end;
+}
+
+enum { PRESET_EDIT_INVALID = -1, PRESET_EDIT_SLOT = -2, PRESET_EDIT_FULL = -3 };
+
+/* Return the new record size, or leave all bytes unchanged on error. The slot
+ * must be empty for Save As and must already exist for confirmed overwrite. */
+static int preset_catalog_edit(uint8_t *record, unsigned size, unsigned capacity,
+                               unsigned settings_size, const preset_record_t *item,
+                               int overwrite)
+{
+    preset_reader_t reader;
+    preset_record_t current;
+    unsigned count = 0, offset = size, old_bytes = 0;
+    unsigned new_bytes = 5u + item->name_len + item->data_len;
+    unsigned i, tail;
+    int state;
+    if (size > capacity || !preset_record_valid(item)) return PRESET_EDIT_INVALID;
+    state = preset_catalog_open(&reader, record, size, settings_size);
+    if (state == PRESET_CORRUPT) return PRESET_EDIT_INVALID;
+    if (state == PRESET_VALID) {
+        count = reader.remaining;
+        while (reader.remaining) {
+            unsigned start = (unsigned)(reader.next - record);
+            if (preset_catalog_next(&reader, &current) != PRESET_VALID)
+                return PRESET_EDIT_INVALID;
+            if (current.slot == item->slot) {
+                offset = start;
+                old_bytes = (unsigned)(reader.next - record) - start;
+                break;
+            }
+        }
+    }
+    if (!!old_bytes != !!overwrite) return PRESET_EDIT_SLOT;
+    if (state == PRESET_ABSENT) {
+        if (capacity - size < PRESET_HEADER + new_bytes) return PRESET_EDIT_FULL;
+        for (i = 0; i < sizeof preset_magic; ++i) record[size + i] = preset_magic[i];
+        size += PRESET_HEADER;
+        offset = size;
+    } else if ((!overwrite && count == 255) || capacity - (size - old_bytes) < new_bytes) {
+        return PRESET_EDIT_FULL;
+    }
+    tail = size - offset - old_bytes;
+    if (new_bytes > old_bytes) {
+        for (i = tail; i > 0; --i)
+            record[offset + new_bytes + i - 1] = record[offset + old_bytes + i - 1];
+    } else {
+        for (i = 0; i < tail; ++i)
+            record[offset + new_bytes + i] = record[offset + old_bytes + i];
+    }
+    preset_record_write(record + offset, item);
+    record[settings_size + 5] = count + !overwrite;
+    return (int)(size - old_bytes + new_bytes);
 }
