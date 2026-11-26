@@ -23,6 +23,19 @@ static inline uint32_t fm1_ticks(void) { return 0; }
 #include "juno/juno_bank.h"                     /* JUNO_N, JUNO_PICKS: tools/gen_juno.py */
 #include "juno/fm106_engine.h"
 
+/* Init Juno, issue #10: saw, open low-pass, shared ADSR and dry Poly I. */
+static const fm106_preset_t jn_init = {
+    .name = "Init Juno",
+    .p = {
+        [9] = 1,    /* neutral high-pass */
+        [10] = 127, /* low-pass cutoff */
+        [15] = 110, /* VCA level */
+        [16] = 4, [17] = 42, [18] = 96, [19] = 20, /* ADSR */
+        [24] = 1,   /* saw on */
+        [29] = 1,   /* normal octave */
+    },
+};
+
 static fm106_engine_t jn[JUNO_TRACKS] KIT_BIG;
 static uint8_t jn_on[JUNO_TRACKS];             /* the track plays a Juno */
 static uint16_t jn_quiet[JUNO_TRACKS];         /* samples since its last voice ended (the chorus's tail done: no work) */
@@ -37,6 +50,7 @@ const char *kit__juno_preset_name(int p)
     static char nm[16];
     const char *s;
     int k = 0;
+    if (p == KIT__INIT_PRESET) return jn_init.name;
     if (p < 0 || p >= JUNO_N) return "?";
     s = JUNO_PICKS[p].name;
     if (s[0] && s[1] && s[2] && s[3] == ' ') s += 4;   /* "A11 Brass": the bank's number off */
@@ -50,9 +64,10 @@ void kit__juno_select(int t, int p)             /* p < 0: the track plays no Jun
 {
     if (!okj(t)) return;
     jn_on[t] = 0;
-    if (p < 0 || p >= JUNO_N) return;
+    if (p != KIT__INIT_PRESET && (p < 0 || p >= JUNO_N)) return;
     fm106_engine_init(&jn[t]);
-    fm106_load_preset(&jn[t], (uint32_t)p);
+    if (p == KIT__INIT_PRESET) fm106_load_patch(&jn[t], (uint32_t)p, &jn_init);
+    else fm106_load_preset(&jn[t], (uint32_t)p);
     jn_preset[t] = (uint8_t)p;
     jn_on[t] = 1;
 }
