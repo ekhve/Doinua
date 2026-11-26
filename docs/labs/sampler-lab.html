@@ -38,13 +38,6 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 .btn:focus-visible, .knob button:focus-visible, .phone button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
 .keys { position: relative; height: 150px; margin-top: 16px; min-width: 800px; user-select: none; touch-action: none; }
 .k { position: absolute; top: 0; border-radius: 0 0 6px 6px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; font: 600 .6rem var(--body); padding-bottom: 6px; box-sizing: border-box; }
-.k.w { background: var(--wk); color: #555c68; height: 150px; border: 1px solid #9aa1ad; z-index: 1; }
-.k.b { background: var(--bk); color: #8a909b; height: 92px; z-index: 2; border: 1px solid #000; cursor: default; }
-.k .lab { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: .56rem; }
-.k.dim { box-shadow: inset 0 0 0 150px rgba(215,124,194,.22); }
-.k.on { box-shadow: inset 0 0 0 150px rgba(215,124,194,.85); color: #fff; }
-.k.wr { box-shadow: inset 0 0 0 150px rgba(239,91,91,.28); }
-.k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.9) !important; color: #fff; }
 .hint { font-size: .8rem; color: #c3cad5; max-width: 470px; min-height: 3.2em; }
 .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 12px; margin-top: 16px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
@@ -58,18 +51,40 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 .drop { border: 2px dashed var(--line); border-radius: 8px; padding: 10px; text-align: center; color: var(--muted); font-size: .85rem; margin-top: 6px; }
 .drop.over { border-color: var(--acc); color: var(--fg); }
 #loadInfo { font-size: .82rem; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.k.w { background: var(--wk); color: #4a515c; height: 150px; border: 1px solid #9aa1ad; z-index: 1; }
+.k.b { background: var(--bk); color: #aab2bf; height: 92px; z-index: 2; border: 1px solid #000; }
+.k .lab { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: .52rem; line-height: 1.15; }
+.k.w .lab { top: 96px; }
+.k .g { position: absolute; left: 2px; right: 2px; bottom: 2px; height: 5px; border-radius: 2px; }
+.k .smp { position: absolute; top: 34px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #d77cc2; }
+.k.b .smp { top: 40px; }
+.k.w .smp { top: 80px; }
+.k.lit { box-shadow: inset 0 0 0 150px rgba(215,124,194,.55); color: #fff; }
+.k.prev { outline: 3px solid #ef5b5b; outline-offset: -3px; }
+.k.ton { box-shadow: inset 0 0 0 150px rgba(215,124,194,.9); color: #fff; }
+.k.root::after { content: ""; position: absolute; left: 50%; bottom: 52px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #3ccf7a; }
+.k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.85) !important; color: #fff; }
+.btn.latch.on { background: #2f5a3e; border-color: var(--good); }
+.scen h4 { margin: 10px 0 2px; font: 600 .92rem var(--display); }
+.scen ol { margin-top: 2px; }
+.pill { display: inline-block; font: 600 .66rem var(--body); padding: 1px 6px; border-radius: 9px; background: var(--line); color: var(--fg); }
+.phone input[type=range] { width: 90px; }
 </style>
+
 
 <div class="wrap">
   <h1>Sampler Lab</h1>
-  <p class="lead">Version 1, from your answers of 2026-11-20. Your <b>phone</b> plays into the FM-1 over USB; on the <b>DRUMS</b> track you record it, chop it onto the pads, shape each pad and save the pads as one of your own kits. Press <b>Start sound</b>. An example is loaded: a take of the drum break, already chopped into <b>MY KIT 1</b>. Recordings go through the same 4-bit ADPCM the FM-1 would store, so what you hear is the real quality.</p>
+  <p class="lead">Version 11 (2026-11-26): the FX are the kit's and each pad's (PUNCH, COLOR, DELAY, REVERB), KIT sounds by kit (K3), HOLD key (sustain), ENV from anywhere: NOTES (16 LEVELS first) and CHORDS (the CHORDS track's pads). Version 10: ENV has three pages, NOTES (a small MELODY), CHORDS (a small CHORDS, with progressions) and VELOCITY; a loop's tempo is found and fits the song by speed or by slices. Version 9: LEVELS keys play their own notes (C is C) with MELODY's help lights. Version 8: a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
+  tempo); the bar's rows share the screen; GRID off … 1/32; velocity; SOUND with ATTACK, HOLD, DECAY; the track's FX as PUNCH
+  (COMP, CLIP), DIRT and SPACE (DELAY and REVERB together); CHOP's put mode silent. Press <b>Start sound</b>, then try the
+  <a href="#scen">usage scenarios</a>.</p>
 
   <div class="phone" role="group" aria-label="Your phone, playing into the FM-1 over USB">
     <button class="start" id="start">Start sound</button>
     <span class="tag">Your phone (USB in)</span>
     <select id="src" aria-label="What the phone plays"></select>
     <button id="phplay">▶ Play on the phone</button>
-    <span class="lvl" aria-hidden="true"><i id="phlvl"></i></span>
+    <label class="tag">volume <input type="range" id="phvol" min="0" max="100" value="100" aria-label="The phone's volume"></label>
     <span class="tag" id="phstate">stopped</span>
   </div>
 
@@ -81,12 +96,23 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         <div class="row">
           <button class="btn" id="selL">SELECT ◀</button>
           <button class="btn" id="selR">SELECT ▶</button>
+          <button class="btn" id="preL">PRESETS ◀</button>
+          <button class="btn" id="preR">PRESETS ▶</button>
+          <button class="btn" id="octD">OCT−</button>
+          <button class="btn" id="octU">OCT+</button>
+        </div>
+        <div class="row">
+          <button class="btn" id="scl">SCL</button>
           <button class="btn" id="play">PLAY</button>
-          <button class="btn rec" id="rec" title="Tap: record or write. Hold on the DRUMS page and press a key: record onto that pad">REC</button>
-          <button class="btn" id="edit" title="Tap: the next sampler page. Hold + a key: clear that pad">EDIT</button>
-          <button class="btn" id="save" title="Hold">SAVE (hold)</button>
+          <button class="btn rec" id="rec" title="Tap: arm recording. Hold: the REC layer">REC</button>
+          <button class="btn" id="edit">EDIT</button>
+          <button class="btn" id="fx">FX</button>
+          <button class="btn" id="env">ENV</button>
+          <button class="btn" id="lfo">LFO</button>
+          <button class="btn" id="save">SAVE</button>
           <button class="btn" id="home">HOME</button>
-          <button class="btn" id="glo" title="Tap: GLO · USB AUDIO">GLO</button>
+          <button class="btn" id="glo">GLO</button>
+          <button class="btn latch" id="latch" title="For a mouse: buttons and keys stay held until pressed again">HOLD (lab)</button>
         </div>
         <div class="hint" id="hint"></div>
       </div>
@@ -95,43 +121,132 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
   </div>
 
   <div class="notes">
-    <div class="card"><h3>How to try it</h3><ol>
-      <li><b>A kick in five seconds.</b> On the DRUMS page with MY KIT 2 picked (SELECT), play the <i>808 kick</i> on the phone, then hold <b>REC</b> and hold a white key: it records while you hold the key (2 s at most), cuts the silence before the sound and puts it on that pad.</li>
-      <li><b>Chop a loop.</b> EDIT opens the sampler pages: <b>TAKE → CHOP → PAD → KIT</b> (EDIT again goes round; HOME back to DRUMS). On TAKE, play the break on the phone and tap REC to start and stop (10 s at most). On CHOP, K4 SLICES picks <i>by hits</i> or 4/8/16 equal parts; K1 and K2 set the part of the take to use; PLAY hears it. Turn <b>REC on</b> and press a key: the slices go onto the pads from that key up. REC off: the keys only play, as on STEPS.</li>
-      <li><b>Shape a pad.</b> PAD shows the last pad you pressed: K1 TUNE, K2 ATTACK, K3 DECAY, K4 LEVEL. EDIT held + a key clears a pad.</li>
-      <li><b>Keep it.</b> KIT: K1 picks MY KIT 1, 2 or 3; SAVE held saves the pads there (it asks first if the kit has sounds). Then the take can go: on TAKE, SAVE held throws the selected take away and frees its RAM.</li>
-      <li><b>GLO</b> opens the USB AUDIO settings; with IN at <i>off</i> nothing records.</li>
+    <div class="card scen" id="scen"><h3>Usage scenarios: try each one</h3>
+      <p><b>Keyboard:</b> the FM-1 keys are on <b>a w s e d r f g y h u j k o l p ; [ ' z n x m c v , b</b> (the letter is on
+      each key). Buttons: <b>Space</b> PLAY · <b>Enter</b> REC (hold for the REC layer) · <b>Shift</b> EDIT · <b>`</b> FX ·
+      <b>Tab</b> LFO · <b>]</b> ENV · <b>\</b> SCL · <b>Backspace</b> SAVE (hold) · <b>Esc</b> HOME · <b>← →</b> PRESETS · <b>↑ ↓</b> SELECT ·
+      <b>− =</b> OCT− OCT+ · <b>1–4</b> K1–K4 up, <b>Shift+1–4</b> down. Click an empty part of the page if keys do nothing.</p>
+      <h4>1. Record a beat (PLAY)</h4><ol>
+        <li><b>PRESETS</b> (← →) picks the kit. <b>Enter</b> (REC on), <b>Space</b> (PLAY): the bar runs. Play <b>a</b> (kick),
+        <b>s</b> (snare), then <b>w</b> (hat) on the next rounds. A row a key, in the order you record them; the rows share the
+        space, with names while they fit. With the mouse, press low on a key to play harder (the FM-1's keys feel how hard).</li>
+        <li><b>K3 GRID</b> (off, 1/8, 1/16, 1/32, 1/8T, 1/16T) places each hit as you record it (off: as played). <b>K4 FEEL</b>
+        (swing, laid back …) then moves the whole track from where it was recorded; change it any time. <b>K1 LEVEL</b> and <b>K2 FX</b>: the key you played last.</li>
+      </ol>
+      <h4>2. Erase, clear, undo, redo</h4><ol>
+        <li><b>Erase</b>: REC on, playing, hold <b>Shift</b> (EDIT) and hold <b>w</b>. <b>Undo</b>: hold <b>Backspace</b> (SAVE),
+        up to 4 back. <b>Redo</b>: two quick taps on Backspace. A single tap says <i>HOLD: UNDO</i>.</li>
+        <li><b>Clear</b>: hold <b>Enter</b> (REC layer), <b>=</b> (OCT+): it asks; <b>=</b> again clears.</li>
+      </ol>
+      <h4>3. Build a kit (EDIT → KIT)</h4><ol>
+        <li><b>Shift</b> (EDIT): KIT. Touch a key; <b>→</b> (PRESETS) steps through the sounds; <b>3</b> (K3 GROUP) jumps from kit to kit
+        (your MY KITs, then Dusty, 808, Live, Latin; each opens on sounds of the same kind). <b>K1 LEVEL</b>, <b>K2 VELOCITY</b>.</li>
+        <li>Hold <b>Backspace</b>: the save panel; <b>1</b> picks MY KIT 1–3; hold again: saved.</li>
+      </ol>
+      <h4>4. Shape a sound (EDIT → SOUND, TRIM)</h4><ol>
+        <li><b>SOUND</b>: K1 TUNE (a note: the first turn snaps it in tune; a drum: semitones), K2 ATTACK, <b>K3 HOLD</b> (fine steps, then
+        <i>full</i>, then <i>key</i>), K4 DECAY. SELECT: mute group.</li>
+        <li><b>HOLD key</b>: the sound lasts while you hold the key (its end loops), then fades with DECAY. Try it on MY KIT 1's sung
+        note (<b>k</b>) and hold the key; in ENV it holds every note and chord.</li>
+        <li><b>TRIM</b> (samples): on MY KIT 1 touch <b>w</b> (a quiet hat): K4 GAIN up to MAX.</li>
+      </ol>
+      <h4>5. Effects: the kit's and each pad's (FX, PAD FX)</h4>
+      <p><b>FX</b> holds the four effects of the kit, each one running once: <b>PUNCH</b>, <b>COLOR</b>, <b>DELAY</b>, <b>REVERB</b>.
+      <b>PAD FX</b> (EDIT) is each pad's <b>sends</b> to them, the same names in the same order: the pad keeps its dry sound and sends an
+      amount to each (PUNCH as parallel compression, COLOR as parallel saturation). Pads start sending 10 to PUNCH and COLOR and 0 to
+      DELAY and REVERB, so turning an effect up in FX reaches the whole kit; turn a pad's send down to keep it clean.</p><ol>
+        <li><b>`</b> (FX): <b>PUNCH</b>: K1 COMP, K2 SPEED (fast, medium, slow), K3 CLIP, K4 SHAPE (soft, hard). FX again: <b>COLOR</b>:
+        K1 TAPE, K2 LOFI, K3 DRIVE, K4 CRUSH; they add up, so tape and lo-fi on the whole kit is two knobs. FX again: <b>SPACE</b>: K1 DELAY
+        time, K2 FEEDBACK, K3 REVERB type (room, plate, hall, spring), K4 SIZE.</li>
+        <li>EDIT → <b>PAD FX</b>: on the hats, COLOR to 0 (clean hats in a dusty kit); on the snare, DELAY and REVERB up. A pad can take
+        several at once. When an effect is off in FX the pad page says <i>off in FX</i>.</li>
+        <li>On PLAY, <b>K2 REVERB</b> is the key's reverb, at hand while you play.</li>
+      </ol>
+      <h4>6. ENV: a sound across the keys</h4>
+      <p><b>]</b> (ENV) from any DRUMS page plays the pad you touched last across the keys. ENV again: NOTES ↔ CHORDS. <b>Esc</b> (HOME): back.
+      <b>− =</b> (OCT− OCT+): the octave.</p><ol>
+        <li><b>NOTES · 16 LEVELS</b> (as it opens): only the 16 white keys, the same sound from soft (6 %) to loud (100 %); <b>K2</b> to
+        <i>tune</i>: a semitone a key, F4 as recorded. The simple one for drums.</li>
+        <li><b>K1 MODE</b> for the whole keyboard, each key its own note (C is C), MELODY's help: <i>FREE</i> (no lights), <i>KEY</i> (the
+        scale lit, the tonic full), <i>WHITES</i> (the white keys play the scale). <b>K2 KEY</b>, <b>K3 SCALE</b> (the song's), <b>K4</b> the note
+        the sample is (found; turn to correct).</li>
+        <li><b>CHORDS</b> (ENV again): the CHORDS track's pads. Each white key plays the key's chord by its letter (C is I, D II …); hold a
+        black key for a colour, then a white one (F#3 sus2, G#3 sus4, A#3 6, C#4 7, D#4 maj7, F#4 9, G#4 add9, A#4 11, C#5 13, D#5 dim).
+        <b>F5 NEXT</b> plays the progression's next chord (lit), <b>G5 AGAIN</b> the last one, <b>F#5 LOCK</b> keeps the colour. K1 CHORD
+        (triads, 7ths, power), K2 PROGRESSION, K3 VOICING, K4 SCALE.</li>
+        <li>Your test: MY KIT 1, touch <b>k</b> (the sung note), ENV twice: chords; ENV: NOTES, WHITES: a melody over them.</li>
+        <li>Record: <b>Enter</b>, <b>Space</b>, play in ENV; a chord is one mark ×3 on the F4 row. With HOLD <i>key</i>, each note keeps
+        the length you held it.</li>
+      </ol>
+      <h4>6b. Fit a loop to the song's tempo</h4><ol>
+        <li>Phone: <i>Drum break, 95 BPM</i>. MY KIT 2, <b>Tab</b> (TAKE), <b>Enter</b>, let it play about 5 s, <b>Enter</b>: <i>95 BPM (found) ·
+        K4 FIT to the song's 90</i>.</li>
+        <li><b>A. By speed</b>: <b>4</b> (K4 FIT) to <i>speed</i>. Put the whole take on a key (CHOP, K4 SLICES 1, Enter, <b>k k</b>): it plays a
+        little slower and lower, at 90 BPM. Good for a loop you play as one piece.</li>
+        <li><b>B. By slices</b>: K4 FIT to <i>slices</i>. <b>Tab</b> (CHOP), K4 <i>hits</i>, <b>Enter</b>, <b>4</b> (PUT each), press a key twice
+        (<b>k</b>, F4, keeps them above the drums): <i>Write the loop as a beat?</i> <b>Space</b>: yes. <b>Esc</b>, <b>Space</b>: the break plays at
+        90 BPM, its pitch unchanged; each hit is a note you can move, erase or play yourself.</li>
+      </ol>
+      <h4>7. Know your sample's note or key, and tune it</h4><ol>
+        <li><b>A note.</b> Phone: <i>Piano note, C#3 (a little sharp)</i>. PRESETS to MY KIT 2, <b>Tab</b> (TAKE), <b>Enter</b>, wait, <b>Enter</b>:
+        the take says <i>NOTE C#3 +15c (found)</i>.</li>
+        <li><b>Tab</b> (CHOP), <b>Enter</b>, <b>k k</b>: on F4. <b>Esc</b>, touch <b>k</b>, <b>Shift</b> twice (EDIT → SOUND): <b>K1 TUNE</b>
+        shows <i>C#3 +15c</i>. <b>Shift+1</b> once: <i>C#3</i> (in tune); once more: <i>C3</i>. Play <b>k</b>: a C.</li>
+        <li><b>]</b> (LEVELS): <i>ROOT C3</i>; the scales and chords start from C.</li>
+        <li><b>A key.</b> Phone: <i>Chord loop, A minor</i>. TAKE, record it (two rounds): <i>KEY A minor (found) · SELECT: song key</i>.
+        <b>↑</b> (SELECT): <i>Song key → A minor?</i> <b>Space</b> (PLAY): yes. LEVELS and the other tracks' help now use A minor.</li>
+        <li>Put the loop on a key: on SOUND its TUNE shows <i>Am</i>; turning moves it a semitone (Bbm, Bm…). The loop's speed changes
+        with its pitch, as a record does.</li>
+        <li><b>A drum</b> (a kick, a break) says <i>no clear note or key</i>: TUNE stays in semitones.</li>
+      </ol>
+      <h4>7b. Sample a kick (LFO)</h4><ol>
+        <li>Phone: <i>808 kick</i>. PRESETS to MY KIT 2. <b>Tab</b> (LFO): TAKE. <b>2</b>: IN LEVEL. <b>Enter</b>: armed, it records on
+        sound; <b>Enter</b>: stop.</li>
+        <li><b>Tab</b>: CHOP, K4 SLICES 1. <b>Enter</b>: put mode (red). Press <b>a</b>: <i>F3 · KICK: press again to store</i>; press
+        <b>a</b> again: <i>Stored on F3</i>. Nothing sounds; SELECT plays the slice.</li>
+      </ol>
+      <h4>8. Chop a break</h4><ol>
+        <li>Phone: <i>Drum break</i>. TAKE, two bars. CHOP: K4 <i>hits</i>. The keys play the slices. <b>=</b> split, <b>−</b> merge.</li>
+        <li><b>Enter</b>: put mode. <b>↑ ↓</b> chooses the slice (it plays). Press a key twice. <b>K4 PUT</b>: <i>each</i> puts every
+        slice from the key you press up.</li>
+      </ol>
+    </div>
+
+    <div class="card q"><h3>Decided</h3><ol>
+      <li><b>DRUMS</b>: SCL PLAY → IDEAS → AUTO (the top line shows only the page you are on, the kit and the tempo). EDIT builds the
+      kit (KIT · SOUND · TRIM · PAD FX); FX the track's effects (PUNCH · DIRT · SPACE); LFO the sampler; ENV free.</li>
+      <li><b>PLAY</b>: K1 LEVEL and K2 REVERB of the key played, K3 GRID, K4 FEEL. PRESETS: the kit.</li>
+      <li><b>SAVE</b>: held, undo (up to 4) on PLAY; two taps, redo; held in EDIT and the sampler, save the kit.</li>
+      <li><b>Erase needs REC on</b>, on every track.</li>
+      <li>Drum map v2; MY KIT 1–3, 7 s each; one take of 11 s; OCT+/OCT− split and merge; put a slice with two presses.</li>
+      <li><b>GRID when recording</b> (off: as played), <b>FEEL</b> on playback for the whole track; the same on every track.</li>
+      <li><b>Velocity</b> per pad (KIT · K2): fixed, or 1–10 (7 at first).</li>
+      <li><b>ENV</b> (from any DRUMS page): NOTES (16 LEVELS on the white keys first, velocity or tune; then FREE, KEY, WHITES with the song's key and scale) and CHORDS (the CHORDS track's pads: C is I, black keys colours, F5 NEXT, G5 AGAIN, F#5 LOCK). MELODY, BASS and CHORDS do not change.</li>
+      <li><b>HOLD key</b> on SOUND: a sound lasts while its key is held (its end loops), then DECAY; recorded notes keep their length.</li>
+      <li><b>Tempo of a take</b> (70–180 BPM); <b>FIT</b> on TAKE: <i>speed</i> (the pad plays at the song's tempo, its pitch moves) or
+      <i>slices</i> (PUT all, then the loop is written as a beat at the song's tempo). Time-stretch: not now.</li>
+      <li><b>Note and key of a take</b>: a single sound's note (with cents), a loop's key (24 keys); a key can become the song's key
+      (SELECT on TAKE, it asks). <b>TUNE</b> shows the note (or key) a pad sounds; its first turn snaps it in tune, then a semitone a turn.
+      Changing the pitch changes the speed (no time-stretch for now).</li>
+    </ol><h3>From v6</h3><ol>
+      <li><b>SOUND</b>: TUNE (a note, or semitones for a drum), ATTACK, HOLD (fine steps, full, key), DECAY.</li>
+      <li><b>FX</b> for the whole kit, always there: PUNCH (COMP, SPEED, CLIP, SHAPE), COLOR (TAPE, LOFI, DRIVE, CRUSH, they add up), SPACE (DELAY time, FEEDBACK, REVERB type, SIZE). <b>PAD FX</b>: each pad's sends to PUNCH, COLOR, DELAY, REVERB (10, 10, 0, 0 at first); each effect runs once (as the effects bus does, D-093). KIT: sounds grouped by kit (K3).</li>
+      <li><b>CHOP put mode</b>: silent; SELECT plays; K4 PUT one or each.</li>
     </ol></div>
-    <div class="card"><h3>What fits</h3>
-      <table>
-        <tr><th></th><th>Where</th><th>How much</th></tr>
-        <tr><td>Takes (this session)</td><td>RAM, gone at power-off</td><td>11 s in all, one take 10 s at most</td></tr>
-        <tr><td>One pad, recorded with REC + key</td><td>RAM until saved</td><td>2 s at most</td></tr>
-        <tr><td>MY KIT 1, 2, 3</td><td>Flash, kept</td><td>7 s each, 16 pads (the white keys)</td></tr>
-      </table>
-      <p>Sound is stored as 4-bit IMA ADPCM at 22 kHz, about 11 KB a second, the format Felucca uses for its own user samples. The kits sit in the flash area you chose (option B, 0xA0000 to 0xDC000): 240 KB, exactly Felucca's three 80 KB sample slots.</p>
-      <p>The kits play straight from flash, as Felucca's do, so a kit costs no RAM. That is what makes two kits at once possible.</p>
+
+    <div class="card"><h3>The drum map</h3>
+      <p>The same 27 keys on every kit. ★ AUTO and IDEAS play it.</p>
+      <table id="mapT"><tr><th>Key</th><th></th><th>Built-in kits</th></tr></table>
     </div>
-    <div class="card"><h3>GLO · USB AUDIO</h3>
-      <table>
-        <tr><th>Setting</th><th>Choices</th></tr>
-        <tr><td><b>OUT</b> (FM-1 → phone, computer, MPC)</td><td><i>mix</i>: stereo, what you hear · <i>4 tracks</i>: each track on its own pair, to record stems</td></tr>
-        <tr><td><b>IN</b> (phone → FM-1)</td><td><i>off</i> · <i>hear</i>: it plays through the FM-1, to jam along, and the sampler can record it · <i>sampler</i>: you only hear it while recording</td></tr>
-        <tr><td><b>IN LEVEL</b></td><td>−12 to +12 dB, so a quiet phone still records loud enough; the meter on TAKE shows it</td></tr>
-      </table>
-      <p>USB audio goes both ways at once, as in Melodee, so there is no in/out switch.</p>
+
+    <div class="card"><h3>USB audio, both ways</h3>
+      <p>As on the MPC Sample: what you play always goes out (record it on the phone or MPC), and the input always comes in, ready
+      to sample. GLO · USB AUDIO: OUT (mix or 4 tracks), MONITOR (off, when sampling, always), IN LEVEL. Not yet tested on an FM-1.</p>
     </div>
-    <div class="card"><h3>The web sample loader</h3>
-      <p>A page you open on your computer, with the FM-1 plugged in by USB. Drop a WAV or MP3: it is made mono, 22 kHz and ADPCM, and sent to the FM-1 as a take (or straight onto a kit), over the same USB MIDI messages Felucca's editor uses for its sample slots. Try it here: the file becomes a take on the TAKE page.</p>
-      <div class="drop" id="drop">Drop an audio file here, or <label style="text-decoration:underline;cursor:pointer">choose one<input type="file" id="file" accept="audio/*" hidden></label></div>
-      <div id="loadInfo"></div>
-    </div>
-    <div class="card q"><h3>Questions for you</h3><ol>
-      <li><b>Three kits of 7 s or four of 5 s?</b> I recommend <b>three of 7 s</b>: the same size and format as Felucca's sample slots in the same place, so a kit survives a firmware switch and Felucca's editor can fill it. Four kits would make each 5.3 s, and only our own loader would work.</li>
-      <li><b>REC held + a key</b> on the DRUMS page to record one pad: keep it? (It is the fastest way to a kick, and it never touches your takes.)</li>
-      <li><b>Two kits at once (the mini-MPC):</b> let another track (CHORDS or MELODY) switch to a SAMPLES template that plays a second MY KIT on its white keys. Kits cost no RAM; the limit is voices (12 shared). Want it?</li>
-      <li><b>More per pad?</b> Today: tune, attack, decay, level. Candidates: <i>reverse</i>, <i>choke</i> (a closed hat stops the open one), <i>loop while held</i>. Which ones?</li>
-    </ol></div>
+
+    <div class="card"><h3>Later, as their own stories</h3><ul>
+      <li><b>Web sample loader</b>: drop a WAV on a page, it goes to a MY KIT over USB.</li>
+    </ul></div>
   </div>
 </div>
 
@@ -139,35 +254,85 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 (() => {
 "use strict";
 const SR = 22050, LOW = 53, NK = 27, isBlack = n => [1,3,6,8,10].includes(n % 12);
-const RAM_S = 11, TAKE_MAX = 10, QUICK_MAX = 2, KIT_S = 7, NPAD = 16;
-const WHITES = []; for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) WHITES.push(i);
-const padOfKey = i => WHITES.indexOf(i);
+const RAM_S = 11, KIT_S = 7;
 const NOTE = n => ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"][n % 12] + Math.floor(n / 12 - 1);
-const padName = p => "PAD " + (p + 1) + " · " + NOTE(LOW + WHITES[p]);
-const PCKEYS = "asdfghjkl;zxcvbn";
+const keyNote = i => NOTE(LOW + i);
+const $ = id => document.getElementById(id);
+
+// ------------------------------------------------------------------ the drum map, v4: the 12 AUTO sounds on F3-E4 (GM style)
+// OLD[i]: the sound of key i in fm1kit/src/drums.c's order (kick1..4, snare1..3, rim1, rim2, clap1, clap2, ghost1, hat1, hat2,
+// pedal1, open1, open2, shaker1, shaker2, tom1..3, four of the kit's own, crash1)
+const OLD = [0, 12, 4, 15, 9, 17, 7, 19, 11, 20, 22, 21,   1, 13, 5, 16, 10, 14, 8, 2, 18, 6, 23, 3, 24, 25, 26];
+const ROLE = ["KICK", "HAT", "SNARE", "OPEN HAT", "CLAP", "SHAKER", "RIM", "TOM 1", "GHOST", "TOM 2", "PERC", "TOM 3"];
+const OGROUP = o => o < 4 ? 0 : o < 12 ? 1 : (o < 19 || o === 26) ? 2 : 3;
+const GROUP = i => OGROUP(OLD[i]);
+const GCOL = ["#ef5b5b", "#f0a83c", "#3cc2c9", "#a67cf0"];
+const isAuto = i => i < 12;
+const SYN = ["Dusty", "808", "Live", "Latin"];
+const EXTRA = [["tamb1","tamb2","perc1","vinyl1"], ["cowbell1","clave1","maracas1","conga1"], ["ride1","bell1","cowbell1","tamb1"], ["conga1","conga2","bongo1","timbal1"]];
+const BASE = ["kick1","kick2","kick3","kick4","snare1","snare2","snare3","rim1","rim2","clap1","clap2","ghost1","hat1","hat2","pedal1","open1","open2","shaker1","shaker2","tom1","tom2","tom3"];
+const synName = (k, o) => o < 22 ? BASE[o] : o < 26 ? EXTRA[k][o - 22] : "crash1";
+const HATKEY = i => [12, 13, 14, 15, 16].includes(OLD[i]);
 
 // ------------------------------------------------------------------ sounds (made here, at 22 kHz)
 function mk(sec, f) { const n = Math.round(sec * SR), a = new Float32Array(n); f(a, n); return a; }
 let seed = 7; const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x3fffffff - 1;
 const lp = (a, k) => { let y = 0; for (let i = 0; i < a.length; i++) { y += k * (a[i] - y); a[i] = y; } return a; };
-const kick = () => mk(.45, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR, f = 45 + 110 * Math.exp(-t / .03); ph += 2 * Math.PI * f / SR; a[i] = Math.sin(ph) * Math.exp(-t / .16) * .95 + (i < 40 ? rnd() * .3 : 0); } });
-const snare = () => mk(.3, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * 190 / SR; a[i] = rnd() * .55 * Math.exp(-t / .09) + Math.sin(ph) * .45 * Math.exp(-t / .05); } });
-const hat = d => mk(d * 3, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const r = rnd(), t = i / SR; a[i] = (r - p) * .32 * Math.exp(-t / d); p = r; } });
-const clap = () => mk(.35, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const t = i / SR, r = rnd(), b = t < .03 ? (Math.floor(t / .01) % 2 ? .3 : 1) : Math.exp(-(t - .03) / .1); a[i] = (r - p * .5) * .5 * b; p = r; } });
-const tom = () => mk(.4, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * (85 + 40 * Math.exp(-t / .05)) / SR; a[i] = Math.sin(ph) * .8 * Math.exp(-t / .14); } });
-const rim = () => mk(.08, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * 1700 / SR; a[i] = Math.sin(ph) * .5 * Math.exp(-t / .012) + (i < 20 ? rnd() * .5 : 0); } });
-const shaker = () => mk(.15, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const t = i / SR, r = rnd(); a[i] = (r - p) * .25 * Math.min(1, t / .02) * Math.exp(-t / .05); p = r; } });
-const stab = () => mk(1.2, (a, n) => { const fs = [261.6, 329.6, 392, 493.9]; for (let i = 0; i < n; i++) { const t = i / SR; let s = 0; fs.forEach(f => s += ((t * f) % 1) * 2 - 1); a[i] = s * .16 * Math.exp(-t / .45); } lp(a, .18); });
-function mix(dst, src, at, g = 1) { for (let i = 0; i < src.length && at + i < dst.length; i++) dst[at + i] += src[i] * g; }
-function brk() {                                   // two bars of a 95 BPM break
-  const s16 = 60 / 95 / 4, a = new Float32Array(Math.round(32 * s16 * SR)), K = kick(), S = snare(), H = hat(.035), O = hat(.18);
-  const at = i => Math.round(i * s16 * SR);
-  [0, 6, 10, 16, 19, 26].forEach(i => mix(a, K, at(i)));
-  [4, 12, 20, 28].forEach(i => mix(a, S, at(i))); [15, 30].forEach(i => mix(a, S, at(i), .35));
-  for (let i = 0; i < 32; i += 2) mix(a, i === 14 || i === 30 ? O : H, at(i), i % 4 ? .6 : 1);
-  return lp(a, .7);
+const kickG = (f0, f1, d, click) => mk(d * 3, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR, f = f1 + (f0 - f1) * Math.exp(-t / .03); ph += 2 * Math.PI * f / SR; a[i] = Math.sin(ph) * Math.exp(-t / d) * .95 + (i < 40 ? rnd() * click : 0); } });
+const snareG = (f, nz, d) => mk(d * 3.3, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * f / SR; a[i] = rnd() * nz * Math.exp(-t / d) + Math.sin(ph) * .45 * Math.exp(-t / .05); } });
+const hatG = (d, g = .32) => mk(Math.max(.05, d * 3), (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const r = rnd(), t = i / SR; a[i] = (r - p) * g * Math.exp(-t / d); p = r; } });
+const clapG = d => mk(.35 * d / .1, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const t = i / SR, r = rnd(), b = t < .03 ? (Math.floor(t / .01) % 2 ? .3 : 1) : Math.exp(-(t - .03) / d); a[i] = (r - p * .5) * .5 * b; p = r; } });
+const toneG = (f, d, g = .8, f2 = 0) => mk(d * 3, (a, n) => { let ph = 0, q = 0; for (let i = 0; i < n; i++) { const t = i / SR; ph += 2 * Math.PI * (f + f * .4 * Math.exp(-t / .04)) / SR; q += 2 * Math.PI * f2 / SR; a[i] = (Math.sin(ph) + (f2 ? Math.sign(Math.sin(q)) * .4 : 0)) * g * Math.exp(-t / d); } });
+const shakerG = d => mk(d * 3, (a, n) => { let p = 0; for (let i = 0; i < n; i++) { const t = i / SR, r = rnd(); a[i] = (r - p) * .25 * Math.min(1, t / .02) * Math.exp(-t / d); p = r; } });
+const metalG = (d, g) => mk(d * 3, (a, n) => { const fs = [205, 304, 369, 522, 540, 800]; for (let i = 0; i < n; i++) { const t = i / SR; let s = 0; fs.forEach(f => s += Math.sign(Math.sin(2 * Math.PI * f * 2.3 * t))); a[i] = (s / 6 * .6 + rnd() * .4) * g * Math.exp(-t / d); } });
+const clip = a => { for (let i = 0; i < a.length; i++) a[i] = Math.max(-1, Math.min(1, a[i])); return a; };
+const KV = [{ t: 1, d: 1 }, { t: .9, d: 1.8 }, { t: 1.05, d: .8 }, { t: 1.1, d: 1 }];   // Dusty dark, 808 long, Live tight, Latin bright
+function synth(k, i) {       // i: the sound's index in drums.c's order
+  const v = KV[k], T = v.t, D = v.d; let a; seed = 11 + k * 31 + i * 7;
+  const nm = synName(k, i);
+  if (i < 4) a = kickG([150, 120, 180, 130][i] * T, [48, 42, 55, 38][i] * T, [.13, .2, .09, .3][i] * D, [.3, .1, .4, .05][i]);
+  else if (i < 7) a = snareG([190, 220, 170][i - 4] * T, [.55, .45, .65][i - 4], [.09, .07, .13][i - 4] * D);
+  else if (i < 9) a = toneG(1700 * T * (i === 8 ? 1.25 : 1), .012, .5);
+  else if (i < 11) a = clapG(i === 9 ? .1 * D : .14 * D);
+  else if (i === 11) a = snareG(200 * T, .18, .04);
+  else if (i < 15) a = hatG([.035, .025, .02][i - 12] * D);
+  else if (i < 17) a = hatG([.18, .3][i - 15] * D);
+  else if (i < 19) a = shakerG(i === 17 ? .05 : .08);
+  else if (i < 22) a = toneG([85, 115, 155][i - 19] * T, .14 * D);
+  else if (i === 26) a = metalG(.6 * D, .5);
+  else if (/conga|bongo|timbal/.test(nm)) a = toneG(({ conga1: 200, conga2: 260, bongo1: 380, timbal1: 520 })[nm] * T, .08);
+  else if (/cowbell/.test(nm)) a = toneG(560, .09, .3, 845);
+  else if (/clave/.test(nm)) a = toneG(2500, .02, .6);
+  else if (/ride|bell/.test(nm)) a = metalG(nm === "ride1" ? .5 : .25, .35);
+  else if (/vinyl/.test(nm)) a = mk(.6, (b, n) => { for (let j = 0; j < n; j++) b[j] = (rnd() > .995 ? rnd() * .6 : 0) + rnd() * .02; });
+  else a = shakerG(nm === "tamb2" ? .04 : nm === "perc1" ? .03 : .07);
+  if (k === 0) lp(a, .45);
+  return clip(a);
 }
-const SOURCES = [["Drum break, 95 BPM (2 bars)", brk()], ["808 kick", kick()], ["Clap", clap()], ["Chord stab", stab()]];
+const synCache = new Map();
+const synData = (k, o) => { const id = k * 32 + o; if (!synCache.has(id)) synCache.set(id, synth(k, o)); return synCache.get(id); };
+
+// the phone's sounds
+function mix(dst, src, at, g = 1) { for (let i = 0; i < src.length && at + i < dst.length; i++) dst[at + i] += src[i] * g; }
+function brk() {
+  const s16 = 60 / 95 / 4, a = new Float32Array(Math.round(32 * s16 * SR)), K = kickG(150, 48, .16, .3), S = snareG(190, .55, .09), H = hatG(.035), O = hatG(.18);
+  const at = i => Math.round(i * s16 * SR);
+  [0, 6, 10, 16, 19, 26].forEach(i => mix(a, K, at(i))); [4, 12, 20, 28].forEach(i => mix(a, S, at(i))); [15, 30].forEach(i => mix(a, S, at(i), .35));
+  for (let i = 0; i < 32; i += 2) mix(a, i === 14 || i === 30 ? O : H, at(i), i % 4 ? .6 : 1);
+  return clip(lp(a, .7));
+}
+function oneByOne() { const a = new Float32Array(Math.round(2.4 * SR)); [kickG(140, 45, .18, .2), snareG(200, .6, .1), hatG(.05), clapG(.12)].forEach((s, j) => mix(a, s, Math.round((.25 + j * .5) * SR))); return clip(a); }
+function quietHats() { const a = new Float32Array(Math.round(2 * SR)); for (let j = 0; j < 8; j++) mix(a, hatG(.04), Math.round((.1 + j * .24) * SR), .12); return clip(a); }
+const stab = () => mk(1.2, (a, n) => { const fs = [261.6, 329.6, 392, 493.9]; for (let i = 0; i < n; i++) { const t = i / SR; let s = 0; fs.forEach(f => s += ((t * f) % 1) * 2 - 1); a[i] = s * .16 * Math.exp(-t / .45); } lp(a, .18); });
+const withLead = (a, s) => { const b = new Float32Array(a.length + Math.round(s * SR)); b.set(a, Math.round(s * SR)); return b; };
+function sung(f, sec) { return mk(sec, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR, v = f * (1 + .006 * Math.sin(2 * Math.PI * 5.5 * t)); ph += 2 * Math.PI * v / SR; let s = 0; for (let h = 1; h <= 12; h++) s += Math.sin(ph * h) * Math.exp(-Math.pow((f * h - 700) / 500, 2)) / h; a[i] = s * .5 * Math.min(1, t / .04) * Math.min(1, (sec - t) / .15); } }); }
+function pluck(f, sec) { return lp(mk(sec, (a, n) => { for (let i = 0; i < n; i++) { const t = i / SR; a[i] = (((t * f) % 1) * 2 - 1) * .6 * Math.exp(-t / .35); } }), .12); }
+function piano(m, cents, sec) { const f = 440 * Math.pow(2, (m - 69 + cents / 100) / 12); return mk(sec, (a, n) => { for (let i = 0; i < n; i++) { const t = i / SR; let s = 0; for (let h = 1; h <= 8; h++) s += Math.sin(2 * Math.PI * f * h * Math.sqrt(1 + .0004 * h * h) * t) * Math.exp(-t * (1.2 + h * .7)) / (h * 1.3); a[i] = s * .45 * Math.min(1, t / .004); } }); }
+function chordLoop() {           // Am, Dm, E, Am: a bar each half, piano-ish, with the bass
+  const ch = [[57, 60, 64, 45], [57, 62, 65, 50], [56, 59, 64, 52], [57, 60, 64, 45]], L = .8, a = new Float32Array(Math.round(4 * L * SR));
+  ch.forEach((c, j) => c.forEach(m => mix(a, piano(m, 0, L + .2), Math.round(j * L * SR), .5))); return clip(a);
+}
+const SOURCES = [["Drum break, 95 BPM (2 bars)", brk()], ["808 kick", withLead(kickG(120, 42, .3, .05), .6)], ["Kick, snare, hat, clap, one by one", oneByOne()], ["Hi-hats, recorded quiet", quietHats()], ["Chord stab", withLead(clip(stab()), .4)], ["Sung note, A3", withLead(clip(sung(220, 1.4)), .5)], ["Bass pluck, E2", withLead(clip(pluck(82.41, 1.2)), .5)], ["Piano note, C#3 (a little sharp)", withLead(clip(piano(49, 8, 1.6)), .5)], ["Chord loop, A minor (Am Dm E Am)", chordLoop()]];
 
 // IMA ADPCM, encoded and decoded: what the FM-1 keeps is what you hear
 const STEP = [7,8,9,10,11,12,13,14,16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552,1707,1878,2066,2272,2499,2749,3024,3327,3660,4026,4428,4871,5358,5894,6484,7132,7845,8630,9493,10442,11487,12635,13899,15289,16818,18500,20350,22385,24623,27086,29794,32767];
@@ -183,24 +348,7 @@ function adpcm(x) {
   }
   return y;
 }
-SOURCES.forEach(s => s[1].forEach((v, i, a) => a[i] = Math.max(-1, Math.min(1, v))));
-
-// ------------------------------------------------------------------ the model
-const pad = (d) => ({ d, tune: 0, att: 0, dec: 9, lvl: 8 });          // dec index into DECS (9 = none), lvl 0..10
-const DECS = [.02, .04, .07, .1, .15, .25, .4, .7, 1.2, Infinity];
-const ATTS = [0, 2, 5, 10, 20, 40, 80, 150];
-const FACT = [kick(), snare(), hat(.035), hat(.18), clap(), tom(), rim(), shaker()].map(adpcm);
-const kits = [{ name: "FACTORY 808", fixed: true, pads: Array.from({ length: NPAD }, (_, i) => FACT[i] ? pad(FACT[i]) : null) }];
-for (let k = 1; k <= 3; k++) kits.push({ name: "MY KIT " + k, pads: Array(NPAD).fill(null), saved: null, dirty: false });
-const takes = [];                                  // { name, d (ADPCM'd), from }
-let takeN = 0, quickN = 0;
-const len = a => a.length / SR;
-const kitSec = k => kits[k].pads.reduce((s, p) => s + (p ? len(p.d) : 0), 0);
-const savedSec = k => kits[k].saved ? kits[k].saved.reduce((s, p) => s + (p ? len(p.d) : 0), 0) : 0;
-const ramSec = () => takes.reduce((s, t) => s + len(t.d), 0) + kits.slice(1).reduce((s, k) => s + (k.dirty ? k.pads.reduce((q, p) => q + (p && p.quick ? len(p.d) : 0), 0) : 0), 0);
-const clonePads = ps => ps.map(p => p ? { ...p } : null);
-
-// onsets, as Felucca's SLICE AUTO finds them: per hop of 32 samples, the peak of the first difference and the plain peak
+// onsets, as Felucca's SLICE AUTO finds them
 function onsets(d, s, e) {
   const H = 32, out = [s]; let fd = 0, fp = 0, md = 0, mp = 0, last = -1e9; const kd = Math.exp(-1 / 16), kp = Math.exp(-1 / 64), hops = [];
   for (let h = s; h + H <= e; h += H) { let pd = 0, pp = 0; for (let i = h; i < h + H; i++) { pd = Math.max(pd, Math.abs(d[i] - (d[i - 1] || 0))); pp = Math.max(pp, Math.abs(d[i])); } hops.push([h, pd, pp]); md = Math.max(md, pd); mp = Math.max(mp, pp); }
@@ -208,184 +356,548 @@ function onsets(d, s, e) {
     if (((pd > 1.75 * fd && pd > md / 12) || (pp > 1.75 * fp && pp > mp / 8)) && h - last > .05 * SR && h - s > .05 * SR) { out.push(Math.max(s, h - H)); last = h; }
     fd = Math.max(pd, fd * kd); fp = Math.max(pp, fp * kp);
   }
-  return out.slice(0, 32);
+  return out.slice(0, NK);
 }
 
-// the example: take 1 is the break, chopped by hits into MY KIT 1 (saved)
-function addTake(d, from) { const t = { name: "TAKE " + (++takeN), d, from }; takes.push(t); return t; }
-const ex = addTake(adpcm(SOURCES[0][1]), "phone, the break");
-{ const o = onsets(ex.d, 0, ex.d.length); o.slice(0, 8).forEach((s, j) => { kits[1].pads[j] = pad(ex.d.slice(s, j + 1 < o.length ? o[j + 1] : ex.d.length)); }); kits[1].saved = clonePads(kits[1].pads); }
-
-const st = { page: "drums", kit: 1, tk: 0, recOn: false, recHeld: false, editHeld: false, editUsed: false, padSel: 0,
-  chop: { s: 0, e: ex.d.length, zoom: 0, mode: 1 }, slot: 1, ask: 0, usb: { out: 0, in: 1, lvl: 0, thr: 1 },
-  rec: null, quick: null, prev: null, msg: "", msgT: 0, held: new Map(), phone: { on: false, src: 0, t0: 0 } };
-const SLMODES = ["off", "by hits", "4", "8", "16"];
+// ------------------------------------------------------------------ the model
+// a key: { syn: [kit, sound] } or { smp: { d, a0, a1, lo, hi, take } }, plus its settings
+const ATTS = [0, 1, 2, 5, 10, 20, 50, 100];                       // ms
+const HOLDS = [0, 5, 10, 15, 20, 30, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300, 400, 500, 650, 800, 1000, Infinity, "key"];   // ms at full level; full: the whole sound; key: while the key is held (it loops)
+const DECS = [5, 10, 20, 40, 80, 150, 300, 600, 1200];              // ms, a straight fade to silence after HOLD
+const fresh = i => ({ tune: 0, att: 0, hold: 21, dec: 4, lvl: 8, vel: 7, grp: HATKEY(i) ? 1 : 0, rev: false, gain: 0, pp: 10, pc: 10, dly: 0, rvb: 0 });   // pp, pc: how much of the track's PUNCH and COLOR; dly, rvb: sends
+const mkKey = (k, i) => ({ ...fresh(i), syn: [k, OLD[i]] });
+const cloneKey = x => ({ ...x, smp: x.smp ? { ...x.smp } : undefined, syn: x.syn ? [...x.syn] : undefined });
+const kits = SYN.map((n, k) => ({ name: n, built: true, keys: Array.from({ length: NK }, (_, i) => mkKey(k, i)) }));
+for (let m = 1; m <= 3; m++) kits.push({ name: "MY KIT " + m, built: false, keys: Array.from({ length: NK }, (_, i) => mkKey(0, i)) });
+kits.forEach(k => { k.saved = k.keys.map(cloneKey); k.dirty = false; });
+let take = null, takeId = 0;
+const len = n => n / SR;
+const smpLen = x => x.smp ? x.smp.a1 - x.smp.a0 : 0;
+const kitSec = k => kits[k].keys.reduce((s, x) => s + len(smpLen(x)), 0);
+const peakOf = (d, a, b) => { let p = 0; for (let i = a; i < b; i++) p = Math.max(p, Math.abs(d[i])); return p; };
+const maxGain = x => { const p = peakOf(x.smp.d, x.smp.a0, x.smp.a1); return p > 0 ? Math.min(24, -20 * Math.log10(p)) : 0; };
+{   // the example, MY KIT 1: a kick, a snare, a hat (recorded too quiet) and a clap from the phone; its take is gone
+  const raw = oneByOne(), hs = Math.round(1.25 * SR), he = Math.round(1.7 * SR);
+  for (let i = hs; i < he; i++) raw[i] *= .14;
+  const d = adpcm(raw), K = kits[4];
+  const put = (key, j) => { const a0 = Math.round((.248 + j * .5) * SR), a1 = a0 + Math.round(.45 * SR); K.keys[key] = { ...fresh(key), smp: { d, a0, a1, lo: a0, hi: a1, take: 0 } }; };
+  put(0, 0); put(2, 1); put(1, 2); put(4, 3);
+  { const v = adpcm(clip(sung(220, 1.2))); K.keys[12] = { ...fresh(12), smp: { d: v, a0: 0, a1: v.length, lo: 0, hi: v.length, take: 0 } }; }
+  K.saved = K.keys.map(cloneKey);
+}
+const SPEEDN = ["fast", "medium", "slow"], SHAPEN = ["soft", "hard"], DLYN = ["1/16", "1/8", "1/8 dotted", "1/4", "1/4 dotted"], DLYB = [.25, .5, .75, 1, 1.5], RVBN = ["room", "plate", "hall", "spring"];
+const GRIDS = [["off", 0], ["1/8", 8], ["1/16", 16], ["1/32", 32], ["1/8T", 12], ["1/16T", 24]];
+const FEELS = [["Straight", .5, 0], ["Swing 55", .55, 0], ["Swing 62", .62, 0], ["MPC 66", .66, 0], ["Laid back", .5, .012], ["Pushed", .5, -.008]];
+const BPM = 90, BAR = 4 * 60 / BPM;
+const st = { page: "play", tab: 0, kit: 4, sel: 0, held: new Map(), editHeld: false, editUsed: false, latch: false,
+  usb: { out: 0, mon: 1, lvl: 0 }, onSound: true, rec: null, peak: 0, peakT: 0,
+  fx: { tab: 0, comp: 0, speed: 1, clip: 0, shape: 0, tape: 0, lofi: 0, drive: 0, crush: 0, dtime: 1, dfb: 4, rtype: 0, rsize: 5 },
+  chop: { n: 0, sl: [], cur: 0, zoom: 0 }, place: null, save: null, list: null, pick: null, layer: false, ask: null,
+  song: { notes: [], order: [], armed: false, playing: false, t0: 0, grid: 0, feel: 0, undo: [], redo: [], passMark: -1, erasing: new Set() },
+  msg: "", msgT: 0, phone: { on: false, src: 0, t0: 0, vol: 1 }, prev: null };
+const SLN = [1, 2, 4, 8, 16, "hits"];
+st.fit = 0;
 const flash = m => { st.msg = m; st.msgT = performance.now(); };
+const kit = () => kits[st.kit], key = i => kit().keys[i];
+const soundName = x => x.smp ? "your sample" : SYN[x.syn[0]] + " " + synName(x.syn[0], x.syn[1]);
+const shortName = i => isAuto(i) ? ROLE[i] : key(i).smp ? keyNote(i) + " smp" : synName(key(i).syn[0], key(i).syn[1]);
+const touch = () => { kit().dirty = true; };
+const EDITTABS = ["KIT", "SOUND", "TRIM", "PAD FX"];
+const editing = () => st.page === "edit", sampling = () => st.page === "take" || st.page === "chop";
 
 // ------------------------------------------------------------------ audio
-let ac = null, master, phoneGain, phoneNode = null, an;
+let ac = null, master, phoneGain, phoneNode = null, an, bus, bP, bC, dlyIn, dlyNode, dlyFb, rvbIn, rvbNode;
 function startAudio() {
   if (ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
   master = ac.createGain(); master.gain.value = .8; master.connect(ac.destination);
-  phoneGain = ac.createGain(); an = ac.createAnalyser(); an.fftSize = 512; an.connect(phoneGain); phoneGain.connect(master);
-  $("start").textContent = "Sound on"; routePhone();
+  an = ac.createAnalyser(); an.fftSize = 512; phoneGain = ac.createGain(); an.connect(phoneGain); phoneGain.connect(master);
+  bus = ac.createGain(); bus.connect(master);
+  bP = ac.createGain(); bC = ac.createGain();     // two sends, one effect each: PUNCH and COLOR (as DELAY and REVERB)
+  dlyIn = ac.createGain(); dlyNode = ac.createDelay(1.5); dlyFb = ac.createGain(); dlyIn.connect(dlyNode); dlyNode.connect(dlyFb); dlyFb.connect(dlyNode); dlyNode.connect(master);
+  rvbIn = ac.createGain(); rvbNode = ac.createConvolver(); rvbIn.connect(rvbNode); rvbNode.connect(master);
+  $("start").textContent = "Sound on"; routePhone(); setFx();
 }
+function shaper(f) { const w = ac.createWaveShaper(), c = new Float32Array(1024); for (let i = 0; i < 1024; i++) c[i] = f(i / 511.5 - 1); w.curve = c; return w; }
+let fxNodes = [];
+function setFx() {          // the track's chain: PUNCH (COMP, CLIP) and COLOR (TAPE, LOFI, DRIVE, CRUSH); DELAY and REVERB sends
+  if (!ac) return; [bP, bC].forEach(b => b.disconnect()); fxNodes.forEach(n => n.disconnect()); fxNodes = [];
+  const f = st.fx, lpf = q => { const b = ac.createBiquadFilter(); b.type = "lowpass"; b.frequency.value = q; return b; };
+  const punch = () => { const c = []; if (f.comp) { const k = ac.createDynamicsCompressor(), sp = [[.001, .06], [.008, .12], [.03, .25]][f.speed]; k.threshold.value = -f.comp * 3; k.ratio.value = 2 + f.comp * .6; k.attack.value = sp[0]; k.release.value = sp[1]; k.knee.value = 4; const m = ac.createGain(); m.gain.value = Math.pow(10, f.comp * 1.4 / 20); c.push(k, m); }
+    if (f.clip) { const kk = 1 + f.clip * .5; c.push(shaper(f.shape ? (x => Math.max(-1, Math.min(1, x * kk)) * .9) : (x => Math.tanh(kk * x) / Math.tanh(kk)))); } return c; };
+  const color = () => { const c = [];
+    if (f.tape) { const a = f.tape / 10; c.push(shaper(x => Math.tanh((1 + a * 2) * x) * .85), lpf(12000 - a * 6000)); }
+    if (f.lofi) { const a = f.lofi / 10, q = 40 - a * 30; c.push(shaper(x => Math.round(x * q) / q), lpf(9000 - a * 6000)); }
+    if (f.drive) { const k = 1 + f.drive * .6; c.push(shaper(x => Math.tanh(k * x) / Math.tanh(k) * .9)); }
+    if (f.crush) { const q = Math.max(2, 16 - f.crush * 1.3); c.push(shaper(x => Math.round(x * q) / q)); } return c; };
+  const wire = (from, nodes) => { let p = from; nodes.forEach(n => { p.connect(n); p = n; fxNodes.push(n); }); return p; };
+  if (punchOn()) wire(bP, punch()).connect(master); if (colorOn()) wire(bC, color()).connect(master);     // each effect once (silent at 0); the pads send to it, their dry sound stays
+  dlyNode.delayTime.value = DLYB[f.dtime] * 60 / BPM; dlyFb.gain.value = f.dfb * .08;
+  const n = Math.round([.5, 1.6, 2.8, 1.2][f.rtype] * (.4 + f.rsize * .12) * ac.sampleRate), b = ac.createBuffer(2, n, ac.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const x = b.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { const t = i / n; let v = (Math.random() * 2 - 1) * Math.pow(1 - t, 3);
+    if (f.rtype === 0 || f.rtype === 2) { lp += (v - lp) * (f.rtype ? .35 : .25); v = lp * 1.6; } if (f.rtype === 3 && i % 1400 < 60) v += Math.sin(i * .05) * (1 - t) * .8; x[i] = v * .5; } }
+  rvbNode.buffer = b;
+}
+const punchOn = () => st.fx.comp || st.fx.clip, colorOn = () => st.fx.tape || st.fx.lofi || st.fx.drive || st.fx.crush;
 function buf(d) { const b = ac.createBuffer(1, Math.max(1, d.length), SR); b.copyToChannel(d, 0); return b; }
-function playPad(p, k) {
-  if (!ac || !p) return; const s = ac.createBufferSource(), g = ac.createGain(), T = ac.currentTime + .005;
-  s.buffer = buf(p.d); s.playbackRate.value = Math.pow(2, p.tune / 12);
-  const lv = p.lvl / 10, at = ATTS[p.att] / 1000, dc = DECS[p.dec];
-  g.gain.setValueAtTime(at ? 0 : lv, T); if (at) g.gain.linearRampToValueAtTime(lv, T + at);
-  if (isFinite(dc)) g.gain.setTargetAtTime(0, T + at, dc / 3);
-  s.connect(g); g.connect(master); s.start(T);
+const groups = { 1: [], 2: [], 3: [], 4: [] };
+function render(x) {
+  if (!x.smp) return synData(x.syn[0], x.syn[1]);
+  const { d, a0, a1 } = x.smp, g = Math.pow(10, x.gain / 20), a = new Float32Array(Math.max(1, a1 - a0));
+  for (let i = 0; i < a.length; i++) a[i] = Math.max(-1, Math.min(1, d[a0 + i] * g));
+  if (x.rev) a.reverse();
+  return a;
 }
-function playRaw(d, s, e) { if (!ac) return; const n = ac.createBufferSource(); n.buffer = buf(d.slice(s, e)); n.connect(master); n.start(); st.prev = { t0: ac.currentTime, s, e }; n.onended = () => st.prev = null; }
-function routePhone() { if (!ac) return; const hear = st.usb.in === 1 || (st.usb.in === 2 && st.rec); phoneGain.gain.setTargetAtTime(st.usb.in === 0 ? 0 : hear ? Math.pow(10, st.usb.lvl / 20) : 0, ac.currentTime, .01); }
-function phoneData() { return SOURCES[st.phone.src][1]; }
-function phonePos() { const d = phoneData(); return Math.floor(((ac.currentTime - st.phone.t0) * SR) % d.length); }
+function playKey(i, at = 0, v = 100, semi = 0, choke = true, gm = 0, hk = -1) {       // a pad: its envelope, its DIRT, then dry + TRACK FX + DELAY + REVERB sends
+  if (!ac) return; const x = key(i), d = render(x), s = ac.createBufferSource(), g = ac.createGain(), T = Math.max(ac.currentTime + .005, at);
+  s.buffer = buf(d); s.playbackRate.value = Math.pow(2, (x.tune + semi) / 12);
+  if (x.grp && choke) { groups[x.grp].forEach(v => { try { v.g.gain.cancelScheduledValues(T); v.g.gain.setTargetAtTime(0, T, .006); v.s.stop(T + .04); } catch (e) {} }); groups[x.grp] = []; }
+  const lv = x.lvl / 10 * (gm || (1 - x.vel / 10 * (1 - v / 127))), at0 = ATTS[x.att] / 1000, sus = HOLDS[x.hold] === "key", ho = sus ? Infinity : HOLDS[x.hold] / 1000, de = DECS[x.dec] / 1000;
+  if (sus) { const L0 = d.length / SR; s.loop = true; s.loopStart = L0 * .55; s.loopEnd = L0 * .92; }
+  g.gain.setValueAtTime(at0 ? 0 : lv, T); if (at0) g.gain.linearRampToValueAtTime(lv, T + at0);
+  if (isFinite(ho)) { g.gain.setValueAtTime(lv, T + at0 + ho + .0005); g.gain.linearRampToValueAtTime(0, T + at0 + ho + de); }
+  s.connect(g);
+  const route = (amt, to) => { if (amt <= 0) return; const q = ac.createGain(); q.gain.value = amt; g.connect(q); q.connect(to); };
+  route(1, bus); route(x.pp / 10 * .8, bP); route(x.pc / 10 * .8, bC); route(x.dly / 10, dlyIn); route(x.rvb / 10, rvbIn);     // the dry sound, then four sends
+  s.start(T);
+  if (x.grp && choke) groups[x.grp].push({ s, g });
+  const vo = { s, g, de, sus }; if (sus && hk >= 0) (heldV[hk] = heldV[hk] || []).push(vo); return vo;
+}
+const heldV = {};
+function stopVoice(vo, T) { if (!vo || !vo.sus) return; T = T || ac.currentTime; vo.g.gain.cancelScheduledValues(T); vo.g.gain.setValueAtTime(vo.g.gain.value, T); vo.g.gain.linearRampToValueAtTime(0, T + vo.de); vo.s.stop(T + vo.de + .02); }
+function playRaw(d, s, e) { if (!ac) return; stopRaw(); const n = ac.createBufferSource(); n.buffer = buf(d.slice(s, e)); n.connect(master); n.start(); st.prev = { t0: ac.currentTime, s, e, n }; n.onended = () => { if (st.prev && st.prev.n === n) st.prev = null; }; }
+function stopRaw() { if (st.prev) { try { st.prev.n.stop(); } catch (e) {} st.prev = null; } }
+function hearing() { return st.usb.mon === 2 || (st.usb.mon === 1 && (sampling() || st.rec)); }
+function routePhone() { if (!ac) return; phoneGain.gain.setTargetAtTime(hearing() ? Math.pow(10, st.usb.lvl / 20) : 0, ac.currentTime, .01); }
+const phoneData = () => SOURCES[st.phone.src][1];
 function phoneToggle() {
   startAudio();
   if (st.phone.on) { phoneNode.stop(); phoneNode = null; st.phone.on = false; if (st.rec) stopRec(); }
-  else { phoneNode = ac.createBufferSource(); phoneNode.buffer = buf(phoneData()); phoneNode.loop = true; phoneNode.connect(an); st.phone.t0 = ac.currentTime + .02; phoneNode.start(st.phone.t0); st.phone.on = true; }
+  else { const g = ac.createGain(); g.gain.value = st.phone.vol; phoneNode = ac.createBufferSource(); phoneNode.buffer = buf(phoneData()); phoneNode.loop = true; phoneNode.connect(g); g.connect(an); phoneNode.vg = g; st.phone.t0 = ac.currentTime + .02; phoneNode.start(st.phone.t0); st.phone.on = true; }
   $("phplay").textContent = st.phone.on ? "■ Stop the phone" : "▶ Play on the phone"; $("phplay").classList.toggle("on", st.phone.on);
   $("phstate").textContent = st.phone.on ? "playing into USB" : "stopped";
 }
-// what came in between two moments, at the IN LEVEL, as the FM-1 keeps it
 function captured(t0, t1) {
-  const d = phoneData(), g = Math.pow(10, st.usb.lvl / 20), p0 = Math.floor(((t0 - st.phone.t0) * SR)), n = Math.max(0, Math.floor((t1 - t0) * SR)), a = new Float32Array(n);
-  for (let i = 0; i < n; i++) { const q = p0 + i; a[i] = q < 0 ? 0 : Math.max(-1, Math.min(1, d[q % d.length] * g)); }
+  const d = phoneData(), g = Math.pow(10, st.usb.lvl / 20) * st.phone.vol, p0 = Math.floor((t0 - st.phone.t0) * SR), n = Math.max(0, Math.floor((t1 - t0) * SR)), a = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const q = p0 + i; a[i] = q < 0 || !st.phone.on ? 0 : Math.max(-1, Math.min(1, d[q % d.length] * g)); }
   return a;
 }
-function trimLead(a) { let i = 0; const th = .04; while (i < a.length && Math.abs(a[i]) < th) i++; return a.slice(Math.max(0, i - 40)); }
-function canRecord() {
-  if (st.usb.in === 0) { flash("USB IN is off: GLO, then K2 IN"); return false; }
-  if (!st.phone.on) { flash("Nothing comes in: play something on the phone"); return false; }
-  return true;
+function inLevel() { if (!an || !st.phone.on) return 0; const b = new Float32Array(an.fftSize); an.getFloatTimeDomainData(b); return Math.min(1.2, b.reduce((m, v) => Math.max(m, Math.abs(v)), 0) * Math.pow(10, st.usb.lvl / 20)); }
+const THR = .02;
+
+// ------------------------------------------------------------------ the song: one bar of drums, recorded, played with GRID and FEEL
+const S = st.song;
+function eff(t) {                         // where a note plays: FEEL moves the off-sixteenths (and all of it, laid back or pushed)
+  const [, sw, off] = FEELS[S.feel], j = Math.round(t * 16);
+  if (Math.abs(t - j / 16) < 1 / 64 && j % 2) t += (sw - .5) * 2 / 16;
+  return (t + off / BAR + 1) % 1;
 }
-function startRec() {
-  if (!canRecord()) return; const free = RAM_S - ramSec();
-  if (free < .3) { flash("RAM full: hold SAVE on a take to free it"); return; }
-  st.rec = { t0: ac.currentTime, max: Math.min(TAKE_MAX, free) }; routePhone();
+const barPos = () => S.playing ? ((ac.currentTime - S.t0) / BAR) % 1 : 0;
+const snap = () => ({ notes: S.notes.map(n => ({ ...n })), order: [...S.order] });
+function pushUndo() { S.undo.push(snap()); if (S.undo.length > 4) S.undo.shift(); S.redo = []; }
+let sched = null, nextT = 0;
+function transport() {
+  startAudio();
+  if (S.playing) { S.playing = false; clearInterval(sched); return; }
+  S.playing = true; S.t0 = ac.currentTime + .05; nextT = S.t0; S.passMark = -1;
+  sched = setInterval(() => {
+    const ahead = ac.currentTime + .12;
+    while (nextT < ahead) {
+      const a = ((nextT - S.t0) / BAR) % 1, b = a + .01, barStart = nextT - a * BAR;
+      for (const n of [...S.notes]) {
+        const e = eff(n.t); if (!((e >= a && e < b) || (e + 1 >= a && e + 1 < b))) continue;
+        if (S.erasing.has(n.k)) { S.notes.splice(S.notes.indexOf(n), 1); continue; }
+        const at = barStart + (e < a ? e + 1 : e) * BAR, vs = n.s ? n.s.map(q => playKey(n.k, at, n.v, q, false, n.g || 0)) : [playKey(n.k, at, n.v, 0, true, n.g || 0)];
+        if (n.len) vs.forEach(vo => stopVoice(vo, at + n.len * BAR));
+      }
+      nextT += .01 * BAR;
+    }
+  }, 20);
+}
+function recordHit(i, v, semis, gm, pk) {
+  if (!S.armed || !S.playing) return;
+  const bar = Math.floor((ac.currentTime - S.t0) / BAR);
+  if (S.passMark !== bar) { pushUndo(); S.passMark = bar; }        // each round of the loop you play in is one pass to undo
+  const tp = barPos(), gq = GRIDS[S.grid][1], t = gq ? (Math.round(tp * gq) / gq) % 1 : tp;     // GRID places it as you record
+  const n = { k: i, t, tp, v, s: semis, g: gm }; S.notes.push(n); S.lastRec = { key: pk === undefined ? i : pk, n };
+  if (!S.order.includes(i)) S.order.push(i);
+}
+
+// ------------------------------------------------------------------ the sampler
+function recBtn() {
+  if (st.rec) { stopRec(); return; }
+  if (take && !take.used && st.confirm !== "take") { st.confirm = "take"; flash("REC again: replace the take"); return; }
+  st.confirm = null; st.rec = { armed: st.onSound, t0: ac.currentTime }; routePhone();
 }
 function stopRec() {
-  if (!st.rec) return; let a = captured(st.rec.t0, Math.min(ac.currentTime, st.rec.t0 + st.rec.max)); st.rec = null; routePhone();
-  if (st.usb.thr) a = trimLead(a);
-  if (a.length < SR * .05) { flash("Nothing heard: the take was not kept"); return; }
-  addTake(adpcm(a), "phone, " + SOURCES[st.phone.src][0].split(",")[0].toLowerCase()); st.tk = takes.length - 1;
-  st.chop = { s: 0, e: takes[st.tk].d.length, zoom: 0, mode: st.chop.mode };
-  flash(takes[st.tk].name + ": " + len(takes[st.tk].d).toFixed(1) + " s");
+  const r = st.rec; if (!r) return; st.rec = null; routePhone();
+  if (r.armed) { flash("Nothing came in"); return; }
+  const a = captured(r.t0, Math.min(ac.currentTime, r.t0 + RAM_S));
+  if (a.length < SR * .05 || peakOf(a, 0, a.length) < .003) { flash("Nothing heard"); return; }
+  dropTake(); take = { id: ++takeId, d: adpcm(a), used: false };
+  { const f = detectRoot(take.d); if (f !== null) take.note = f; else take.key = take.d.length > 1.5 * SR ? detectKey(take.d) : null; take.bpm = take.d.length > 1.5 * SR && f === null ? detectBPM(take.d) : null; }
+  setSlices(st.chop.n);
 }
-function quickStart(p) {
-  if (kits[st.kit].fixed) { flash("Pick MY KIT 1-3 (SELECT) to record a pad"); return; }
-  if (!canRecord()) return; st.quick = { p, t0: ac.currentTime }; routePhone();
+function dropTake() {
+  if (!take) return; const id = take.id;
+  kits.forEach(k => [k.keys, k.saved].forEach(ks => ks.forEach(x => { if (x.smp && x.smp.take === id) { x.smp.lo = x.smp.a0; x.smp.hi = x.smp.a1; x.smp.take = 0; } })));
 }
-function quickStop() {
-  const q = st.quick; if (!q) return; st.quick = null;
-  let a = trimLead(captured(q.t0, Math.min(ac.currentTime, q.t0 + QUICK_MAX)));
-  if (a.length < SR * .03) { flash("Nothing heard on " + padName(q.p)); return; }
-  if (kitSec(st.kit) - (kits[st.kit].pads[q.p] ? len(kits[st.kit].pads[q.p].d) : 0) + len(a) > KIT_S) { flash(kits[st.kit].name + " is full (7 s)"); return; }
-  const P = pad(adpcm(a)); P.quick = true; kits[st.kit].pads[q.p] = P; kits[st.kit].dirty = true; st.padSel = q.p;
-  flash(padName(q.p) + ": " + len(a).toFixed(2) + " s · SAVE held keeps it"); playPad(P);
+function setSlices(n) {
+  st.chop.n = n; st.chop.cur = 0; if (!take) { st.chop.sl = []; return; }
+  const L = take.d.length, m = SLN[n];
+  const starts = m === "hits" ? onsets(take.d, 0, L) : Array.from({ length: m }, (_, k) => Math.round(k * L / m));
+  st.chop.sl = starts.map((a, j) => [a, j + 1 < starts.length ? starts[j + 1] : L]);
+}
+function split() {
+  const c = st.chop; if (!take || !c.sl.length) return;
+  if (c.sl.length >= NK) { flash("27 slices: one a key"); return; }
+  const [a, b] = c.sl[c.cur]; let m = Math.round((a + b) / 2);
+  if (st.prev) { const p = Math.round(st.prev.s + (ac.currentTime - st.prev.t0) * SR); if (p > a + 256 && p < b - 256) m = p; }
+  if (b - a < 512) { flash("Too short to split"); return; }
+  stopRaw(); c.sl.splice(c.cur, 1, [a, m], [m, b]); c.cur++; flash("Split");
+}
+function merge() {
+  const c = st.chop; if (!take || c.cur === 0) return;
+  const [, b] = c.sl[c.cur]; c.sl[c.cur - 1][1] = b; c.sl.splice(c.cur, 1); c.cur--; flash("Merged");
+}
+function placeAt(i0, all) {
+  if (kit().built) { st.pick = { to: 4, i0, all }; return false; }
+  const c = st.chop, list = all ? c.sl.map((s, j) => j) : [c.cur]; let n = 0;
+  for (const j of list) {
+    const i = i0 + (all ? j : 0); if (i >= NK) break;
+    const [a, b] = c.sl[j];
+    if (kitSec(st.kit) - len(smpLen(key(i))) + len(b - a) > KIT_S) { flash(kit().name + " is full (7 s)"); break; }
+    kit().keys[i] = { ...fresh(i), smp: { d: take.d, a0: a, a1: b, lo: 0, hi: take.d.length, take: take.id } }; n++;
+    if (st.fit === 1 && take.bpm) kit().keys[i].tune = 12 * Math.log2(BPM / take.bpm);
+  }
+  if (n) { take.used = true; touch(); if (st.fit === 2 && take.bpm && all) st.askBeat = { i0, n }; }
+  return n > 0;
+}
+// every sound you have: your samples (any MY KIT), then the same kind, then all
+const KINDS = ["KICKS", "SNARES, CLAPS", "HATS, SHAKERS", "TOMS, PERC"];
+function soundList(i) {     // every sound you have, grouped by kit: your kits' samples, then the built-in kits (each opens on the same kind)
+  const L = [];
+  kits.forEach(k => { if (k.built) return; k.saved.forEach((x, j) => { if (x.smp) L.push({ h: k.name, n: (isAuto(j) ? ROLE[j] : keyNote(j)) + " · your sample", smp: { ...x.smp }, rev: x.rev, gain: x.gain }); }); });
+  SYN.forEach((n, k) => { const g = GROUP(i); [true, false].forEach(same => { for (let o = 0; o < NK; o++) if ((OGROUP(o) === g) === same) L.push({ h: n, n: synName(k, o), syn: [k, o] }); }); });
+  return L;
+}
+function openList(i) {
+  const L = soundList(i), x = key(i); let at = x.syn ? L.findIndex(e => e.syn && e.syn[0] === x.syn[0] && e.syn[1] === x.syn[1]) : -1;
+  st.list = { key: i, L, i: Math.max(0, at), t: performance.now() };
+}
+function applySound(i) { const l = st.list, e = l.L[l.i];
+  kit().keys[i] = e.smp ? { ...fresh(i), smp: { ...e.smp, lo: e.smp.a0, hi: e.smp.a1, take: 0 }, rev: e.rev, gain: e.gain } : { ...fresh(i), syn: [...e.syn] };
+  touch(); l.t = performance.now(); playKey(i); }
+function chooseSound(i, d) {
+  if (!st.list || st.list.key !== i) { openList(i); st.list.i -= d; }
+  const l = st.list; l.i = (l.i + d + l.L.length) % l.L.length; applySound(i);
+}
+function chooseGroup(i, d) {      // K3 GROUP: the first sound of the next (or previous) kit in the list
+  if (!st.list || st.list.key !== i) openList(i);
+  const l = st.list, groups = [...new Set(l.L.map(e => e.h))], gi = (groups.indexOf(l.L[l.i].h) + d + groups.length) % groups.length;
+  l.i = l.L.findIndex(e => e.h === groups[gi]); applySound(i);
+}
+function presets(d) {
+  startAudio(); if (st.save || st.pick || st.layer) return;
+  if (editing() && st.tab === 0) { chooseSound(st.sel, d); return; }
+  if (st.page !== "play") return;
+  const hk = [...st.held.keys()].pop();
+  if (hk !== undefined) { chooseSound(hk, d); return; }
+  st.kit = (st.kit + d + kits.length) % kits.length;
+}
+
+// ------------------------------------------------------------------ LEVELS (ENV): one pad across the keys, as the MPC's 16 Levels and Pad Perform
+const LVTABS = ["NOTES", "CHORDS"], NM = ["16 LEVELS", "FREE", "KEY", "WHITES"], LT = ["VELOCITY", "TUNE"], BASES = ["triads", "7ths", "power"], VOICES = ["root", "inv 1", "inv 2", "open"];
+const PROGS = [["i VI III VII", [0, 5, 2, 6]], ["i iv v i", [0, 3, 4, 0]], ["i VII VI VII", [0, 6, 5, 6]], ["I V vi IV", [0, 4, 5, 3]], ["vi IV I V", [5, 3, 0, 4]], ["ii V I", [1, 4, 0]], ["I IV V IV", [0, 3, 4, 3]]];
+const SCALES = [["major", [0, 2, 4, 5, 7, 9, 11]], ["minor", [0, 2, 3, 5, 7, 8, 10]], ["minor pent.", [0, 3, 5, 7, 10]], ["major pent.", [0, 2, 4, 7, 9]], ["blues", [0, 3, 5, 6, 7, 10]], ["dorian", [0, 2, 3, 5, 7, 9, 10]], ["mixolydian", [0, 2, 4, 5, 7, 9, 10]], ["phrygian", [0, 1, 3, 5, 7, 8, 10]], ["harmonic minor", [0, 2, 3, 5, 7, 8, 11]]];
+const CHORDT = [["triads", [0, 2, 4]], ["7ths", [0, 2, 4, 6]], ["sus2", [0, 1, 4]], ["sus4", [0, 3, 4]], ["power", [0, 4, 7]]];
+const PCN = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const LV = { pad: 12, tab: 0, nm: 0, lt: 0, base: 0, prog: 0, step: 0, voice: 0, scale: 1, tonic: 0, oct: 0, last: "", lock: null, lastChord: null };
+function detectRoot(d) {          // the sample's pitch (YIN): 60 ms from just after its loudest point
+  let pk = 0, at = 0; for (let i = 0; i < Math.min(d.length, SR); i++) if (Math.abs(d[i]) > pk) { pk = Math.abs(d[i]); at = i; }
+  const N = 1100, TM = 600, s0 = Math.min(at + Math.round(.02 * SR), d.length - N - TM - 1); if (s0 < 0) return null;
+  const df = new Float32Array(TM); let run = 0, tau = -1;
+  for (let L = 1; L < TM; L++) { let q = 0; for (let i = 0; i < N; i++) { const e = d[s0 + i] - d[s0 + i + L]; q += e * e; } run += q; df[L] = q * L / (run || 1); }
+  for (let L = 18; L < TM - 1; L++) if (df[L] < .15) { while (L + 1 < TM && df[L + 1] < df[L]) L++; tau = L; break; }
+  if (tau < 0) return null;
+  const a = df[tau - 1], b = df[tau], c = df[tau + 1], sh = (a - c) / (2 * (a - 2 * b + c) || 1);
+  return 69 + 12 * Math.log2(SR / (tau + sh) / 440);
+}
+const KMAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88], KMIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+function detectKey(d) {
+  const ch = new Float64Array(12), F = 2048, end = Math.min(d.length, 8 * SR);
+  for (let s0 = 0; s0 + F <= end; s0 += F) for (let m = 40; m < 84; m++) {      // Goertzel at each note from E2 to B5
+    const w = 2 * Math.PI * 440 * Math.pow(2, (m - 69) / 12) / SR, c = 2 * Math.cos(w); let a = 0, b = 0;
+    for (let i = 0; i < F; i++) { const q = d[s0 + i] + c * a - b; b = a; a = q; }
+    ch[m % 12] += a * a + b * b - c * a * b;
+  }
+  const corr = (p, t) => { let mx = 0, my = 0; for (let i = 0; i < 12; i++) { mx += ch[i]; my += p[i]; } mx /= 12; my /= 12; let n = 0, dx = 0, dy = 0; for (let i = 0; i < 12; i++) { const x = ch[(i + t) % 12] - mx, y = p[i] - my; n += x * y; dx += x * x; dy += y * y; } return n / Math.sqrt(dx * dy + 1e-12); };
+  let best = { r: -1 }; for (let t = 0; t < 12; t++) { const a = corr(KMAJ, t), b = corr(KMIN, t); if (a > best.r) best = { r: a, tonic: t, minor: false }; if (b > best.r) best = { r: b, tonic: t, minor: true }; }
+  return best.r > .6 ? best : null;
+}
+function detectBPM(d) {           // the loop's tempo: when its hits come (an onset curve), its strongest repeat between 70 and 180 BPM
+  const H = 256, n = Math.floor(d.length / H); if (n < 64) return null;
+  const e = new Float32Array(n), o = new Float32Array(n);
+  for (let f = 0; f < n; f++) { let q = 0; for (let i = 0; i < H; i++) q += d[f * H + i] * d[f * H + i]; e[f] = Math.sqrt(q / H); }
+  for (let f = 1; f < n; f++) o[f] = Math.max(0, e[f] - e[f - 1]);
+  let best = 0, bb = 0, sum = 0, cnt = 0;
+  for (let bpm = 70; bpm <= 180; bpm += .5) { const L = 60 / bpm * SR / H; if (n - 2 * L < 16) continue; let c = 0; for (let f = 0; f + 2 * L < n; f++) c += o[f] * ((o[Math.round(f + L)] || 0) + .5 * (o[Math.round(f + 2 * L)] || 0)); c /= (n - 2 * L); sum += c; cnt++; if (c > best) { best = c; bb = bpm; } }
+  return cnt && best > 1.4 * sum / cnt ? Math.round(bb) : null;      // a clear peak, or no tempo
+}
+const keyName = k => PCN[k.tonic] + (k.minor ? " minor" : " major");
+function analyse(x) {             // a pad's pitch: a note (one sound), or a key (a loop), or nothing (a drum)
+  if (x.root !== undefined) return; const d = render(x), f = detectRoot(d);
+  if (f !== null) { x.root = f; x.found = true; return; }
+  const k = d.length > 1.5 * SR ? detectKey(d) : null; if (k) { x.key = k; x.root = 48 + k.tonic; x.found = true; return; }
+  x.root = 60; x.found = false;
+}
+// what the pad sounds, as TUNE shows it: a note with its cents, a key, or semitones
+function tuneLabel(x) {
+  if (x.root === undefined) analyse(x);
+  if (x.key) { const t = ((x.key.tonic + Math.round(x.tune)) % 12 + 12) % 12; return PCN[t] + (x.key.minor ? "m" : ""); }
+  if (!x.found) return (x.tune > 0 ? "+" : "") + Math.round(x.tune * 10) / 10;
+  const m = x.root + x.tune, c = Math.round((m - Math.round(m)) * 100); return nn(m) + (c ? (c > 0 ? " +" : " ") + c + "c" : "");
+}
+const nn = m => PCN[((Math.round(m) % 12) + 12) % 12] + (Math.floor(Math.round(m) / 12) - 1);
+function lvEnter() {
+  const x = key(st.sel); LV.pad = st.sel; analyse(x);
+  LV.oct = Math.round((x.root + x.tune - 60) / 12);           // the octave that keeps the shifts small; OCT- and OCT+ move it
+  stopRaw(); st.page = "levels"; LV.tab = 0; LV.last = "";
+}
+const inScale = m => SCALES[LV.scale][1].includes(((Math.round(m) - LV.tonic) % 12 + 12) % 12);
+const keyMidi = i => LOW + i + 12 * LV.oct;                    // the keys play their own notes (C is C), an octave up or down
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"], LETTERS = [0, 2, 4, 5, 7, 9, 11];
+const COLOURS = { 1: "sus2", 3: "sus4", 5: "6", 8: "7", 10: "maj7", 13: "9", 15: "add9", 17: "11", 20: "13", 22: "dim" }, K_NEXT = 24, K_AGAIN = 26, K_LOCK = 25;
+const heldColour = () => { for (const k of [...st.held.keys()].reverse()) if (COLOURS[k]) return COLOURS[k]; return LV.lock; };
+function chordOn(d, octBase) {    // the key's chord on degree d (0 = I), with the base (K1), the colour held, the voicing (K3)
+  const sc7 = SCALES[LV.scale][1].length === 7 ? SCALES[LV.scale][1] : (SCALES[LV.scale][1].includes(3) ? SCALES[1][1] : SCALES[0][1]);
+  const dg = n => { const o = Math.floor(n / 7); return o * 12 + sc7[n - o * 7]; };
+  const root = octBase + LV.tonic + dg(d) - (LV.tonic > 5 ? 12 : 0), t3 = dg(d + 2) - dg(d), t5 = dg(d + 4) - dg(d), t7 = dg(d + 6) - dg(d), col = heldColour();
+  let iv = BASES[LV.base] === "power" ? [0, 7, 12] : BASES[LV.base] === "7ths" ? [0, t3, t5, t7] : [0, t3, t5];
+  const tri = [0, t3, t5];
+  if (col) iv = { sus2: [0, 2, t5], sus4: [0, 5, t5], "6": [...tri, 9], "7": [...tri, t7], maj7: [...tri, 11], "9": [...tri, t7, 14], add9: [...tri, 14], "11": [...tri, t7, 17], "13": [...tri, t7, 21], dim: [0, 3, 6] }[col];
+  let ms = iv.map(x => root + x); const v = LV.voice; if (v === 1) ms.push(ms.shift() + 12); if (v === 2) { ms.push(ms.shift() + 12); ms.push(ms.shift() + 12); } if (v === 3 && ms.length > 2) ms[1] += 12;
+  const q = col ? (col === "dim" ? "dim" : (t3 === 3 && !col.startsWith("sus") ? "m" : "") + col) : BASES[LV.base] === "power" ? "5" : (t3 === 3 ? (t5 === 6 ? "dim" : "m") : "") + (BASES[LV.base] === "7ths" ? (t7 === 11 ? "maj7" : "7") : "");
+  return { ms, name: PCN[((root % 12) + 12) % 12] + q, roman: ROMAN[((d % 7) + 7) % 7] };
+}
+function lvNotes(i) {             // what key i plays: notes (MIDI) as semitones from the pad's sound, a gain, a name
+  const x = key(LV.pad), root = x.root + x.tune, sc = SCALES[LV.scale][1], wi = WH.indexOf(i), tab = LVTABS[LV.tab];
+  const deg = d => { const o = Math.floor(d / sc.length); return o * 12 + sc[d - o * sc.length]; };
+  const out = (ms, name, gm, extra) => ({ s: ms.map(m => m - root), ms, gm: gm || 0, name, ...extra });
+  if (tab === "NOTES") {
+    const mode = NM[LV.nm];
+    if (mode === "16 LEVELS") { if (wi < 0) return null;            // the 16 white keys: the same sound, louder (or higher) a step at a time
+      if (LT[LV.lt] === "VELOCITY") { const pc = Math.round((wi + 1) / 16 * 100); return out([root], pc + " %", Math.pow((wi + 1) / 16, 1.6), { lab: pc + "" }); }
+      return out([root + wi - 7], (wi - 7 > 0 ? "+" : "") + (wi - 7), 0, { lab: (wi - 7 > 0 ? "+" : "") + (wi - 7) }); }
+    if (mode === "WHITES") { if (wi < 0) return null; const m = 60 + 12 * LV.oct + LV.tonic + deg(wi - 4) - (LV.tonic > 5 ? 12 : 0); return out([m], nn(m)); }
+    const m = keyMidi(i); return out([m], nn(m));
+  }
+  if (i === K_NEXT || i === K_AGAIN || i === K_LOCK || COLOURS[i]) return { ctl: true };
+  if (wi < 0) return null;
+  const pc = ((LOW + i) % 12 + 12) % 12, d = LETTERS.indexOf(pc), c = chordOn(d, 12 * (Math.floor((LOW + i) / 12) - 1) + 12 * LV.oct + (LV.tonic > 5 ? 12 : 0));
+  return out(c.ms, c.name, 0, { deg: d, roman: c.roman });
+}
+function lvLight(i) {             // lit = can play; full = the tonic, or the next chord of the progression, or the colour held
+  const L = lvNotes(i), tab = LVTABS[LV.tab]; if (!L) return { play: false };
+  if (L.ctl) { const col = COLOURS[i]; return { play: true, lit: true, full: (col && heldColour() === col) || (i === K_LOCK && !!LV.lock), ctl: true }; }
+  const x = key(LV.pad), ton = ((Math.round(L.ms[0]) - LV.tonic) % 12 + 12) % 12 === 0;
+  const root = L.ms.length === 1 && Math.abs(L.ms[0] - (x.root + x.tune)) < .5;
+  if (tab === "NOTES") { const mode = NM[LV.nm]; if (mode === "16 LEVELS") return { play: true, lit: true, full: false, root: L.lab === "0" };
+    if (mode === "FREE") return { play: true, lit: false, full: false, root }; return { play: true, lit: inScale(L.ms[0]), full: inScale(L.ms[0]) && ton, root }; }
+  const P_ = PROGS[LV.prog][1]; return { play: true, lit: true, full: L.deg === P_[LV.step % P_.length], root: false };
+}
+function lvPress(i, v) {
+  const L = lvNotes(i); if (!L) return;
+  if (L.ctl) {                     // the CHORDS controls: a colour (held), NEXT, AGAIN, LOCK
+    if (COLOURS[i]) { LV.last = COLOURS[i]; return; }
+    if (i === K_LOCK) { LV.lock = LV.lock ? null : heldColour(); LV.last = LV.lock ? "LOCK " + LV.lock : "LOCK off"; return; }
+    const P_ = PROGS[LV.prog][1], c = i === K_NEXT ? chordOn(P_[LV.step % P_.length], 48 + 12 * LV.oct) : LV.lastChord; if (!c) return;
+    if (i === K_NEXT) LV.step++;
+    const x = key(LV.pad), rs = x.root + x.tune; c.ms.forEach(m => playKey(LV.pad, 0, v, m - rs, false, 0, i)); LV.last = c.name + "  " + c.roman; LV.lastChord = c;
+    recordHit(LV.pad, v, c.ms.map(m => m - rs), 0, i); return;
+  }
+  L.s.forEach(q => playKey(LV.pad, 0, v, q, false, L.gm, i)); LV.last = L.name + (L.roman ? "  " + L.roman : ""); LV.lastKey = i;
+  if (L.roman) { LV.lastChord = { ms: L.ms, name: L.name, roman: L.roman }; const P_ = PROGS[LV.prog][1]; if (L.deg === P_[LV.step % P_.length]) LV.step++; }
+  recordHit(LV.pad, v, L.s, L.gm, i);
 }
 
 // ------------------------------------------------------------------ controls
-const $ = id => document.getElementById(id);
-const kit = () => kits[st.kit], take = () => takes[st.tk];
-function slices() {
-  const t = take(); if (!t) return [];
-  const { s, e, mode } = st.chop;
-  if (mode === 0) return [[s, e]];
-  const starts = mode === 1 ? onsets(t.d, s, e) : Array.from({ length: +SLMODES[mode] }, (_, k) => Math.round(s + k * (e - s) / +SLMODES[mode]));
-  return starts.map((a, j) => [a, j + 1 < starts.length ? starts[j + 1] : e]);
-}
-function assign(p0) {
-  const t = take(); if (!t) { flash("No take: record one on TAKE"); return; }
-  if (kit().fixed) { flash("Pick MY KIT 1-3 to put sounds on pads"); return; }
-  const sl = slices(); let n = 0;
-  for (let j = 0; j < sl.length && p0 + j < NPAD; j++) {
-    const d = t.d.slice(sl[j][0], sl[j][1]), old = kit().pads[p0 + j];
-    if (kitSec(st.kit) - (old ? len(old.d) : 0) + len(d) > KIT_S) { flash(kit().name + " is full (7 s): " + n + " pads placed"); break; }
-    kit().pads[p0 + j] = pad(d); n++;
+function press(i, v = 100) {
+  startAudio(); st.held.set(i, 1);
+  if (st.save || st.pick || st.page === "usb") return;
+  if (st.page === "chop") {
+    if (st.place) {
+      const p = st.place;
+      if (p.key === i) { if (placeAt(i, p.all)) { p.key = -1; p.done = i; } return; }
+      p.key = i; p.done = -1; return;
+    }
+    if (take && i < st.chop.sl.length) { st.chop.cur = i; const [a, b] = st.chop.sl[i]; playRaw(take.d, a, b); }
+    return;
   }
-  if (n) { kit().dirty = true; st.padSel = p0; flash(n === 1 ? "On " + padName(p0) : n + " slices on pads " + (p0 + 1) + "-" + (p0 + n)); playPad(kit().pads[p0]); }
+  if (st.editHeld && (st.page === "play" || st.layer)) {     // erase: needs REC on, as on every track
+    st.editUsed = true;
+    if (!S.armed || !S.playing) { flash(!S.armed ? "REC on to erase" : "PLAY: erase while it plays"); return; }
+    if (!S.erasing.size) pushUndo(); S.erasing.add(i); return;
+  }
+  if (st.page === "levels") { lvPress(i, v); return; }
+  st.sel = i; playKey(i, 0, v, 0, true, 0, i);
+  if (st.page === "play") recordHit(i, v);
 }
-function press(i) {
-  startAudio(); const p = padOfKey(i); if (p < 0) return;
-  st.held.set(i, 1);
-  if (st.editHeld && st.page !== "drums" && !kit().fixed) { st.editUsed = true; if (kit().pads[p]) { kit().pads[p] = null; kit().dirty = true; flash(padName(p) + " cleared"); } return; }
-  if (st.page === "drums" && st.recHeld) { quickStart(p); return; }
-  if (st.page === "chop" && st.recOn) { assign(p); return; }
-  st.padSel = p; playPad(kit().pads[p]);
-  if (!kit().pads[p] && st.page !== "kit") flash(padName(p) + " is empty");
+function release(i) {
+  if (st.latch) return; st.held.delete(i); S.erasing.delete(i);
+  (heldV[i] || []).forEach(vo => stopVoice(vo)); heldV[i] = [];
+  if (S.lastRec && S.lastRec.key === i && S.playing) { const n = S.lastRec.n; n.len = ((barPos() - n.tp) + 1) % 1 || .01; S.lastRec = null; }
 }
-function release(i) { st.held.delete(i); if (st.quick && padOfKey(i) === st.quick.p) quickStop(); }
+const clampI = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 function knob(k, d) {
-  startAudio(); const P = st.page;
-  if (P === "drums") { if (k === 0) selKit(d); return; }
+  startAudio(); const P = st.page, x = key(st.sel);
+  if (st.save) { if (k === 0) st.save.to = clampI(st.save.to + d, 4, 6); return; }
+  if (st.pick) { if (k === 0) st.pick.to = clampI(st.pick.to + d, 4, 6); return; }
+  if (st.page === "levels") { const x = key(LV.pad), tab = LVTABS[LV.tab], lv16 = NM[LV.nm] === "16 LEVELS";
+    if (tab === "NOTES") {
+      if (k === 0) LV.nm = clampI(LV.nm + d, 0, NM.length - 1);
+      if (k === 1) { if (lv16) LV.lt = clampI(LV.lt + d, 0, LT.length - 1); else LV.tonic = (LV.tonic + d + 12) % 12; }      // the song's key (as GLO · SONG K1)
+      if (k === 2 && !lv16) LV.scale = clampI(LV.scale + d, 0, SCALES.length - 1);
+      if (k === 3) { x.root = Math.round(x.root) + d; x.found = false; }
+    }
+    if (tab === "CHORDS") {
+      if (k === 0) LV.base = clampI(LV.base + d, 0, BASES.length - 1);
+      if (k === 1) { LV.prog = clampI(LV.prog + d, 0, PROGS.length - 1); LV.step = 0; }
+      if (k === 2) LV.voice = clampI(LV.voice + d, 0, VOICES.length - 1);
+      if (k === 3) LV.scale = clampI(LV.scale + d, 0, SCALES.length - 1);
+    }
+    return; }
+  if (st.layer) { if (k === 0) S.grid = clampI(S.grid + d, 0, GRIDS.length - 1); if (k === 1) S.feel = clampI(S.feel + d, 0, FEELS.length - 1); return; }
+  if (P === "usb") {
+    if (k === 0) st.usb.out = (st.usb.out + d + 2) % 2;
+    if (k === 1) { st.usb.mon = clampI(st.usb.mon + d, 0, 2); routePhone(); }
+    if (k === 2) { st.usb.lvl = clampI(st.usb.lvl + d, -12, 24); routePhone(); }
+    return;
+  }
+  if (P === "fx") {
+    const f = st.fx, c = (n, lo, hi) => f[n] = clampI(f[n] + d, lo, hi);
+    if (f.tab === 0) [() => c("comp", 0, 10), () => c("speed", 0, 2), () => c("clip", 0, 10), () => c("shape", 0, 1)][k]();
+    if (f.tab === 1) c(["tape", "lofi", "drive", "crush"][k], 0, 10);
+    if (f.tab === 2) [() => c("dtime", 0, DLYN.length - 1), () => c("dfb", 0, 10), () => c("rtype", 0, RVBN.length - 1), () => c("rsize", 0, 10)][k]();
+    setFx(); return;
+  }
   if (P === "take") {
-    if (k === 0 && takes.length) { st.tk = (st.tk + d + takes.length) % takes.length; st.chop = { s: 0, e: take().d.length, zoom: 0, mode: st.chop.mode }; }
-    if (k === 1) { st.usb.lvl = Math.max(-12, Math.min(12, st.usb.lvl + d)); routePhone(); }
-    if (k === 2) st.usb.thr = d > 0 ? 1 : 0;
+    if (k === 1) { st.usb.lvl = clampI(st.usb.lvl + d, -12, 24); routePhone(); }
+    if (k === 2 && !st.rec) st.onSound = d > 0;
+    if (k === 3) st.fit = clampI(st.fit + d, 0, 2);
     return;
   }
   if (P === "chop") {
-    const t = take(); if (!t) return; const L = t.d.length, step = Math.max(32, Math.round(L / 200 / Math.pow(2, st.chop.zoom)));
-    if (k === 0) { st.chop.s = Math.max(0, Math.min(st.chop.e - 256, st.chop.s + d * step)); }
-    if (k === 1) { st.chop.e = Math.max(st.chop.s + 256, Math.min(L, st.chop.e + d * step)); }
-    if (k === 2) st.chop.zoom = Math.max(0, Math.min(5, st.chop.zoom + d));
-    if (k === 3) st.chop.mode = (st.chop.mode + d + SLMODES.length) % SLMODES.length;
+    if (!take) return; const c = st.chop, L = take.d.length;
+    if (k === 3) { if (st.place) { st.place.all = d > 0; st.place.key = -1; return; } setSlices(clampI(c.n + d, 0, SLN.length - 1)); return; }
+    if (k === 2) { c.zoom = clampI(c.zoom + d, 0, 6); return; }
+    const s = c.sl[c.cur]; if (!s) return; const step = Math.max(16, Math.round(L / 240 / Math.pow(2, c.zoom)));
+    if (k === 0) s[0] = clampI(s[0] + d * step, 0, s[1] - 256);
+    if (k === 1) s[1] = clampI(s[1] + d * step, s[0] + 256, L);
     return;
   }
-  if (P === "pad") {
-    const p = kit().pads[st.padSel]; if (!p) { flash(padName(st.padSel) + " is empty"); return; } if (kit().fixed) { flash("The factory kit is fixed: copy it? (later)"); return; }
-    if (k === 0) p.tune = Math.max(-24, Math.min(24, p.tune + d));
-    if (k === 1) p.att = Math.max(0, Math.min(ATTS.length - 1, p.att + d));
-    if (k === 2) p.dec = Math.max(0, Math.min(DECS.length - 1, p.dec + d));
-    if (k === 3) p.lvl = Math.max(0, Math.min(10, p.lvl + d));
-    kit().dirty = true; clearTimeout(knob.t); knob.t = setTimeout(() => playPad(p), 120); return;
+  if (P === "play") {
+    if (k === 0) { x.lvl = clampI(x.lvl + d, 0, 10); touch(); }
+    if (k === 1) { x.rvb = clampI(x.rvb + d, 0, 10); touch(); }
+    if (k === 2) S.grid = clampI(S.grid + d, 0, GRIDS.length - 1);
+    if (k === 3) S.feel = clampI(S.feel + d, 0, FEELS.length - 1);
+    return;
   }
-  if (P === "kit") { if (k === 0) { st.slot = Math.max(1, Math.min(3, st.slot + d)); st.ask = 0; } return; }
-  if (P === "usb") {
-    if (k === 0) st.usb.out = (st.usb.out + d + 2) % 2;
-    if (k === 1) { st.usb.in = (st.usb.in + d + 3) % 3; routePhone(); }
-    if (k === 2) { st.usb.lvl = Math.max(-12, Math.min(12, st.usb.lvl + d)); routePhone(); }
+  if (P === "edit") {
+    const tab = EDITTABS[st.tab];
+    if (tab === "KIT") { if (k === 0) x.lvl = clampI(x.lvl + d, 0, 10); if (k === 1) x.vel = clampI(x.vel + d, 0, 10); if (k < 2) touch(); if (k === 2) chooseGroup(st.sel, d); }
+    if (tab === "SOUND") {
+      if (k === 0) { analyse(x);                       // TUNE in notes: the first turn snaps to the exact note, then a semitone a turn
+        const m = x.root + x.tune, off = m - Math.round(m);
+        if (x.found && !x.key) x.tune = Math.abs(off) > .005 ? Math.round(m) - x.root : clampI(Math.round(m) + d - x.root, -12.5, 12.5);
+        else x.tune = clampI(Math.round(x.tune) + d, -12, 12); }
+      if (k === 1) x.att = clampI(x.att + d, 0, ATTS.length - 1);
+      if (k === 2) x.hold = clampI(x.hold + d, 0, HOLDS.length - 1);
+      if (k === 3) x.dec = clampI(x.dec + d, 0, DECS.length - 1);
+      touch();
+    }
+    if (tab === "TRIM" && x.smp) {
+      const m = x.smp, step = Math.max(16, Math.round((m.hi - m.lo) / 200)), o0 = m.a0, o1 = m.a1;
+      if (k === 0) m.a0 = clampI(m.a0 + d * step, m.lo, m.a1 - 256);
+      if (k === 1) m.a1 = clampI(m.a1 + d * step, m.a0 + 256, m.hi);
+      if (k === 2) x.rev = d > 0;
+      if (k === 3) { const mg = maxGain(x); x.gain = d > 0 ? Math.min(mg, Math.floor(x.gain) + 1) : Math.max(0, Math.ceil(x.gain) - 1); }
+      if (x.gain > maxGain(x)) x.gain = maxGain(x);
+      if (kitSec(st.kit) > KIT_S) { m.a0 = o0; m.a1 = o1; flash(kit().name + " is full (7 s)"); }
+      touch();
+    }
+    if (tab === "PAD FX") { const f = ["pp", "pc", "dly", "rvb"][k]; x[f] = clampI(x[f] + d, 0, 10); touch(); }
   }
 }
-function selKit(d) { st.kit = (st.kit + d + kits.length) % kits.length; st.slot = Math.max(1, st.kit); st.ask = 0; flash(kit().name); }
+function writeBeat(b) {            // each slice where it falls in the loop, at the song's tempo: the first bar
+  pushUndo(); const c = st.chop; let n = 0;
+  for (let j = 0; j < b.n; j++) { const beats = c.sl[j][0] / SR * take.bpm / 60; if (beats >= 3.98) continue; const t = beats / 4, k = b.i0 + j;
+    S.notes.push({ k, t, tp: t, v: 100 }); if (!S.order.includes(k)) S.order.push(k); n++; }
+  flash(n + " hits on the drum track at " + BPM + " BPM: PLAY");
+}
+function closeOver() { st.askBeat = null; st.askKey = false; st.save = null; st.pick = null; st.layer = false; st.ask = null; }
 function editTap() {
-  if (st.page === "usb") { st.page = "drums"; return; }
-  if (kit().fixed) { flash("FACTORY 808 is fixed: pick MY KIT 1-3 (SELECT) to sample"); return; }
-  st.page = { drums: "take", take: "chop", chop: "pad", pad: "kit", kit: "take" }[st.page]; st.ask = 0;
+  if (st.save || st.pick || st.layer) return;
+  if (st.page === "edit") st.tab = (st.tab + 1) % EDITTABS.length; else { stopRaw(); st.page = "edit"; st.tab = 0; routePhone(); }
 }
+function fxTap() { if (st.save || st.pick || st.layer) return; if (st.page === "fx") st.fx.tab = (st.fx.tab + 1) % 3; else { st.page = "fx"; st.fx.tab = 0; routePhone(); } }
+function lfoTap() {
+  if (st.save || st.pick || st.layer) return; stopRaw();
+  if (st.page === "take") st.page = "chop"; else if (st.page === "chop") { st.page = "take"; st.place = null; } else st.page = "take";
+  routePhone();
+}
+function sclTap() { if (st.save || st.pick || st.layer) return; st.page = { play: "ideas", ideas: "auto", auto: "play" }[st.page] || "play"; }
 function saveHeld() {
-  if (st.page === "take") {
-    const t = take(); if (!t) return; takes.splice(st.tk, 1); st.tk = Math.max(0, Math.min(st.tk, takes.length - 1));
-    if (take()) st.chop = { s: 0, e: take().d.length, zoom: 0, mode: st.chop.mode };
-    flash(t.name + " thrown away: " + len(t.d).toFixed(1) + " s of RAM free"); return;
+  if (st.page === "usb" || st.pick) return;
+  if (st.page === "play" || st.page === "ideas" || st.page === "auto" || st.layer) {        // undo
+    if (!S.undo.length) { flash("Nothing to undo"); return; }
+    S.redo.push(snap()); const u = S.undo.pop(); S.notes = u.notes; S.order = u.order; flash("UNDONE · two taps: redo"); return;
   }
-  if (st.page === "kit" || st.page === "drums") {
-    if (kit().fixed) { flash("The factory kit is fixed"); return; }
-    const to = st.page === "drums" ? st.kit : st.slot;
-    if ((to !== st.kit && kits[to].saved && kits[to].saved.some(Boolean)) && st.ask !== to) { st.ask = to; flash("MY KIT " + to + " has sounds: hold SAVE again to replace them"); return; }
-    kits[to].pads = clonePads(kit().pads).map(p => p && { ...p, quick: false }); kits[to].saved = clonePads(kits[to].pads); kits[to].dirty = false;
-    if (to === st.kit) kit().pads.forEach(p => p && (p.quick = false)); st.ask = 0;
-    flash("Saved in MY KIT " + to + " · " + kitSec(to).toFixed(1) + " of 7 s"); return;
-  }
-  flash("SAVE held on KIT saves the pads");
+  if (!st.save) { st.save = { to: kit().built ? 4 : st.kit }; return; }
+  const to = st.save.to, src = kit();
+  kits[to].keys = src.keys.map(cloneKey); kits[to].saved = src.keys.map(cloneKey); kits[to].dirty = false;
+  if (src.built) { src.keys = src.saved.map(cloneKey); src.dirty = false; }
+  st.save = null; st.kit = to; flash("Saved in " + kits[to].name);
 }
 function playBtn() {
-  startAudio();
-  if (st.page === "chop" && take()) { const { s, e } = st.chop; playRaw(take().d, s, e); return; }
-  if (st.page === "take" && take()) { playRaw(take().d, 0, take().d.length); return; }
-  if (st.page === "pad") { playPad(kit().pads[st.padSel]); return; }
-  // DRUMS: the pads in order, an eighth apart: how the chops sound together
-  const ps = kit().pads.map((p, i) => [p, i]).filter(x => x[0]); const e8 = 60 / 95 / 2;
-  ps.slice(0, 8).forEach(([p, i], j) => setTimeout(() => { playPad(p); st.flashKey = i; st.flashKeyT = performance.now(); }, j * e8 * 1000));
+  startAudio(); if (st.save) return;
+  if (st.pick) { const p = st.pick; st.pick = null; st.kit = p.to; if (placeAt(p.i0, p.all)) { st.place.key = -1; st.place.done = p.i0; } return; }
+  if (st.page === "chop" && st.askBeat) { writeBeat(st.askBeat); st.askBeat = null; return; }
+  if (st.page === "chop") { if (!take) return; if (st.prev) { stopRaw(); return; } const s = st.chop.sl[st.chop.cur]; if (s) playRaw(take.d, s[0], s[1]); return; }
+  if (st.page === "take" && st.askKey) { LV.tonic = take.key.tonic; LV.scale = take.key.minor ? 1 : 0; st.askKey = false; flash("Song key: " + keyName(take.key)); return; }
+  if (st.page === "take") { if (!take) return; if (st.prev) { stopRaw(); return; } playRaw(take.d, 0, take.d.length); return; }
+  transport();
 }
+function recTap() {
+  startAudio(); if (st.save || st.pick) return;
+  if (st.layer) { st.layer = false; st.ask = null; return; }
+  if (st.page === "take") { recBtn(); return; }
+  if (st.page === "chop") { if (take) { stopRaw(); st.place = st.place ? null : { key: -1, all: false, done: -1 }; } return; }
+  S.armed = !S.armed; S.passMark = -1;
+}
+function recHeld() { if (sampling() || st.save || st.pick) return; st.layer = true; st.ask = null; }
+function playSel() { const c = st.chop, s = c.sl[c.cur]; if (take && s) playRaw(take.d, s[0], s[1]); }
+function sel(d) {
+  startAudio(); if (st.save || st.pick || st.layer) return;
+  if (st.page === "chop" && take && st.chop.sl.length) {      // only the slices there are; each one plays
+    const c = st.chop; c.cur = (c.cur + d + c.sl.length) % c.sl.length; if (st.place) { st.place.key = -1; st.place.done = -1; } playSel(); return;
+  }
+  if (st.page === "levels") { if (LVTABS[LV.tab] === "CHORDS") LV.step = Math.max(0, LV.step + d); return; }
+  if (st.page === "take" && take && take.key && !st.rec) { st.askKey = true; return; }
+  if (editing() && EDITTABS[st.tab] === "SOUND") { const x = key(st.sel); x.grp = (x.grp + d + 5) % 5; touch(); }
+}
+function oct(d) {
+  if (st.page === "levels") { LV.oct = clampI(LV.oct + d, -3, 3); return; }
+  if (st.save || st.pick) return;
+  if (st.layer && d > 0) { if (st.ask === "clear") { pushUndo(); S.notes = []; S.order = []; st.ask = null; st.layer = false; flash("DRUMS cleared · SAVE held: undo"); } else st.ask = "clear"; return; }
+  if (st.page === "chop") d > 0 ? split() : merge();
+}
+function envTap() { if (st.save || st.pick || st.layer) return; if (st.page === "levels") { LV.tab = (LV.tab + 1) % LVTABS.length; LV.last = ""; } else if (st.page !== "usb") { st.place = null; lvEnter(); } }
+function home() { stopRaw(); if (st.rec) stopRec(); closeOver(); st.place = null; st.page = "play"; routePhone(); }
 
 // ------------------------------------------------------------------ the panel
-const KNOBS = { drums: ["KIT", "", "", ""], take: ["TAKE", "IN LEVEL", "START", ""], chop: ["START", "END", "ZOOM", "SLICES"], pad: ["TUNE", "ATTACK", "DECAY", "LEVEL"], kit: ["SAVE TO", "", "", ""], usb: ["OUT", "IN", "IN LEVEL", ""] };
-const knobEls = [];
+const KNOBS = { levels: ["MODE", "SCALE", "ROOT", "CHORD"], play: ["LEVEL", "REVERB", "GRID", "FEEL"], take: ["", "IN LEVEL", "START", "FIT"], chop: ["START", "END", "ZOOM", "SLICES"], usb: ["OUT", "MONITOR", "IN LEVEL", ""],
+  KIT: ["LEVEL", "VELOCITY", "GROUP", ""], SOUND: ["TUNE", "ATTACK", "HOLD", "DECAY"], TRIM: ["START", "END", "REVERSE", "GAIN"], "PAD FX": ["PUNCH", "COLOR", "DELAY", "REVERB"],
+  PUNCH: ["COMP", "SPEED", "CLIP", "SHAPE"], COLOR: ["TAPE", "LOFI", "DRIVE", "CRUSH"], SPACE: ["DELAY", "FEEDBACK", "REVERB", "SIZE"], ideas: ["", "", "", ""], auto: ["", "", "", ""] };
 for (let k = 0; k < 4; k++) {
   const w = document.createElement("div"); w.className = "knob";
   w.innerHTML = `<div class="dial" tabindex="0" role="slider" aria-label="Knob ${k + 1}"></div><div class="nm">K${k + 1}</div><div class="b"><button aria-label="Knob ${k + 1} down">−</button><button aria-label="Knob ${k + 1} up">+</button></div>`;
@@ -397,220 +909,313 @@ for (let k = 0; k < 4; k++) {
   dial.addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
   dial.addEventListener("keydown", e => { if (e.key === "ArrowUp" || e.key === "ArrowRight") { turn(1); e.preventDefault(); } if (e.key === "ArrowDown" || e.key === "ArrowLeft") { turn(-1); e.preventDefault(); } });
   const [m, p] = w.querySelectorAll("button"); m.onclick = () => turn(-1); p.onclick = () => turn(1);
-  $("knobs").appendChild(w); knobEls.push(w.querySelector(".nm"));
+  $("knobs").appendChild(w);
 }
-const keyEls = [];
+const PCCODE = ["KeyA","KeyW","KeyS","KeyE","KeyD","KeyR","KeyF","KeyG","KeyY","KeyH","KeyU","KeyJ","KeyK","KeyO","KeyL","KeyP","Semicolon","BracketLeft","Quote","KeyZ","KeyN","KeyX","KeyM","KeyC","KeyV","Comma","KeyB"];
+const PCLAB = ["a","w","s","e","d","r","f","g","y","h","u","j","k","o","l","p",";","[","'","z","n","x","m","c","v",",","b"];
+const keyEls = [], WH = []; for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) WH.push(i);
 (function () {
-  const ww = 100 / WHITES.length;
+  const ww = 100 / WH.length;
   for (let i = 0; i < NK; i++) {
-    const el = document.createElement("div"), b = isBlack(LOW + i), wi = b ? WHITES.indexOf(i - 1) : WHITES.indexOf(i);
-    el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .3 : wi * ww) + "%"; el.style.width = (b ? ww * .6 : ww) + "%";
-    el.innerHTML = b ? "" : `<span class="lab">${wi + 1}</span>${PCKEYS[wi] || ""}`;
-    if (!b) {
-      el.addEventListener("pointerdown", e => { e.preventDefault(); el.setPointerCapture(e.pointerId); press(i); });
-      el.addEventListener("pointerup", () => release(i)); el.addEventListener("pointercancel", () => release(i));
-    }
+    const el = document.createElement("div"), b = isBlack(LOW + i), wi = b ? WH.indexOf(i - 1) : WH.indexOf(i);
+    el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .32 : wi * ww) + "%"; el.style.width = (b ? ww * .64 : ww) + "%";
+    el.innerHTML = `<span class="lab">${isAuto(i) ? "★ " + ROLE[i].replace(" ", "<br>") : ""}</span><span class="smp" hidden></span><span class="g" style="background:${GCOL[GROUP(i)]}"></span><span style="position:absolute;bottom:${b ? 24 : 22}px;left:0;right:0;text-align:center;font-size:.72rem;font-weight:700;color:${b ? "#fff" : "#1d3a6e"}">${PCLAB[i]}</span>${keyNote(i)}`;
+    el.addEventListener("pointerdown", e => { e.preventDefault(); if (st.latch && st.held.has(i)) { st.held.delete(i); S.erasing.delete(i); return; } const r0 = el.getBoundingClientRect(); press(i, Math.round(30 + 97 * clampI((e.clientY - r0.top) / r0.height, 0, 1))); });
+    el.addEventListener("pointerup", () => release(i)); el.addEventListener("pointercancel", () => release(i)); el.addEventListener("pointerleave", () => { if (!st.latch) { st.held.delete(i); S.erasing.delete(i); } });
     $("keys").appendChild(el); keyEls.push(el);
   }
 })();
-const down = new Set();
-addEventListener("keydown", e => { if (e.target.closest && e.target.closest("select,input,.dial")) return; const p = PCKEYS.indexOf(e.key.toLowerCase()); if (p >= 0 && !down.has(p) && !e.repeat) { down.add(p); press(WHITES[p]); e.preventDefault(); } });
-addEventListener("keyup", e => { const p = PCKEYS.indexOf(e.key.toLowerCase()); if (p >= 0 && down.has(p)) { down.delete(p); release(WHITES[p]); } });
+const mt = $("mapT"); for (let i = 0; i < NK; i++) { const r = mt.insertRow(); r.innerHTML = `<td>${keyNote(i)} <span class="pill">${PCLAB[i]}</span></td><td><span class="pill" style="background:${GCOL[GROUP(i)]};color:#111">${isAuto(i) ? "★ " + ROLE[i] : "free"}</span></td><td>${SYN.map((n, k) => synName(k, OLD[i])).filter((v, j, a) => a.indexOf(v) === j).join(", ")}</td>`; }
 
 $("start").onclick = startAudio;
 SOURCES.forEach((s, i) => { const o = document.createElement("option"); o.value = i; o.textContent = s[0]; $("src").appendChild(o); });
 $("src").onchange = () => { const was = st.phone.on; if (was) phoneToggle(); st.phone.src = +$("src").value; if (was) phoneToggle(); };
 $("phplay").onclick = phoneToggle;
-$("selL").onclick = () => { startAudio(); if (st.page === "take" || st.page === "chop") knob(0, -1); else selKit(-1); };
-$("selR").onclick = () => { startAudio(); if (st.page === "take" || st.page === "chop") knob(0, 1); else selKit(1); };
-$("play").onclick = playBtn;
-$("home").onclick = () => { st.page = "drums"; st.ask = 0; };
-$("glo").onclick = () => { st.page = st.page === "usb" ? "drums" : "usb"; };
-const recB = $("rec");
-recB.addEventListener("pointerdown", () => { startAudio(); st.recHeld = true; st.recUsed = false; });
-recB.addEventListener("pointerup", () => {
-  st.recHeld = false; if (st.quick) { quickStop(); return; }
-  if (st.page === "take") { st.rec ? stopRec() : startRec(); }
-  else if (st.page === "chop") { st.recOn = !st.recOn; flash(st.recOn ? "REC on: a key takes the slices" : "REC off: keys only play"); }
-  else if (st.page === "drums") flash("Hold REC and hold a key: record onto that pad");
+$("phvol").oninput = e => { st.phone.vol = e.target.value / 100; if (phoneNode) phoneNode.vg.gain.value = st.phone.vol; };
+$("selL").onclick = () => sel(-1); $("selR").onclick = () => sel(1);
+$("preL").onclick = () => presets(-1); $("preR").onclick = () => presets(1);
+$("octD").onclick = () => oct(-1); $("octU").onclick = () => oct(1);
+$("play").onclick = playBtn; $("scl").onclick = sclTap; $("env").onclick = () => { startAudio(); envTap(); };
+$("fx").onclick = () => { startAudio(); fxTap(); }; $("lfo").onclick = () => { startAudio(); lfoTap(); };
+$("home").onclick = home;
+$("glo").onclick = () => { stopRaw(); closeOver(); st.place = null; st.page = st.page === "usb" ? "play" : "usb"; routePhone(); };
+$("latch").onclick = () => { st.latch = !st.latch; $("latch").classList.toggle("on", st.latch); if (!st.latch) { st.held.clear(); S.erasing.clear(); st.editHeld = false; } };
+// held buttons: EDIT (tap: next page; held: + a key erases), REC (tap: arm; held: the REC layer), SAVE (held)
+function editDown() { startAudio(); if (st.latch) { if (st.editHeld) { st.editHeld = false; if (!st.editUsed) editTap(); } else { st.editHeld = true; st.editUsed = false; } return; } st.editHeld = true; st.editUsed = false; }
+function editUp() { if (st.latch) return; st.editHeld = false; S.erasing.clear(); if (!st.editUsed) editTap(); }
+$("edit").addEventListener("pointerdown", editDown); $("edit").addEventListener("pointerup", editUp);
+let recT = null;
+const recDown = () => { startAudio(); recT = setTimeout(() => { recT = null; recHeld(); }, 500); };
+const recUp = () => { if (recT) { clearTimeout(recT); recT = null; recTap(); } };
+$("rec").addEventListener("pointerdown", recDown); $("rec").addEventListener("pointerup", recUp);
+let saveT = null;
+const saveDown = () => { startAudio(); saveT = setTimeout(() => { saveT = null; saveHeld(); }, 500); };
+let lastTap = 0;
+const playPages = () => (st.page === "play" || st.page === "ideas" || st.page === "auto" || st.layer) && !st.save;
+const saveUp = () => {
+  if (!saveT) return; clearTimeout(saveT); saveT = null;
+  const now = performance.now();
+  if (playPages() && now - lastTap < 400 && S.redo.length) { S.undo.push(snap()); const u = S.redo.pop(); S.notes = u.notes; S.order = u.order; flash("REDONE"); lastTap = 0; return; }
+  lastTap = now; flash(playPages() ? "HOLD: UNDO" : "HOLD: SAVE");
+};
+$("save").addEventListener("pointerdown", saveDown); $("save").addEventListener("pointerup", saveUp);
+$("save").addEventListener("pointerleave", () => { if (saveT) { clearTimeout(saveT); saveT = null; } });
+addEventListener("keydown", e => {
+  if (e.target.closest && e.target.closest("select,input,.dial") || e.ctrlKey || e.metaKey || e.altKey) return;
+  const c = e.code, i = PCCODE.indexOf(c);
+  if (e.repeat) { if (i >= 0 || ["Space","ShiftLeft","ShiftRight","Backspace","Enter","Tab","Backquote"].includes(c)) e.preventDefault(); return; }
+  if (i >= 0) press(i);
+  else if (c === "Space") playBtn();
+  else if (c === "ShiftLeft" || c === "ShiftRight") editDown();
+  else if (c === "Tab") { startAudio(); lfoTap(); }
+  else if (c === "Backquote") { startAudio(); fxTap(); }
+  else if (c === "Backslash") sclTap();
+  else if (c === "BracketRight") { startAudio(); envTap(); }
+  else if (c === "Enter") recDown();
+  else if (c === "Backspace") saveDown();
+  else if (c === "Escape") home();
+  else if (c === "Minus" || c === "Equal") { if (st.editHeld) st.editUsed = true; oct(c === "Equal" ? 1 : -1); }
+  else if (c === "ArrowLeft" || c === "ArrowRight") presets(c === "ArrowLeft" ? -1 : 1);
+  else if (c === "ArrowUp" || c === "ArrowDown") sel(c === "ArrowDown" ? -1 : 1);
+  else if (/^Digit[1-4]$/.test(c)) { if (st.editHeld) st.editUsed = true; knob(+c[5] - 1, e.shiftKey ? -1 : 1); }
+  else return;
+  e.preventDefault();
 });
-const editB = $("edit");
-editB.addEventListener("pointerdown", () => { startAudio(); st.editHeld = true; st.editUsed = false; });
-editB.addEventListener("pointerup", () => { st.editHeld = false; if (!st.editUsed) editTap(); });
-let saveT = null; const saveB = $("save");
-saveB.addEventListener("pointerdown", () => { startAudio(); saveT = setTimeout(() => { saveT = null; saveHeld(); }, 600); });
-const saveUp = () => { if (saveT) { clearTimeout(saveT); saveT = null; flash("Hold SAVE (0.6 s)"); } };
-saveB.addEventListener("pointerup", saveUp); saveB.addEventListener("pointerleave", () => { if (saveT) { clearTimeout(saveT); saveT = null; } });
-
-// web loader: a file becomes a take, as the loader page would send it
-async function loadFile(f) {
-  startAudio();
-  try {
-    const raw = await ac.decodeAudioData(await f.arrayBuffer()), n = Math.ceil(raw.duration * SR);
-    const off = new OfflineAudioContext(1, n, SR), s = off.createBufferSource(); s.buffer = raw; s.connect(off.destination); s.start();
-    let a = (await off.startRendering()).getChannelData(0).slice(); const full = a.length / SR;
-    const free = RAM_S - ramSec(); if (full > Math.min(TAKE_MAX, free)) a = a.slice(0, Math.floor(Math.min(TAKE_MAX, free) * SR));
-    if (a.length < SR * .05) { $("loadInfo").textContent = "No room: throw a take away on TAKE (SAVE held) first."; return; }
-    const t = addTake(adpcm(a), "web loader, " + f.name); st.tk = takes.length - 1; st.chop = { s: 0, e: t.d.length, zoom: 0, mode: st.chop.mode };
-    SOURCES.push([f.name, a]); const o = document.createElement("option"); o.value = SOURCES.length - 1; o.textContent = f.name; $("src").appendChild(o);
-    $("loadInfo").textContent = `${f.name}: ${raw.numberOfChannels} ch, ${raw.sampleRate} Hz, ${full.toFixed(1)} s → mono 22 kHz ADPCM, ${(len(a) * 11.025).toFixed(0)} KB` + (len(a) < full - .01 ? `, cut to ${len(a).toFixed(1)} s (a take is 10 s at most, ${RAM_S} s in all)` : "") + `. It is ${t.name} on the TAKE page; the phone can play it too.`;
-    st.page = "take";
-  } catch (e) { $("loadInfo").textContent = "That file could not be read as audio: try a WAV or MP3."; }
-}
-$("file").onchange = e => e.target.files[0] && loadFile(e.target.files[0]);
-const drop = $("drop");
-drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
-drop.addEventListener("dragleave", () => drop.classList.remove("over"));
-drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+addEventListener("keyup", e => {
+  const c = e.code, i = PCCODE.indexOf(c);
+  if (i >= 0) release(i);
+  else if (c === "ShiftLeft" || c === "ShiftRight") editUp();
+  else if (c === "Enter") recUp();
+  else if (c === "Backspace") saveUp();
+});
 
 // ------------------------------------------------------------------ the screen
 const g = $("scr").getContext("2d");
 const C = { bg: "#0a0d13", fg: "#e8edf5", mute: "#7f8796", card: "#161b24", acc: "#d77cc2", accd: "#4a2a44", rec: "#ef5b5b", ok: "#3ccf7a", grid: "#1c2230", blue: "#4d8dff" };
 function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 function T(s, x, y, size, col, w = 600, al = "left") { g.font = w + " " + size + "px Inter, sans-serif"; g.fillStyle = col; g.textAlign = al; g.textBaseline = "middle"; g.fillText(s, x, y); g.textAlign = "left"; }
-function wave(d, s, e, x, y, w, h, col) {
+function wave(d, s, e, x, y, w, h, col, gain = 1) {
   g.fillStyle = col; const n = e - s; if (n <= 0) return;
-  for (let c = 0; c < w; c++) { const a = s + Math.floor(c * n / w), b = s + Math.floor((c + 1) * n / w); let lo = 0, hi = 0; for (let i = a; i < Math.max(a + 1, b); i++) { const v = d[i] || 0; if (v < lo) lo = v; if (v > hi) hi = v; } g.fillRect(x + c, y + h / 2 - hi * h / 2, 1, Math.max(1, (hi - lo) * h / 2)); }
+  for (let c = 0; c < w; c++) { const a = s + Math.floor(c * n / w), b = s + Math.floor((c + 1) * n / w); let lo = 0, hi = 0; for (let i = a; i < Math.max(a + 1, b); i++) { const v = Math.max(-1, Math.min(1, (d[i] || 0) * gain)); if (v < lo) lo = v; if (v > hi) hi = v; } g.fillRect(x + c, y + h / 2 - hi * h / 2, 1, Math.max(1, (hi - lo) * h / 2)); }
 }
-function meter(x, y, w, label, used, cap, col) {
-  T(label, x, y, 8.5, C.mute, 600); T(used.toFixed(1) + " / " + cap + " s", x + w, y, 8.5, C.fg, 600, "right");
-  g.fillStyle = C.grid; rr(x, y + 7, w, 6, 3); g.fill(); g.fillStyle = used > cap * .9 ? C.rec : col; rr(x, y + 7, Math.max(3, w * Math.min(1, used / cap)), 6, 3); g.fill();
+function knobRow(names, vals) {
+  for (let k = 0; k < 4; k++) { if (!names[k]) continue; const x = 4 + k * 58; g.fillStyle = C.card; rr(x, 204, 54, 32, 5); g.fill(); T(names[k], x + 27, 213, 7, C.mute, 600, "center"); T(vals[k], x + 27, 226, 9.5, C.acc, 700, "center"); }
 }
-function knobRow(vals) {
-  const L = KNOBS[st.page];
-  for (let k = 0; k < 4; k++) { if (!L[k]) continue; const x = 4 + k * 58; g.fillStyle = C.card; rr(x, 204, 54, 32, 5); g.fill(); T(L[k], x + 27, 213, 7, C.mute, 600, "center"); T(vals[k], x + 27, 226, 9.5, C.acc, 700, "center"); }
+function top(tabs, on, col = C.acc) {
+  T("DRUMS", 6, 12, 11, col, 700);
+  let x = 52; tabs.forEach(t => { T(t, x, 12, 8.5, t === on ? C.fg : "#4f5766", 700); g.font = "700 8.5px Inter, sans-serif"; const w = g.measureText(t).width; if (t === on) { g.fillStyle = C.acc; g.fillRect(x, 19, w, 2); } x += w + 8; });
+  const k = kit(); T(k.name + (k.dirty ? " *" : ""), 234, 12, 9, k.dirty ? C.fg : C.mute, 600, "right");
+  g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
 }
-function top(name) {
-  T("DRUMS", 6, 12, 11, C.acc, 700); T(name, 50, 12, 10, C.mute, 600);
-  const k = kit(); T(k.name + (k.dirty ? " *" : ""), 234, 12, 10, k.dirty ? C.fg : C.mute, 600, "right");
-  g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
+function strip(y, h, mark) {
+  const ww = 228 / WH.length;
+  WH.forEach((i, wi) => { const x = 6 + wi * ww; g.fillStyle = mark && mark(i) ? C.acc : "#2a313d"; g.fillRect(x + .5, y, ww - 1, h); g.fillStyle = GCOL[GROUP(i)]; g.fillRect(x + 1.5, y + h - 4, ww - 3, 3); if (key(i).smp) { g.fillStyle = C.fg; g.beginPath(); g.arc(x + ww / 2, y + h - 10, 2.2, 0, 7); g.fill(); } if (st.sel === i && !sampling()) { g.strokeStyle = C.fg; g.lineWidth = 1; g.strokeRect(x + 1, y + .5, ww - 2, h - 1); } });
+  for (let i = 0; i < NK; i++) if (isBlack(LOW + i)) { const wi = WH.indexOf(i - 1), x = 6 + (wi + 1) * ww - ww * .32; g.fillStyle = mark && mark(i) ? "#a3508f" : "#0e1219"; g.fillRect(x, y, ww * .64, h * .58); g.fillStyle = GCOL[GROUP(i)]; g.fillRect(x + 1, y + h * .58 - 3, ww * .64 - 2, 2); if (key(i).smp) { g.fillStyle = C.fg; g.beginPath(); g.arc(x + ww * .32, y + h * .58 - 8, 2, 0, 7); g.fill(); } if (st.sel === i && !sampling()) { g.strokeStyle = C.fg; g.strokeRect(x, y, ww * .64, h * .58); } }
 }
 const sec = n => (n / SR).toFixed(2) + " s";
+const db = v => (v > 0 ? "+" : "") + (Math.round(v * 10) / 10) + " dB";
+function keyHead(y) {
+  const i = st.sel, x = key(i);
+  T(keyNote(i) + " · " + (isAuto(i) ? ROLE[i] : soundName(x)), 6, y, 13, C.fg, 700);
+  if (isAuto(i)) { T("★ AUTO", 234, y, 8, GCOL[GROUP(i)], 700, "right"); T(soundName(x), 6, y + 15, 8, x.smp ? C.acc : C.mute, 600); }
+}
+function envLine(x, d, X0, Y0, W, H) {   // ATTACK, HOLD, DECAY drawn as straight lines over the sound
+  const L = d.length / SR, at = ATTS[x.att] / 1000, ho = HOLDS[x.hold] === "key" ? Infinity : HOLDS[x.hold] / 1000, de = DECS[x.dec] / 1000, Y = v => Y0 + H - v * H, Xt = t => X0 + W * Math.min(1, t / L);
+  g.strokeStyle = C.fg; g.lineWidth = 1.4; g.beginPath(); g.moveTo(X0, Y(at ? 0 : 1)); g.lineTo(Xt(at), Y(1));
+  if (HOLDS[x.hold] !== "key" && isFinite(ho)) { g.lineTo(Xt(at + ho), Y(1)); g.lineTo(Xt(at + ho + de), Y(0)); g.lineTo(X0 + W, Y(0)); } else g.lineTo(X0 + W, Y(1));
+  g.stroke();
+}
+function level10(x, y, w, v) { g.fillStyle = C.grid; rr(x, y, w, 5, 2); g.fill(); g.fillStyle = C.acc; rr(x, y, Math.max(2, w * v / 10), 5, 2); g.fill(); }
+function drawPlay() {
+  // the top line, as on the other tracks: the track and its page, the tempo, the kit
+  const pg = st.page.toUpperCase(); T((S.armed ? "● " : "") + "DRUMS", 6, 12, 11, S.armed ? C.rec : C.acc, 700); g.font = "700 11px Inter, sans-serif";
+  const w0 = g.measureText((S.armed ? "● " : "") + "DRUMS").width; T(pg, 12 + w0, 12, 9, C.fg, 700);
+  T(kit().name + (kit().dirty ? " *" : "") + " · " + BPM, 234, 12, 9, C.mute, 600, "right"); g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
+  if (pg !== "PLAY") { T(pg + ": as built (drum map v2)", 120, 100, 10, C.fg, 700, "center"); T("SCL: next page", 120, 120, 8, C.mute, 500, "center"); return; }
+  // the bar: a row a key, in the order recorded; the rows share the space (24 px at most); names down to 10 px rows
+  const X0 = 44, W = 190, Y0 = 26, AH = 160, rows = S.order, n = rows.length, h = n ? Math.max(3, Math.min(24, Math.floor((AH - n) / n))) : 24;
+  g.fillStyle = C.card; rr(6, Y0 - 1, 228, AH + 2, 4); g.fill();
+  for (let s16 = 0; s16 <= 16; s16++) { g.fillStyle = s16 % 4 ? "#1d232e" : "#3a4252"; g.fillRect(X0 + W * s16 / 16, Y0, 1, AH); }
+  if (!n) T("REC, PLAY, then play: your beat appears here", 120, 100, 8.5, C.mute, 500, "center");
+  let y = Y0 + 1;
+  rows.forEach(k => {
+    if (y + h > Y0 + AH) return; const col = GCOL[GROUP(k)];
+    if (h >= 9) T(shortName(k).slice(0, 8), 9, y + h / 2, Math.min(8, h - 2), col, 700); else { g.fillStyle = col; g.fillRect(9, y, 30, Math.max(1, h - 1)); }
+    S.notes.filter(q => q.k === k).forEach(q => {
+      const e = eff(q.t), xe = X0 + W * e, xp = X0 + W * (q.tp === undefined ? q.t : q.tp), vh = Math.max(2, (h - 4) * (q.v || 100) / 127);
+      if (h >= 9 && Math.abs(xe - xp) > 1 && Math.abs(xe - xp) < W / 2) { g.fillStyle = col + "88"; g.fillRect(Math.min(xe, xp), y + h / 2, Math.abs(xe - xp), 1); }
+      g.fillStyle = col; rr(xe - 2.5, y + (h - vh) / 2, 5, vh, Math.min(2, vh / 2)); g.fill();
+      if (q.s && q.s.length > 1 && h >= 9) T("×" + q.s.length, xe + 4, y + h / 2, 7, C.fg, 700);
+    });
+    if (S.erasing.has(k)) { g.fillStyle = C.rec; g.fillRect(X0, y + h - 1, W, 1); }
+    y += h + 1;
+  });
+  if (S.playing && ac) { const x = X0 + W * barPos(); g.fillStyle = C.ok; g.fillRect(x, Y0, 1.5, AH); }
+  T(keyNote(st.sel) + " · " + (isAuto(st.sel) ? ROLE[st.sel] : soundName(key(st.sel))), 6, 194, 8.5, C.mute, 700);
+  const x = key(st.sel);
+  knobRow(KNOBS.play, [String(x.lvl), String(x.rvb), GRIDS[S.grid][0], FEELS[S.feel][0]]);
+}
 function draw() {
   g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240);
-  const P = st.page, k = kit();
-  if (P === "drums") {
-    top("");
-    T(k.name, 120, 40, 16, C.fg, 700, "center");
-    T(k.fixed ? "built in · SELECT: your kits" : kitSec(st.kit).toFixed(1) + " of 7 s · EDIT: the sampler", 120, 58, 8.5, C.mute, 500, "center");
-    for (let p = 0; p < NPAD; p++) {
-      const x = 8 + (p % 4) * 57, y = 70 + Math.floor(p / 4) * 32, pd = k.pads[p];
-      g.fillStyle = st.padSel === p ? C.accd : C.card; rr(x, y, 53, 28, 4); g.fill();
-      T(String(p + 1), x + 4, y + 7, 7, C.mute, 600); if (pd) { wave(pd.d, 0, pd.d.length, x + 4, y + 11, 45, 15, pd.quick ? C.ok : C.acc); }
-      const hk = WHITES[p]; if (st.held.has(hk) || (st.flashKey === p && performance.now() - st.flashKeyT < 150)) { g.strokeStyle = C.ok; g.lineWidth = 1.5; rr(x, y, 53, 28, 4); g.stroke(); }
+  const P = st.page, k = kit(), x = key(st.sel);
+  if (st.save) {
+    top(["SAVE"], "SAVE");
+    for (let s = 4; s <= 6; s++) { const y = 34 + (s - 4) * 42, on = st.save.to === s, used = kits[s].saved.reduce((q, z) => q + len(smpLen(z)), 0); g.fillStyle = on ? C.accd : C.card; rr(6, y, 228, 36, 5); g.fill(); T(kits[s].name, 14, y + 11, 10, on ? C.fg : C.mute, 700); g.fillStyle = C.grid; rr(14, y + 23, 212, 6, 3); g.fill(); g.fillStyle = C.acc; rr(14, y + 23, Math.max(2, 212 * used / KIT_S), 6, 3); g.fill(); }
+    T("SAVE: keep it here · HOME: cancel", 120, 176, 9, C.fg, 700, "center");
+    knobRow(["KIT"], [kits[st.save.to].name.replace("MY ", "")]);
+  } else if (st.layer) {
+    top(["REC LAYER"], "REC LAYER", C.rec);
+    [["GRID", GRIDS[S.grid][0]], ["FEEL", FEELS[S.feel][0]], ["CLICK", "rec"], ["COUNT-IN", "off"]].forEach(([a, b], j) => { const y = 32 + j * 30; g.fillStyle = C.card; rr(6, y, 228, 26, 5); g.fill(); T("K" + (j + 1) + " " + a, 14, y + 13, 9, C.mute, 700); T(b, 226, y + 13, 10, C.fg, 700, "right"); });
+    if (st.ask === "clear") { g.fillStyle = "#5a1f22"; rr(6, 158, 228, 30, 6); g.fill(); T("Clear DRUMS?  OCT+: yes · other: no", 120, 173, 9, C.fg, 700, "center"); }
+    else T("OCT+: clear this track · REC: close", 120, 172, 8.5, C.mute, 600, "center");
+    knobRow(["GRID", "FEEL", "CLICK", "COUNT-IN"], [GRIDS[S.grid][0], FEELS[S.feel][0], "rec", "off"]);
+  } else if (P === "play" || P === "ideas" || P === "auto") drawPlay();
+  else if (P === "levels") {
+    const px = key(LV.pad), tab = LVTABS[LV.tab], rs = px.root + px.tune, lv16 = tab === "NOTES" && NM[LV.nm] === "16 LEVELS"; top(LVTABS, tab);
+    T(keyNote(LV.pad) + " · " + (isAuto(LV.pad) ? ROLE[LV.pad] : soundName(px)), 6, 35, 10, C.fg, 700);
+    if (!lv16) T("sounds " + nn(rs) + (px.found ? "" : " (set K4)"), 234, 35, 8.5, px.found ? C.ok : C.mute, 700, "right");
+    T(lv16 ? "the 16 white keys: " + (LV.lt ? "a semitone a key" : "soft to hard") : PCN[LV.tonic] + " " + SCALES[LV.scale][0] + (tab === "CHORDS" ? " · " + PROGS[LV.prog][0] : "") + (LV.oct ? " · OCT " + (LV.oct > 0 ? "+" : "") + LV.oct : ""), 6, 49, 8.5, C.mute, 600);
+    const ww = 228 / WH.length, KY = 58, KH = 76;
+    WH.forEach((i, wi) => { const x0 = 6 + wi * ww, L = lvNotes(i), li = lvLight(i);
+      g.fillStyle = !li.play ? "#161b24" : li.full ? C.acc : li.lit ? "#7a4a70" : "#2a313d"; g.fillRect(x0 + .5, KY, ww - 1, KH);
+      const lab = !L ? "" : L.ctl ? (i === K_NEXT ? "NEXT" : i === K_AGAIN ? "AGAIN" : "") : lv16 ? L.lab : tab === "CHORDS" ? L.roman + " " + L.name : nn(L.ms[0]).replace(/-?\d+$/, "");
+      if (lab) { g.save(); g.translate(x0 + ww / 2, KY + KH - 5); g.rotate(-Math.PI / 2); T(lab, 0, 0, 7, li.lit || li.full ? "#fff" : C.mute, 700); g.restore(); }
+      if (li.root) { g.fillStyle = C.ok; g.beginPath(); g.arc(x0 + ww / 2, KY + 6, 3, 0, 7); g.fill(); }
+      if (LV.lastKey === i) { g.strokeStyle = C.fg; g.lineWidth = 1.5; g.strokeRect(x0 + 1, KY + 1, ww - 2, KH - 2); } });
+    for (let i = 0; i < NK; i++) if (isBlack(LOW + i)) { const wi = WH.indexOf(i - 1), x0 = 6 + (wi + 1) * ww - ww * .32, li = lvLight(i);
+      g.fillStyle = !li.play ? "#0e1219" : li.full ? C.acc : li.ctl ? "#3a2f55" : li.lit ? "#5e3656" : "#05070b"; g.fillRect(x0, KY, ww * .64, KH * .5); g.strokeStyle = "#000"; g.lineWidth = 1; g.strokeRect(x0, KY, ww * .64, KH * .5);
+      if (li.ctl) { g.save(); g.translate(x0 + ww * .32, KY + KH * .5 - 3); g.rotate(-Math.PI / 2); T(COLOURS[i] || (i === K_LOCK ? "LOCK" : ""), 0, 0, 5.5, "#fff", 700); g.restore(); }
+      if (li.root) { g.fillStyle = C.ok; g.beginPath(); g.arc(x0 + ww * .32, KY + 6, 2.5, 0, 7); g.fill(); } }
+    const idle = tab === "CHORDS" ? "C is I · hold a black key for a colour · F5 NEXT" : lv16 ? "" : { FREE: "every key its note", KEY: "lit: the scale · full: the tonic", WHITES: "the white keys play the scale" }[NM[LV.nm]];
+    T(LV.last || idle, 120, 158, LV.last ? 18 : 8.5, LV.last ? C.fg : C.mute, 700, "center");
+    T("ENV: " + (tab === "NOTES" ? "CHORDS" : "NOTES") + " · HOME: back" + (lv16 ? "" : " · ● as recorded"), 120, 188, 7.5, C.mute, 600, "center");
+    if (tab === "NOTES") knobRow(lv16 ? ["MODE", "LEVELS", "", ""] : ["MODE", "KEY", "SCALE", "SOUNDS"], lv16 ? [NM[LV.nm], LT[LV.lt].toLowerCase()] : [NM[LV.nm], PCN[LV.tonic], SCALES[LV.scale][0].replace("harmonic ", "harm. "), nn(rs)]);
+    if (tab === "CHORDS") knobRow(["CHORD", "PROGRESS.", "VOICING", "SCALE"], [BASES[LV.base], PROGS[LV.prog][0], VOICES[LV.voice], SCALES[LV.scale][0].replace("harmonic ", "harm. ")]);
+  } else if (P === "edit") {
+    const tab = EDITTABS[st.tab]; top(EDITTABS, tab); keyHead(38);
+    if (tab === "KIT") {
+      const rd = render(x); g.fillStyle = C.card; rr(6, 62, 228, 76, 5); g.fill(); wave(rd, 0, rd.length, 10, 66, 220, 68, x.smp ? C.acc : "#6f7a8c", x.lvl / 8);
+      strip(146, 34);
+      if (st.list && st.list.key === st.sel && performance.now() - st.list.t < 2500) { const l = st.list, e = l.L[l.i]; g.fillStyle = "#0a0d13"; rr(10, 30, 220, 112, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(keyNote(l.key) + " · K3: next kit", 18, 42, 8, C.mute, 700); T(e.h, 222, 42, 9, C.acc, 700, "right"); for (let j = -2; j <= 2; j++) { const q = l.L[(l.i + j + l.L.length) % l.L.length]; T((j ? "  " : "▸ ") + q.n, 18, 86 + j * 17, j ? 9 : 11.5, j ? C.mute : C.fg, j ? 500 : 700); } }
+      else T("PRESETS: choose its sound", 120, 192, 8, C.mute, 600, "center");
+      knobRow(KNOBS.KIT, [String(x.lvl), x.vel ? String(x.vel) : "fixed", st.list && st.list.key === st.sel ? st.list.L[st.list.i].h.replace("MY KIT ", "MY ") : (x.smp ? "yours" : SYN[x.syn[0]])]);
     }
-    if (st.quick) { const t = ac.currentTime - st.quick.t0; g.fillStyle = "rgba(10,13,19,.93)"; rr(30, 100, 180, 50, 8); g.fill(); T("● " + padName(st.quick.p), 120, 116, 11, C.rec, 700, "center"); T(Math.min(QUICK_MAX, t).toFixed(1) + " / 2 s · let go to keep it", 120, 134, 9, C.fg, 500, "center"); if (t >= QUICK_MAX) quickStop(); }
-  }
-  if (P === "take") {
-    top("TAKE");
-    if (!takes.length && !st.rec) T("No takes. Play the phone, tap REC.", 120, 70, 9.5, C.mute, 500, "center");
-    takes.slice(Math.max(0, st.tk - 3), Math.max(0, st.tk - 3) + 4).forEach((t, j) => {
-      const i = Math.max(0, st.tk - 3) + j, y = 28 + j * 28, sel = i === st.tk;
-      g.fillStyle = sel ? C.accd : C.card; rr(6, y, 228, 24, 4); g.fill();
-      T(t.name, 12, y + 8, 9, sel ? C.fg : C.mute, 700); T(len(t.d).toFixed(1) + " s", 228, y + 8, 9, C.fg, 600, "right");
-      T(t.from, 12, y + 18, 7, C.mute, 500); wave(t.d, 0, t.d.length, 120, y + 3, 70, 18, sel ? C.acc : "#5b4a63");
-    });
-    if (st.rec) {
-      const t = ac.currentTime - st.rec.t0; if (t >= st.rec.max) stopRec();
-      g.fillStyle = "rgba(10,13,19,.95)"; rr(6, 28, 228, 108, 6); g.fill();
-      T("● REC  " + Math.min(t, st.rec.max).toFixed(1) + " s", 14, 42, 13, C.rec, 700); T("of " + st.rec.max.toFixed(1) + " s", 226, 42, 9, C.mute, 600, "right");
-      const a = captured(st.rec.t0, ac.currentTime); wave(a, 0, a.length, 14, 58, Math.min(212, 212 * t / st.rec.max), 60, C.rec);
-      T("REC again: stop" + (st.usb.thr ? " · silence before the sound is cut" : ""), 14, 128, 8, C.mute, 500);
+    if (tab === "SOUND") {
+      const d = render(x); g.fillStyle = C.card; rr(6, 62, 228, 100, 5); g.fill(); wave(d, 0, d.length, 10, 66, 220, 92, x.smp ? C.acc : "#6f7a8c", x.lvl / 8);
+      envLine(x, d, 10, 66, 220, 92);
+      T("MUTE GROUP " + (x.grp ? " ABCD"[x.grp] : "off") + "  (SELECT)", 6, 174, 9, x.grp ? C.fg : C.mute, 700);
+      const hv = HOLDS[x.hold]; knobRow(KNOBS.SOUND, [tuneLabel(x), ATTS[x.att] + " ms", hv === "key" ? "key" : isFinite(hv) ? hv + " ms" : "full", hv === Infinity ? "-" : DECS[x.dec] + " ms"]);
+      if (hv === "key") T("key: it lasts while held (its end loops), then DECAY", 6, 188, 7.5, C.mute, 600);
     }
-    const lv = an ? (() => { const b = new Float32Array(an.fftSize); an.getFloatTimeDomainData(b); return b.reduce((m, v) => Math.max(m, Math.abs(v)), 0); })() : 0;
-    const inLv = st.phone.on && st.usb.in ? Math.min(1, lv * Math.pow(10, st.usb.lvl / 20)) : 0;
-    T("IN", 6, 148, 8.5, C.mute, 600); g.fillStyle = C.grid; rr(22, 145, 212, 6, 3); g.fill(); g.fillStyle = inLv > .95 ? C.rec : C.ok; rr(22, 145, Math.max(2, 212 * inLv), 6, 3); g.fill();
-    T(st.usb.in === 0 ? "USB IN is off (GLO)" : st.phone.on ? "the phone is playing" : "nothing comes in", 234, 157, 7.5, C.mute, 500, "right");
-    meter(6, 170, 228, "RAM, takes and unsaved pads", ramSec() + (st.rec ? Math.min(ac.currentTime - st.rec.t0, st.rec.max) : 0), RAM_S, C.blue);
-    knobRow([take() ? take().name.replace("TAKE ", "") : "-", (st.usb.lvl > 0 ? "+" : "") + st.usb.lvl + " dB", st.usb.thr ? "on sound" : "at once", ""]);
-  }
-  if (P === "chop") {
-    top("CHOP");
-    const t = take();
-    if (!t) T("No take: record one on TAKE", 120, 100, 9.5, C.mute, 500, "center");
+    if (tab === "TRIM") {
+      if (!x.smp) { T("A synth sound: nothing to trim", 120, 110, 9.5, C.mute, 600, "center"); knobRow(KNOBS.TRIM, ["-", "-", "-", "-"]); }
+      else {
+        const m = x.smp, X = v => 6 + (v - m.lo) / (m.hi - m.lo) * 228, gl = Math.pow(10, x.gain / 20);
+        g.fillStyle = C.card; rr(6, 62, 228, 100, 5); g.fill();
+        g.fillStyle = "rgba(215,124,194,.16)"; g.fillRect(X(m.a0), 62, Math.max(1, X(m.a1) - X(m.a0)), 100);
+        wave(m.d, m.lo, m.hi, 6, 66, 228, 92, "#5b4a63");
+        g.save(); g.beginPath(); g.rect(X(m.a0), 62, X(m.a1) - X(m.a0), 100); g.clip(); wave(m.d, m.lo, m.hi, 6, 66, 228, 92, C.acc, gl); g.restore();
+        g.fillStyle = C.fg; g.fillRect(X(m.a0), 62, 1, 100); g.fillRect(X(m.a1) - 1, 62, 1, 100);
+        const mg = maxGain(x), atMax = x.gain >= mg - .05 && mg > .05;
+        knobRow(KNOBS.TRIM, [sec(m.a0 - m.lo), sec(m.a1 - m.lo), x.rev ? "on" : "off", atMax ? "MAX" : db(x.gain)]);
+      }
+    }
+    if (tab === "PAD FX") {
+      [["PUNCH", x.pp, punchOn() ? "comp, clip" : "off in FX"], ["COLOR", x.pc, colorOn() ? "tape, lofi, drive, crush" : "off in FX"], ["DELAY", x.dly, DLYN[st.fx.dtime]], ["REVERB", x.rvb, RVBN[st.fx.rtype]]].forEach(([a, v, s2], j) => { const y = 64 + j * 26, off = s2 === "off in FX"; T(a, 10, y, 9, off ? C.mute : C.fg, 700); T(s2, 10, y + 10, 7, off ? C.rec : C.mute, 500); level10(92, y - 2, 120, v); T(String(v), 230, y, 9, C.acc, 700, "right"); });
+      T("sends: how much of each effect this pad gets", 120, 176, 7.5, C.mute, 600, "center");
+      knobRow(KNOBS["PAD FX"], [String(x.pp), String(x.pc), String(x.dly), String(x.rvb)]);
+    }
+  } else if (P === "fx") {
+    const f = st.fx, tab = ["PUNCH", "COLOR", "SPACE"][f.tab]; top(["PUNCH", "COLOR", "SPACE"], tab, C.blue);
+    T("for the whole kit · each pad: EDIT · PAD FX", 120, 33, 7.5, C.mute, 500, "center");
+    const row = (y, a, v, txt, sub) => { T(a, 10, y, 9, C.fg, 700); if (sub) T(sub, 10, y + 10, 7, C.mute, 500); if (v !== null) level10(92, y - 2, 120, v); T(txt, 230, y, 9, C.acc, 700, "right"); };
+    if (tab === "PUNCH") { row(56, "COMP", f.comp, f.comp ? String(f.comp) : "off", "a compressor: tighter, louder"); row(84, "SPEED", null, SPEEDN[f.speed], "fast: snappy · slow: lets the hit through"); row(118, "CLIP", f.clip, f.clip ? String(f.clip) : "off", "rounds the peaks: louder, no overs"); row(146, "SHAPE", null, SHAPEN[f.shape], "soft: warm · hard: edgy"); knobRow(KNOBS.PUNCH, [f.comp ? String(f.comp) : "off", SPEEDN[f.speed], f.clip ? String(f.clip) : "off", SHAPEN[f.shape]]); }
+    if (tab === "COLOR") { [["TAPE", "tape", "warm saturation"], ["LOFI", "lofi", "fewer bits, darker"], ["DRIVE", "drive", "overdrive"], ["CRUSH", "crush", "bit crusher"]].forEach(([a, k, sub], j) => row(56 + j * 30, a, f[k], f[k] ? String(f[k]) : "off", sub)); T("they add up: tape and lofi together for the whole kit", 120, 176, 7.5, C.mute, 600, "center"); knobRow(KNOBS.COLOR, ["tape", "lofi", "drive", "crush"].map(k => f[k] ? String(f[k]) : "off")); }
+    if (tab === "SPACE") { row(56, "DELAY", null, DLYN[f.dtime], "its time, at the song's tempo"); row(84, "FEEDBACK", f.dfb, String(f.dfb), "how many repeats"); row(118, "REVERB", null, RVBN[f.rtype], "room, plate, hall, spring"); row(146, "SIZE", f.rsize, String(f.rsize), "how long it rings"); knobRow(KNOBS.SPACE, [DLYN[f.dtime], String(f.dfb), RVBN[f.rtype], String(f.rsize)]); }
+  } else if (P === "take") {
+    top(["TAKE", "CHOP"], "TAKE");
+    const lv = inLevel(); if (lv > st.peak || performance.now() - st.peakT > 1500) { st.peak = lv; st.peakT = performance.now(); }
+    if (st.rec && st.rec.armed && lv > THR) { st.rec.armed = false; st.rec.t0 = ac.currentTime - .015; }
+    const R = st.rec;
+    T(R ? (R.armed ? "● WAITING FOR SOUND" : "● REC") : hearing() ? "MONITOR" : "MONITOR OFF (GLO)", 6, 36, 10, R ? C.rec : C.mute, 700);
+    if (R && !R.armed) T((ac.currentTime - R.t0).toFixed(1) + " s", 234, 36, 10, C.rec, 700, "right");
+    g.fillStyle = C.grid; rr(6, 48, 228, 10, 3); g.fill();
+    g.fillStyle = lv > 1 ? C.rec : C.ok; rr(6, 48, Math.max(2, 228 * Math.min(1, lv)), 10, 3); g.fill();
+    g.fillStyle = C.fg; g.fillRect(6 + 228 * .5, 46, 1, 14); g.fillRect(6 + 228 * .89, 46, 1, 14);
+    g.fillStyle = st.peak > 1 ? C.rec : C.fg; g.fillRect(6 + 228 * Math.min(1, st.peak) - 1, 47, 2, 12);
+    if (take && !R) { if (take.note !== undefined) T("NOTE " + nn(take.note) + ((c => c ? (c > 0 ? " +" : " ") + c + "c" : "")(Math.round((take.note - Math.round(take.note)) * 100))) + " (found)", 6, 68, 8.5, C.ok, 700);
+      else if (take.key) T("KEY " + keyName(take.key) + (take.bpm ? " · " + take.bpm + " BPM" : "") + " · SELECT: song key", 6, 68, 8.5, C.ok, 700);
+      else T(take.bpm ? take.bpm + " BPM (found) · K4 FIT to the song's " + BPM : "no clear note or key", 6, 68, 8.5, take.bpm ? C.ok : C.mute, 700); }
+    if (st.phone.on && (st.peak > 1 || st.peak < .25)) T(st.peak > 1 ? "too loud" : "too quiet", 234, 68, 8, st.peak > 1 ? C.rec : "#f0a83c", 700, "right");
+    g.fillStyle = C.card; rr(6, 78, 228, 96, 5); g.fill();
+    if (R && !R.armed) { const t = ac.currentTime - R.t0; if (t >= RAM_S) stopRec(); else { const a = captured(R.t0, ac.currentTime); wave(a, 0, a.length, 10, 82, Math.min(220, 220 * t / RAM_S), 88, C.rec); } }
+    else if (take) { wave(take.d, 0, take.d.length, 10, 82, 220, 88, C.acc); if (st.prev) { const xx = 10 + 220 * Math.min(1, (ac.currentTime - st.prev.t0) * SR / take.d.length); g.fillStyle = C.ok; g.fillRect(xx, 78, 1.5, 96); } }
+    knobRow(KNOBS.take, ["", db(st.usb.lvl), st.onSound ? "on sound" : "at once", ["off", "speed", "slices"][st.fit]]);
+    if (st.askKey) { g.fillStyle = "#0a0d13"; rr(16, 80, 208, 90, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T("The song is in " + PCN[LV.tonic] + " " + SCALES[LV.scale][0], 120, 98, 8.5, C.mute, 600, "center"); T("Song key → " + keyName(take.key) + "?", 120, 122, 12, C.fg, 700, "center"); T("PLAY: yes · HOME: no", 120, 150, 8.5, C.mute, 600, "center"); }
+  } else if (P === "chop") {
+    top(["TAKE", "CHOP"], "CHOP");
+    if (!take) { T("No take yet", 120, 100, 10, C.mute, 600, "center"); knobRow(KNOBS.chop, ["-", "-", "-", String(SLN[st.chop.n])]); }
     else {
-      const L = t.d.length, span = L / Math.pow(2, st.chop.zoom), vs = Math.max(0, Math.min(L - span, st.chop.s - span * .1)), ve = vs + span, X = v => 6 + (v - vs) / span * 228;
-      g.fillStyle = C.card; rr(6, 28, 228, 92, 4); g.fill();
-      g.fillStyle = "rgba(215,124,194,.14)"; g.fillRect(Math.max(6, X(st.chop.s)), 28, Math.max(1, Math.min(234, X(st.chop.e)) - Math.max(6, X(st.chop.s))), 92);
-      wave(t.d, Math.floor(vs), Math.floor(ve), 6, 32, 228, 84, C.acc);
-      const sl = slices();
-      sl.forEach(([a], j) => { const x = X(a); if (x < 6 || x > 234) return; g.fillStyle = j === 0 ? C.fg : "#e8edf599"; g.fillRect(x, 28, 1, 92); T(String(j + 1), x + 2, 33, 7, C.fg, 700); });
-      const xe = X(st.chop.e); if (xe >= 6 && xe <= 234) { g.fillStyle = C.fg; g.fillRect(xe - 1, 28, 1, 92); }
-      if (st.prev) { const x = X(st.prev.s + (ac.currentTime - st.prev.t0) * SR); if (x >= 6 && x <= 234) { g.fillStyle = C.ok; g.fillRect(x, 28, 1.5, 92); } }
-      T(t.name + " · " + sec(st.chop.e - st.chop.s) + " used of " + sec(L), 6, 130, 8.5, C.mute, 600);
-      T(st.chop.mode ? sl.length + " slices" : "one sound", 234, 130, 8.5, C.fg, 700, "right");
-      g.fillStyle = st.recOn ? "#5a1f22" : C.card; rr(6, 140, 228, 24, 4); g.fill();
-      T(st.recOn ? "● REC on: press a key, the slices go on the pads from there up" : "REC off: the keys play. REC on to put slices on pads", 120, 152, 7.6, st.recOn ? C.fg : C.mute, 600, "center");
-      meter(6, 172, 228, k.name + " in flash", kitSec(st.kit), KIT_S, C.acc);
+      const c = st.chop, L = take.d.length, s = c.sl[c.cur] || [0, L], span = L / Math.pow(2, c.zoom), mid = (s[0] + s[1]) / 2, vs = clampI(mid - span / 2, 0, L - span), X = v => 6 + (v - vs) / span * 228;
+      const all = st.place && st.place.all;
+      g.fillStyle = C.card; rr(6, 28, 228, 100, 4); g.fill();
+      g.save(); g.beginPath(); g.rect(6, 28, 228, 100); g.clip();
+      g.fillStyle = st.place ? "rgba(239,91,91,.22)" : "rgba(215,124,194,.2)"; if (all) g.fillRect(6, 28, 228, 100); else g.fillRect(X(s[0]), 28, X(s[1]) - X(s[0]), 100);
+      wave(take.d, Math.floor(vs), Math.floor(vs + span), 6, 32, 228, 92, C.acc);
+      c.sl.forEach(([a], j) => { const xx = X(a); g.fillStyle = j === c.cur ? C.fg : "#e8edf566"; g.fillRect(xx, 28, 1, 100); T(String(j + 1), xx + 2, 34, 7, j === c.cur ? C.fg : C.mute, 700); });
+      g.fillStyle = C.fg; g.fillRect(X(s[1]) - 1, 28, 1, 100);
+      if (st.prev) { const xx = X(st.prev.s + (ac.currentTime - st.prev.t0) * SR); g.fillStyle = C.ok; g.fillRect(xx, 28, 1.5, 100); }
+      g.restore();
+      if (st.place) {
+        const pk = st.place.key, dn = st.place.done;
+        T("● " + (all ? "ALL " + c.sl.length + " SLICES" : "SLICE " + (c.cur + 1)) + " → KEY", 6, 139, 10, C.rec, 700);
+        strip(148, 26, i => pk >= 0 ? (all ? i >= pk && i < pk + c.sl.length : i === pk) : dn === i);
+        T(dn >= 0 ? "Stored on " + keyNote(dn) + (isAuto(dn) ? " · " + ROLE[dn] : "") : pk < 0 ? "Press a key" : keyNote(pk) + (isAuto(pk) ? " · " + ROLE[pk] : "") + ": press again to store", 120, 186, 8.5, dn >= 0 ? C.ok : C.fg, 700, "center");
+        knobRow(["START", "END", "ZOOM", "PUT"], [sec(s[0]), sec(s[1]), "×" + Math.pow(2, c.zoom), all ? "each" : "one"]);
+      } else { T("SLICE " + (c.cur + 1) + " / " + c.sl.length, 6, 139, 10, C.fg, 700); T("REC: put it on a key", 234, 139, 8.5, C.mute, 600, "right");
+        knobRow(KNOBS.chop, [sec(s[0]), sec(s[1]), "×" + Math.pow(2, c.zoom), String(SLN[c.n])]); }
     }
-    knobRow([t ? sec(st.chop.s) : "-", t ? sec(st.chop.e) : "-", "×" + Math.pow(2, st.chop.zoom), SLMODES[st.chop.mode]]);
-  }
-  if (P === "pad") {
-    top("PAD");
-    const p = k.pads[st.padSel];
-    T(padName(st.padSel), 6, 34, 12, C.fg, 700);
-    if (!p) T("Empty. Press a key to pick a pad.", 120, 100, 9.5, C.mute, 500, "center");
-    else {
-      T(len(p.d).toFixed(2) + " s", 234, 34, 9, C.mute, 600, "right");
-      g.fillStyle = C.card; rr(6, 46, 228, 110, 4); g.fill();
-      wave(p.d, 0, p.d.length, 6, 52, 228, 98, C.acc);
-      // the envelope over the sound, as ATTACK and DECAY shape it
-      const dur = len(p.d), at = ATTS[p.att] / 1000, dc = DECS[p.dec], lv = p.lvl / 10;
-      g.strokeStyle = C.fg; g.lineWidth = 1.5; g.beginPath();
-      for (let c = 0; c <= 228; c++) { const t = c / 228 * dur; const v = (t < at ? t / at : 1) * (isFinite(dc) && t > at ? Math.exp(-(t - at) / (dc / 3)) : 1) * lv; const y = 150 - v * 96; c ? g.lineTo(6 + c, y) : g.moveTo(6 + c, y); }
-      g.stroke();
-      T("EDIT held + key: clear a pad", 6, 168, 8, C.mute, 500);
-    }
-    knobRow(p ? [(p.tune > 0 ? "+" : "") + p.tune + " st", ATTS[p.att] + " ms", isFinite(DECS[p.dec]) ? DECS[p.dec] * 1000 + " ms" : "none", String(p.lvl)] : ["-", "-", "-", "-"]);
-  }
-  if (P === "kit") {
-    top("KIT");
-    T("Save the pads of " + k.name + " to:", 6, 34, 9, C.mute, 600);
-    for (let s = 1; s <= 3; s++) {
-      const y = 44 + (s - 1) * 40, sel = st.slot === s;
-      g.fillStyle = sel ? C.accd : C.card; rr(6, y, 228, 34, 5); g.fill();
-      T("MY KIT " + s, 14, y + 10, 10, sel ? C.fg : C.mute, 700);
-      T(kits[s].saved && kits[s].saved.some(Boolean) ? kits[s].saved.filter(Boolean).length + " pads" : "empty", 226, y + 10, 8.5, C.mute, 600, "right");
-      g.fillStyle = C.grid; rr(14, y + 21, 212, 6, 3); g.fill(); g.fillStyle = C.acc; rr(14, y + 21, Math.max(2, 212 * savedSec(s) / KIT_S), 6, 3); g.fill();
-    }
-    T(st.ask ? "Hold SAVE again to replace MY KIT " + st.ask : "SAVE held: save · " + kitSec(st.kit).toFixed(1) + " of 7 s", 120, 176, 9, st.ask ? C.rec : C.fg, 700, "center");
-    T("Takes stay in RAM until thrown away (TAKE)", 120, 192, 7.5, C.mute, 500, "center");
-    knobRow(["KIT " + st.slot, "", "", ""]);
-  }
-  if (P === "usb") {
-    T("GLO", 6, 12, 11, C.blue, 700); T("SYSTEM · USB AUDIO", 34, 12, 10, C.mute, 600); g.fillStyle = "#222936"; g.fillRect(6, 21, 228, 1);
-    const rows = [["OUT", ["mix", "4 tracks"][st.usb.out], ["stereo, what you hear", "each track on its own pair (stems)"][st.usb.out]],
-      ["IN", ["off", "hear", "sampler"][st.usb.in], ["nothing comes in", "the phone plays through the FM-1", "heard only while recording"][st.usb.in]],
-      ["IN LEVEL", (st.usb.lvl > 0 ? "+" : "") + st.usb.lvl + " dB", "for a quiet or loud phone"]];
+    if (st.askBeat) { g.fillStyle = "#0a0d13"; rr(16, 40, 208, 96, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(take.bpm + " BPM → " + BPM + " BPM", 120, 58, 9, C.mute, 600, "center"); T("Write the loop as a beat?", 120, 82, 12, C.fg, 700, "center"); T("PLAY: yes · HOME: no", 120, 110, 8.5, C.mute, 600, "center"); }
+    if (st.pick) { g.fillStyle = "#0a0d13"; rr(16, 40, 208, 96, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(kit().name + " is built in", 120, 58, 9, C.mute, 600, "center"); T("Put it on " + kits[st.pick.to].name + "?", 120, 82, 12, C.fg, 700, "center"); T("K1: which · PLAY: yes · HOME: no", 120, 110, 8.5, C.mute, 600, "center"); }
+  } else if (P === "usb") {
+    T("GLO", 6, 12, 11, C.blue, 700); T("USB AUDIO", 34, 12, 10, C.mute, 600); g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
+    const rows = [["OUT", ["mix", "4 tracks"][st.usb.out], ["what you hear, to the phone or MPC", "each track on its own pair"][st.usb.out]],
+      ["MONITOR", ["off", "when sampling", "on"][st.usb.mon], ["you never hear the input", "you hear it on TAKE and CHOP", "you hear it all the time (jam)"][st.usb.mon]],
+      ["IN LEVEL", db(st.usb.lvl), "also K2 on TAKE"]];
     rows.forEach(([a, b, c], j) => { const y = 32 + j * 46; g.fillStyle = C.card; rr(6, y, 228, 40, 5); g.fill(); T(a, 14, y + 12, 9, C.mute, 700); T(b, 226, y + 12, 11, C.fg, 700, "right"); T(c, 14, y + 29, 8, C.mute, 500); });
-    T("USB audio goes both ways at once", 120, 186, 8, C.mute, 500, "center");
-    knobRow([["mix", "4 trk"][st.usb.out], ["off", "hear", "smpl"][st.usb.in], (st.usb.lvl > 0 ? "+" : "") + st.usb.lvl + " dB", ""]);
+    knobRow(KNOBS.usb, [["mix", "4 trk"][st.usb.out], ["off", "smpl", "on"][st.usb.mon], db(st.usb.lvl), ""]);
   }
-  if (performance.now() - st.msgT < 1800 && st.msg) { g.fillStyle = "rgba(10,13,19,.95)"; rr(8, 184, 224, 18, 5); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(st.msg, 120, 193, 8, C.fg, 600, "center"); }
-}
-const HINTS = {
-  drums: "DRUMS page. White keys play the pads. SELECT picks the kit. Hold REC and hold a key to record onto that pad (MY KIT 1-3). EDIT: the sampler pages. PLAY: the pads in order.",
-  take: "TAKE. REC starts and stops a take from USB (10 s at most). K1 or SELECT picks a take; PLAY hears it. SAVE held throws the take away.",
-  chop: "CHOP. K1 start, K2 end, K3 zoom, K4 slices. PLAY hears the part. REC on + a key: the slices go on the pads. EDIT held + key clears a pad.",
-  pad: "PAD. Press a key to pick its pad. K1 TUNE, K2 ATTACK, K3 DECAY, K4 LEVEL. EDIT held + key clears a pad.",
-  kit: "KIT. K1 picks MY KIT 1, 2 or 3; SAVE held saves the pads there. HOME: back to DRUMS.",
-  usb: "GLO · USB AUDIO. K1 OUT, K2 IN, K3 IN LEVEL. GLO or HOME: back."
-};
-function frame() {
-  draw();
-  $("hint").textContent = HINTS[st.page];
-  KNOBS[st.page].forEach((n, k) => knobEls[k].textContent = n ? "K" + (k + 1) + " " + n : "K" + (k + 1));
-  recB.classList.toggle("on", !!(st.rec || st.quick || (st.page === "chop" && st.recOn)));
-  for (let i = 0; i < NK; i++) {
-    const el = keyEls[i], p = padOfKey(i); if (p < 0) continue;
+  if (performance.now() - st.msgT < 1800 && st.msg) { g.fillStyle = "rgba(10,13,19,.95)"; rr(30, 183, 180, 18, 5); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(st.msg, 120, 192, 8, C.fg, 600, "center"); }
+  keyEls.forEach((el, i) => {
     el.classList.toggle("held", st.held.has(i));
-    el.classList.toggle("on", p === st.padSel && (st.page === "pad"));
-    el.classList.toggle("dim", !!kit().pads[p]);
-    el.classList.toggle("wr", st.page === "chop" && st.recOn);
-  }
-  if (an && st.phone.on) { const b = new Float32Array(an.fftSize); an.getFloatTimeDomainData(b); const m = b.reduce((x, v) => Math.max(x, Math.abs(v)), 0); $("phlvl").style.width = Math.min(100, m * 100) + "%"; } else $("phlvl").style.width = "0";
-  requestAnimationFrame(frame);
+    el.querySelector(".smp").hidden = !key(i).smp;
+    el.classList.toggle("lit", P === "chop" && !st.place && !!take && i < st.chop.sl.length);
+    if (P === "levels") { const li = lvLight(i) || {};
+      el.style.opacity = li.play ? "" : .3; el.classList.toggle("lit", !!li.lit && !li.full); el.classList.toggle("ton", !!li.full); el.classList.toggle("root", !!li.root); }
+    else { el.style.opacity = ""; el.classList.remove("ton", "root"); }
+    el.classList.toggle("prev", !!st.place && st.place.key === i);
+  });
+  $("edit").classList.toggle("on", st.editHeld || P === "edit"); $("rec").classList.toggle("on", !!st.rec || !!st.place || S.armed || st.layer);
+  $("play").classList.toggle("on", S.playing || !!st.prev); $("lfo").classList.toggle("on", sampling()); $("fx").classList.toggle("on", P === "fx");
+  $("scl").classList.toggle("on", P === "ideas" || P === "auto"); $("env").classList.toggle("on", P === "levels");
+  $("hint").textContent = HINT[st.save ? "save" : st.layer ? "layer" : P === "edit" ? EDITTABS[st.tab] : P] || "";
+  requestAnimationFrame(draw);
 }
-frame();
+const HINT = {
+  levels: "ENV, the pad you touched across the keys. NOTES: K1 MODE: 16 LEVELS (the white keys; K2 velocity or tune), FREE, KEY (the scale lit), WHITES (the white keys play the scale); K2 KEY, K3 SCALE, K4 the note the sample is. CHORDS (ENV again), as the CHORDS track's pads: C is I, hold a black key for a colour, F5 NEXT, G5 AGAIN, F#5 LOCK; K1 CHORD, K2 PROGRESSION (the next one lit), K3 VOICING, K4 SCALE. OCT− OCT+: the octave. HOME: back.",
+  play: "PLAY: keys play the kit (press low on a key: harder). REC on + PLAY records. K1 LEVEL, K2 FX (the key played), K3 GRID, K4 FEEL (the track). PRESETS: the kit. EDIT held + key (REC on, playing): erase. SAVE held: undo; two taps: redo. REC held: REC layer.",
+  ideas: "IDEAS, as built (on the new drum map). SCL: next.", auto: "AUTO, as built (on the new drum map). SCL: next.",
+  KIT: "EDIT · KIT: touch a key; PRESETS: its sound, from every sound you have. K1 LEVEL, K2 VELOCITY (fixed, or how much it follows how hard you play). SAVE held: save the kit.",
+  SOUND: "EDIT · SOUND: K1 TUNE, K2 ATTACK, K3 HOLD, K4 DECAY (in ms, straight lines). SELECT: mute group.",
+  TRIM: "EDIT · TRIM (your samples): K1 START, K2 END, K3 REVERSE, K4 GAIN up to MAX.",
+  "PAD FX": "EDIT · PAD FX: K1 DIRT (this pad), K2 DELAY, K3 REVERB (sends), K4 TRACK FX (how much of the track's COMP, CLIP and DIRT).",
+  fx: "FX: the track's effects. PUNCH (COMP, CLIP), DIRT (type, amount), SPACE (DELAY, FEEDBACK, REVERB). FX again: next. HOME: back.",
+  take: "LFO · TAKE: the input and its level. K2 IN LEVEL. REC: arm (starts on sound), REC: stop. PLAY: hear it. LFO: CHOP.",
+  chop: "LFO · CHOP: keys play the slices. K4 SLICES, K1/K2 edges, K3 ZOOM. OCT+ split, OCT− merge. SELECT: the next slice (it plays). REC: put it on a key (press a key, press again: stored; K4 PUT one or each).",
+  usb: "GLO · USB AUDIO: K1 OUT, K2 MONITOR, K3 IN LEVEL. GLO again: back.",
+  save: "SAVE: K1 picks MY KIT 1-3. SAVE held keeps it. HOME cancels.",
+  layer: "REC LAYER: K1 GRID, K2 FEEL (CLICK and COUNT-IN as built). OCT+: clear the track (asks). REC: close. SAVE held: undo."
+};
+draw();
 })();
 </script>
