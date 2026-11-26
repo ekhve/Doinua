@@ -190,3 +190,24 @@ records a busier chorus over it, undoing a bad take with SAVE held and wiping th
 wrong. On SONG she adds 1, 1, 2, 1 and a quiet 3 she draws on STEPS, kick on beat 1, a chord on beat 3. While it plays
 she taps 2 early to try the chorus sooner, sweeps the filter on the sound page with REC on (it stays in the sequence),
 and holds FX to stutter the melody while the drums keep going. She switches off; tomorrow the song is still there.
+
+### UC-21 — Sample my own sounds into a kit (draft, from the Sampler Lab the owner played, 2026-11-26)
+**Stories:** ST-95 to ST-99, ST-101. **Actor:** Producer.
+
+Ana finds a fat kick on her phone. On the DRUMS track she presses LFO: TAKE. She hears the phone through the FM-1 and
+turns IN LEVEL until the hits land between the marks, taps REC and plays the kick: the FM-1 starts on the sound and stops
+when she taps REC again. LFO: CHOP, one slice; REC, F3 twice: her kick is the kit's KICK, and AUTO plays it. A break
+from the phone goes the same way: CHOP by hits, OCT+ splits a slice that holds two hits, SELECT plays each, and PUT all
+lays them on the keys from F4 up; the FM-1 found its tempo, so it writes the break as a beat at the song's tempo. In EDIT
+she gives the quiet hat GAIN to MAX, shortens the snare with HOLD and DECAY, sends the snare to REVERB, and puts the kick
+and snare through the kit's PUNCH while the hats stay clean. SAVE held: MY KIT 2. Tomorrow it is still there, and on
+PLAY she records a beat with it, the grid on sixteenths, the MPC feel on top.
+
+### UC-22 — Play a sample as notes and chords (draft, from the Sampler Lab the owner played, 2026-11-26)
+**Stories:** ST-100, ST-101. **Actor:** Producer.
+
+Ana samples a sung "ah" and a piano note from her phone. The FM-1 finds the piano is a C# a little sharp; on SOUND she
+snaps it to C#, then to C. She touches the pad and presses ENV: the 16 white keys play it soft to loud. K1 to WHITES: the
+white keys play the song's scale with it, so nothing sounds wrong; ENV again: CHORDS, and the white keys play the key's
+chords with her piano, a black key held adds a 7th, F5 plays the progression's next chord. She records the chords and a
+melody over them on the drum track, with HOLD on key so the notes last as long as she holds them.

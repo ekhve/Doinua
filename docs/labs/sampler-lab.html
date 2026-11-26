@@ -183,7 +183,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         K4 FIT to the song's 90</i>.</li>
         <li><b>A. By speed</b>: <b>4</b> (K4 FIT) to <i>speed</i>. Put the whole take on a key (CHOP, K4 SLICES 1, Enter, <b>k k</b>): it plays a
         little slower and lower, at 90 BPM. Good for a loop you play as one piece.</li>
-        <li><b>B. By slices</b>: K4 FIT to <i>slices</i>. <b>Tab</b> (CHOP), K4 <i>hits</i>, <b>Enter</b>, <b>4</b> (PUT all), press a key twice
+        <li><b>B. By slices</b>: K4 FIT to <i>slices</i>. <b>Tab</b> (CHOP), K4 <i>hits</i>, <b>Enter</b>, <b>4</b> (PUT each), press a key twice
         (<b>k</b>, F4, keeps them above the drums): <i>Write the loop as a beat?</i> <b>Space</b>: yes. <b>Esc</b>, <b>Space</b>: the break plays at
         90 BPM, its pitch unchanged; each hit is a note you can move, erase or play yourself.</li>
       </ol>
@@ -207,7 +207,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
       </ol>
       <h4>8. Chop a break</h4><ol>
         <li>Phone: <i>Drum break</i>. TAKE, two bars. CHOP: K4 <i>hits</i>. The keys play the slices. <b>=</b> split, <b>−</b> merge.</li>
-        <li><b>Enter</b>: put mode. <b>↑ ↓</b> chooses the slice (it plays). Press a key twice. <b>K4 PUT</b>: <i>all</i> puts every
+        <li><b>Enter</b>: put mode. <b>↑ ↓</b> chooses the slice (it plays). Press a key twice. <b>K4 PUT</b>: <i>each</i> puts every
         slice from the key you press up.</li>
       </ol>
     </div>
@@ -231,7 +231,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
     </ol><h3>From v6</h3><ol>
       <li><b>SOUND</b>: TUNE (a note, or semitones for a drum), ATTACK, HOLD (fine steps, full, key), DECAY.</li>
       <li><b>FX</b> for the whole kit, always there: PUNCH (COMP, SPEED, CLIP, SHAPE), COLOR (TAPE, LOFI, DRIVE, CRUSH, they add up), SPACE (DELAY time, FEEDBACK, REVERB type, SIZE). <b>PAD FX</b>: each pad's sends to PUNCH, COLOR, DELAY, REVERB (10, 10, 0, 0 at first); each effect runs once (as the effects bus does, D-093). KIT: sounds grouped by kit (K3).</li>
-      <li><b>CHOP put mode</b>: silent; SELECT plays; K4 PUT one or all.</li>
+      <li><b>CHOP put mode</b>: silent; SELECT plays; K4 PUT one or each.</li>
     </ol></div>
 
     <div class="card"><h3>The drum map</h3>
@@ -1171,7 +1171,7 @@ function draw() {
         T("● " + (all ? "ALL " + c.sl.length + " SLICES" : "SLICE " + (c.cur + 1)) + " → KEY", 6, 139, 10, C.rec, 700);
         strip(148, 26, i => pk >= 0 ? (all ? i >= pk && i < pk + c.sl.length : i === pk) : dn === i);
         T(dn >= 0 ? "Stored on " + keyNote(dn) + (isAuto(dn) ? " · " + ROLE[dn] : "") : pk < 0 ? "Press a key" : keyNote(pk) + (isAuto(pk) ? " · " + ROLE[pk] : "") + ": press again to store", 120, 186, 8.5, dn >= 0 ? C.ok : C.fg, 700, "center");
-        knobRow(["START", "END", "ZOOM", "PUT"], [sec(s[0]), sec(s[1]), "×" + Math.pow(2, c.zoom), all ? "all" : "one"]);
+        knobRow(["START", "END", "ZOOM", "PUT"], [sec(s[0]), sec(s[1]), "×" + Math.pow(2, c.zoom), all ? "each" : "one"]);
       } else { T("SLICE " + (c.cur + 1) + " / " + c.sl.length, 6, 139, 10, C.fg, 700); T("REC: put it on a key", 234, 139, 8.5, C.mute, 600, "right");
         knobRow(KNOBS.chop, [sec(s[0]), sec(s[1]), "×" + Math.pow(2, c.zoom), String(SLN[c.n])]); }
     }
@@ -1180,10 +1180,10 @@ function draw() {
   } else if (P === "usb") {
     T("GLO", 6, 12, 11, C.blue, 700); T("USB AUDIO", 34, 12, 10, C.mute, 600); g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
     const rows = [["OUT", ["mix", "4 tracks"][st.usb.out], ["what you hear, to the phone or MPC", "each track on its own pair"][st.usb.out]],
-      ["MONITOR", ["off", "when sampling", "always"][st.usb.mon], ["you never hear the input", "you hear it on TAKE and CHOP", "you hear it all the time (jam)"][st.usb.mon]],
+      ["MONITOR", ["off", "when sampling", "on"][st.usb.mon], ["you never hear the input", "you hear it on TAKE and CHOP", "you hear it all the time (jam)"][st.usb.mon]],
       ["IN LEVEL", db(st.usb.lvl), "also K2 on TAKE"]];
     rows.forEach(([a, b, c], j) => { const y = 32 + j * 46; g.fillStyle = C.card; rr(6, y, 228, 40, 5); g.fill(); T(a, 14, y + 12, 9, C.mute, 700); T(b, 226, y + 12, 11, C.fg, 700, "right"); T(c, 14, y + 29, 8, C.mute, 500); });
-    knobRow(KNOBS.usb, [["mix", "4 trk"][st.usb.out], ["off", "smpl", "always"][st.usb.mon], db(st.usb.lvl), ""]);
+    knobRow(KNOBS.usb, [["mix", "4 trk"][st.usb.out], ["off", "smpl", "on"][st.usb.mon], db(st.usb.lvl), ""]);
   }
   if (performance.now() - st.msgT < 1800 && st.msg) { g.fillStyle = "rgba(10,13,19,.95)"; rr(30, 183, 180, 18, 5); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(st.msg, 120, 192, 8, C.fg, 600, "center"); }
   keyEls.forEach((el, i) => {
@@ -1211,7 +1211,7 @@ const HINT = {
   "PAD FX": "EDIT · PAD FX: K1 DIRT (this pad), K2 DELAY, K3 REVERB (sends), K4 TRACK FX (how much of the track's COMP, CLIP and DIRT).",
   fx: "FX: the track's effects. PUNCH (COMP, CLIP), DIRT (type, amount), SPACE (DELAY, FEEDBACK, REVERB). FX again: next. HOME: back.",
   take: "LFO · TAKE: the input and its level. K2 IN LEVEL. REC: arm (starts on sound), REC: stop. PLAY: hear it. LFO: CHOP.",
-  chop: "LFO · CHOP: keys play the slices. K4 SLICES, K1/K2 edges, K3 ZOOM. OCT+ split, OCT− merge. SELECT: the next slice (it plays). REC: put it on a key (press a key, press again: stored; K4 PUT one or all).",
+  chop: "LFO · CHOP: keys play the slices. K4 SLICES, K1/K2 edges, K3 ZOOM. OCT+ split, OCT− merge. SELECT: the next slice (it plays). REC: put it on a key (press a key, press again: stored; K4 PUT one or each).",
   usb: "GLO · USB AUDIO: K1 OUT, K2 MONITOR, K3 IN LEVEL. GLO again: back.",
   save: "SAVE: K1 picks MY KIT 1-3. SAVE held keeps it. HOME cancels.",
   layer: "REC LAYER: K1 GRID, K2 FEEL (CLICK and COUNT-IN as built). OCT+: clear the track (asks). REC: close. SAVE held: undo."
