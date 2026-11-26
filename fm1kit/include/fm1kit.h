@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 43
+#define FM1KIT_API 44
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -163,6 +163,8 @@ void kit_drum_pad_set(int track, int pad, int kit, int src, int tune, int decay)
 enum { KIT_TRACK_CHORDS = 0, KIT_TRACK_BASS, KIT_TRACK_MELODY, KIT_TRACK_DRUMS, KIT_NTRACKS };
 #define KIT_CPU_LIMIT 75        /* % of the CPU the voices may take (API 35, D-091: the cpu gate's limit is 80) */
 void kit_track_sound(int track, int engine, int preset);   /* stops what the track sounds, then switches */
+/* API 44 (D-119): select a base sound and its track sends while preserving the song's shared effects. */
+void kit_track_sound_local(int track, int engine, int preset);
 /* Factory arpeggio metadata. Ticks are at 24 per quarter. Gate is a fraction of 128.
  * Swing is 0..100; probability is 0..127 (127 always plays). */
 enum {

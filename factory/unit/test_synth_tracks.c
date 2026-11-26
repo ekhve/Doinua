@@ -42,7 +42,19 @@ int kit__eng_active(void) { int p; for (p = 0; p < 4; p++) if (kit__eng_nactive(
 int kit__eng_has(int pt, int note) { int i; for (i = 0; i < 8; i++) if (ev[pt][i].on && ev[pt][i].gate && ev[pt][i].note == note) return 1; return 0; }
 int kit__eng_nreleasing(int pt) { int i, n = 0; for (i = 0; i < 8; i++) n += ev[pt][i].on && !ev[pt][i].gate; return n; }
 int kit__eng_preset_mono(int e, int p) { (void)e; (void)p; return 0; }   /* (API 32: only FMINI's presets bring a voice mode) */
-int kit__eng_fx(int p, uint8_t s[4], uint8_t b[12]) { (void)p; (void)b; s[0] = s[1] = s[2] = s[3] = 0; return 0; }
+static int engine_has_shared_fx;
+int kit__eng_fx(int p, uint8_t s[4], uint8_t b[12])
+{
+    (void)p;
+    s[0] = s[1] = s[2] = s[3] = 0;
+    if (!engine_has_shared_fx) return 0;
+    s[0] = 21; s[1] = 32; s[2] = 43; s[3] = 54;
+    memset(b, 0, 12);
+    b[1] = 45;
+    b[4] = 52;
+    b[7] = 11;
+    return 1;
+}
 void kit__eng_render_part(int p, int32_t *b, int n) { (void)p; (void)b; (void)n; }
 int kit__eng_steal(int pt)
 {
@@ -188,6 +200,39 @@ int main(void)
         kit_reverb_shape(&shape);
         kit_reverb_shape_of(&shape);
         CHECK(shape.pre_ms == 120 && shape.damp == 100 && kit_reverb_tail_ms_of() == 4400, "room controls' upper bounds");
+    }
+
+    {
+        kit_fx_t song_bus = {2, 73, 19, 3, 77, 68, 51}, bus;
+        kit_reverb_shape_t song_room = {92, 38, 27}, room;
+        int track = KIT_TRACK_BASS, other = KIT_TRACK_MELODY;
+
+        kit_fx_bus(&song_bus);
+        kit_reverb_shape(&song_room);
+        kit_delay_tone(26);
+        kit_track_sends(other, 11, 22, 33, 44);
+        kit_track_note_on(other, 64, 100);
+        engine_has_shared_fx = 1;
+
+        kit_track_sound_local(track, 1, 2);
+        kit_fx_bus_of(&bus);
+        kit_reverb_shape_of(&room);
+        CHECK(!memcmp(&bus, &song_bus, sizeof bus) && kit_delay_tone_of() == 26,
+              "local sound selection preserves the song's chorus and delay");
+        CHECK(!memcmp(&room, &song_room, sizeof room), "local sound selection preserves the song's room");
+        CHECK(kit_track_engine(track) == 1 && kit_track_preset(track) == 2,
+              "local sound selection loads the requested engine and preset");
+        CHECK(kit_track_send_of(track, KIT_SEND_DRIVE) == 21 && kit_track_send_of(track, KIT_SEND_CHORUS) == 32 &&
+              kit_track_send_of(track, KIT_SEND_DELAY) == 43 && kit_track_send_of(track, KIT_SEND_REVERB) == 54,
+              "local sound selection loads the selected track's sends");
+        CHECK(kit_track_send_of(other, KIT_SEND_DELAY) == 33 && V(other) > 0,
+              "local sound selection leaves the other sounding track and its sends alone");
+
+        kit_track_sound(track, 1, 3);
+        kit_fx_bus_of(&bus);
+        kit_reverb_shape_of(&room);
+        CHECK(bus.dly_time == 52 && bus.cho_depth == 11 && room.size == 45,
+              "ordinary sound selection still loads the preset's shared effects");
     }
 
     printf("%s: synth tracks, %d failed\n", fails ? "FAIL" : "PASS", fails);
