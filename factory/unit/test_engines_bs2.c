@@ -18,14 +18,22 @@ int main(void)
     assert(!strcmp(kit__eng_name(engine), "Bass Something 2"));
     assert(kit__eng_npresets(engine) == PRESETS);
     assert(!strcmp(kit__eng_preset_name(engine, UPSTREAM_PRESETS), "Clean Punch"));
-    int matches = 0;
+    int upstream = 0, clean_punch = 0;
     for (int i = 0; i < SB_NALL; ++i) {
         const sb_entry_t *entry = &SB_ALL[i];
         if (strcmp(SB_ENGINE[entry->engine], kit__eng_name(engine))) continue;
-        assert(!strcmp(entry->preset, kit__eng_preset_name(engine, matches)));
-        ++matches;
+        if (!strcmp(entry->preset, "Clean Punch")) {
+            /* The browser groups sounds by category. The saved engine ID is independent. */
+            assert(!strcmp(SB_GROUP[entry->group], "Bass"));
+            assert(i + 1 == SB_NALL || SB_ALL[i + 1].group != entry->group);
+            ++clean_punch;
+            continue;
+        }
+        assert(upstream < UPSTREAM_PRESETS);
+        assert(!strcmp(entry->preset, kit__eng_preset_name(engine, upstream)));
+        ++upstream;
     }
-    assert(matches == PRESETS);
+    assert(upstream == UPSTREAM_PRESETS && clean_punch == 1);
     for (int p = 0; p < PRESETS; ++p) {
         int peak = 0;
         kit__eng_select(0, engine, p);
