@@ -26,7 +26,8 @@ static inline unsigned preset_osc_capture(int track, uint8_t mask, uint8_t data[
     return pos;
 }
 
-static inline int preset_osc_restore(int track, const uint8_t *data, unsigned length)
+/* A negative track validates a payload without applying it. */
+static inline int preset_osc_walk(int track, const uint8_t *data, unsigned length)
 {
     kit_sound_osc_t osc;
     unsigned pos = 1, control;
@@ -35,7 +36,7 @@ static inline int preset_osc_restore(int track, const uint8_t *data, unsigned le
     const uint8_t *levels = 0;
     if (!length || length > PRESET_OSC_BYTES) return 0;
     mask = data[0];
-    if (mask & ~15u || (mask && !kit_track_osc_of(track, &osc))) return 0;
+    if (mask & ~15u || (track >= 0 && mask && !kit_track_osc_of(track, &osc))) return 0;
     for (control = KIT_OSC_WAVE1; control <= KIT_OSC_WAVE2; ++control) {
         if (!(mask & (1u << control))) continue;
         if (pos >= length || data[pos] >= KIT_OSC_NWAVES) return 0;
@@ -53,9 +54,15 @@ static inline int preset_osc_restore(int track, const uint8_t *data, unsigned le
         pos += 2;
     }
     if (pos != length) return 0;
+    if (track < 0) return 1;
     for (control = KIT_OSC_WAVE1; control <= KIT_OSC_WAVE2; ++control)
         if (mask & (1u << control)) kit_track_osc(track, control, wave[control]);
     if (mask & (1u << KIT_OSC_DETUNE)) kit_track_osc(track, KIT_OSC_DETUNE, detune);
     if (levels) kit_track_osc_levels(track, levels);
     return 1;
+}
+
+static inline int preset_osc_restore(int track, const uint8_t *data, unsigned length)
+{
+    return track >= 0 && preset_osc_walk(track, data, length);
 }

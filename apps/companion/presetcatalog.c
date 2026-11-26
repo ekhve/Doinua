@@ -3,7 +3,7 @@
  * This codec operates on bytes. The existing Store owns the flash transaction. */
 #include <stdint.h>
 
-enum { PRESET_NAME_MAX = 12, PRESET_DATA_MAX = 37, PRESET_HEADER = 6 };
+enum { PRESET_NAME_MAX = 12, PRESET_DATA_MAX = 40, PRESET_HEADER = 6 };
 enum { PRESET_CORRUPT = -1, PRESET_ABSENT = 0, PRESET_VALID = 1 };
 static const uint8_t preset_magic[5] = {'D', 'P', 'S', 'T', 1};
 

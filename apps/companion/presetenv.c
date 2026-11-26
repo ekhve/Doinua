@@ -23,29 +23,31 @@ static inline unsigned preset_env_capture(int track, uint8_t mask, uint8_t data[
     return length;
 }
 
-static inline int preset_env_restore(int track, const uint8_t *data, unsigned length)
+static inline int preset_env_validate(int engine, const uint8_t *data, unsigned length)
 {
     unsigned position = 1;
-    int engine = kit_track_engine(track), kind, control;
+    int control;
     uint8_t mask;
     if (!length || length > PRESET_ENV_BYTES) return 0;
     mask = data[0];
     if (engine == KIT_ENGINE_JUNO && (mask & 0xf0u)) return 0;
-    for (kind = KIT_ENV_FILTER; kind <= KIT_ENV_AMP; ++kind) {
-        uint8_t current[4];
-        if (!(mask & (15u << (4 * kind)))) continue;
-        if (!kit_track_envelope_of(track, kind, current)) return 0;
-        for (control = 0; control < 4; ++control)
-            if (mask & (1u << (control + 4 * kind))) {
-                if (position >= length || data[position] > 127) return 0;
-                ++position;
-            }
-    }
-    if (position != length) return 0;
-    position = 1;
+    if (mask && engine != KIT_ENGINE_FMINI && engine != KIT_ENGINE_JUNO) return 0;
+    for (control = 0; control < 8; ++control)
+        if (mask & (1u << control)) {
+            if (position >= length || data[position] > 127) return 0;
+            ++position;
+        }
+    return position == length;
+}
+
+static inline int preset_env_restore(int track, const uint8_t *data, unsigned length)
+{
+    unsigned position = 1;
+    int kind, control;
+    if (!preset_env_validate(kit_track_engine(track), data, length)) return 0;
     for (kind = KIT_ENV_FILTER; kind <= KIT_ENV_AMP; ++kind)
         for (control = 0; control < 4; ++control)
-            if (mask & (1u << (control + 4 * kind)))
+            if (data[0] & (1u << (control + 4 * kind)))
                 kit_track_envelope(track, kind, control, data[position++]);
     return 1;
 }

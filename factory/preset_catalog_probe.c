@@ -193,15 +193,16 @@ int main(void)
         records[i].slot = (uint8_t)(i + 1);
         records[i].engine = 8;
         records[i].base = (uint8_t)i;
-        records[i].name_len = 12;
-        records[i].data_len = 37;
-        memcpy(records[i].name, "Factory Bass", 12);
-        memset(records[i].data, i, 37);
+        records[i].name_len = PRESET_NAME_MAX;
+        records[i].data_len = PRESET_DATA_MAX;
+        memcpy(records[i].name, "Factory Bass", PRESET_NAME_MAX);
+        memset(records[i].data, i, PRESET_DATA_MAX);
     }
     assert(!preset_catalog_write(bytes, sizeof bytes, 505, records, 10));
     assert(!memcmp(bytes, before, sizeof bytes));
     size = preset_catalog_write(bytes, sizeof bytes, 505, records, 9);
-    assert(size == 997 && !memcmp(bytes, before, 505));
+    assert(size == 505 + PRESET_HEADER + 9 * (5 + PRESET_NAME_MAX + PRESET_DATA_MAX) &&
+           !memcmp(bytes, before, 505));
     assert(preset_catalog_open(&reader, bytes, size, 505) == PRESET_VALID);
     for (i = 0; i < 9; ++i) {
         assert(preset_catalog_next(&reader, &actual) == PRESET_VALID);
@@ -213,7 +214,7 @@ int main(void)
     bytes[509] = 2;
     assert(preset_catalog_open(&reader, bytes, size, 505) == PRESET_CORRUPT);
     bytes[509] = 1;
-    bytes[565] = bytes[511];
+    bytes[505 + PRESET_HEADER + 5 + PRESET_NAME_MAX + PRESET_DATA_MAX] = bytes[505 + PRESET_HEADER];
     assert(preset_catalog_open(&reader, bytes, size, 505) == PRESET_CORRUPT);
     records[1].slot = records[0].slot;
     memcpy(before, bytes, sizeof bytes);

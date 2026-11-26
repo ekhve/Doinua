@@ -68,6 +68,8 @@ static void sound_mod_reset(int t)
     sound_mod_apply(t, fx_mod[t]);
 }
 
+#include "presetpatch.c"
+
 static void sound_edit_close(void)
 {
     sed_press_track = -1;
