@@ -79,6 +79,22 @@ typedef struct {                 /* a patch's extras: arpeggiator, LFO {RATE WAV
 #include "fmini/fmini_bank.h"           /* the owner's picks: FMB_PATCH, FMB_PRE, FMB_X (tools/gen_fmini.py) */
 #include "fmini/eng_fmini_filter.h"     /* fmini-1's ladder laws: FMINI_CUT FMINI_K FMINI_TRIM FMINI_G FMINI_GX FMINI_CNTR */
 
+/* Init Mini, issue #10: a single 8' saw through the native ladder. */
+static const uint8_t fmini_init_patch[FG_SIZE] = {
+    [FG_R1] = 3, [FG_R2] = 3, [FG_R3] = 3,
+    [FG_W1] = 2, [FG_W2] = 2, [FG_W3] = 2,
+    [FG_F2] = 64, [FG_F3] = 64, [FG_TUNE] = 64,
+    [FG_L1] = 96, [FG_SW1] = FS_O1,
+};
+static const preset_t fmini_init_preset = {
+    .name = "Init Mini",
+    .e = {127, 0, 0, 0, 42, 96, 0, 0},
+    .env = {4, 42, 96, 20},
+    .mono = 1,
+    FX(0, 0, 0, 0),
+};
+static const fmini_x_t fmini_init_extras = {.level = 110};
+
 static uint8_t fmini_patch[NPART][FG_SIZE];       /* each part's patch (set with its sound: kit__eng_select) */
 static int32_t fmini_nst[NPART] = {0x2F6E2B1, 0x1A2B3C5, 0x3C4D5E7, 0x0F1E2D3};   /* a part's noise generator */
 static int32_t fmini_pk[NPART][3];                /* its pink filter */

@@ -346,6 +346,7 @@ static const engine_t *engine_of(int i)
 
 static const preset_t *engine_preset(int i, int p)
 {
+    if (i == ENG_I_FMINI && p == KIT__INIT_PRESET) return &fmini_init_preset;
     const engine_t *engine = engine_of(i);
     return engine && p >= 0 && p < engine->npresets ? &engine->presets[p] : 0;
 }
@@ -425,11 +426,12 @@ void kit__eng_select(int pt, int i, int p)          /* i < 0: the part plays no 
     P->cur = engine_of(i);
     if (i == ENG_I_CF_VA) kit_va_select((unsigned)pt, (unsigned)p);
     if (i == ENG_I_FMINI) {                         /* its patch and extras */
-        memcpy(fmini_patch[pt], FMB_PATCH[p], FG_SIZE);
+        int init = p == KIT__INIT_PRESET;
+        memcpy(fmini_patch[pt], init ? fmini_init_patch : FMB_PATCH[p], FG_SIZE);
         memcpy(P->fmini_amp, P->pre->env, 3);
         P->fmini_amp[KIT_ENV_RELEASE] = FM_ENV_FOLLOW_DECAY;
         t->p[P_FREL] = FM_ENV_FOLLOW_DECAY;
-        fmx[pt] = &FMB_X[p];
+        fmx[pt] = init ? &fmini_init_extras : &FMB_X[p];
         P->fmini_lfo.rate = fmx[pt]->lfo[0] & 127;
         P->fmini_lfo.wave = fmx[pt]->lfo[1] < KIT_LFO_NWAVES ? fmx[pt]->lfo[1] : KIT_LFO_SINE;
         t->lfo_fade = 32767;
@@ -817,7 +819,7 @@ int kit__eng_fx(int pt, uint8_t sends[4], uint8_t bus12[12])
     if (kit__juno_on(pt)) { kit__juno_sends(pt, sends); return 0; }
     if (!part[pt].pre) return 0;                 /* every engine's sound plays its preset's sends (the owner, D-094) */
     for (k = 0; k < 4; k++) sends[k] = part[pt].pre->fx[k] ? (uint8_t)(part[pt].pre->fx[k] - 1u) : FX_DEF[k];
-    if (!fmx[pt]) return 0;
+    if (!fmx[pt] || part[pt].pre == &fmini_init_preset) return 0;
     for (k = 0; k < 12; k++) bus12[k] = fmx[pt]->fx[k];
     return 1;
 }
