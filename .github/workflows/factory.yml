@@ -51,5 +51,6 @@ jobs:
           path: |
             build/*/*.fwsc
             work/factory/*/*.png
+            work/factory/*/reboot/*.png
             work/factory/summary.json
           if-no-files-found: ignore
