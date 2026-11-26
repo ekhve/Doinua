@@ -152,13 +152,27 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         <li>Every pad goes through PUNCH and DIRT (its TRACK FX starts at 10). EDIT → <b>PAD FX</b>: on the hats, TRACK FX down
         (clean); on the snare, DELAY and REVERB up.</li>
       </ol>
-      <h4>6. Play a sound across the keys (ENV · LEVELS)</h4><ol>
-        <li>MY KIT 1: touch <b>k</b> (F4, a sung note). <b>]</b> (ENV): LEVELS. The screen shows its ROOT, found from the sample (A3).</li>
-        <li><b>K1 MODE</b>: <b>TUNE</b> (every key a semitone, F4 as recorded), <b>SCALE</b> (the white keys play the song's scale),
-        <b>CHORDS</b> (the white keys play the key's chords; K4: triads, 7ths, sus2, sus4, power), <b>VELOCITY</b> (16 white keys, soft
-        to hard). <b>K2</b> the scale; <b>↑ ↓</b> (SELECT) the song's key here (on the FM-1, GLO · SONG).</li>
-        <li>REC + PLAY: what you play is recorded on the drum track, with its pitch. <b>]</b> again: back to the kit.</li>
-        <li>Try your own: sample <i>Sung note</i> or <i>Bass pluck</i> from the phone onto a key, then ENV.</li>
+      <h4>6. LEVELS: a sound across the keys (ENV)</h4>
+      <p>ENV (<b>]</b>) plays the pad you touched last across the keys; ENV again (or Esc) goes back to the kit. The song is in
+      C minor here; on the lab <b>↑ ↓</b> (SELECT) changes the key (on the FM-1: GLO · SONG).</p>
+      <ol>
+        <li><b>The root is found.</b> PRESETS to MY KIT 1, touch <b>k</b> (F4, a sung note), <b>]</b>: <i>ROOT A3 (found)</i>.
+        Touch <b>a</b> (a kick) and <b>]</b>: a kick has no clear pitch, so it says <i>(set)</i>; <b>3</b> / <b>Shift+3</b> (K3 ROOT) sets it by ear.</li>
+        <li><b>TUNE.</b> On F4's LEVELS, <b>1</b> / <b>Shift+1</b> (K1 MODE) to TUNE. Every key is a semitone; <b>k</b> (F4) plays
+        it as recorded, <b>a</b> (F3) an octave down, <b>b</b> (G5) more than an octave up. The screen names each note.</li>
+        <li><b>SCALE.</b> K1 to SCALE: only the white keys play (the black ones dim), the notes of C minor; the lit keys are C.
+        <b>2</b> (K2) tries minor pentatonic, blues, dorian… <b>↑</b> moves the key up a semitone (C# minor, D minor…) Play a riff on <b>f g h j</b>.</li>
+        <li><b>CHORDS.</b> K1 to CHORDS: each white key plays the key's chord on that degree, its name big on the screen (Cm, Ddim, Eb,
+        Fm, Gm, Ab, Bb…). <b>4</b> (K4): triads, 7ths (Cm7, Ebmaj7…), sus2, sus4, power. Play <b>k</b>, <b>h</b>, <b>j</b>, <b>l</b>.</li>
+        <li><b>VELOCITY.</b> K1 to VELOCITY: the 16 white keys play the same sound from soft (<b>a</b>) to hard (<b>b</b>), as the MPC's 16 Levels.</li>
+        <li><b>Record a riff with drums.</b> <b>Enter</b> (REC), <b>Space</b> (PLAY), <b>3</b> to GRID 1/16 (on PLAY). <b>]</b>: LEVELS in
+        SCALE, play four notes over a bar. <b>]</b> again: the kit; add <b>a</b> (kick) and <b>s</b> (snare) on the next rounds. The riff
+        is the F4 row; <b>4</b> (FEEL) swings the whole thing.</li>
+        <li><b>Record chords.</b> In LEVELS, CHORDS mode, record two chords: each is several hits at one place on F4, drawn as one mark
+        with <b>×3</b> (or ×4 with 7ths). Then on PLAY, <b>Shift</b> + <b>k</b> while it plays erases them; hold <b>Backspace</b>: undo.</li>
+        <li><b>A bass from your phone.</b> Phone: <i>Bass pluck, E2</i>. PRESETS to MY KIT 2, <b>Tab</b> (LFO), record it (Enter, Enter),
+        <b>Tab</b> to CHOP, K4 SLICES 1, <b>Enter</b>, press <b>p</b> twice (G#4). <b>Esc</b>, touch <b>p</b>, <b>]</b>: ROOT E2 (found).
+        SCALE: play a bass line on the white keys, in key.</li>
       </ol>
       <h4>7. Sample a kick (LFO)</h4><ol>
         <li>Phone: <i>808 kick</i>. PRESETS to MY KIT 2. <b>Tab</b> (LFO): TAKE. <b>2</b>: IN LEVEL. <b>Enter</b>: armed, it records on
@@ -888,6 +902,7 @@ function drawPlay() {
       const e = eff(q.t), xe = X0 + W * e, xp = X0 + W * (q.tp === undefined ? q.t : q.tp), vh = Math.max(2, (h - 4) * (q.v || 100) / 127);
       if (h >= 9 && Math.abs(xe - xp) > 1 && Math.abs(xe - xp) < W / 2) { g.fillStyle = col + "88"; g.fillRect(Math.min(xe, xp), y + h / 2, Math.abs(xe - xp), 1); }
       g.fillStyle = col; rr(xe - 2.5, y + (h - vh) / 2, 5, vh, Math.min(2, vh / 2)); g.fill();
+      if (q.s && q.s.length > 1 && h >= 9) T("×" + q.s.length, xe + 4, y + h / 2, 7, C.fg, 700);
     });
     if (S.erasing.has(k)) { g.fillStyle = C.rec; g.fillRect(X0, y + h - 1, W, 1); }
     y += h + 1;
