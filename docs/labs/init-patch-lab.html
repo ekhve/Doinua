@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doinua INIT Patch Lab</title>
+<style>
+:root{color-scheme:dark;background:#151923;color:#edf2fa;font:16px system-ui,sans-serif}
+main{max-width:36rem;margin:2rem auto;padding:0 1rem}
+label{display:block;margin:.7rem 0}
+button,select{font:inherit;border:1px solid #66738c;border-radius:.3rem;background:#262e40;color:inherit;padding:.4rem .65rem}
+button{margin:.2rem}
+.screen{box-sizing:border-box;background:#0b121a;border:1px solid #6da8df;width:min(100%,260px);min-height:240px;padding:12px}
+header{display:flex;justify-content:space-between;border-bottom:1px solid #4a5a72;padding-bottom:6px}
+header span{color:#8ac4ff;font-size:.8rem}
+h1{font-size:1.6rem} h2{font-size:1rem}
+[data-selected=true]{background:#234c76}
+#hint{color:#bdd1e7;font-size:.82rem}
+</style>
+</head>
+<body><main>
+<h1>INIT Patch Lab</h1>
+<p>Compare two places to start a fresh patch. This lab simulates the controls and keeps edits on this page only.</p>
+<label>Placement <select id="placement"><option value="edit">Sound Edit action</option><option value="browser">Sound Browser entry</option></select></label>
+<label>Engine <select id="engine"><option value="FMini">FMini</option><option value="Juno-106">Juno-106</option></select></label>
+<section class="screen" aria-live="polite">
+<header><strong id="patch"></strong><span id="page"></span></header>
+<h2 id="title"></h2>
+<div id="rows"></div>
+<p id="hint"></p>
+</section>
+<div aria-label="FM-1 controls">
+<button id="open">EDIT</button><button id="left">SELECT −</button><button id="right">SELECT +</button>
+<button id="apply">OK</button><button id="home">HOME</button><button id="lower">K1 −</button><button id="raise">K1 +</button>
+</div>
+<p>Try changing cutoff, opening INIT and cancelling. Then load INIT, change cutoff and load it again to check the reset.</p>
+</main>
+<script>
+"use strict";
+const el = id => document.getElementById(id);
+const baseline = {FMini:64,"Juno-106":64};
+let engine = "FMini", placement = "edit", page = "work", cursor = 0, initial = false, cutoff = 78;
+function options() {
+  if (page === "browse") return ["Keep current sound", "INIT · " + engine];
+  if (page === "actions") return ["Keep editing", "Initialize " + engine];
+  if (page === "confirm") return ["Cancel", "Load INIT"];
+  return [];
+}
+function clearPatch() {
+  initial = false;
+  cutoff = 78;
+  page = "work";
+}
+function step(key) {
+  if (key === "home") page = "work";
+  else if (key === "open") {
+    page = placement === "edit" ? "actions" : "browse";
+    cursor = 0;
+  } else if (page === "work") {
+    if (key === "lower" || key === "raise") cutoff = Math.max(0, Math.min(127, cutoff + (key === "raise" ? 4 : -4)));
+  } else if (key === "left" || key === "right") cursor = 1 - cursor;
+  else if (key === "apply") {
+    if (!cursor) page = "work";
+    else if (page !== "confirm") { page = "confirm"; cursor = 0; }
+    else { cutoff = baseline[engine]; initial = true; page = "work"; }
+  }
+  draw();
+}
+function draw() {
+  el("patch").textContent = initial ? engine + " INIT" : engine + " patch";
+  el("page").textContent = {work:"FILTER",actions:"SOUND EDIT",browse:"BROWSER",confirm:"INIT"}[page];
+  el("title").textContent = page === "work" ? "Cutoff · " + cutoff :
+    page === "confirm" ? "Replace the current track sound?" :
+    page === "actions" ? "Sound Edit actions" : "Choose a starting patch";
+  el("rows").replaceChildren();
+  options().forEach((label, index) => {
+    const row = document.createElement("p");
+    row.dataset.selected = String(index === cursor);
+    row.textContent = label;
+    el("rows").append(row);
+  });
+  el("open").textContent = placement === "edit" ? "EDIT" : "PRESETS";
+  el("hint").textContent = page === "work" ? "K1 changes cutoff" :
+    "SELECT chooses · OK confirms · HOME goes back";
+}
+el("engine").onchange = e => { engine = e.target.value; clearPatch(); draw(); };
+el("placement").onchange = e => { placement = e.target.value; page = "work"; draw(); };
+for (const k of ["open","left","right","apply","home","lower","raise"]) el(k).onclick = () => step(k);
+draw();
+</script>
+</body>
+</html>
