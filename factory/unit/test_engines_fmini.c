@@ -292,9 +292,39 @@ static void check_live_motion(int preset)
     kit__eng_select(0, -1, 0);
 }
 
+static void check_init_mini(void)
+{
+    const uint8_t dry[4] = {0};
+    kit_sound_filter_t filter;
+    kit_sound_osc_t osc;
+    kit_preset_arp_t arp;
+    uint8_t sends[4], bus[12];
+    double rms;
+    int32_t peak;
+
+    CHECK(!strcmp(kit__eng_preset_name(E, KIT__INIT_PRESET), "Init Mini"), "stable Init Mini name");
+    CHECK(kit__eng_preset_mono(E, KIT__INIT_PRESET), "Init Mini opens in mono");
+    CHECK(!kit_preset_arp(KIT_ENGINE_FMINI, KIT__INIT_PRESET, &arp), "Init Mini has no factory ARP");
+    kit__eng_select(0, E, KIT__INIT_PRESET);
+    CHECK(kit_track_osc_of(0, &osc) && osc.wave1 == 2 && osc.mix == 0, "Init Mini starts with a single saw");
+    CHECK(!kit__eng_fx(0, sends, bus) && !memcmp(sends, dry, sizeof sends),
+          "Init Mini is dry and supplies no song FX settings");
+    CHECK(kit_track_filter_of(0, &filter) && filter.cutoff == 127 && filter.resonance == 0,
+          "Init Mini starts with an open ladder");
+    filter.cutoff = 45;
+    kit_track_filter(0, &filter);
+    kit__eng_select(0, E, KIT__INIT_PRESET);
+    CHECK(kit_track_filter_of(0, &filter) && filter.cutoff == 127, "reselecting Init Mini resets edits");
+    kit__eng_note_on(0, 60, 100);
+    render(200, &rms, &peak);
+    CHECK(rms > 200 && peak < 60000, "Init Mini is audible below the clip margin (%.0f, %d)", rms, peak);
+    kit__eng_select(0, -1, 0);
+}
+
 int main(void)
 {
     check_factory_arp();
+    check_init_mini();
     int p, i, sine = find("SINE SOLO"), pad = find("LUSH STRINGS");
     double r, f;
     int32_t pk;

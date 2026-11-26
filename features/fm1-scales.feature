@@ -1483,3 +1483,11 @@ Feature: FMini factory arpeggios (ST-77)
     Given a selected Juno-106 voice is releasing
     When I read its shared native envelope
     Then both envelope levels follow the voice
+
+  @D-122 @UC-07 @approved:owner @auto
+  Scenario: The Sound Browser opens each engine's INIT sound in Sound Edit
+    Given the INIT group in the Sound Browser
+    When I choose Init Mini and open EDIT
+    Then the FMini oscillator controls are available
+    When I choose Init Juno and open EDIT FILTER
+    Then the Juno filter controls are available

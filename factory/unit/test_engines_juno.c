@@ -125,6 +125,30 @@ static void check_shared_envelope(int preset)
     CHECK(kit_track_envelope_of(0, KIT_ENV_AMP, amp) && !memcmp(original, amp, sizeof amp), "reloading recalls the original ADSR");
 }
 
+static void check_init_juno(void)
+{
+    static const uint8_t expected_env[4] = {4, 42, 96, 20};
+    uint8_t env[4];
+    kit_sound_filter_t filter;
+    double rms;
+    int32_t peak;
+
+    CHECK(!strcmp(kit__eng_preset_name(E, KIT__INIT_PRESET), "Init Juno"), "stable Init Juno name");
+    kit__eng_select(0, E, KIT__INIT_PRESET);
+    CHECK(kit_track_filter_of(0, &filter) && filter.cutoff == 127 && filter.resonance == 0,
+          "Init Juno opens with a neutral filter");
+    CHECK(kit_track_envelope_of(0, KIT_ENV_AMP, env) && !memcmp(env, expected_env, sizeof env),
+          "Init Juno provides its own ADSR");
+    filter.cutoff = 45;
+    kit_track_filter(0, &filter);
+    kit__eng_select(0, E, KIT__INIT_PRESET);
+    CHECK(kit_track_filter_of(0, &filter) && filter.cutoff == 127, "reselecting Init Juno resets edits");
+    kit__eng_note_on(0, 60, 100);
+    render(1200, &rms, &peak);
+    CHECK(rms > 200 && peak < 60000, "Init Juno is audible below the clip margin (%.0f, %d)", rms, peak);
+    kit__eng_all_off(0);
+}
+
 int main(void)
 {
     int p, i, flute = find("Flutes"), pad = find("Synth Pad"), n0;
@@ -187,6 +211,7 @@ int main(void)
     CHECK(r > 100 && !kit__eng_has(1, 60), "another engine on the track takes the Juno off it (rms %.0f)", r);
     check_live_filter(find("Combo Organ"));
     check_shared_envelope(flute);
+    check_init_juno();
     printf("engines juno: %s\n", fails ? "FAILED" : "ok");
     return fails != 0;
 }

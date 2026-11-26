@@ -137,7 +137,8 @@ static int sg_parse(const uint8_t *b, int n)    /* 1 when a song was taken from 
         } else if (tag == SG_TRACKS && len >= KIT_NTRACKS * 5) {
             for (t = 0; t < KIT_NTRACKS; t++) {
                 int e = sg_rd8(&q), pr = sg_rd8(&q), lv = sg_rd8(&q), g = sg_rd8(&q), f = sg_rd8(&q);
-                if (e < kit_engine_count() && pr < kit_preset_count(e)) snd[t] = sound_index(e, pr);
+                if (e < kit_engine_count() && (pr < kit_preset_count(e) || pr == kit_init_preset(e)))
+                    snd[t] = sound_index(e, pr);
                 kit_track_level(t, lv);
                 if (g < RL_NGRIDS) rl_grid[t] = (uint8_t)g;
                 if (f < RL_NFEELS) rl_feel[t] = (uint8_t)f;

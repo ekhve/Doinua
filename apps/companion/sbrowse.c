@@ -26,10 +26,17 @@ static void sb_init(void)                       /* each picked sound's engine an
     int i, e, p;
     for (i = 0; i < SB_NALL; i++) {
         sb_snd[i] = -1;
-        for (e = 0; e < kit_engine_count() && sb_snd[i] < 0; e++)
-            if (sb_eq(kit_engine_name(e), SB_ENGINE[SB_ALL[i].engine]))
+        for (e = 0; e < kit_engine_count(); e++) {
+            if (!sb_eq(kit_engine_name(e), SB_ENGINE[SB_ALL[i].engine])) continue;
+            if (SB_ALL[i].group == SB_INIT) {
+                p = kit_init_preset(e);
+                if (p >= 0 && sb_eq(kit_preset_name(e, p), SB_ALL[i].preset)) sb_snd[i] = (int16_t)sound_index(e, p);
+            } else {
                 for (p = 0; p < kit_preset_count(e); p++)
                     if (sb_eq(kit_preset_name(e, p), SB_ALL[i].preset)) { sb_snd[i] = (int16_t)sound_index(e, p); break; }
+            }
+            break;
+        }
     }
     for (i = 0; i < SB_NGROUPS; i++) sb_pos[i] = -1;
 }
@@ -119,7 +126,11 @@ static int sb_event(const kit_event_t *e)
     if ((e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_HOME) || (e->type == KIT_EV_ENC && e->id == KIT_ENC_ALGORITHM)) {
         sb_open = 0;
         dirty = 1;
-        return e->id == KIT_BTN_HOME && e->type == KIT_EV_BTN_DOWN;     /* HOME only closes it; ALGORITHM goes on */
+        if (e->type == KIT_EV_BTN_DOWN) {
+            home_long = 1;                     /* consume the rest of this HOME gesture too */
+            return 1;
+        }
+        return 0;                              /* ALGORITHM still changes track */
     }
     return 0;
 }
@@ -155,9 +166,9 @@ static void sb_draw(void)                       /* the lab's list, over the page
         int on = k == g, c = 0;
         if (k == SB_DRUMS) { for (i = 0; i < SB_NALL; i++) c += sb_snd[i] >= 0 && SB_ALL[i].group == SB_DRUMS; }
         else c = sb_count(k);
-        if (k == SB_DRUMS) { y = 35 + k * 17; ch_text(10, y, SB_SHORT[k], KIT_FONT_TINY, KIT_ALIGN_LEFT, LINE); cat_int(s, c);
+        if (k == SB_DRUMS) { y = 35 + k * 16; ch_text(10, y, SB_SHORT[k], KIT_FONT_TINY, KIT_ALIGN_LEFT, LINE); cat_int(s, c);
                              ch_text(66, y, s, KIT_FONT_TINY, KIT_ALIGN_RIGHT, LINE); continue; }
-        y = 35 + k * 17;
+        y = 35 + k * 16;
         if (on) kit_round_rect(6, y - 8, 64, 16, 4, SB_SEL_D);
         ch_text(10, y, SB_SHORT[k], KIT_FONT_TINY, KIT_ALIGN_LEFT, on ? FG : c ? MUTED : LINE);
         cat_int(s, c);

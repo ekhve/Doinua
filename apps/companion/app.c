@@ -181,12 +181,18 @@ static char *cat_int(char *d, int v)
     return d;
 }
 
-static int sound_count(void)
+/* App indices for INIT follow the entire factory catalogue, which keeps its ordering. */
+static const uint8_t INIT_ENGINES[] = {KIT_ENGINE_FMINI, KIT_ENGINE_JUNO};
+#define INIT_ENGINE_COUNT ((int)sizeof INIT_ENGINES)
+
+static int factory_sound_count(void)
 {
     int e, n = 0;
     for (e = 0; e < kit_engine_count(); e++) n += kit_preset_count(e);
     return n;
 }
+
+static int sound_count(void) { return factory_sound_count() + INIT_ENGINE_COUNT; }
 
 static void sound_of(int i, int *engine, int *preset)
 {
@@ -195,12 +201,21 @@ static void sound_of(int i, int *engine, int *preset)
         if (i < kit_preset_count(e)) { *engine = e; *preset = i; return; }
         i -= kit_preset_count(e);
     }
+    if (i >= 0 && i < INIT_ENGINE_COUNT) {
+        *engine = INIT_ENGINES[i];
+        *preset = kit_init_preset(*engine);
+        return;
+    }
     *engine = 0; *preset = 0;
 }
 
 static int sound_index(int engine, int preset)
 {
     int e, n = 0;
+    if (preset >= kit_preset_count(engine) && preset == kit_init_preset(engine)) {
+        for (e = 0; e < INIT_ENGINE_COUNT; e++)
+            if (INIT_ENGINES[e] == engine) return factory_sound_count() + e;
+    }
     for (e = 0; e < engine; e++) n += kit_preset_count(e);
     return n + preset;
 }

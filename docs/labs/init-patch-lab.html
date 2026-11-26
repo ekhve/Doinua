@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doinua INIT Patch Lab</title>
+<style>
+:root{color-scheme:dark;background:#151923;color:#edf2fa;font:16px system-ui,sans-serif}
+main{max-width:36rem;margin:2rem auto;padding:0 1rem}
+label{display:block;margin:.7rem 0}
+button,select{font:inherit;border:1px solid #66738c;border-radius:.3rem;background:#262e40;color:inherit;padding:.4rem .65rem}
+button{margin:.2rem}
+.screen{box-sizing:border-box;background:#0b121a;border:1px solid #6da8df;width:min(100%,260px);min-height:240px;padding:12px}
+header{display:flex;justify-content:space-between;border-bottom:1px solid #4a5a72;padding-bottom:6px}
+header span{color:#8ac4ff;font-size:.8rem}
+h1{font-size:1.6rem} h2{font-size:1rem}
+[data-selected=true]{background:#234c76}
+#hint{color:#bdd1e7;font-size:.82rem}
+</style>
+</head>
+<body><main>
+<h1>INIT Patch Lab</h1>
+<p>Choose an INIT preset, press EDIT to change its cutoff, then choose the preset again to reload its starting values.</p>
+<section class="screen" aria-live="polite">
+<header><strong id="patch"></strong><span id="page"></span></header>
+<h2 id="title"></h2>
+<div id="rows"></div>
+<p id="hint"></p>
+</section>
+<div aria-label="FM-1 controls">
+<button id="presets">PRESETS</button><button id="edit">EDIT</button>
+<button id="lower">K1 −</button><button id="raise">K1 +</button>
+</div>
+<p>This preview simulates the controls. Cutoff values are illustrative.</p>
+</main>
+<script>
+"use strict";
+const el = id => document.getElementById(id);
+const patches = [
+  {name:"Init Mini", engine:"FMini", controls:"Oscillators, filter, separate envelopes and LFO", cutoff:64},
+  {name:"Init Juno", engine:"Juno-106", controls:"Filter and shared ADSR", cutoff:64}
+];
+let current = null, cutoff = 0, page = "presets";
+function selectPreset(preset) {
+  current = preset;
+  cutoff = preset.cutoff;
+  draw();
+}
+function draw() {
+  el("patch").textContent = current ? current.name : "Sound Browser";
+  el("page").textContent = page === "presets" ? "PRESETS" : "FILTER";
+  el("title").textContent = page === "presets" ? "INIT" : current.engine + " · Cutoff " + cutoff;
+  el("rows").replaceChildren();
+  if (page === "presets") {
+    for (const preset of patches) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = preset.name;
+      button.onclick = () => selectPreset(preset);
+      el("rows").append(button);
+    }
+  } else {
+    const details = document.createElement("p");
+    details.textContent = current.controls;
+    el("rows").append(details);
+  }
+  el("hint").textContent = page === "presets" ? "Choose an engine's starting preset" : "K1 changes cutoff";
+  el("edit").disabled = !current;
+  el("lower").disabled = el("raise").disabled = page !== "edit";
+}
+el("presets").onclick = () => { page = "presets"; draw(); };
+el("edit").onclick = () => { if (current) { page = "edit"; draw(); } };
+for (const [id, delta] of [["lower",-4],["raise",4]]) {
+  el(id).onclick = () => {
+    if (page !== "edit") return;
+    cutoff = Math.max(0, Math.min(127, cutoff + delta));
+    draw();
+  };
+}
+draw();
+</script>
+</body>
+</html>

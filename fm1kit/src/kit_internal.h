@@ -5,6 +5,9 @@
 #define KIT_INTERNAL_H
 #include "fm1kit.h"
 
+/* An INIT base ID lives outside the factory bank enumeration. */
+#define KIT__INIT_PRESET 255
+
 #define KIT_FS 44100            /* audio sample rate */
 #define KIT_BLOCK 32            /* synth control block, samples */
 

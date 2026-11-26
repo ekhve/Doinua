@@ -258,15 +258,13 @@ static inline void fm106_dimension_apply_preset(fm106_dimension_t *dim, const fm
 
 #endif
 /* Load preset patch into engine */
-static void fm106_load_preset(fm106_engine_t *e, uint32_t idx)
+static void fm106_load_patch(fm106_engine_t *e, uint32_t idx, const fm106_preset_t *p)
 {
     fm1_irq_off();
 #if DINGHY_DUAL_CORE
     if (audio_worker_online) audio_worker_join();
 #endif
-    if (idx >= JUNO_N) idx = 0;                 /* fm1-scales (D-090): the owner's picks (juno_bank.h) */
-    e->patch_idx = (uint8_t)idx;
-    const fm106_preset_t *p = &JUNO_PICKS[idx];
+    e->patch_idx = (uint16_t)idx;
 
     uint32_t pi = 0;
     while (p->name[pi] && pi < sizeof(e->patch_name) - 1u) {
@@ -358,6 +356,12 @@ static void fm106_load_preset(fm106_engine_t *e, uint32_t idx)
         }
     }
     fm1_irq_on();
+}
+
+static void fm106_load_preset(fm106_engine_t *e, uint32_t idx)
+{
+    if (idx >= JUNO_N) idx = 0;                 /* the owner's picks (juno_bank.h) */
+    fm106_load_patch(e, idx, &JUNO_PICKS[idx]);
 }
 
 /* Engine initialization */
