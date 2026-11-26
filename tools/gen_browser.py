@@ -19,6 +19,7 @@ src = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "assets" / "sounds" / "
 out = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "apps" / "companion" / "sb_data.h"
 d = json.loads(src.read_text())
 groups, short = d["groups"], d["short"]
+init_group = groups.index("Init") if "Init" in groups else -1
 for s in d["sounds"]:
     s["engine"] = AS.get(s["engine"], s["engine"])
 rows = [s for s in d["sounds"] if s["engine"] in BUILT]
@@ -33,6 +34,7 @@ L = ["/* SPDX-License-Identifier: GPL-3.0-only",
      f" * sounds of the engines built ({', '.join(BUILT)}), {len(rows)} of the owner's {len(d['sounds'])} picks. */",
      f"#define SB_NGROUPS {len(groups)}",
      f"#define SB_NALL {len(rows)}",
+     f"#define SB_INIT {init_group}",
      "static const char *const SB_GROUP[SB_NGROUPS] = { " + ", ".join(c(g) for g in groups) + " };",
      "static const char *const SB_SHORT[SB_NGROUPS] = { " + ", ".join(c(g) for g in short) + " };",
      f"static const char *const SB_ENGINE[{len(BUILT)}] = {{ " + ", ".join(c(e) for e in BUILT) + " };",

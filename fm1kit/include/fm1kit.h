@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 43
+#define FM1KIT_API 46
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -291,7 +291,8 @@ void kit_note_off(int note);
 void kit_all_notes_off(void);
 int kit_engine_count(void);
 const char *kit_engine_name(int engine);
-int kit_preset_count(int engine);
+int kit_preset_count(int engine);         /* factory presets only */
+int kit_init_preset(int engine);          /* separate native INIT preset ID, or -1 if unsupported */
 const char *kit_preset_name(int engine, int preset);
 void kit_sound(int engine, int preset);   /* stops what sounds, then switches */
 int kit_sound_engine(void);

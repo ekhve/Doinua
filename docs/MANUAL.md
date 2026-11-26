@@ -491,6 +491,13 @@ sound: the list stays open while a key is held, and closes by itself 2 seconds a
 press HOME). The list holds the sounds you picked in the audition, as their engines arrive: now FMini's 66, the Juno-106's 28
 (FM-106's engine), the 11 Bass Something 2 patches, 19 OberVave programs, nine CoralFlower VA sounds and five of ours. The DRUMS track's PRESETS still chooses its kit.
 
+### Starting a sound from scratch
+
+Open **PRESETS** on a synth track and use **K1** to go to **INIT**. Turn **PRESETS** to choose **Init Mini** or
+**Init Juno**, then press **HOME** to close the browser and **EDIT** to shape the sound. Each starts with a
+single saw oscillator and an open filter. The available controls follow the engine. Reselect the INIT sound
+after switching to another sound to get its initial settings back.
+
 ### Effects
 
 Every sound brings its own effects, as it was made: its chorus, its echo and its reverb (and some a little drive), so

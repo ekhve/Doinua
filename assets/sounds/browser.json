@@ -11,6 +11,7 @@
   "Pluck, bell & arp",
   "Chip",
   "Effects & drones",
+  "Init",
   "Drums"
  ],
  "short": [
@@ -24,6 +25,7 @@
   "PLUCK",
   "CHIP",
   "FX",
+  "INIT",
   "DRUMS"
  ],
  "sounds": [
@@ -1447,6 +1449,20 @@
    "from": "OberVave",
    "engine": "OberVave: OberVave",
    "preset": "WIND RISE"
+  },
+  {
+   "group": "Init",
+   "name": "Init Mini",
+   "from": "Doinua",
+   "engine": "FMini",
+   "preset": "Init Mini"
+  },
+  {
+   "group": "Init",
+   "name": "Init Juno",
+   "from": "Doinua",
+   "engine": "Juno-106",
+   "preset": "Init Juno"
   },
   {
    "group": "Drums",

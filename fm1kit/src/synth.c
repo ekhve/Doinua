@@ -122,6 +122,10 @@ int kit_preset_count(int e)
 {
     return e == KIT_ENGINE_BASIC ? KIT_NINSTS : e == KIT_ENGINE_DRUMS ? nkits() : kit__eng_npresets(eng_of(e));
 }
+int kit_init_preset(int e)
+{
+    return e == KIT_ENGINE_FMINI || e == KIT_ENGINE_JUNO ? KIT__INIT_PRESET : -1;
+}
 const char *kit_preset_name(int e, int p)
 {
     return e == KIT_ENGINE_BASIC ? kit_instrument_name(p) : e == KIT_ENGINE_DRUMS ? kit_drum_kit_name(p)
@@ -180,7 +184,7 @@ void kit_track_sound(int t, int e, int p)
 {
     uint32_t k;
     int i;
-    if (!okt(t) || e < 0 || e >= kit_engine_count() || p < 0 || p >= kit_preset_count(e))
+    if (!okt(t) || e < 0 || e >= kit_engine_count() || p < 0 || (p >= kit_preset_count(e) && p != kit_init_preset(e)))
         return;
     k = kit__lock();
     for (i = 0; i < KIT_NVOICES; i++)               /* what the track sounds stops */
