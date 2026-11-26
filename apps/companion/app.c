@@ -2422,6 +2422,7 @@ static void keyboard_lights(void)
 
 void app_frame(uint32_t now_ms)
 {
+    companion_preset_poll(sizeof set, SETTINGS_VERSION);
     harm_sync();
     if (!picker && !home_long && kit_btn_held(KIT_BTN_HOME) && now_ms - home_at >= HOLD_MS) {
         home_long = 1;                          /* HOME held: the mode picker */

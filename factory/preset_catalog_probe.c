@@ -2,13 +2,16 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "../apps/companion/presetcatalog.c"
+#include <stdint.h>
 
 #define KIT_STORE_MAX 1024
 #define KIT_STORE_ERR_SIZE (-1)
+#define KIT_STORE_ERR_FULL (-2)
+#define KIT_STORE_ERR_FLASH (-3)
 #define KIT_BIG
 static uint8_t stored[KIT_STORE_MAX], queued[KIT_STORE_MAX];
 static unsigned stored_size, queued_size;
+static int pending, last_status;
 
 static int kit_store_load(void *out, int capacity)
 {
@@ -22,7 +25,23 @@ static int kit_store_save(const void *data, int bytes)
     assert(bytes >= 0 && bytes <= KIT_STORE_MAX);
     memcpy(queued, data, (unsigned)bytes);
     queued_size = (unsigned)bytes;
+    pending = 1;
     return 0;
+}
+
+static int kit_store_pending(void) { return pending; }
+static int kit_store_status(void) { return last_status; }
+
+static void finish_write(int result)
+{
+    assert(pending);
+    last_status = result;
+    if (result == KIT_STORE_ERR_FLASH) return;  /* physical Store retries */
+    pending = 0;
+    if (!result) {
+        memcpy(stored, queued, queued_size);
+        stored_size = queued_size;
+    }
 }
 
 #include "../apps/companion/settingsrecord.c"
@@ -114,6 +133,51 @@ static void check_catalog_edits(void)
     assert(!memcmp(bytes, before, sizeof bytes));
 }
 
+static void check_preset_save(void)
+{
+    uint8_t prefix[505] = {6};
+    preset_record_t item = {1, 8, 0, 4, 1, {'B', 'a', 's', 's'}, {42}}, found;
+
+    stored_size = 0;
+    pending = 0;
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == 0);
+    assert(companion_preset_save(prefix, sizeof prefix, &item, 0) == COMPANION_PRESET_PENDING);
+    assert(companion_preset_save(prefix, sizeof prefix, &item, 1) == COMPANION_PRESET_BUSY);
+    prefix[4] = 29;
+    assert(companion_settings_save(prefix, sizeof prefix) == 0);
+    assert(pending && !stored_size && queued[4] == 29);
+    finish_write(KIT_STORE_ERR_FLASH);
+    companion_preset_poll(sizeof prefix, 6);
+    assert(companion_preset_status == COMPANION_PRESET_PENDING);
+    finish_write(0);
+    companion_preset_poll(sizeof prefix, 6);
+    assert(companion_preset_status == COMPANION_PRESET_SAVED);
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == (int)sizeof prefix);
+    assert(prefix[4] == 29);
+    assert(companion_preset_find(sizeof prefix, 1, &found) == PRESET_VALID);
+    assert(found.data[0] == 42);
+    assert(companion_preset_save(prefix, sizeof prefix, &item, 1) == COMPANION_PRESET_SAVED);
+    assert(!pending);
+
+    item.data[0] = 81;
+    assert(companion_preset_save(prefix, sizeof prefix, &item, 1) == COMPANION_PRESET_PENDING);
+    finish_write(KIT_STORE_ERR_FULL);
+    prefix[4] = 31;
+    assert(companion_settings_save(prefix, sizeof prefix) == 0);
+    assert(companion_preset_status == COMPANION_PRESET_WRITE_FAILED);
+    finish_write(0);
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == (int)sizeof prefix);
+    assert(prefix[4] == 31);
+    assert(companion_preset_find(sizeof prefix, 1, &found) == PRESET_VALID);
+    assert(found.data[0] == 42);
+
+    assert(companion_preset_save(prefix, sizeof prefix, &item, 1) == COMPANION_PRESET_PENDING);
+    pending = 0;  /* power loss before commit */
+    assert(companion_settings_load(prefix, sizeof prefix, 6) == (int)sizeof prefix);
+    assert(companion_preset_find(sizeof prefix, 1, &found) == PRESET_VALID);
+    assert(found.data[0] == 42);
+}
+
 int main(void)
 {
     uint8_t bytes[1024], before[1024];
@@ -157,7 +221,9 @@ int main(void)
     assert(!memcmp(bytes, before, sizeof bytes));
     check_settings_record();
     check_catalog_edits();
+    check_preset_save();
     puts("PASS: settings migration and tail preservation.");
     puts("PASS: Save As, confirmed overwrite with variable length, and unchanged bytes on rejected edits.");
+    puts("PASS: queued preset save, retry, durable recall, failed write rollback, and interruption.");
     puts("PASS: legacy settings, 9 sample slots, round-trip, truncation, unsupported version, duplicate slots, atomic failure.");
 }

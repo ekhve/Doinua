@@ -98,7 +98,7 @@ static uint8_t *preset_record_write(uint8_t *out, const preset_record_t *item)
 }
 
 /* The settings prefix is already in out. Failure leaves the entire buffer intact. */
-static int preset_catalog_write(uint8_t *out, unsigned capacity, unsigned settings_size,
+static inline int preset_catalog_write(uint8_t *out, unsigned capacity, unsigned settings_size,
                                 const preset_record_t *items, unsigned count)
 {
     uint8_t seen[32] = {0};
@@ -127,7 +127,7 @@ enum { PRESET_EDIT_INVALID = -1, PRESET_EDIT_SLOT = -2, PRESET_EDIT_FULL = -3 };
 
 /* Return the new record size, or leave all bytes unchanged on error. The slot
  * must be empty for Save As and must already exist for confirmed overwrite. */
-static int preset_catalog_edit(uint8_t *record, unsigned size, unsigned capacity,
+static inline int preset_catalog_edit(uint8_t *record, unsigned size, unsigned capacity,
                                unsigned settings_size, const preset_record_t *item,
                                int overwrite)
 {
