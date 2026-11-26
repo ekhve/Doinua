@@ -61,6 +61,8 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 .k.w .smp { top: 80px; }
 .k.lit { box-shadow: inset 0 0 0 150px rgba(215,124,194,.55); color: #fff; }
 .k.prev { outline: 3px solid #ef5b5b; outline-offset: -3px; }
+.k.ton { box-shadow: inset 0 0 0 150px rgba(215,124,194,.9); color: #fff; }
+.k.root::after { content: ""; position: absolute; left: 50%; bottom: 52px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #3ccf7a; }
 .k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.85) !important; color: #fff; }
 .btn.latch.on { background: #2f5a3e; border-color: var(--good); }
 .scen h4 { margin: 10px 0 2px; font: 600 .92rem var(--display); }
@@ -72,7 +74,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 
 <div class="wrap">
   <h1>Sampler Lab</h1>
-  <p class="lead">Version 8 (2026-11-26): a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
+  <p class="lead">Version 9 (2026-11-26): LEVELS keys play their own notes (C is C) with MELODY's help lights. Version 8: a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
   tempo); the bar's rows share the screen; GRID off … 1/32; velocity; SOUND with ATTACK, HOLD, DECAY; the track's FX as PUNCH
   (COMP, CLIP), DIRT and SPACE (DELAY and REVERB together); CHOP's put mode silent. Press <b>Start sound</b>, then try the
   <a href="#scen">usage scenarios</a>.</p>
@@ -153,26 +155,25 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         (clean); on the snare, DELAY and REVERB up.</li>
       </ol>
       <h4>6. LEVELS: a sound across the keys (ENV)</h4>
-      <p>ENV (<b>]</b>) plays the pad you touched last across the keys; ENV again (or Esc) goes back to the kit. The song is in
-      C minor here; on the lab <b>↑ ↓</b> (SELECT) changes the key (on the FM-1: GLO · SONG).</p>
+      <p>ENV (<b>]</b>) plays the pad you touched last across the keys. <b>Each key plays its own note</b> (C is C), the sound moved
+      to it; a green dot marks the key where it plays as recorded. The help is MELODY's: the scale lit, the tonic full. The song is in
+      C minor here; <b>↑ ↓</b> (SELECT) changes the key (on the FM-1: GLO · SONG). <b>− =</b> (OCT− OCT+) move the octave.
+      ENV again (or Esc): back to the kit.</p>
       <ol>
-        <li><b>The root is found.</b> PRESETS to MY KIT 1, touch <b>k</b> (F4, a sung note), <b>]</b>: <i>ROOT A3 (found)</i>.
-        Touch <b>a</b> (a kick) and <b>]</b>: a kick has no clear pitch, so it says <i>(set)</i>; <b>3</b> / <b>Shift+3</b> (K3 ROOT) sets it by ear.</li>
-        <li><b>TUNE.</b> On F4's LEVELS, <b>1</b> / <b>Shift+1</b> (K1 MODE) to TUNE. Every key is a semitone; <b>k</b> (F4) plays
-        it as recorded, <b>a</b> (F3) an octave down, <b>b</b> (G5) more than an octave up. The screen names each note.</li>
-        <li><b>SCALE.</b> K1 to SCALE: only the white keys play (the black ones dim), the notes of C minor; the lit keys are C.
-        <b>2</b> (K2) tries minor pentatonic, blues, dorian… <b>↑</b> moves the key up a semitone (C# minor, D minor…) Play a riff on <b>f g h j</b>.</li>
-        <li><b>CHORDS.</b> K1 to CHORDS: each white key plays the key's chord on that degree, its name big on the screen (Cm, Ddim, Eb,
-        Fm, Gm, Ab, Bb…). <b>4</b> (K4): triads, 7ths (Cm7, Ebmaj7…), sus2, sus4, power. Play <b>k</b>, <b>h</b>, <b>j</b>, <b>l</b>.</li>
-        <li><b>VELOCITY.</b> K1 to VELOCITY: the 16 white keys play the same sound from soft (<b>a</b>) to hard (<b>b</b>), as the MPC's 16 Levels.</li>
-        <li><b>Record a riff with drums.</b> <b>Enter</b> (REC), <b>Space</b> (PLAY), <b>3</b> to GRID 1/16 (on PLAY). <b>]</b>: LEVELS in
-        SCALE, play four notes over a bar. <b>]</b> again: the kit; add <b>a</b> (kick) and <b>s</b> (snare) on the next rounds. The riff
-        is the F4 row; <b>4</b> (FEEL) swings the whole thing.</li>
-        <li><b>Record chords.</b> In LEVELS, CHORDS mode, record two chords: each is several hits at one place on F4, drawn as one mark
-        with <b>×3</b> (or ×4 with 7ths). Then on PLAY, <b>Shift</b> + <b>k</b> while it plays erases them; hold <b>Backspace</b>: undo.</li>
-        <li><b>A bass from your phone.</b> Phone: <i>Bass pluck, E2</i>. PRESETS to MY KIT 2, <b>Tab</b> (LFO), record it (Enter, Enter),
-        <b>Tab</b> to CHOP, K4 SLICES 1, <b>Enter</b>, press <b>p</b> twice (G#4). <b>Esc</b>, touch <b>p</b>, <b>]</b>: ROOT E2 (found).
-        SCALE: play a bass line on the white keys, in key.</li>
+        <li><b>The note is found.</b> MY KIT 1, touch <b>k</b> (F4, a sung note), <b>]</b>: <i>sounds A3</i>, the dot on A.
+        A kick has no clear note: it says <i>(set K3)</i>; <b>3</b> / <b>Shift+3</b> sets it by ear.</li>
+        <li><b>KEY</b> (K1, as it opens): every key plays its note; the keys of C minor are lit, the Cs full. Play a tune on the lit keys.</li>
+        <li><b>FREE</b> (<b>Shift+1</b>): every key, no lights. <b>WHITES</b> (<b>1</b>): the white keys play the scale from its tonic, the
+        black ones rest: nothing can sound wrong. <b>2</b> (K2): minor pentatonic, blues, dorian…</li>
+        <li><b>CHORDS</b> (<b>1</b> again): a lit key plays the key's chord on that note, its name on each key of the screen (Cm, Ddim,
+        Eb, Fm, Gm, Ab, Bb) and big when you play it. <b>4</b> (K4): triads, 7ths, sus2, sus4, power.</li>
+        <li><b>VELOCITY</b>: the 16 white keys play the same sound from soft to hard (the MPC's 16 Levels).</li>
+        <li><b>Record a riff with drums.</b> <b>Enter</b> (REC), <b>Space</b> (PLAY). <b>]</b>, play four notes; <b>]</b> again, add <b>a</b>
+        (kick) and <b>s</b> (snare). The riff is the F4 row; <b>4</b> (FEEL) swings it all.</li>
+        <li><b>Record chords.</b> In CHORDS, record two: each is several hits at one place on F4, one mark with <b>×3</b> (×4 with 7ths).
+        On PLAY, <b>Shift</b> + <b>k</b> while it plays erases them; hold <b>Backspace</b>: undo.</li>
+        <li><b>A bass from your phone.</b> Phone: <i>Bass pluck, E2</i>. MY KIT 2, <b>Tab</b> (LFO), record it, <b>Tab</b> (CHOP), K4 SLICES 1,
+        <b>Enter</b>, <b>p p</b> (on G#4). <b>Esc</b>, touch <b>p</b>, <b>]</b>: <i>sounds E2</i>. <b>−</b> to play it low; WHITES: a bass line in key.</li>
       </ol>
       <h4>7. Know your sample's note or key, and tune it</h4><ol>
         <li><b>A note.</b> Phone: <i>Piano note, C#3 (a little sharp)</i>. PRESETS to MY KIT 2, <b>Tab</b> (TAKE), <b>Enter</b>, wait, <b>Enter</b>:
@@ -581,11 +582,11 @@ function presets(d) {
 }
 
 // ------------------------------------------------------------------ LEVELS (ENV): one pad across the keys, as the MPC's 16 Levels and Pad Perform
-const LVM = ["TUNE", "SCALE", "CHORDS", "VELOCITY"];
+const LVM = ["FREE", "KEY", "WHITES", "CHORDS", "VELOCITY"];      // the MELODY track's help, plus chords and 16 levels
 const SCALES = [["major", [0, 2, 4, 5, 7, 9, 11]], ["minor", [0, 2, 3, 5, 7, 8, 10]], ["minor pent.", [0, 3, 5, 7, 10]], ["major pent.", [0, 2, 4, 7, 9]], ["blues", [0, 3, 5, 6, 7, 10]], ["dorian", [0, 2, 3, 5, 7, 9, 10]], ["mixolydian", [0, 2, 4, 5, 7, 9, 10]], ["phrygian", [0, 1, 3, 5, 7, 8, 10]], ["harmonic minor", [0, 2, 3, 5, 7, 8, 11]]];
 const CHORDT = [["triads", [0, 2, 4]], ["7ths", [0, 2, 4, 6]], ["sus2", [0, 1, 4]], ["sus4", [0, 3, 4]], ["power", [0, 4, 7]]];
 const PCN = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
-const LV = { pad: 12, mode: 1, scale: 1, chord: 0, tonic: 0, last: "" };
+const LV = { pad: 12, mode: 1, scale: 1, chord: 0, tonic: 0, oct: 0, last: "" };
 function detectRoot(d) {          // the sample's pitch (YIN): 60 ms from just after its loudest point
   let pk = 0, at = 0; for (let i = 0; i < Math.min(d.length, SR); i++) if (Math.abs(d[i]) > pk) { pk = Math.abs(d[i]); at = i; }
   const N = 1100, TM = 600, s0 = Math.min(at + Math.round(.02 * SR), d.length - N - TM - 1); if (s0 < 0) return null;
@@ -625,23 +626,25 @@ function tuneLabel(x) {
 const nn = m => PCN[((Math.round(m) % 12) + 12) % 12] + (Math.floor(Math.round(m) / 12) - 1);
 function lvEnter() {
   const x = key(st.sel); LV.pad = st.sel; analyse(x);
+  LV.oct = Math.round((x.root + x.tune - 60) / 12);           // the octave that keeps the shifts small; OCT- and OCT+ move it
   stopRaw(); st.page = "levels"; LV.last = "";
 }
-function lvNotes(i) {             // what key i plays: semitones from the sample's own pitch, a velocity, and a name
-  const x = key(LV.pad), root = x.root + x.tune, sc = SCALES[LV.scale][1], wi = WH.indexOf(i);
+const inScale = m => SCALES[LV.scale][1].includes(((Math.round(m) - LV.tonic) % 12 + 12) % 12);
+const keyMidi = i => LOW + i + 12 * LV.oct;                    // the keys play their own notes (C is C), an octave up or down
+function lvNotes(i) {             // what key i plays: the notes (MIDI), as semitones from the pad's sound, a velocity, a name
+  const x = key(LV.pad), root = x.root + x.tune, sc = SCALES[LV.scale][1], wi = WH.indexOf(i), mode = LVM[LV.mode];
   const deg = d => { const o = Math.floor(d / sc.length); return o * 12 + sc[d - o * sc.length]; };
-  let t = root + ((LV.tonic - Math.round(root) % 12) + 24) % 12; if (t - root > 6) t -= 12;     // the song's key nearest the sample's pitch
-  if (LV.mode === 0) return { s: [i - 12], v: null, name: nn(root + i - 12) };
-  if (wi < 0) return null;
-  const d = wi - 7;
-  if (LV.mode === 1) { const m = t + deg(d); return { s: [m - root], v: null, name: nn(m) }; }
-  if (LV.mode === 2) {
-    const ms = CHORDT[LV.chord][0] === "power" ? [t + deg(d), t + deg(d) + 7, t + deg(d) + 12] : CHORDT[LV.chord][1].map(c => t + deg(d + c));
-    const third = ms.length > 2 ? ms[1] - ms[0] : 0, fifth = ms[2] - ms[0], q = CHORDT[LV.chord][0];
-    const kind = q === "power" ? "5" : q.startsWith("sus") ? q : (third === 3 ? (fifth === 6 ? "dim" : "m") : (fifth === 8 ? "+" : "")) + (q === "7ths" ? (ms[3] - ms[0] === 11 ? "maj7" : "7") : "");
-    return { s: ms.map(m => m - root), v: null, name: PCN[((Math.round(ms[0]) % 12) + 12) % 12] + kind };
-  }
-  return { s: [0], v: Math.round(8 + wi * 119 / 15), name: "velocity " + Math.round(8 + wi * 119 / 15) };
+  const out = (ms, name, v) => ({ s: ms.map(m => m - root), ms, v: v || null, name });
+  if (mode === "VELOCITY") return wi < 0 ? null : out([root], "velocity " + Math.round(8 + wi * 119 / 15), Math.round(8 + wi * 119 / 15));
+  if (mode === "FREE" || mode === "KEY") { const m = keyMidi(i); return out([m], nn(m)); }
+  if (mode === "WHITES") { if (wi < 0) return null; const m = 60 + 12 * LV.oct + LV.tonic + deg(wi - 4) - (LV.tonic > 5 ? 12 : 0); return out([m], nn(m)); }
+  // CHORDS: a note of the scale plays its chord in the key (as the CHORDS track's help); the other keys rest
+  const m = keyMidi(i); if (!inScale(m)) return null;
+  const pc = ((m - LV.tonic) % 12 + 12) % 12, d0 = sc.indexOf(pc), q = CHORDT[LV.chord][0];
+  const ms = q === "power" ? [m, m + 7, m + 12] : CHORDT[LV.chord][1].map(c => m + deg(d0 + c) - deg(d0));
+  const third = ms.length > 2 ? ms[1] - ms[0] : 0, fifth = ms[2] - ms[0];
+  const kind = q === "power" ? "5" : q.startsWith("sus") ? q : (third === 3 ? (fifth === 6 ? "dim" : "m") : (fifth === 8 ? "+" : "")) + (q === "7ths" ? (ms[3] - ms[0] === 11 ? "maj7" : "7") : "");
+  return out(ms, PCN[((m % 12) + 12) % 12] + kind);
 }
 function lvPress(i, v) {
   const L = lvNotes(i); if (!L) return; const vv = L.v || v;
@@ -795,6 +798,7 @@ function sel(d) {
   if (editing() && EDITTABS[st.tab] === "SOUND") { const x = key(st.sel); x.grp = (x.grp + d + 5) % 5; touch(); }
 }
 function oct(d) {
+  if (st.page === "levels") { LV.oct = clampI(LV.oct + d, -3, 3); return; }
   if (st.save || st.pick) return;
   if (st.layer && d > 0) { if (st.ask === "clear") { pushUndo(); S.notes = []; S.order = []; st.ask = null; st.layer = false; flash("DRUMS cleared · SAVE held: undo"); } else st.ask = "clear"; return; }
   if (st.page === "chop") d > 0 ? split() : merge();
@@ -979,15 +983,24 @@ function draw() {
     knobRow(["GRID", "FEEL", "CLICK", "COUNT-IN"], [GRIDS[S.grid][0], FEELS[S.feel][0], "rec", "off"]);
   } else if (P === "play" || P === "ideas" || P === "auto") drawPlay();
   else if (P === "levels") {
-    const px = key(LV.pad); T("DRUMS", 6, 12, 11, S.armed ? C.rec : C.acc, 700); T("LEVELS", 52, 12, 9, C.fg, 700); T(kit().name + " · " + BPM, 234, 12, 9, C.mute, 600, "right"); g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
-    T(keyNote(LV.pad) + " · " + (isAuto(LV.pad) ? ROLE[LV.pad] : soundName(px)), 6, 36, 11, C.fg, 700);
-    T("ROOT " + nn(px.root + px.tune) + (px.found ? " (found)" : " (set)"), 234, 36, 8.5, px.found ? C.ok : C.mute, 700, "right");
-    T("KEY " + PCN[LV.tonic] + " " + SCALES[LV.scale][0] + "  (SELECT)", 6, 52, 8.5, C.mute, 600);
-    g.fillStyle = C.card; rr(6, 62, 228, 74, 6); g.fill();
-    T(LV.last || (LV.mode === 0 ? "every key a semitone" : LV.mode === 3 ? "16 white keys, soft to hard" : "the white keys: " + (LV.mode === 1 ? "the scale" : "its chords")), 120, 99, LV.last ? 24 : 9, LV.last ? C.fg : C.mute, 700, "center");
-    strip(146, 30, i => { const L = lvNotes(i); return L && LV.mode !== 3 && LV.mode !== 0 && ((Math.round(L.s[0] + px.root) % 12) + 12) % 12 === LV.tonic; });
-    T(LV.mode === 0 ? "F4 plays it as recorded" : LV.mode === 3 ? "" : "lit: the key's tonic", 120, 186, 8, C.mute, 600, "center");
-    knobRow(KNOBS.levels, [LVM[LV.mode], LV.mode === 1 || LV.mode === 2 ? SCALES[LV.scale][0] : "-", nn(px.root + px.tune), LV.mode === 2 ? CHORDT[LV.chord][0] : "-"]);
+    const px = key(LV.pad), mode = LVM[LV.mode], rs = px.root + px.tune;
+    T("DRUMS", 6, 12, 11, S.armed ? C.rec : C.acc, 700); T("LEVELS", 52, 12, 9, C.fg, 700); T(kit().name + " · " + BPM, 234, 12, 9, C.mute, 600, "right"); g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
+    T(keyNote(LV.pad) + " · " + (isAuto(LV.pad) ? ROLE[LV.pad] : soundName(px)), 6, 35, 10, C.fg, 700);
+    T("sounds " + nn(rs) + (px.found ? "" : " (set K3)"), 234, 35, 8.5, px.found ? C.ok : C.mute, 700, "right");
+    T(PCN[LV.tonic] + " " + SCALES[LV.scale][0] + " (SELECT)" + (LV.oct ? " · OCT " + (LV.oct > 0 ? "+" : "") + LV.oct : ""), 6, 49, 8.5, C.mute, 600);
+    // the keyboard: what each key plays; lit as on MELODY (the scale lit, the tonic full), a dot where the sound plays as recorded
+    const ww = 228 / WH.length, KY = 60, KH = 74;
+    WH.forEach((i, wi) => { const x0 = 6 + wi * ww, L = lvNotes(i), m = L && L.ms[0], ins = L && mode !== "FREE" && mode !== "VELOCITY" && inScale(m), ton = ins && ((Math.round(m) - LV.tonic) % 12 + 12) % 12 === 0;
+      g.fillStyle = !L ? "#161b24" : ton ? C.acc : ins ? "#7a4a70" : "#2a313d"; g.fillRect(x0 + .5, KY, ww - 1, KH);
+      if (L && mode !== "VELOCITY") { const lab = mode === "CHORDS" ? L.name : nn(m).replace(/-?\d+$/, ""); g.save(); g.translate(x0 + ww / 2, KY + KH - 6); g.rotate(-Math.PI / 2); T(lab, 0, 0, 7, ton || ins ? "#fff" : C.mute, 700); g.restore(); }
+      if (L && Math.abs(L.ms[0] - rs) < .5 && L.ms.length === 1) { g.fillStyle = C.ok; g.beginPath(); g.arc(x0 + ww / 2, KY + 6, 3, 0, 7); g.fill(); }
+      if (LV.lastKey === i) { g.strokeStyle = C.fg; g.lineWidth = 1.5; g.strokeRect(x0 + 1, KY + 1, ww - 2, KH - 2); } });
+    for (let i = 0; i < NK; i++) if (isBlack(LOW + i)) { const wi = WH.indexOf(i - 1), x0 = 6 + (wi + 1) * ww - ww * .32, L = lvNotes(i), m = L && L.ms[0], ins = L && mode !== "FREE" && inScale(m), ton = ins && ((Math.round(m) - LV.tonic) % 12 + 12) % 12 === 0;
+      g.fillStyle = !L ? "#0e1219" : ton ? C.acc : ins ? "#5e3656" : "#05070b"; g.fillRect(x0, KY, ww * .64, KH * .5); g.strokeStyle = "#000"; g.lineWidth = 1; g.strokeRect(x0, KY, ww * .64, KH * .5);
+      if (L && Math.abs(L.ms[0] - rs) < .5 && L.ms.length === 1) { g.fillStyle = C.ok; g.beginPath(); g.arc(x0 + ww * .32, KY + 6, 2.5, 0, 7); g.fill(); } }
+    T(LV.last || {FREE: "every key its note", KEY: "lit: the scale · full: the tonic", WHITES: "the white keys play the scale", CHORDS: "a lit key plays its chord", VELOCITY: "16 white keys, soft to hard"}[mode], 120, 156, LV.last ? 18 : 8.5, LV.last ? C.fg : C.mute, 700, "center");
+    T("● plays as recorded · OCT− OCT+ move the octave", 120, 186, 7.5, C.mute, 600, "center");
+    knobRow(KNOBS.levels, [mode, mode === "FREE" || mode === "VELOCITY" ? "-" : SCALES[LV.scale][0], nn(rs), mode === "CHORDS" ? CHORDT[LV.chord][0] : "-"]);
   } else if (P === "edit") {
     const tab = EDITTABS[st.tab]; top(EDITTABS, tab); keyHead(38);
     if (tab === "KIT") {
@@ -1083,7 +1096,10 @@ function draw() {
     el.classList.toggle("held", st.held.has(i));
     el.querySelector(".smp").hidden = !key(i).smp;
     el.classList.toggle("lit", P === "chop" && !st.place && !!take && i < st.chop.sl.length);
-    el.style.opacity = P === "levels" && LV.mode && isBlack(LOW + i) ? .35 : "";
+    if (P === "levels") { const L = lvNotes(i), mode = LVM[LV.mode], ins = L && mode !== "FREE" && mode !== "VELOCITY" && inScale(L.ms[0]);
+      el.style.opacity = L ? "" : .3; el.classList.toggle("lit", !!ins); el.classList.toggle("ton", !!ins && ((Math.round(L.ms[0]) - LV.tonic) % 12 + 12) % 12 === 0);
+      el.classList.toggle("root", !!L && L.ms.length === 1 && Math.abs(L.ms[0] - (key(LV.pad).root + key(LV.pad).tune)) < .5); }
+    else { el.style.opacity = ""; el.classList.remove("ton", "root"); }
     el.classList.toggle("prev", !!st.place && st.place.key === i);
   });
   $("edit").classList.toggle("on", st.editHeld || P === "edit"); $("rec").classList.toggle("on", !!st.rec || !!st.place || S.armed || st.layer);
@@ -1093,7 +1109,7 @@ function draw() {
   requestAnimationFrame(draw);
 }
 const HINT = {
-  levels: "LEVELS (ENV): the pad you touched, across the keys. K1 MODE (TUNE, SCALE, CHORDS, VELOCITY), K2 SCALE, K3 ROOT (found from the sample; turn to correct), K4 CHORD. SELECT: the song's key. REC + PLAY record it on the drum track. ENV or HOME: back.",
+  levels: "LEVELS (ENV): the pad you touched, across the keys; each key plays its own note (C is C). K1 MODE: FREE, KEY (the scale lit), WHITES (the white keys play the scale), CHORDS (a lit key plays its chord), VELOCITY. K2 SCALE, K3 the note the sample is (found; turn to correct), K4 CHORD. SELECT: the song's key. OCT− OCT+: the octave. REC + PLAY record it. ENV or HOME: back.",
   play: "PLAY: keys play the kit (press low on a key: harder). REC on + PLAY records. K1 LEVEL, K2 FX (the key played), K3 GRID, K4 FEEL (the track). PRESETS: the kit. EDIT held + key (REC on, playing): erase. SAVE held: undo; two taps: redo. REC held: REC layer.",
   ideas: "IDEAS, as built (on the new drum map). SCL: next.", auto: "AUTO, as built (on the new drum map). SCL: next.",
   KIT: "EDIT · KIT: touch a key; PRESETS: its sound, from every sound you have. K1 LEVEL, K2 VELOCITY (fixed, or how much it follows how hard you play). SAVE held: save the kit.",
