@@ -72,6 +72,13 @@ static void sound_mod_reset(int t)
 }
 
 #include "presetpatch.c"
+
+static int preset_workflow_available(const preset_record_t *item)
+{
+    preset_patch_view_t view;
+    return preset_patch_open(item, &view);
+}
+
 #include "presetworkflow.c"
 #include "presetpanel.c"
 

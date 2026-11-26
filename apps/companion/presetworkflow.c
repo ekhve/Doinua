@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* The panel and browser use the same track identity and save transaction. */
-static uint8_t preset_track_slot[KIT_NTRACKS], preset_pending_slot;
+static uint8_t preset_pending_slot;
 static int preset_pending_track = -1;
 
 static void preset_workflow_forget(int t)
@@ -64,3 +64,4 @@ static inline int preset_workflow_recall(int t, unsigned slot)
     preset_track_slot[t] = item.slot;
     return PRESET_VALID;
 }
+

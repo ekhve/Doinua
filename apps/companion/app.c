@@ -74,6 +74,7 @@ static int home_long, glo_long;
 static uint32_t home_at, glo_at;
 #define HOLD_MS 500                             /* a press this long is a hold */
 static int snd[KIT_NTRACKS];        /* each track's sound: an index over every engine's presets */
+static uint8_t preset_track_slot[KIT_NTRACKS]; /* current user preset identity, or zero for factory */
 static int last_note = -1, last_channel;   /* the last note played, and its MIDI channel (0: from the keys) */
 static uint32_t black_at[KIT_NKEYS], presses;   /* when each black key went down, for "the last one held" */
 static int chord_key = -1, chord_row, chord_vel;   /* the key sounding the pad's chord */

@@ -50,6 +50,7 @@ enum { SETTINGS_VERSION = 6, KIT_NTRACKS = 4 };
 static uint8_t set[505];
 static int snd[KIT_NTRACKS];
 static uint8_t edited[KIT_NTRACKS];
+static uint8_t preset_track_slot[KIT_NTRACKS];
 
 static int sound_index(int engine, int base) { return engine * 10 + base; }
 static int preset_patch_capture(int t, preset_record_t *item)

@@ -1,9 +1,9 @@
 {
   "scenario": "Sound Edit opens the preset save panel",
-  "name": "companion: name and save a preset from Sound Edit",
+  "name": "companion: name, save and recall a preset from the Sound Browser",
   "app": "companion",
-  "ms": 9500,
-  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:EDIT,3670:EDIT^,4000:SAVE,4070:SAVE^,4300:e0:+1,4600:SAVE,4670:SAVE^,4900:e2:+1,5200:SAVE,5270:SAVE^,8500:SAVE,8570:SAVE^,8950:HOME,9020:HOME^",
+  "ms": 12700,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:EDIT,3670:EDIT^,3800:e4:+2,4000:SAVE,4070:SAVE^,4300:e0:+1,4600:SAVE,4670:SAVE^,4900:e2:+1,5200:SAVE,5270:SAVE^,8500:SAVE,8570:SAVE^,8950:HOME,9020:HOME^,9500:e6:+1,9800:e2:-1",
   "checks": [
     {
       "type": "screen",
@@ -32,6 +32,18 @@
     {
       "type": "screen",
       "at": 9250
+    },
+    {
+      "type": "screen",
+      "at": 9670
+    },
+    {
+      "type": "screen",
+      "at": 10100
+    },
+    {
+      "type": "screen",
+      "at": 12400
     }
   ]
 }
