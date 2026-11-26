@@ -74,7 +74,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 
 <div class="wrap">
   <h1>Sampler Lab</h1>
-  <p class="lead">Version 10 (2026-11-26): ENV has three pages, NOTES (a small MELODY), CHORDS (a small CHORDS, with progressions) and VELOCITY; a loop's tempo is found and fits the song by speed or by slices. Version 9: LEVELS keys play their own notes (C is C) with MELODY's help lights. Version 8: a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
+  <p class="lead">Version 11 (2026-11-26): the FX are the kit's and each pad's (PUNCH, COLOR, DELAY, REVERB), KIT sounds by kit (K3), HOLD key (sustain), ENV from anywhere: NOTES (16 LEVELS first) and CHORDS (the CHORDS track's pads). Version 10: ENV has three pages, NOTES (a small MELODY), CHORDS (a small CHORDS, with progressions) and VELOCITY; a loop's tempo is found and fits the song by speed or by slices. Version 9: LEVELS keys play their own notes (C is C) with MELODY's help lights. Version 8: a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
   tempo); the bar's rows share the screen; GRID off … 1/32; velocity; SOUND with ATTACK, HOLD, DECAY; the track's FX as PUNCH
   (COMP, CLIP), DIRT and SPACE (DELAY and REVERB together); CHOP's put mode silent. Press <b>Start sound</b>, then try the
   <a href="#scen">usage scenarios</a>.</p>
@@ -139,39 +139,43 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         <li><b>Clear</b>: hold <b>Enter</b> (REC layer), <b>=</b> (OCT+): it asks; <b>=</b> again clears.</li>
       </ol>
       <h4>3. Build a kit (EDIT → KIT)</h4><ol>
-        <li><b>Shift</b> (EDIT): KIT. Touch a key; <b>→</b> (PRESETS): every sound you have (your samples, then kicks, snares, hats,
-        toms), starting at the key's own. <b>K1 LEVEL</b>, <b>K2 VELOCITY</b> (fixed, or how much it follows how hard you play).</li>
+        <li><b>Shift</b> (EDIT): KIT. Touch a key; <b>→</b> (PRESETS) steps through the sounds; <b>3</b> (K3 GROUP) jumps from kit to kit
+        (your MY KITs, then Dusty, 808, Live, Latin; each opens on sounds of the same kind). <b>K1 LEVEL</b>, <b>K2 VELOCITY</b>.</li>
         <li>Hold <b>Backspace</b>: the save panel; <b>1</b> picks MY KIT 1–3; hold again: saved.</li>
       </ol>
       <h4>4. Shape a sound (EDIT → SOUND, TRIM)</h4><ol>
-        <li><b>SOUND</b>: K1 TUNE, K2 ATTACK, K3 HOLD (full: the whole sound), K4 DECAY (after HOLD), all in ms, drawn as straight
-        lines. SELECT: mute group.</li>
+        <li><b>SOUND</b>: K1 TUNE (a note: the first turn snaps it in tune; a drum: semitones), K2 ATTACK, <b>K3 HOLD</b> (fine steps, then
+        <i>full</i>, then <i>key</i>), K4 DECAY. SELECT: mute group.</li>
+        <li><b>HOLD key</b>: the sound lasts while you hold the key (its end loops), then fades with DECAY. Try it on MY KIT 1's sung
+        note (<b>k</b>) and hold the key; in ENV it holds every note and chord.</li>
         <li><b>TRIM</b> (samples): on MY KIT 1 touch <b>w</b> (a quiet hat): K4 GAIN up to MAX.</li>
       </ol>
-      <h4>5. Compress and clip the kit, echo the snare (FX)</h4><ol>
-        <li><b>`</b> (FX): <b>PUNCH</b>: K1 COMP, K2 CLIP. FX again: <b>DIRT</b>: K1 type (Drive, Lofi, Tape, Crush), K2 amount.
-        FX again: <b>SPACE</b>: K1 DELAY (off, 1/16 …), K2 FEEDBACK, K3 REVERB.</li>
-        <li>Every pad goes through PUNCH and DIRT (its TRACK FX starts at 10). EDIT → <b>PAD FX</b>: on the hats, TRACK FX down
-        (clean); on the snare, DELAY and REVERB up.</li>
+      <h4>5. Effects: the kit's and each pad's (FX, PAD FX)</h4>
+      <p><b>FX</b> holds the effects for the whole kit, always there; <b>PAD FX</b> (EDIT) says how much of each one a pad gets. The
+      same four names, in the same order: <b>PUNCH</b>, <b>COLOR</b>, <b>DELAY</b>, <b>REVERB</b>. Every pad gets all of PUNCH and COLOR
+      (10) and no DELAY or REVERB (0) to begin with.</p><ol>
+        <li><b>`</b> (FX): <b>PUNCH</b>: K1 COMP, K2 SPEED (fast, medium, slow), K3 CLIP, K4 SHAPE (soft, hard). FX again: <b>COLOR</b>:
+        K1 TAPE, K2 LOFI, K3 DRIVE, K4 CRUSH; they add up, so tape and lo-fi on the whole kit is two knobs. FX again: <b>SPACE</b>: K1 DELAY
+        time, K2 FEEDBACK, K3 REVERB type (room, plate, hall, spring), K4 SIZE.</li>
+        <li>EDIT → <b>PAD FX</b>: on the hats, COLOR to 0 (clean hats in a dusty kit); on the snare, DELAY and REVERB up. A pad can take
+        several at once. When an effect is off in FX the pad page says <i>off in FX</i>.</li>
+        <li>On PLAY, <b>K2 REVERB</b> is the key's reverb, at hand while you play.</li>
       </ol>
-      <h4>6. LEVELS: a sound across the keys (ENV)</h4>
-      <p>ENV (<b>]</b>) plays the pad you touched last across the keys, each key its own note (C is C); a green dot marks where it
-      plays as recorded. <b>ENV again steps through three pages</b>: <b>NOTES</b> (a small MELODY), <b>CHORDS</b> (a small CHORDS),
-      <b>VELOCITY</b>. <b>Esc</b> (HOME) goes back to the kit. <b>− =</b> (OCT− OCT+) move the octave.</p>
-      <ol>
-        <li><b>NOTES.</b> MY KIT 1, touch <b>k</b> (a sung note), <b>]</b>: <i>sounds A3</i>. <b>K1 HELP</b> as on MELODY: <i>FREE</i> (no
-        lights), <i>KEY</i> (the scale lit, the tonic full), <i>WHITES</i> (the white keys play the scale, nothing sounds wrong).
-        <b>K2 KEY</b> and <b>K3 SCALE</b>: the song's key and scale, chosen here when you start from a loop (they are the song's, as on GLO).
-        <b>K4</b>: the note the sample is (found; turn to correct it).</li>
-        <li><b>CHORDS</b> (<b>]</b> again). <b>K1 HELP</b>: <i>KEY</i> (a lit key plays its chord in the key, the name on each key) or
-        <i>PADS</i> (as the CHORDS track: C4 plays I, D4 II …, the Roman numbers on the keys). <b>K2 PROGRESSION</b> (i VI III VII,
-        I V vi IV, ii V I …): the next chord to play is lit full; play it and the next one lights. <b>SELECT</b> steps back or on.
-        <b>K3 CHORD</b>: triads, 7ths, sus2, sus4, power. <b>K4 VOICING</b>: root, inversions, open.</li>
-        <li><b>VELOCITY</b> (<b>]</b> again): the 16 white keys from soft to hard.</li>
-        <li><b>Record it.</b> <b>Enter</b> (REC), <b>Space</b> (PLAY), play in LEVELS; <b>Esc</b>, add kick and snare. A chord is several hits at
-        one place on the pad: one mark with <b>×3</b>. On PLAY, <b>Shift</b> + <b>k</b> while it plays erases them; hold <b>Backspace</b>: undo.</li>
-        <li><b>A bass from your phone.</b> Phone: <i>Bass pluck, E2</i>. MY KIT 2, <b>Tab</b>, record it, <b>Tab</b>, K4 SLICES 1, <b>Enter</b>,
-        <b>p p</b>. <b>Esc</b>, touch <b>p</b>, <b>]</b>: <i>sounds E2</i>. <b>−</b> to play low; WHITES: a bass line in key.</li>
+      <h4>6. ENV: a sound across the keys</h4>
+      <p><b>]</b> (ENV) from any DRUMS page plays the pad you touched last across the keys. ENV again: NOTES ↔ CHORDS. <b>Esc</b> (HOME): back.
+      <b>− =</b> (OCT− OCT+): the octave.</p><ol>
+        <li><b>NOTES · 16 LEVELS</b> (as it opens): only the 16 white keys, the same sound from soft (6 %) to loud (100 %); <b>K2</b> to
+        <i>tune</i>: a semitone a key, F4 as recorded. The simple one for drums.</li>
+        <li><b>K1 MODE</b> for the whole keyboard, each key its own note (C is C), MELODY's help: <i>FREE</i> (no lights), <i>KEY</i> (the
+        scale lit, the tonic full), <i>WHITES</i> (the white keys play the scale). <b>K2 KEY</b>, <b>K3 SCALE</b> (the song's), <b>K4</b> the note
+        the sample is (found; turn to correct).</li>
+        <li><b>CHORDS</b> (ENV again): the CHORDS track's pads. Each white key plays the key's chord by its letter (C is I, D II …); hold a
+        black key for a colour, then a white one (F#3 sus2, G#3 sus4, A#3 6, C#4 7, D#4 maj7, F#4 9, G#4 add9, A#4 11, C#5 13, D#5 dim).
+        <b>F5 NEXT</b> plays the progression's next chord (lit), <b>G5 AGAIN</b> the last one, <b>F#5 LOCK</b> keeps the colour. K1 CHORD
+        (triads, 7ths, power), K2 PROGRESSION, K3 VOICING, K4 SCALE.</li>
+        <li>Your test: MY KIT 1, touch <b>k</b> (the sung note), ENV twice: chords; ENV: NOTES, WHITES: a melody over them.</li>
+        <li>Record: <b>Enter</b>, <b>Space</b>, play in ENV; a chord is one mark ×3 on the F4 row. With HOLD <i>key</i>, each note keeps
+        the length you held it.</li>
       </ol>
       <h4>6b. Fit a loop to the song's tempo</h4><ol>
         <li>Phone: <i>Drum break, 95 BPM</i>. MY KIT 2, <b>Tab</b> (TAKE), <b>Enter</b>, let it play about 5 s, <b>Enter</b>: <i>95 BPM (found) ·
@@ -210,25 +214,22 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
     <div class="card q"><h3>Decided</h3><ol>
       <li><b>DRUMS</b>: SCL PLAY → IDEAS → AUTO (the top line shows only the page you are on, the kit and the tempo). EDIT builds the
       kit (KIT · SOUND · TRIM · PAD FX); FX the track's effects (PUNCH · DIRT · SPACE); LFO the sampler; ENV free.</li>
-      <li><b>PLAY</b>: K1 LEVEL and K2 FX of the key played, K3 GRID, K4 FEEL. PRESETS: the kit.</li>
+      <li><b>PLAY</b>: K1 LEVEL and K2 REVERB of the key played, K3 GRID, K4 FEEL. PRESETS: the kit.</li>
       <li><b>SAVE</b>: held, undo (up to 4) on PLAY; two taps, redo; held in EDIT and the sampler, save the kit.</li>
       <li><b>Erase needs REC on</b>, on every track.</li>
       <li>Drum map v2; MY KIT 1–3, 7 s each; one take of 11 s; OCT+/OCT− split and merge; put a slice with two presses.</li>
       <li><b>GRID when recording</b> (off: as played), <b>FEEL</b> on playback for the whole track; the same on every track.</li>
       <li><b>Velocity</b> per pad (KIT · K2): fixed, or 1–10 (7 at first).</li>
-      <li><b>LEVELS on ENV</b>: a pad across the keys, TUNE, SCALE, CHORDS, VELOCITY, in the song's key, with the sample's root found;
-      the theory is the one MELODY, BASS and CHORDS use. MELODY, BASS and CHORDS do not change.</li>
-      <li><b>ENV pages</b>: NOTES (HELP FREE/KEY/WHITES, KEY, SCALE, the sample's note), CHORDS (HELP KEY/PADS, PROGRESSION with the
-      next chord lit, CHORD, VOICING), VELOCITY. ENV steps, HOME leaves.</li>
+      <li><b>ENV</b> (from any DRUMS page): NOTES (16 LEVELS on the white keys first, velocity or tune; then FREE, KEY, WHITES with the song's key and scale) and CHORDS (the CHORDS track's pads: C is I, black keys colours, F5 NEXT, G5 AGAIN, F#5 LOCK). MELODY, BASS and CHORDS do not change.</li>
+      <li><b>HOLD key</b> on SOUND: a sound lasts while its key is held (its end loops), then DECAY; recorded notes keep their length.</li>
       <li><b>Tempo of a take</b> (70–180 BPM); <b>FIT</b> on TAKE: <i>speed</i> (the pad plays at the song's tempo, its pitch moves) or
       <i>slices</i> (PUT all, then the loop is written as a beat at the song's tempo). Time-stretch: not now.</li>
       <li><b>Note and key of a take</b>: a single sound's note (with cents), a loop's key (24 keys); a key can become the song's key
       (SELECT on TAKE, it asks). <b>TUNE</b> shows the note (or key) a pad sounds; its first turn snaps it in tune, then a semitone a turn.
       Changing the pitch changes the speed (no time-stretch for now).</li>
     </ol><h3>From v6</h3><ol>
-      <li><b>SOUND</b>: TUNE, ATTACK, HOLD, DECAY in ms; LEVEL moves to KIT and PLAY.</li>
-      <li><b>FX</b>: PUNCH (COMP, CLIP), DIRT (off, Drive, Lofi, Tape, Crush), SPACE (DELAY with off, FEEDBACK, REVERB). The compressor is
-      the track's, shared; each pad's TRACK FX says how much it gets (one compressor a pad would cost too much processing).</li>
+      <li><b>SOUND</b>: TUNE (a note, or semitones for a drum), ATTACK, HOLD (fine steps, full, key), DECAY.</li>
+      <li><b>FX</b> for the whole kit, always there: PUNCH (COMP, SPEED, CLIP, SHAPE), COLOR (TAPE, LOFI, DRIVE, CRUSH, they add up), SPACE (DELAY time, FEEDBACK, REVERB type, SIZE). <b>PAD FX</b>: how much of PUNCH, COLOR, DELAY, REVERB each pad gets (10, 10, 0, 0 at first). KIT: sounds grouped by kit (K3).</li>
       <li><b>CHOP put mode</b>: silent; SELECT plays; K4 PUT one or all.</li>
     </ol></div>
 
@@ -243,7 +244,6 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
     </div>
 
     <div class="card"><h3>Later, as their own stories</h3><ul>
-      <li><b>Melodic samples</b>: a sample played across the keys on a MELODY, CHORDS or BASS track.</li>
       <li><b>Web sample loader</b>: drop a WAV on a page, it goes to a MY KIT over USB.</li>
     </ul></div>
   </div>
@@ -361,9 +361,9 @@ function onsets(d, s, e) {
 // ------------------------------------------------------------------ the model
 // a key: { syn: [kit, sound] } or { smp: { d, a0, a1, lo, hi, take } }, plus its settings
 const ATTS = [0, 1, 2, 5, 10, 20, 50, 100];                       // ms
-const HOLDS = [0, 10, 20, 40, 80, 150, 300, 600, Infinity];         // ms at full level; full: the whole sound
+const HOLDS = [0, 5, 10, 15, 20, 30, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300, 400, 500, 650, 800, 1000, Infinity, "key"];   // ms at full level; full: the whole sound; key: while the key is held (it loops)
 const DECS = [5, 10, 20, 40, 80, 150, 300, 600, 1200];              // ms, a straight fade to silence after HOLD
-const fresh = i => ({ tune: 0, att: 0, hold: 8, dec: 4, lvl: 8, vel: 7, grp: HATKEY(i) ? 1 : 0, rev: false, gain: 0, dirt: 0, dly: 0, rvb: 0, tfx: 10 });
+const fresh = i => ({ tune: 0, att: 0, hold: 21, dec: 4, lvl: 8, vel: 7, grp: HATKEY(i) ? 1 : 0, rev: false, gain: 0, pp: 10, pc: 10, dly: 0, rvb: 0 });   // pp, pc: how much of the track's PUNCH and COLOR; dly, rvb: sends
 const mkKey = (k, i) => ({ ...fresh(i), syn: [k, OLD[i]] });
 const cloneKey = x => ({ ...x, smp: x.smp ? { ...x.smp } : undefined, syn: x.syn ? [...x.syn] : undefined });
 const kits = SYN.map((n, k) => ({ name: n, built: true, keys: Array.from({ length: NK }, (_, i) => mkKey(k, i)) }));
@@ -384,13 +384,13 @@ const maxGain = x => { const p = peakOf(x.smp.d, x.smp.a0, x.smp.a1); return p >
   { const v = adpcm(clip(sung(220, 1.2))); K.keys[12] = { ...fresh(12), smp: { d: v, a0: 0, a1: v.length, lo: 0, hi: v.length, take: 0 } }; }
   K.saved = K.keys.map(cloneKey);
 }
-const DIRTN = ["off", "Drive", "Lofi", "Tape", "Crush"], DLYN = ["off", "1/16", "1/8", "1/8 dotted", "1/4"], DLYB = [0, .25, .5, .75, 1];
+const SPEEDN = ["fast", "medium", "slow"], SHAPEN = ["soft", "hard"], DLYN = ["1/16", "1/8", "1/8 dotted", "1/4", "1/4 dotted"], DLYB = [.25, .5, .75, 1, 1.5], RVBN = ["room", "plate", "hall", "spring"];
 const GRIDS = [["off", 0], ["1/8", 8], ["1/16", 16], ["1/32", 32], ["1/8T", 12], ["1/16T", 24]];
 const FEELS = [["Straight", .5, 0], ["Swing 55", .55, 0], ["Swing 62", .62, 0], ["MPC 66", .66, 0], ["Laid back", .5, .012], ["Pushed", .5, -.008]];
 const BPM = 90, BAR = 4 * 60 / BPM;
 const st = { page: "play", tab: 0, kit: 4, sel: 0, held: new Map(), editHeld: false, editUsed: false, latch: false,
   usb: { out: 0, mon: 1, lvl: 0 }, onSound: true, rec: null, peak: 0, peakT: 0,
-  fx: { tab: 0, comp: 0, clip: 0, type: 0, amt: 5, dly: 0, dfb: 4, rvb: 0 },
+  fx: { tab: 0, comp: 0, speed: 1, clip: 0, shape: 0, tape: 0, lofi: 0, drive: 0, crush: 0, dtime: 1, dfb: 4, rtype: 0, rsize: 5 },
   chop: { n: 0, sl: [], cur: 0, zoom: 0 }, place: null, save: null, list: null, pick: null, layer: false, ask: null,
   song: { notes: [], order: [], armed: false, playing: false, t0: 0, grid: 0, feel: 0, undo: [], redo: [], passMark: -1, erasing: new Set() },
   msg: "", msgT: 0, phone: { on: false, src: 0, t0: 0, vol: 1 }, prev: null };
@@ -405,36 +405,38 @@ const EDITTABS = ["KIT", "SOUND", "TRIM", "PAD FX"];
 const editing = () => st.page === "edit", sampling = () => st.page === "take" || st.page === "chop";
 
 // ------------------------------------------------------------------ audio
-let ac = null, master, phoneGain, phoneNode = null, an, bus, fxIn, fxOut, dlyIn, dlyNode, dlyFb, rvbIn, rvbNode;
+let ac = null, master, phoneGain, phoneNode = null, an, bus, bP, bC, bPC, dlyIn, dlyNode, dlyFb, rvbIn, rvbNode;
 function startAudio() {
   if (ac) return; ac = new (window.AudioContext || window.webkitAudioContext)();
   master = ac.createGain(); master.gain.value = .8; master.connect(ac.destination);
   an = ac.createAnalyser(); an.fftSize = 512; phoneGain = ac.createGain(); an.connect(phoneGain); phoneGain.connect(master);
   bus = ac.createGain(); bus.connect(master);
-  fxIn = ac.createGain(); fxOut = ac.createGain(); fxOut.connect(master);
+  bP = ac.createGain(); bC = ac.createGain(); bPC = ac.createGain();     // pads into: PUNCH only, COLOR only, PUNCH then COLOR
   dlyIn = ac.createGain(); dlyNode = ac.createDelay(1.5); dlyFb = ac.createGain(); dlyIn.connect(dlyNode); dlyNode.connect(dlyFb); dlyFb.connect(dlyNode); dlyNode.connect(master);
   rvbIn = ac.createGain(); rvbNode = ac.createConvolver(); rvbIn.connect(rvbNode); rvbNode.connect(master);
   $("start").textContent = "Sound on"; routePhone(); setFx();
 }
 function shaper(f) { const w = ac.createWaveShaper(), c = new Float32Array(1024); for (let i = 0; i < 1024; i++) c[i] = f(i / 511.5 - 1); w.curve = c; return w; }
 let fxNodes = [];
-function setFx() {          // the track's chain: COMP, then CLIP (a soft clipper), then DIRT; DELAY and REVERB are sends
-  if (!ac) return; fxIn.disconnect(); fxNodes.forEach(n => n.disconnect()); fxNodes = [];
-  const f = st.fx, chain = [], lpf = q => { const b = ac.createBiquadFilter(); b.type = "lowpass"; b.frequency.value = q; return b; };
-  if (f.comp) { const c = ac.createDynamicsCompressor(); c.threshold.value = -f.comp * 3; c.ratio.value = 2 + f.comp * .6; c.attack.value = .008; c.release.value = .12; c.knee.value = 4; const m = ac.createGain(); m.gain.value = Math.pow(10, f.comp * 1.4 / 20); chain.push(c, m); }
-  if (f.clip) { const k = 1 + f.clip * .5; chain.push(shaper(x => Math.tanh(k * x) / Math.tanh(k))); }
-  const t = DIRTN[f.type], a = f.amt / 10;
-  if (t === "Drive") { const k = 1 + a * 6; chain.push(shaper(x => Math.tanh(k * x) / Math.tanh(k) * .9)); }
-  if (t === "Lofi") chain.push(shaper(x => Math.round(x * (40 - a * 30)) / (40 - a * 30)), lpf(9000 - a * 6000));
-  if (t === "Tape") chain.push(shaper(x => Math.tanh((1 + a * 2) * x) * .85), lpf(11000 - a * 5000));
-  if (t === "Crush") { const q = Math.max(2, 16 - a * 13); chain.push(shaper(x => Math.round(x * q) / q)); }
-  let p = fxIn; chain.forEach(n => { p.connect(n); p = n; fxNodes.push(n); }); p.connect(fxOut);
-  dlyIn.gain.value = f.dly ? 1 : 0; dlyNode.delayTime.value = DLYB[f.dly] * 60 / BPM || .1; dlyFb.gain.value = f.dfb * .08;
-  rvbIn.gain.value = f.rvb ? 1 : 0;
-  if (f.rvb) { const n = Math.round((.3 + f.rvb * .3) * ac.sampleRate), b = ac.createBuffer(2, n, ac.sampleRate);
-    for (let ch = 0; ch < 2; ch++) { const x = b.getChannelData(ch); for (let i = 0; i < n; i++) x[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3) * .5; }
-    rvbNode.buffer = b; }
+function setFx() {          // the track's chain: PUNCH (COMP, CLIP) and COLOR (TAPE, LOFI, DRIVE, CRUSH); DELAY and REVERB sends
+  if (!ac) return; [bP, bC, bPC].forEach(b => b.disconnect()); fxNodes.forEach(n => n.disconnect()); fxNodes = [];
+  const f = st.fx, lpf = q => { const b = ac.createBiquadFilter(); b.type = "lowpass"; b.frequency.value = q; return b; };
+  const punch = () => { const c = []; if (f.comp) { const k = ac.createDynamicsCompressor(), sp = [[.001, .06], [.008, .12], [.03, .25]][f.speed]; k.threshold.value = -f.comp * 3; k.ratio.value = 2 + f.comp * .6; k.attack.value = sp[0]; k.release.value = sp[1]; k.knee.value = 4; const m = ac.createGain(); m.gain.value = Math.pow(10, f.comp * 1.4 / 20); c.push(k, m); }
+    if (f.clip) { const kk = 1 + f.clip * .5; c.push(shaper(f.shape ? (x => Math.max(-1, Math.min(1, x * kk)) * .9) : (x => Math.tanh(kk * x) / Math.tanh(kk)))); } return c; };
+  const color = () => { const c = [];
+    if (f.tape) { const a = f.tape / 10; c.push(shaper(x => Math.tanh((1 + a * 2) * x) * .85), lpf(12000 - a * 6000)); }
+    if (f.lofi) { const a = f.lofi / 10, q = 40 - a * 30; c.push(shaper(x => Math.round(x * q) / q), lpf(9000 - a * 6000)); }
+    if (f.drive) { const k = 1 + f.drive * .6; c.push(shaper(x => Math.tanh(k * x) / Math.tanh(k) * .9)); }
+    if (f.crush) { const q = Math.max(2, 16 - f.crush * 1.3); c.push(shaper(x => Math.round(x * q) / q)); } return c; };
+  const wire = (from, nodes) => { let p = from; nodes.forEach(n => { p.connect(n); p = n; fxNodes.push(n); }); return p; };
+  wire(bP, punch()).connect(master); wire(bC, color()).connect(master); wire(bPC, [...punch(), ...color()]).connect(master);
+  dlyNode.delayTime.value = DLYB[f.dtime] * 60 / BPM; dlyFb.gain.value = f.dfb * .08;
+  const n = Math.round([.5, 1.6, 2.8, 1.2][f.rtype] * (.4 + f.rsize * .12) * ac.sampleRate), b = ac.createBuffer(2, n, ac.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const x = b.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { const t = i / n; let v = (Math.random() * 2 - 1) * Math.pow(1 - t, 3);
+    if (f.rtype === 0 || f.rtype === 2) { lp += (v - lp) * (f.rtype ? .35 : .25); v = lp * 1.6; } if (f.rtype === 3 && i % 1400 < 60) v += Math.sin(i * .05) * (1 - t) * .8; x[i] = v * .5; } }
+  rvbNode.buffer = b;
 }
+const punchOn = () => st.fx.comp || st.fx.clip, colorOn = () => st.fx.tape || st.fx.lofi || st.fx.drive || st.fx.crush;
 function buf(d) { const b = ac.createBuffer(1, Math.max(1, d.length), SR); b.copyToChannel(d, 0); return b; }
 const groups = { 1: [], 2: [], 3: [], 4: [] };
 function render(x) {
@@ -444,22 +446,24 @@ function render(x) {
   if (x.rev) a.reverse();
   return a;
 }
-function playKey(i, at = 0, v = 100, semi = 0, choke = true) {       // a pad: its envelope, its DIRT, then dry + TRACK FX + DELAY + REVERB sends
+function playKey(i, at = 0, v = 100, semi = 0, choke = true, gm = 0, hk = -1) {       // a pad: its envelope, its DIRT, then dry + TRACK FX + DELAY + REVERB sends
   if (!ac) return; const x = key(i), d = render(x), s = ac.createBufferSource(), g = ac.createGain(), T = Math.max(ac.currentTime + .005, at);
   s.buffer = buf(d); s.playbackRate.value = Math.pow(2, (x.tune + semi) / 12);
   if (x.grp && choke) { groups[x.grp].forEach(v => { try { v.g.gain.cancelScheduledValues(T); v.g.gain.setTargetAtTime(0, T, .006); v.s.stop(T + .04); } catch (e) {} }); groups[x.grp] = []; }
-  const lv = x.lvl / 10 * (1 - x.vel / 10 * (1 - v / 127)), at0 = ATTS[x.att] / 1000, ho = HOLDS[x.hold] / 1000, de = DECS[x.dec] / 1000;
+  const lv = x.lvl / 10 * (gm || (1 - x.vel / 10 * (1 - v / 127))), at0 = ATTS[x.att] / 1000, sus = HOLDS[x.hold] === "key", ho = sus ? Infinity : HOLDS[x.hold] / 1000, de = DECS[x.dec] / 1000;
+  if (sus) { const L0 = d.length / SR; s.loop = true; s.loopStart = L0 * .55; s.loopEnd = L0 * .92; }
   g.gain.setValueAtTime(at0 ? 0 : lv, T); if (at0) g.gain.linearRampToValueAtTime(lv, T + at0);
   if (isFinite(ho)) { g.gain.setValueAtTime(lv, T + at0 + ho + .0005); g.gain.linearRampToValueAtTime(0, T + at0 + ho + de); }
-  let src = s; if (x.dirt) { const k = 1 + x.dirt * .9, w = shaper(v => Math.tanh(k * v) / Math.tanh(k)); s.connect(w); src = w; }
-  src.connect(g);
-  const tf = x.tfx / 10, dry = ac.createGain(); dry.gain.value = 1 - tf; g.connect(dry); dry.connect(bus);
-  if (tf) { const q = ac.createGain(); q.gain.value = tf; g.connect(q); q.connect(fxIn); }
-  if (x.dly) { const q = ac.createGain(); q.gain.value = x.dly / 10; g.connect(q); q.connect(dlyIn); }
-  if (x.rvb) { const q = ac.createGain(); q.gain.value = x.rvb / 10; g.connect(q); q.connect(rvbIn); }
+  s.connect(g);
+  const P_ = x.pp / 10, C_ = x.pc / 10, route = (amt, to) => { if (amt <= 0) return; const q = ac.createGain(); q.gain.value = amt; g.connect(q); q.connect(to); };
+  route((1 - P_) * (1 - C_), bus); route(P_ * (1 - C_), bP); route((1 - P_) * C_, bC); route(P_ * C_, bPC);     // each pad: how much of PUNCH and COLOR
+  route(x.dly / 10, dlyIn); route(x.rvb / 10, rvbIn);
   s.start(T);
   if (x.grp && choke) groups[x.grp].push({ s, g });
+  const vo = { s, g, de, sus }; if (sus && hk >= 0) (heldV[hk] = heldV[hk] || []).push(vo); return vo;
 }
+const heldV = {};
+function stopVoice(vo, T) { if (!vo || !vo.sus) return; T = T || ac.currentTime; vo.g.gain.cancelScheduledValues(T); vo.g.gain.setValueAtTime(vo.g.gain.value, T); vo.g.gain.linearRampToValueAtTime(0, T + vo.de); vo.s.stop(T + vo.de + .02); }
 function playRaw(d, s, e) { if (!ac) return; stopRaw(); const n = ac.createBufferSource(); n.buffer = buf(d.slice(s, e)); n.connect(master); n.start(); st.prev = { t0: ac.currentTime, s, e, n }; n.onended = () => { if (st.prev && st.prev.n === n) st.prev = null; }; }
 function stopRaw() { if (st.prev) { try { st.prev.n.stop(); } catch (e) {} st.prev = null; } }
 function hearing() { return st.usb.mon === 2 || (st.usb.mon === 1 && (sampling() || st.rec)); }
@@ -500,20 +504,21 @@ function transport() {
     while (nextT < ahead) {
       const a = ((nextT - S.t0) / BAR) % 1, b = a + .01, barStart = nextT - a * BAR;
       for (const n of [...S.notes]) {
-        const e = eff(n.t); if (!(e >= a && e < b)) continue;
+        const e = eff(n.t); if (!((e >= a && e < b) || (e + 1 >= a && e + 1 < b))) continue;
         if (S.erasing.has(n.k)) { S.notes.splice(S.notes.indexOf(n), 1); continue; }
-        if (n.s) n.s.forEach(q => playKey(n.k, barStart + e * BAR, n.v, q, false)); else playKey(n.k, barStart + e * BAR, n.v);
+        const at = barStart + (e < a ? e + 1 : e) * BAR, vs = n.s ? n.s.map(q => playKey(n.k, at, n.v, q, false, n.g || 0)) : [playKey(n.k, at, n.v, 0, true, n.g || 0)];
+        if (n.len) vs.forEach(vo => stopVoice(vo, at + n.len * BAR));
       }
       nextT += .01 * BAR;
     }
   }, 20);
 }
-function recordHit(i, v, semis) {
+function recordHit(i, v, semis, gm, pk) {
   if (!S.armed || !S.playing) return;
   const bar = Math.floor((ac.currentTime - S.t0) / BAR);
   if (S.passMark !== bar) { pushUndo(); S.passMark = bar; }        // each round of the loop you play in is one pass to undo
   const tp = barPos(), gq = GRIDS[S.grid][1], t = gq ? (Math.round(tp * gq) / gq) % 1 : tp;     // GRID places it as you record
-  S.notes.push({ k: i, t, tp, v, s: semis });
+  const n = { k: i, t, tp, v, s: semis, g: gm }; S.notes.push(n); S.lastRec = { key: pk === undefined ? i : pk, n };
   if (!S.order.includes(i)) S.order.push(i);
 }
 
@@ -529,7 +534,7 @@ function stopRec() {
   const a = captured(r.t0, Math.min(ac.currentTime, r.t0 + RAM_S));
   if (a.length < SR * .05 || peakOf(a, 0, a.length) < .003) { flash("Nothing heard"); return; }
   dropTake(); take = { id: ++takeId, d: adpcm(a), used: false };
-  { const f = detectRoot(take.d); if (f !== null) take.note = f; else take.key = detectKey(take.d); take.bpm = take.d.length > 1.5 * SR && f === null ? detectBPM(take.d) : null; }
+  { const f = detectRoot(take.d); if (f !== null) take.note = f; else take.key = take.d.length > 1.5 * SR ? detectKey(take.d) : null; take.bpm = take.d.length > 1.5 * SR && f === null ? detectBPM(take.d) : null; }
   setSlices(st.chop.n);
 }
 function dropTake() {
@@ -569,21 +574,27 @@ function placeAt(i0, all) {
 }
 // every sound you have: your samples (any MY KIT), then the same kind, then all
 const KINDS = ["KICKS", "SNARES, CLAPS", "HATS, SHAKERS", "TOMS, PERC"];
-function soundList(i) {     // every sound you have, whatever kit it is in: your samples, then the built-in ones by kind
-  const L = [], seen = new Set();
-  kits.forEach(k => { if (k.built) return; k.saved.forEach((x, j) => { if (x.smp) L.push({ h: "YOUR SAMPLES", n: (isAuto(j) ? ROLE[j] : keyNote(j)) + " · " + k.name, smp: { ...x.smp }, rev: x.rev, gain: x.gain }); }); });
-  KINDS.forEach((kd, g) => SYN.forEach((n, k) => { for (let o = 0; o < NK; o++) if (OGROUP(o) === g) { const nm = synName(k, o), id = n + nm; if (!seen.has(id)) { seen.add(id); L.push({ h: kd, n: n + " " + nm, syn: [k, o] }); } } }));
+function soundList(i) {     // every sound you have, grouped by kit: your kits' samples, then the built-in kits (each opens on the same kind)
+  const L = [];
+  kits.forEach(k => { if (k.built) return; k.saved.forEach((x, j) => { if (x.smp) L.push({ h: k.name, n: (isAuto(j) ? ROLE[j] : keyNote(j)) + " · your sample", smp: { ...x.smp }, rev: x.rev, gain: x.gain }); }); });
+  SYN.forEach((n, k) => { const g = GROUP(i); [true, false].forEach(same => { for (let o = 0; o < NK; o++) if ((OGROUP(o) === g) === same) L.push({ h: n, n: synName(k, o), syn: [k, o] }); }); });
   return L;
 }
-function chooseSound(i, d) {
-  if (!st.list || st.list.key !== i) {          // the list opens on the key's own sound, or the first of its kind
-    const L = soundList(i), x = key(i); let at = x.syn ? L.findIndex(e => e.syn && e.syn[0] === x.syn[0] && e.syn[1] === x.syn[1]) : -1;
-    if (at < 0) at = Math.max(0, L.findIndex(e => e.h === KINDS[GROUP(i)]));
-    st.list = { key: i, L, i: at - d };
-  }
-  const l = st.list; l.i = (l.i + d + l.L.length) % l.L.length; const e = l.L[l.i];
+function openList(i) {
+  const L = soundList(i), x = key(i); let at = x.syn ? L.findIndex(e => e.syn && e.syn[0] === x.syn[0] && e.syn[1] === x.syn[1]) : -1;
+  st.list = { key: i, L, i: Math.max(0, at), t: performance.now() };
+}
+function applySound(i) { const l = st.list, e = l.L[l.i];
   kit().keys[i] = e.smp ? { ...fresh(i), smp: { ...e.smp, lo: e.smp.a0, hi: e.smp.a1, take: 0 }, rev: e.rev, gain: e.gain } : { ...fresh(i), syn: [...e.syn] };
-  touch(); l.t = performance.now(); playKey(i);
+  touch(); l.t = performance.now(); playKey(i); }
+function chooseSound(i, d) {
+  if (!st.list || st.list.key !== i) { openList(i); st.list.i -= d; }
+  const l = st.list; l.i = (l.i + d + l.L.length) % l.L.length; applySound(i);
+}
+function chooseGroup(i, d) {      // K3 GROUP: the first sound of the next (or previous) kit in the list
+  if (!st.list || st.list.key !== i) openList(i);
+  const l = st.list, groups = [...new Set(l.L.map(e => e.h))], gi = (groups.indexOf(l.L[l.i].h) + d + groups.length) % groups.length;
+  l.i = l.L.findIndex(e => e.h === groups[gi]); applySound(i);
 }
 function presets(d) {
   startAudio(); if (st.save || st.pick || st.layer) return;
@@ -595,12 +606,12 @@ function presets(d) {
 }
 
 // ------------------------------------------------------------------ LEVELS (ENV): one pad across the keys, as the MPC's 16 Levels and Pad Perform
-const LVTABS = ["NOTES", "CHORDS", "VELOCITY"], NHELP = ["FREE", "KEY", "WHITES"], CHELP = ["KEY", "PADS"], VOICES = ["root", "inv 1", "inv 2", "open"];
+const LVTABS = ["NOTES", "CHORDS"], NM = ["16 LEVELS", "FREE", "KEY", "WHITES"], LT = ["VELOCITY", "TUNE"], BASES = ["triads", "7ths", "power"], VOICES = ["root", "inv 1", "inv 2", "open"];
 const PROGS = [["i VI III VII", [0, 5, 2, 6]], ["i iv v i", [0, 3, 4, 0]], ["i VII VI VII", [0, 6, 5, 6]], ["I V vi IV", [0, 4, 5, 3]], ["vi IV I V", [5, 3, 0, 4]], ["ii V I", [1, 4, 0]], ["I IV V IV", [0, 3, 4, 3]]];
 const SCALES = [["major", [0, 2, 4, 5, 7, 9, 11]], ["minor", [0, 2, 3, 5, 7, 8, 10]], ["minor pent.", [0, 3, 5, 7, 10]], ["major pent.", [0, 2, 4, 7, 9]], ["blues", [0, 3, 5, 6, 7, 10]], ["dorian", [0, 2, 3, 5, 7, 9, 10]], ["mixolydian", [0, 2, 4, 5, 7, 9, 10]], ["phrygian", [0, 1, 3, 5, 7, 8, 10]], ["harmonic minor", [0, 2, 3, 5, 7, 8, 11]]];
 const CHORDT = [["triads", [0, 2, 4]], ["7ths", [0, 2, 4, 6]], ["sus2", [0, 1, 4]], ["sus4", [0, 3, 4]], ["power", [0, 4, 7]]];
 const PCN = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
-const LV = { pad: 12, tab: 0, nhelp: 1, chelp: 0, prog: 0, step: 0, voice: 0, scale: 1, chord: 0, tonic: 0, oct: 0, last: "" };
+const LV = { pad: 12, tab: 0, nm: 0, lt: 0, base: 0, prog: 0, step: 0, voice: 0, scale: 1, tonic: 0, oct: 0, last: "", lock: null, lastChord: null };
 function detectRoot(d) {          // the sample's pitch (YIN): 60 ms from just after its loudest point
   let pk = 0, at = 0; for (let i = 0; i < Math.min(d.length, SR); i++) if (Math.abs(d[i]) > pk) { pk = Math.abs(d[i]); at = i; }
   const N = 1100, TM = 600, s0 = Math.min(at + Math.round(.02 * SR), d.length - N - TM - 1); if (s0 < 0) return null;
@@ -636,7 +647,7 @@ const keyName = k => PCN[k.tonic] + (k.minor ? " minor" : " major");
 function analyse(x) {             // a pad's pitch: a note (one sound), or a key (a loop), or nothing (a drum)
   if (x.root !== undefined) return; const d = render(x), f = detectRoot(d);
   if (f !== null) { x.root = f; x.found = true; return; }
-  const k = detectKey(d); if (k) { x.key = k; x.root = 48 + k.tonic; x.found = true; return; }
+  const k = d.length > 1.5 * SR ? detectKey(d) : null; if (k) { x.key = k; x.root = 48 + k.tonic; x.found = true; return; }
   x.root = 60; x.found = false;
 }
 // what the pad sounds, as TUNE shows it: a note with its cents, a key, or semitones
@@ -654,46 +665,59 @@ function lvEnter() {
 }
 const inScale = m => SCALES[LV.scale][1].includes(((Math.round(m) - LV.tonic) % 12 + 12) % 12);
 const keyMidi = i => LOW + i + 12 * LV.oct;                    // the keys play their own notes (C is C), an octave up or down
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
-function lvChord(m, d0, deg) {    // the chord on a note of the scale: its type (K3) and voicing (K4); its notes and name
-  const q = CHORDT[LV.chord][0];
-  let ms = q === "power" ? [m, m + 7, m + 12] : CHORDT[LV.chord][1].map(c => m + deg(d0 + c) - deg(d0));
-  const third = ms.length > 2 ? ms[1] - ms[0] : 0, fifth = ms[2] - ms[0];
-  const kind = q === "power" ? "5" : q.startsWith("sus") ? q : (third === 3 ? (fifth === 6 ? "dim" : "m") : (fifth === 8 ? "+" : "")) + (q === "7ths" ? (ms[3] - ms[0] === 11 ? "maj7" : "7") : "");
-  const v = LV.voice; ms = ms.slice(); if (v === 1) ms.push(ms.shift() + 12); if (v === 2) { ms.push(ms.shift() + 12); ms.push(ms.shift() + 12); } if (v === 3 && ms.length > 2) ms[1] += 12;
-  return { ms, name: PCN[((m % 12) + 12) % 12] + kind };
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"], LETTERS = [0, 2, 4, 5, 7, 9, 11];
+const COLOURS = { 1: "sus2", 3: "sus4", 5: "6", 8: "7", 10: "maj7", 13: "9", 15: "add9", 17: "11", 20: "13", 22: "dim" }, K_NEXT = 24, K_AGAIN = 26, K_LOCK = 25;
+const heldColour = () => { for (const k of [...st.held.keys()].reverse()) if (COLOURS[k]) return COLOURS[k]; return LV.lock; };
+function chordOn(d, octBase) {    // the key's chord on degree d (0 = I), with the base (K1), the colour held, the voicing (K3)
+  const sc7 = SCALES[LV.scale][1].length === 7 ? SCALES[LV.scale][1] : (SCALES[LV.scale][1].includes(3) ? SCALES[1][1] : SCALES[0][1]);
+  const dg = n => { const o = Math.floor(n / 7); return o * 12 + sc7[n - o * 7]; };
+  const root = octBase + LV.tonic + dg(d) - (LV.tonic > 5 ? 12 : 0), t3 = dg(d + 2) - dg(d), t5 = dg(d + 4) - dg(d), t7 = dg(d + 6) - dg(d), col = heldColour();
+  let iv = BASES[LV.base] === "power" ? [0, 7, 12] : BASES[LV.base] === "7ths" ? [0, t3, t5, t7] : [0, t3, t5];
+  const tri = [0, t3, t5];
+  if (col) iv = { sus2: [0, 2, t5], sus4: [0, 5, t5], "6": [...tri, 9], "7": [...tri, t7], maj7: [...tri, 11], "9": [...tri, t7, 14], add9: [...tri, 14], "11": [...tri, t7, 17], "13": [...tri, t7, 21], dim: [0, 3, 6] }[col];
+  let ms = iv.map(x => root + x); const v = LV.voice; if (v === 1) ms.push(ms.shift() + 12); if (v === 2) { ms.push(ms.shift() + 12); ms.push(ms.shift() + 12); } if (v === 3 && ms.length > 2) ms[1] += 12;
+  const q = col ? (col === "dim" ? "dim" : (t3 === 3 && !col.startsWith("sus") ? "m" : "") + col) : BASES[LV.base] === "power" ? "5" : (t3 === 3 ? (t5 === 6 ? "dim" : "m") : "") + (BASES[LV.base] === "7ths" ? (t7 === 11 ? "maj7" : "7") : "");
+  return { ms, name: PCN[((root % 12) + 12) % 12] + q, roman: ROMAN[((d % 7) + 7) % 7] };
 }
-function lvNotes(i) {             // what key i plays: the notes (MIDI), as semitones from the pad's sound, a velocity, a name
+function lvNotes(i) {             // what key i plays: notes (MIDI) as semitones from the pad's sound, a gain, a name
   const x = key(LV.pad), root = x.root + x.tune, sc = SCALES[LV.scale][1], wi = WH.indexOf(i), tab = LVTABS[LV.tab];
   const deg = d => { const o = Math.floor(d / sc.length); return o * 12 + sc[d - o * sc.length]; };
-  const out = (ms, name, v, extra) => ({ s: ms.map(m => m - root), ms, v: v || null, name, ...extra });
-  const whiteNote = j => 60 + 12 * LV.oct + LV.tonic + deg(j - 4) - (LV.tonic > 5 ? 12 : 0);      // the white keys play the scale, C4 the tonic
-  if (tab === "VELOCITY") return wi < 0 ? null : out([root], "velocity " + Math.round(8 + wi * 119 / 15), Math.round(8 + wi * 119 / 15));
+  const out = (ms, name, gm, extra) => ({ s: ms.map(m => m - root), ms, gm: gm || 0, name, ...extra });
   if (tab === "NOTES") {
-    if (NHELP[LV.nhelp] === "WHITES") { if (wi < 0) return null; const m = whiteNote(wi); return out([m], nn(m), 0, { deg: wi - 4 }); }
+    const mode = NM[LV.nm];
+    if (mode === "16 LEVELS") { if (wi < 0) return null;            // the 16 white keys: the same sound, louder (or higher) a step at a time
+      if (LT[LV.lt] === "VELOCITY") { const pc = Math.round((wi + 1) / 16 * 100); return out([root], pc + " %", Math.pow((wi + 1) / 16, 1.6), { lab: pc + "" }); }
+      return out([root + wi - 7], (wi - 7 > 0 ? "+" : "") + (wi - 7), 0, { lab: (wi - 7 > 0 ? "+" : "") + (wi - 7) }); }
+    if (mode === "WHITES") { if (wi < 0) return null; const m = 60 + 12 * LV.oct + LV.tonic + deg(wi - 4) - (LV.tonic > 5 ? 12 : 0); return out([m], nn(m)); }
     const m = keyMidi(i); return out([m], nn(m));
   }
-  // CHORDS · KEY: a note of the scale plays its chord in the key; PADS: the white keys play the key's chords, C4 the first (I)
-  if (CHELP[LV.chelp] === "PADS") { if (wi < 0) return null; const d = wi - 4, m = whiteNote(wi), d0 = ((d % sc.length) + sc.length) % sc.length, c = lvChord(m, d0, deg);
-    return out(c.ms, c.name, 0, { deg: d0, roman: ROMAN[d0 % 7] }); }
-  const m = keyMidi(i); if (!inScale(m)) return null;
-  const pc = ((m - LV.tonic) % 12 + 12) % 12, d0 = sc.indexOf(pc), c = lvChord(m, d0, deg);
-  return out(c.ms, c.name, 0, { deg: d0 });
+  if (i === K_NEXT || i === K_AGAIN || i === K_LOCK || COLOURS[i]) return { ctl: true };
+  if (wi < 0) return null;
+  const pc = ((LOW + i) % 12 + 12) % 12, d = LETTERS.indexOf(pc), c = chordOn(d, 12 * (Math.floor((LOW + i) / 12) - 1) + 12 * LV.oct + (LV.tonic > 5 ? 12 : 0));
+  return out(c.ms, c.name, 0, { deg: d, roman: c.roman });
 }
-function lvLight(i) {             // the keys' lights, as MELODY's and CHORDS' help: lit = can play, full = the tonic or the next chord
+function lvLight(i) {             // lit = can play; full = the tonic, or the next chord of the progression, or the colour held
   const L = lvNotes(i), tab = LVTABS[LV.tab]; if (!L) return { play: false };
-  const ton = ((Math.round(L.ms[0]) - LV.tonic) % 12 + 12) % 12 === 0, x = key(LV.pad);
+  if (L.ctl) { const col = COLOURS[i]; return { play: true, lit: true, full: (col && heldColour() === col) || (i === K_LOCK && !!LV.lock), ctl: true }; }
+  const x = key(LV.pad), ton = ((Math.round(L.ms[0]) - LV.tonic) % 12 + 12) % 12 === 0;
   const root = L.ms.length === 1 && Math.abs(L.ms[0] - (x.root + x.tune)) < .5;
-  if (tab === "VELOCITY") return { play: true, lit: true, full: false, root: false };
-  if (tab === "NOTES") { const h = NHELP[LV.nhelp]; if (h === "FREE") return { play: true, lit: false, full: false, root }; return { play: true, lit: inScale(L.ms[0]), full: inScale(L.ms[0]) && ton, root }; }
-  const next = PROGS[LV.prog][1][LV.step % PROGS[LV.prog][1].length];
-  return { play: true, lit: true, full: CHELP[LV.chelp] === "PADS" ? L.deg === next && WH.indexOf(i) >= 4 && WH.indexOf(i) < 11 : ton, root: false };
+  if (tab === "NOTES") { const mode = NM[LV.nm]; if (mode === "16 LEVELS") return { play: true, lit: true, full: false, root: L.lab === "0" };
+    if (mode === "FREE") return { play: true, lit: false, full: false, root }; return { play: true, lit: inScale(L.ms[0]), full: inScale(L.ms[0]) && ton, root }; }
+  const P_ = PROGS[LV.prog][1]; return { play: true, lit: true, full: L.deg === P_[LV.step % P_.length], root: false };
 }
 function lvPress(i, v) {
-  const L = lvNotes(i); if (!L) return; const vv = L.v || v;
-  L.s.forEach(q => playKey(LV.pad, 0, vv, q, false)); LV.last = L.name + (L.roman ? "  " + L.roman : ""); LV.lastKey = i;
-  const P_ = PROGS[LV.prog][1]; if (LVTABS[LV.tab] === "CHORDS" && L.deg === P_[LV.step % P_.length]) LV.step++;      // the progression moves on when you play its chord
-  recordHit(LV.pad, vv, L.s);
+  const L = lvNotes(i); if (!L) return;
+  if (L.ctl) {                     // the CHORDS controls: a colour (held), NEXT, AGAIN, LOCK
+    if (COLOURS[i]) { LV.last = COLOURS[i]; return; }
+    if (i === K_LOCK) { LV.lock = LV.lock ? null : heldColour(); LV.last = LV.lock ? "LOCK " + LV.lock : "LOCK off"; return; }
+    const P_ = PROGS[LV.prog][1], c = i === K_NEXT ? chordOn(P_[LV.step % P_.length], 48 + 12 * LV.oct) : LV.lastChord; if (!c) return;
+    if (i === K_NEXT) LV.step++;
+    const x = key(LV.pad), rs = x.root + x.tune; c.ms.forEach(m => playKey(LV.pad, 0, v, m - rs, false, 0, i)); LV.last = c.name + "  " + c.roman; LV.lastChord = c;
+    recordHit(LV.pad, v, c.ms.map(m => m - rs), 0, i); return;
+  }
+  L.s.forEach(q => playKey(LV.pad, 0, v, q, false, L.gm, i)); LV.last = L.name + (L.roman ? "  " + L.roman : ""); LV.lastKey = i;
+  if (L.roman) { LV.lastChord = { ms: L.ms, name: L.name, roman: L.roman }; const P_ = PROGS[LV.prog][1]; if (L.deg === P_[LV.step % P_.length]) LV.step++; }
+  recordHit(LV.pad, v, L.s, L.gm, i);
 }
 
 // ------------------------------------------------------------------ controls
@@ -715,27 +739,31 @@ function press(i, v = 100) {
     if (!S.erasing.size) pushUndo(); S.erasing.add(i); return;
   }
   if (st.page === "levels") { lvPress(i, v); return; }
-  st.sel = i; playKey(i, 0, v);
+  st.sel = i; playKey(i, 0, v, 0, true, 0, i);
   if (st.page === "play") recordHit(i, v);
 }
-function release(i) { if (st.latch) return; st.held.delete(i); S.erasing.delete(i); }
+function release(i) {
+  if (st.latch) return; st.held.delete(i); S.erasing.delete(i);
+  (heldV[i] || []).forEach(vo => stopVoice(vo)); heldV[i] = [];
+  if (S.lastRec && S.lastRec.key === i && S.playing) { const n = S.lastRec.n; n.len = ((barPos() - n.tp) + 1) % 1 || .01; S.lastRec = null; }
+}
 const clampI = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 function knob(k, d) {
   startAudio(); const P = st.page, x = key(st.sel);
   if (st.save) { if (k === 0) st.save.to = clampI(st.save.to + d, 4, 6); return; }
   if (st.pick) { if (k === 0) st.pick.to = clampI(st.pick.to + d, 4, 6); return; }
-  if (st.page === "levels") { const x = key(LV.pad), tab = LVTABS[LV.tab];
+  if (st.page === "levels") { const x = key(LV.pad), tab = LVTABS[LV.tab], lv16 = NM[LV.nm] === "16 LEVELS";
     if (tab === "NOTES") {
-      if (k === 0) LV.nhelp = clampI(LV.nhelp + d, 0, NHELP.length - 1);
-      if (k === 1) LV.tonic = (LV.tonic + d + 12) % 12;                    // the song's key (as GLO · SONG K1)
-      if (k === 2) LV.scale = clampI(LV.scale + d, 0, SCALES.length - 1);
+      if (k === 0) LV.nm = clampI(LV.nm + d, 0, NM.length - 1);
+      if (k === 1) { if (lv16) LV.lt = clampI(LV.lt + d, 0, LT.length - 1); else LV.tonic = (LV.tonic + d + 12) % 12; }      // the song's key (as GLO · SONG K1)
+      if (k === 2 && !lv16) LV.scale = clampI(LV.scale + d, 0, SCALES.length - 1);
       if (k === 3) { x.root = Math.round(x.root) + d; x.found = false; }
     }
     if (tab === "CHORDS") {
-      if (k === 0) LV.chelp = clampI(LV.chelp + d, 0, CHELP.length - 1);
+      if (k === 0) LV.base = clampI(LV.base + d, 0, BASES.length - 1);
       if (k === 1) { LV.prog = clampI(LV.prog + d, 0, PROGS.length - 1); LV.step = 0; }
-      if (k === 2) LV.chord = clampI(LV.chord + d, 0, CHORDT.length - 1);
-      if (k === 3) LV.voice = clampI(LV.voice + d, 0, VOICES.length - 1);
+      if (k === 2) LV.voice = clampI(LV.voice + d, 0, VOICES.length - 1);
+      if (k === 3) LV.scale = clampI(LV.scale + d, 0, SCALES.length - 1);
     }
     return; }
   if (st.layer) { if (k === 0) S.grid = clampI(S.grid + d, 0, GRIDS.length - 1); if (k === 1) S.feel = clampI(S.feel + d, 0, FEELS.length - 1); return; }
@@ -746,10 +774,10 @@ function knob(k, d) {
     return;
   }
   if (P === "fx") {
-    const f = st.fx;
-    if (f.tab === 0) { if (k === 0) f.comp = clampI(f.comp + d, 0, 10); if (k === 1) f.clip = clampI(f.clip + d, 0, 10); }
-    if (f.tab === 1) { if (k === 0) f.type = clampI(f.type + d, 0, DIRTN.length - 1); if (k === 1) f.amt = clampI(f.amt + d, 0, 10); }
-    if (f.tab === 2) { if (k === 0) f.dly = clampI(f.dly + d, 0, DLYN.length - 1); if (k === 1) f.dfb = clampI(f.dfb + d, 0, 10); if (k === 2) f.rvb = clampI(f.rvb + d, 0, 10); }
+    const f = st.fx, c = (n, lo, hi) => f[n] = clampI(f[n] + d, lo, hi);
+    if (f.tab === 0) [() => c("comp", 0, 10), () => c("speed", 0, 2), () => c("clip", 0, 10), () => c("shape", 0, 1)][k]();
+    if (f.tab === 1) c(["tape", "lofi", "drive", "crush"][k], 0, 10);
+    if (f.tab === 2) [() => c("dtime", 0, DLYN.length - 1), () => c("dfb", 0, 10), () => c("rtype", 0, RVBN.length - 1), () => c("rsize", 0, 10)][k]();
     setFx(); return;
   }
   if (P === "take") {
@@ -769,14 +797,14 @@ function knob(k, d) {
   }
   if (P === "play") {
     if (k === 0) { x.lvl = clampI(x.lvl + d, 0, 10); touch(); }
-    if (k === 1) { x.tfx = clampI(x.tfx + d, 0, 10); touch(); }
+    if (k === 1) { x.rvb = clampI(x.rvb + d, 0, 10); touch(); }
     if (k === 2) S.grid = clampI(S.grid + d, 0, GRIDS.length - 1);
     if (k === 3) S.feel = clampI(S.feel + d, 0, FEELS.length - 1);
     return;
   }
   if (P === "edit") {
     const tab = EDITTABS[st.tab];
-    if (tab === "KIT") { if (k === 0) x.lvl = clampI(x.lvl + d, 0, 10); if (k === 1) x.vel = clampI(x.vel + d, 0, 10); if (k < 2) touch(); }
+    if (tab === "KIT") { if (k === 0) x.lvl = clampI(x.lvl + d, 0, 10); if (k === 1) x.vel = clampI(x.vel + d, 0, 10); if (k < 2) touch(); if (k === 2) chooseGroup(st.sel, d); }
     if (tab === "SOUND") {
       if (k === 0) { analyse(x);                       // TUNE in notes: the first turn snaps to the exact note, then a semitone a turn
         const m = x.root + x.tune, off = m - Math.round(m);
@@ -797,7 +825,7 @@ function knob(k, d) {
       if (kitSec(st.kit) > KIT_S) { m.a0 = o0; m.a1 = o1; flash(kit().name + " is full (7 s)"); }
       touch();
     }
-    if (tab === "PAD FX") { const f = ["dirt", "dly", "rvb", "tfx"][k]; x[f] = clampI(x[f] + d, 0, 10); touch(); }
+    if (tab === "PAD FX") { const f = ["pp", "pc", "dly", "rvb"][k]; x[f] = clampI(x[f] + d, 0, 10); touch(); }
   }
 }
 function writeBeat(b) {            // each slice where it falls in the loop, at the song's tempo: the first bar
@@ -863,13 +891,13 @@ function oct(d) {
   if (st.layer && d > 0) { if (st.ask === "clear") { pushUndo(); S.notes = []; S.order = []; st.ask = null; st.layer = false; flash("DRUMS cleared · SAVE held: undo"); } else st.ask = "clear"; return; }
   if (st.page === "chop") d > 0 ? split() : merge();
 }
-function envTap() { if (st.save || st.pick || st.layer) return; if (st.page === "levels") { LV.tab = (LV.tab + 1) % LVTABS.length; LV.last = ""; } else if (st.page === "play" || st.page === "edit") lvEnter(); }
+function envTap() { if (st.save || st.pick || st.layer) return; if (st.page === "levels") { LV.tab = (LV.tab + 1) % LVTABS.length; LV.last = ""; } else if (st.page !== "usb") { st.place = null; lvEnter(); } }
 function home() { stopRaw(); if (st.rec) stopRec(); closeOver(); st.place = null; st.page = "play"; routePhone(); }
 
 // ------------------------------------------------------------------ the panel
-const KNOBS = { levels: ["MODE", "SCALE", "ROOT", "CHORD"], play: ["LEVEL", "FX", "GRID", "FEEL"], take: ["", "IN LEVEL", "START", "FIT"], chop: ["START", "END", "ZOOM", "SLICES"], usb: ["OUT", "MONITOR", "IN LEVEL", ""],
-  KIT: ["LEVEL", "VELOCITY", "", ""], SOUND: ["TUNE", "ATTACK", "HOLD", "DECAY"], TRIM: ["START", "END", "REVERSE", "GAIN"], "PAD FX": ["DIRT", "DELAY", "REVERB", "TRACK FX"],
-  PUNCH: ["COMP", "CLIP", "", ""], DIRT: ["TYPE", "AMOUNT", "", ""], SPACE: ["DELAY", "FEEDBACK", "REVERB", ""], ideas: ["", "", "", ""], auto: ["", "", "", ""] };
+const KNOBS = { levels: ["MODE", "SCALE", "ROOT", "CHORD"], play: ["LEVEL", "REVERB", "GRID", "FEEL"], take: ["", "IN LEVEL", "START", "FIT"], chop: ["START", "END", "ZOOM", "SLICES"], usb: ["OUT", "MONITOR", "IN LEVEL", ""],
+  KIT: ["LEVEL", "VELOCITY", "GROUP", ""], SOUND: ["TUNE", "ATTACK", "HOLD", "DECAY"], TRIM: ["START", "END", "REVERSE", "GAIN"], "PAD FX": ["PUNCH", "COLOR", "DELAY", "REVERB"],
+  PUNCH: ["COMP", "SPEED", "CLIP", "SHAPE"], COLOR: ["TAPE", "LOFI", "DRIVE", "CRUSH"], SPACE: ["DELAY", "FEEDBACK", "REVERB", "SIZE"], ideas: ["", "", "", ""], auto: ["", "", "", ""] };
 for (let k = 0; k < 4; k++) {
   const w = document.createElement("div"); w.className = "knob";
   w.innerHTML = `<div class="dial" tabindex="0" role="slider" aria-label="Knob ${k + 1}"></div><div class="nm">K${k + 1}</div><div class="b"><button aria-label="Knob ${k + 1} down">−</button><button aria-label="Knob ${k + 1} up">+</button></div>`;
@@ -992,9 +1020,9 @@ function keyHead(y) {
   if (isAuto(i)) { T("★ AUTO", 234, y, 8, GCOL[GROUP(i)], 700, "right"); T(soundName(x), 6, y + 15, 8, x.smp ? C.acc : C.mute, 600); }
 }
 function envLine(x, d, X0, Y0, W, H) {   // ATTACK, HOLD, DECAY drawn as straight lines over the sound
-  const L = d.length / SR, at = ATTS[x.att] / 1000, ho = HOLDS[x.hold] / 1000, de = DECS[x.dec] / 1000, Y = v => Y0 + H - v * H, Xt = t => X0 + W * Math.min(1, t / L);
+  const L = d.length / SR, at = ATTS[x.att] / 1000, ho = HOLDS[x.hold] === "key" ? Infinity : HOLDS[x.hold] / 1000, de = DECS[x.dec] / 1000, Y = v => Y0 + H - v * H, Xt = t => X0 + W * Math.min(1, t / L);
   g.strokeStyle = C.fg; g.lineWidth = 1.4; g.beginPath(); g.moveTo(X0, Y(at ? 0 : 1)); g.lineTo(Xt(at), Y(1));
-  if (isFinite(ho)) { g.lineTo(Xt(at + ho), Y(1)); g.lineTo(Xt(at + ho + de), Y(0)); g.lineTo(X0 + W, Y(0)); } else g.lineTo(X0 + W, Y(1));
+  if (HOLDS[x.hold] !== "key" && isFinite(ho)) { g.lineTo(Xt(at + ho), Y(1)); g.lineTo(Xt(at + ho + de), Y(0)); g.lineTo(X0 + W, Y(0)); } else g.lineTo(X0 + W, Y(1));
   g.stroke();
 }
 function level10(x, y, w, v) { g.fillStyle = C.grid; rr(x, y, w, 5, 2); g.fill(); g.fillStyle = C.acc; rr(x, y, Math.max(2, w * v / 10), 5, 2); g.fill(); }
@@ -1025,7 +1053,7 @@ function drawPlay() {
   if (S.playing && ac) { const x = X0 + W * barPos(); g.fillStyle = C.ok; g.fillRect(x, Y0, 1.5, AH); }
   T(keyNote(st.sel) + " · " + (isAuto(st.sel) ? ROLE[st.sel] : soundName(key(st.sel))), 6, 194, 8.5, C.mute, 700);
   const x = key(st.sel);
-  knobRow(KNOBS.play, [String(x.lvl), String(x.tfx), GRIDS[S.grid][0], FEELS[S.feel][0]]);
+  knobRow(KNOBS.play, [String(x.lvl), String(x.rvb), GRIDS[S.grid][0], FEELS[S.feel][0]]);
 }
 function draw() {
   g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240);
@@ -1043,40 +1071,41 @@ function draw() {
     knobRow(["GRID", "FEEL", "CLICK", "COUNT-IN"], [GRIDS[S.grid][0], FEELS[S.feel][0], "rec", "off"]);
   } else if (P === "play" || P === "ideas" || P === "auto") drawPlay();
   else if (P === "levels") {
-    const px = key(LV.pad), tab = LVTABS[LV.tab], rs = px.root + px.tune; top(LVTABS, tab);
+    const px = key(LV.pad), tab = LVTABS[LV.tab], rs = px.root + px.tune, lv16 = tab === "NOTES" && NM[LV.nm] === "16 LEVELS"; top(LVTABS, tab);
     T(keyNote(LV.pad) + " · " + (isAuto(LV.pad) ? ROLE[LV.pad] : soundName(px)), 6, 35, 10, C.fg, 700);
-    T("sounds " + nn(rs) + (px.found ? "" : " (set it)"), 234, 35, 8.5, px.found ? C.ok : C.mute, 700, "right");
-    T(PCN[LV.tonic] + " " + SCALES[LV.scale][0] + (tab === "CHORDS" ? " · " + PROGS[LV.prog][0] : "") + (LV.oct ? " · OCT " + (LV.oct > 0 ? "+" : "") + LV.oct : ""), 6, 49, 8.5, C.mute, 600);
+    if (!lv16) T("sounds " + nn(rs) + (px.found ? "" : " (set K4)"), 234, 35, 8.5, px.found ? C.ok : C.mute, 700, "right");
+    T(lv16 ? "the 16 white keys: " + (LV.lt ? "a semitone a key" : "soft to hard") : PCN[LV.tonic] + " " + SCALES[LV.scale][0] + (tab === "CHORDS" ? " · " + PROGS[LV.prog][0] : "") + (LV.oct ? " · OCT " + (LV.oct > 0 ? "+" : "") + LV.oct : ""), 6, 49, 8.5, C.mute, 600);
     const ww = 228 / WH.length, KY = 58, KH = 76;
     WH.forEach((i, wi) => { const x0 = 6 + wi * ww, L = lvNotes(i), li = lvLight(i);
       g.fillStyle = !li.play ? "#161b24" : li.full ? C.acc : li.lit ? "#7a4a70" : "#2a313d"; g.fillRect(x0 + .5, KY, ww - 1, KH);
-      if (L && tab !== "VELOCITY") { const lab = tab === "CHORDS" ? (L.roman && wi >= 4 && wi < 11 ? L.roman : L.name) : nn(L.ms[0]).replace(/-?\d+$/, ""); g.save(); g.translate(x0 + ww / 2, KY + KH - 5); g.rotate(-Math.PI / 2); T(lab, 0, 0, 7, li.lit || li.full ? "#fff" : C.mute, 700); g.restore(); }
+      const lab = !L ? "" : L.ctl ? (i === K_NEXT ? "NEXT" : i === K_AGAIN ? "AGAIN" : "") : lv16 ? L.lab : tab === "CHORDS" ? L.roman + " " + L.name : nn(L.ms[0]).replace(/-?\d+$/, "");
+      if (lab) { g.save(); g.translate(x0 + ww / 2, KY + KH - 5); g.rotate(-Math.PI / 2); T(lab, 0, 0, 7, li.lit || li.full ? "#fff" : C.mute, 700); g.restore(); }
       if (li.root) { g.fillStyle = C.ok; g.beginPath(); g.arc(x0 + ww / 2, KY + 6, 3, 0, 7); g.fill(); }
       if (LV.lastKey === i) { g.strokeStyle = C.fg; g.lineWidth = 1.5; g.strokeRect(x0 + 1, KY + 1, ww - 2, KH - 2); } });
     for (let i = 0; i < NK; i++) if (isBlack(LOW + i)) { const wi = WH.indexOf(i - 1), x0 = 6 + (wi + 1) * ww - ww * .32, li = lvLight(i);
-      g.fillStyle = !li.play ? "#0e1219" : li.full ? C.acc : li.lit ? "#5e3656" : "#05070b"; g.fillRect(x0, KY, ww * .64, KH * .5); g.strokeStyle = "#000"; g.lineWidth = 1; g.strokeRect(x0, KY, ww * .64, KH * .5);
+      g.fillStyle = !li.play ? "#0e1219" : li.full ? C.acc : li.ctl ? "#3a2f55" : li.lit ? "#5e3656" : "#05070b"; g.fillRect(x0, KY, ww * .64, KH * .5); g.strokeStyle = "#000"; g.lineWidth = 1; g.strokeRect(x0, KY, ww * .64, KH * .5);
+      if (li.ctl) { g.save(); g.translate(x0 + ww * .32, KY + KH * .5 - 3); g.rotate(-Math.PI / 2); T(COLOURS[i] || (i === K_LOCK ? "LOCK" : ""), 0, 0, 5.5, "#fff", 700); g.restore(); }
       if (li.root) { g.fillStyle = C.ok; g.beginPath(); g.arc(x0 + ww * .32, KY + 6, 2.5, 0, 7); g.fill(); } }
-    const idle = tab === "NOTES" ? { FREE: "every key its note", KEY: "lit: the scale · full: the tonic", WHITES: "the white keys play the scale" }[NHELP[LV.nhelp]]
-      : tab === "CHORDS" ? (CHELP[LV.chelp] === "PADS" ? "C4 = I · full: the next chord" : "a lit key plays its chord") : "16 white keys, soft to hard";
+    const idle = tab === "CHORDS" ? "C is I · hold a black key for a colour · F5 NEXT" : lv16 ? "" : { FREE: "every key its note", KEY: "lit: the scale · full: the tonic", WHITES: "the white keys play the scale" }[NM[LV.nm]];
     T(LV.last || idle, 120, 158, LV.last ? 18 : 8.5, LV.last ? C.fg : C.mute, 700, "center");
-    T("ENV: next page · HOME: back · ● as recorded", 120, 188, 7.5, C.mute, 600, "center");
-    if (tab === "NOTES") knobRow(["HELP", "KEY", "SCALE", "SOUNDS"], [NHELP[LV.nhelp], PCN[LV.tonic], SCALES[LV.scale][0].replace("harmonic ", "harm. "), nn(rs)]);
-    if (tab === "CHORDS") knobRow(["HELP", "PROGRESS.", "CHORD", "VOICING"], [CHELP[LV.chelp], PROGS[LV.prog][0], CHORDT[LV.chord][0], VOICES[LV.voice]]);
-    if (tab === "VELOCITY") knobRow([], []);
+    T("ENV: " + (tab === "NOTES" ? "CHORDS" : "NOTES") + " · HOME: back" + (lv16 ? "" : " · ● as recorded"), 120, 188, 7.5, C.mute, 600, "center");
+    if (tab === "NOTES") knobRow(lv16 ? ["MODE", "LEVELS", "", ""] : ["MODE", "KEY", "SCALE", "SOUNDS"], lv16 ? [NM[LV.nm], LT[LV.lt].toLowerCase()] : [NM[LV.nm], PCN[LV.tonic], SCALES[LV.scale][0].replace("harmonic ", "harm. "), nn(rs)]);
+    if (tab === "CHORDS") knobRow(["CHORD", "PROGRESS.", "VOICING", "SCALE"], [BASES[LV.base], PROGS[LV.prog][0], VOICES[LV.voice], SCALES[LV.scale][0].replace("harmonic ", "harm. ")]);
   } else if (P === "edit") {
     const tab = EDITTABS[st.tab]; top(EDITTABS, tab); keyHead(38);
     if (tab === "KIT") {
       const rd = render(x); g.fillStyle = C.card; rr(6, 62, 228, 76, 5); g.fill(); wave(rd, 0, rd.length, 10, 66, 220, 68, x.smp ? C.acc : "#6f7a8c", x.lvl / 8);
       strip(146, 34);
-      if (st.list && st.list.key === st.sel && performance.now() - st.list.t < 2500) { const l = st.list, e = l.L[l.i]; g.fillStyle = "#0a0d13"; rr(10, 30, 220, 112, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(keyNote(l.key), 18, 42, 9, C.mute, 700); T(e.h, 222, 42, 8, C.acc, 700, "right"); for (let j = -2; j <= 2; j++) { const q = l.L[(l.i + j + l.L.length) % l.L.length]; T((j ? "  " : "▸ ") + q.n, 18, 86 + j * 17, j ? 9 : 11.5, j ? C.mute : C.fg, j ? 500 : 700); } }
+      if (st.list && st.list.key === st.sel && performance.now() - st.list.t < 2500) { const l = st.list, e = l.L[l.i]; g.fillStyle = "#0a0d13"; rr(10, 30, 220, 112, 8); g.fill(); g.strokeStyle = C.acc; g.lineWidth = 1; g.stroke(); T(keyNote(l.key) + " · K3: next kit", 18, 42, 8, C.mute, 700); T(e.h, 222, 42, 9, C.acc, 700, "right"); for (let j = -2; j <= 2; j++) { const q = l.L[(l.i + j + l.L.length) % l.L.length]; T((j ? "  " : "▸ ") + q.n, 18, 86 + j * 17, j ? 9 : 11.5, j ? C.mute : C.fg, j ? 500 : 700); } }
       else T("PRESETS: choose its sound", 120, 192, 8, C.mute, 600, "center");
-      knobRow(KNOBS.KIT, [String(x.lvl), x.vel ? String(x.vel) : "fixed"]);
+      knobRow(KNOBS.KIT, [String(x.lvl), x.vel ? String(x.vel) : "fixed", st.list && st.list.key === st.sel ? st.list.L[st.list.i].h.replace("MY KIT ", "MY ") : (x.smp ? "yours" : SYN[x.syn[0]])]);
     }
     if (tab === "SOUND") {
       const d = render(x); g.fillStyle = C.card; rr(6, 62, 228, 100, 5); g.fill(); wave(d, 0, d.length, 10, 66, 220, 92, x.smp ? C.acc : "#6f7a8c", x.lvl / 8);
       envLine(x, d, 10, 66, 220, 92);
       T("MUTE GROUP " + (x.grp ? " ABCD"[x.grp] : "off") + "  (SELECT)", 6, 174, 9, x.grp ? C.fg : C.mute, 700);
-      knobRow(KNOBS.SOUND, [tuneLabel(x), ATTS[x.att] + " ms", isFinite(HOLDS[x.hold]) ? HOLDS[x.hold] + " ms" : "full", isFinite(HOLDS[x.hold]) ? DECS[x.dec] + " ms" : "-"]);
+      const hv = HOLDS[x.hold]; knobRow(KNOBS.SOUND, [tuneLabel(x), ATTS[x.att] + " ms", hv === "key" ? "key" : isFinite(hv) ? hv + " ms" : "full", hv === Infinity ? "-" : DECS[x.dec] + " ms"]);
+      if (hv === "key") T("key: it lasts while held (its end loops), then DECAY", 6, 188, 7.5, C.mute, 600);
     }
     if (tab === "TRIM") {
       if (!x.smp) { T("A synth sound: nothing to trim", 120, 110, 9.5, C.mute, 600, "center"); knobRow(KNOBS.TRIM, ["-", "-", "-", "-"]); }
@@ -1092,16 +1121,17 @@ function draw() {
       }
     }
     if (tab === "PAD FX") {
-      [["DIRT", x.dirt, "this pad only"], ["DELAY", x.dly, "send"], ["REVERB", x.rvb, "send"], ["TRACK FX", x.tfx, "comp, clip, dirt (FX)"]].forEach(([a, v, s], j) => { const y = 64 + j * 26; T(a, 10, y, 9, C.fg, 700); T(s, 10, y + 10, 7, C.mute, 500); level10(92, y - 2, 120, v); T(String(v), 230, y, 9, C.acc, 700, "right"); });
-      knobRow(KNOBS["PAD FX"], [String(x.dirt), String(x.dly), String(x.rvb), String(x.tfx)]);
+      [["PUNCH", x.pp, punchOn() ? "comp, clip" : "off in FX"], ["COLOR", x.pc, colorOn() ? "tape, lofi, drive, crush" : "off in FX"], ["DELAY", x.dly, DLYN[st.fx.dtime]], ["REVERB", x.rvb, RVBN[st.fx.rtype]]].forEach(([a, v, s2], j) => { const y = 64 + j * 26, off = s2 === "off in FX"; T(a, 10, y, 9, off ? C.mute : C.fg, 700); T(s2, 10, y + 10, 7, off ? C.rec : C.mute, 500); level10(92, y - 2, 120, v); T(String(v), 230, y, 9, C.acc, 700, "right"); });
+      T("how much of the track's FX this pad gets", 120, 176, 7.5, C.mute, 600, "center");
+      knobRow(KNOBS["PAD FX"], [String(x.pp), String(x.pc), String(x.dly), String(x.rvb)]);
     }
   } else if (P === "fx") {
-    const f = st.fx, tab = ["PUNCH", "DIRT", "SPACE"][f.tab]; top(["PUNCH", "DIRT", "SPACE"], tab, C.blue);
-    T("The track's effects. Each pad's TRACK FX sets how much it gets", 120, 33, 7.5, C.mute, 500, "center");
-    const row = (y, a, v, txt) => { T(a, 10, y, 9, C.fg, 700); level10(92, y - 2, 120, v); T(txt, 230, y, 9, C.acc, 700, "right"); };
-    if (tab === "PUNCH") { row(62, "COMP", f.comp, f.comp ? String(f.comp) : "off"); T("a compressor: tighter, louder", 10, 74, 7, C.mute, 500); row(100, "CLIP", f.clip, f.clip ? String(f.clip) : "off"); T("a soft clipper: rounds the peaks", 10, 112, 7, C.mute, 500); knobRow(KNOBS.PUNCH, [f.comp ? String(f.comp) : "off", f.clip ? String(f.clip) : "off"]); }
-    if (tab === "DIRT") { DIRTN.forEach((n, j) => { const y = 44 + j * 24, on = f.type === j; g.fillStyle = on ? C.accd : C.card; rr(6, y, 228, 21, 5); g.fill(); T(n, 14, y + 10.5, 9.5, on ? C.fg : C.mute, 700); T(["", "warm overdrive", "fewer bits, darker", "tape saturation", "bit crusher"][j], 226, y + 10.5, 7.5, C.mute, 500, "right"); }); row(176, "AMOUNT", f.amt, String(f.amt)); knobRow(KNOBS.DIRT, [DIRTN[f.type], String(f.amt)]); }
-    if (tab === "SPACE") { T("DELAY", 10, 62, 9, C.fg, 700); T(DLYN[f.dly], 230, 62, 9, C.acc, 700, "right"); row(88, "FEEDBACK", f.dfb, String(f.dfb)); row(120, "REVERB", f.rvb, f.rvb ? String(f.rvb) : "off"); T("each pad sends to them: EDIT · PAD FX", 10, 146, 7.5, C.mute, 500); knobRow(KNOBS.SPACE, [DLYN[f.dly], String(f.dfb), f.rvb ? String(f.rvb) : "off"]); }
+    const f = st.fx, tab = ["PUNCH", "COLOR", "SPACE"][f.tab]; top(["PUNCH", "COLOR", "SPACE"], tab, C.blue);
+    T("for the whole kit · each pad: EDIT · PAD FX", 120, 33, 7.5, C.mute, 500, "center");
+    const row = (y, a, v, txt, sub) => { T(a, 10, y, 9, C.fg, 700); if (sub) T(sub, 10, y + 10, 7, C.mute, 500); if (v !== null) level10(92, y - 2, 120, v); T(txt, 230, y, 9, C.acc, 700, "right"); };
+    if (tab === "PUNCH") { row(56, "COMP", f.comp, f.comp ? String(f.comp) : "off", "a compressor: tighter, louder"); row(84, "SPEED", null, SPEEDN[f.speed], "fast: snappy · slow: lets the hit through"); row(118, "CLIP", f.clip, f.clip ? String(f.clip) : "off", "rounds the peaks: louder, no overs"); row(146, "SHAPE", null, SHAPEN[f.shape], "soft: warm · hard: edgy"); knobRow(KNOBS.PUNCH, [f.comp ? String(f.comp) : "off", SPEEDN[f.speed], f.clip ? String(f.clip) : "off", SHAPEN[f.shape]]); }
+    if (tab === "COLOR") { [["TAPE", "tape", "warm saturation"], ["LOFI", "lofi", "fewer bits, darker"], ["DRIVE", "drive", "overdrive"], ["CRUSH", "crush", "bit crusher"]].forEach(([a, k, sub], j) => row(56 + j * 30, a, f[k], f[k] ? String(f[k]) : "off", sub)); T("they add up: tape and lofi together for the whole kit", 120, 176, 7.5, C.mute, 600, "center"); knobRow(KNOBS.COLOR, ["tape", "lofi", "drive", "crush"].map(k => f[k] ? String(f[k]) : "off")); }
+    if (tab === "SPACE") { row(56, "DELAY", null, DLYN[f.dtime], "its time, at the song's tempo"); row(84, "FEEDBACK", f.dfb, String(f.dfb), "how many repeats"); row(118, "REVERB", null, RVBN[f.rtype], "room, plate, hall, spring"); row(146, "SIZE", f.rsize, String(f.rsize), "how long it rings"); knobRow(KNOBS.SPACE, [DLYN[f.dtime], String(f.dfb), RVBN[f.rtype], String(f.rsize)]); }
   } else if (P === "take") {
     top(["TAKE", "CHOP"], "TAKE");
     const lv = inLevel(); if (lv > st.peak || performance.now() - st.peakT > 1500) { st.peak = lv; st.peakT = performance.now(); }
@@ -1160,7 +1190,7 @@ function draw() {
     el.classList.toggle("held", st.held.has(i));
     el.querySelector(".smp").hidden = !key(i).smp;
     el.classList.toggle("lit", P === "chop" && !st.place && !!take && i < st.chop.sl.length);
-    if (P === "levels") { const li = lvLight(i);
+    if (P === "levels") { const li = lvLight(i) || {};
       el.style.opacity = li.play ? "" : .3; el.classList.toggle("lit", !!li.lit && !li.full); el.classList.toggle("ton", !!li.full); el.classList.toggle("root", !!li.root); }
     else { el.style.opacity = ""; el.classList.remove("ton", "root"); }
     el.classList.toggle("prev", !!st.place && st.place.key === i);
@@ -1172,7 +1202,7 @@ function draw() {
   requestAnimationFrame(draw);
 }
 const HINT = {
-  levels: "LEVELS (ENV), the pad you touched across the keys. ENV: NOTES (K1 HELP: FREE, KEY, WHITES; K2 KEY; K3 SCALE; K4 the note the sample is) → CHORDS (K1 HELP: KEY or PADS (C4 = I); K2 PROGRESSION, the next chord lit; K3 CHORD; K4 VOICING; SELECT: back or on in the progression) → VELOCITY. OCT− OCT+: the octave. REC + PLAY record it. HOME: back.",
+  levels: "ENV, the pad you touched across the keys. NOTES: K1 MODE: 16 LEVELS (the white keys; K2 velocity or tune), FREE, KEY (the scale lit), WHITES (the white keys play the scale); K2 KEY, K3 SCALE, K4 the note the sample is. CHORDS (ENV again), as the CHORDS track's pads: C is I, hold a black key for a colour, F5 NEXT, G5 AGAIN, F#5 LOCK; K1 CHORD, K2 PROGRESSION (the next one lit), K3 VOICING, K4 SCALE. OCT− OCT+: the octave. HOME: back.",
   play: "PLAY: keys play the kit (press low on a key: harder). REC on + PLAY records. K1 LEVEL, K2 FX (the key played), K3 GRID, K4 FEEL (the track). PRESETS: the kit. EDIT held + key (REC on, playing): erase. SAVE held: undo; two taps: redo. REC held: REC layer.",
   ideas: "IDEAS, as built (on the new drum map). SCL: next.", auto: "AUTO, as built (on the new drum map). SCL: next.",
   KIT: "EDIT · KIT: touch a key; PRESETS: its sound, from every sound you have. K1 LEVEL, K2 VELOCITY (fixed, or how much it follows how hard you play). SAVE held: save the kit.",
