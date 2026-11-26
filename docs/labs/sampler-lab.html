@@ -72,7 +72,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 
 <div class="wrap">
   <h1>Sampler Lab</h1>
-  <p class="lead">Version 6 (2026-11-26), from your review of v5: the top line as on the other tracks (DRUMS PLAY, the kit, the
+  <p class="lead">Version 7 (2026-11-26): <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
   tempo); the bar's rows share the screen; GRID off … 1/32; velocity; SOUND with ATTACK, HOLD, DECAY; the track's FX as PUNCH
   (COMP, CLIP), DIRT and SPACE (DELAY and REVERB together); CHOP's put mode silent. Press <b>Start sound</b>, then try the
   <a href="#scen">usage scenarios</a>.</p>
@@ -105,6 +105,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
           <button class="btn rec" id="rec" title="Tap: arm recording. Hold: the REC layer">REC</button>
           <button class="btn" id="edit">EDIT</button>
           <button class="btn" id="fx">FX</button>
+          <button class="btn" id="env">ENV</button>
           <button class="btn" id="lfo">LFO</button>
           <button class="btn" id="save">SAVE</button>
           <button class="btn" id="home">HOME</button>
@@ -121,14 +122,14 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
     <div class="card scen" id="scen"><h3>Usage scenarios: try each one</h3>
       <p><b>Keyboard:</b> the FM-1 keys are on <b>a w s e d r f g y h u j k o l p ; [ ' z n x m c v , b</b> (the letter is on
       each key). Buttons: <b>Space</b> PLAY · <b>Enter</b> REC (hold for the REC layer) · <b>Shift</b> EDIT · <b>`</b> FX ·
-      <b>Tab</b> LFO · <b>\</b> SCL · <b>Backspace</b> SAVE (hold) · <b>Esc</b> HOME · <b>← →</b> PRESETS · <b>↑ ↓</b> SELECT ·
+      <b>Tab</b> LFO · <b>]</b> ENV · <b>\</b> SCL · <b>Backspace</b> SAVE (hold) · <b>Esc</b> HOME · <b>← →</b> PRESETS · <b>↑ ↓</b> SELECT ·
       <b>− =</b> OCT− OCT+ · <b>1–4</b> K1–K4 up, <b>Shift+1–4</b> down. Click an empty part of the page if keys do nothing.</p>
       <h4>1. Record a beat (PLAY)</h4><ol>
         <li><b>PRESETS</b> (← →) picks the kit. <b>Enter</b> (REC on), <b>Space</b> (PLAY): the bar runs. Play <b>a</b> (kick),
         <b>s</b> (snare), then <b>w</b> (hat) on the next rounds. A row a key, in the order you record them; the rows share the
         space, with names while they fit. With the mouse, press low on a key to play harder (the FM-1's keys feel how hard).</li>
-        <li><b>K3 GRID</b> (off, 1/8, 1/16, 1/32, 1/8T, 1/16T) and <b>K4 FEEL</b> (swing …) move the whole track on playback; what you
-        played is kept: GRID off and it plays as played. <b>K1 LEVEL</b> and <b>K2 FX</b>: the key you played last.</li>
+        <li><b>K3 GRID</b> (off, 1/8, 1/16, 1/32, 1/8T, 1/16T) places each hit as you record it (off: as played). <b>K4 FEEL</b>
+        (swing, laid back …) then moves the whole track from where it was recorded; change it any time. <b>K1 LEVEL</b> and <b>K2 FX</b>: the key you played last.</li>
       </ol>
       <h4>2. Erase, clear, undo, redo</h4><ol>
         <li><b>Erase</b>: REC on, playing, hold <b>Shift</b> (EDIT) and hold <b>w</b>. <b>Undo</b>: hold <b>Backspace</b> (SAVE),
@@ -151,13 +152,21 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
         <li>Every pad goes through PUNCH and DIRT (its TRACK FX starts at 10). EDIT → <b>PAD FX</b>: on the hats, TRACK FX down
         (clean); on the snare, DELAY and REVERB up.</li>
       </ol>
-      <h4>6. Sample a kick (LFO)</h4><ol>
+      <h4>6. Play a sound across the keys (ENV · LEVELS)</h4><ol>
+        <li>MY KIT 1: touch <b>k</b> (F4, a sung note). <b>]</b> (ENV): LEVELS. The screen shows its ROOT, found from the sample (A3).</li>
+        <li><b>K1 MODE</b>: <b>TUNE</b> (every key a semitone, F4 as recorded), <b>SCALE</b> (the white keys play the song's scale),
+        <b>CHORDS</b> (the white keys play the key's chords; K4: triads, 7ths, sus2, sus4, power), <b>VELOCITY</b> (16 white keys, soft
+        to hard). <b>K2</b> the scale; <b>↑ ↓</b> (SELECT) the song's key here (on the FM-1, GLO · SONG).</li>
+        <li>REC + PLAY: what you play is recorded on the drum track, with its pitch. <b>]</b> again: back to the kit.</li>
+        <li>Try your own: sample <i>Sung note</i> or <i>Bass pluck</i> from the phone onto a key, then ENV.</li>
+      </ol>
+      <h4>7. Sample a kick (LFO)</h4><ol>
         <li>Phone: <i>808 kick</i>. PRESETS to MY KIT 2. <b>Tab</b> (LFO): TAKE. <b>2</b>: IN LEVEL. <b>Enter</b>: armed, it records on
         sound; <b>Enter</b>: stop.</li>
         <li><b>Tab</b>: CHOP, K4 SLICES 1. <b>Enter</b>: put mode (red). Press <b>a</b>: <i>F3 · KICK: press again to store</i>; press
         <b>a</b> again: <i>Stored on F3</i>. Nothing sounds; SELECT plays the slice.</li>
       </ol>
-      <h4>7. Chop a break</h4><ol>
+      <h4>8. Chop a break</h4><ol>
         <li>Phone: <i>Drum break</i>. TAKE, two bars. CHOP: K4 <i>hits</i>. The keys play the slices. <b>=</b> split, <b>−</b> merge.</li>
         <li><b>Enter</b>: put mode. <b>↑ ↓</b> chooses the slice (it plays). Press a key twice. <b>K4 PUT</b>: <i>all</i> puts every
         slice from the key you press up.</li>
@@ -171,9 +180,11 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
       <li><b>SAVE</b>: held, undo (up to 4) on PLAY; two taps, redo; held in EDIT and the sampler, save the kit.</li>
       <li><b>Erase needs REC on</b>, on every track.</li>
       <li>Drum map v2; MY KIT 1–3, 7 s each; one take of 11 s; OCT+/OCT− split and merge; put a slice with two presses.</li>
-    </ol><h3>Proposed in v6 (yours to confirm)</h3><ol>
-      <li><b>GRID and FEEL for the whole track</b>, on playback (what you played is kept), as built on every track; not per pad.</li>
-      <li><b>Velocity</b> per pad (KIT · K2): fixed, or 1–10.</li>
+      <li><b>GRID when recording</b> (off: as played), <b>FEEL</b> on playback for the whole track; the same on every track.</li>
+      <li><b>Velocity</b> per pad (KIT · K2): fixed, or 1–10 (7 at first).</li>
+      <li><b>LEVELS on ENV</b>: a pad across the keys, TUNE, SCALE, CHORDS, VELOCITY, in the song's key, with the sample's root found;
+      the theory is the one MELODY, BASS and CHORDS use. MELODY, BASS and CHORDS do not change.</li>
+    </ol><h3>From v6</h3><ol>
       <li><b>SOUND</b>: TUNE, ATTACK, HOLD, DECAY in ms; LEVEL moves to KIT and PLAY.</li>
       <li><b>FX</b>: PUNCH (COMP, CLIP), DIRT (off, Drive, Lofi, Tape, Crush), SPACE (DELAY with off, FEEDBACK, REVERB). The compressor is
       the track's, shared; each pad's TRACK FX says how much it gets (one compressor a pad would cost too much processing).</li>
@@ -272,7 +283,9 @@ function oneByOne() { const a = new Float32Array(Math.round(2.4 * SR)); [kickG(1
 function quietHats() { const a = new Float32Array(Math.round(2 * SR)); for (let j = 0; j < 8; j++) mix(a, hatG(.04), Math.round((.1 + j * .24) * SR), .12); return clip(a); }
 const stab = () => mk(1.2, (a, n) => { const fs = [261.6, 329.6, 392, 493.9]; for (let i = 0; i < n; i++) { const t = i / SR; let s = 0; fs.forEach(f => s += ((t * f) % 1) * 2 - 1); a[i] = s * .16 * Math.exp(-t / .45); } lp(a, .18); });
 const withLead = (a, s) => { const b = new Float32Array(a.length + Math.round(s * SR)); b.set(a, Math.round(s * SR)); return b; };
-const SOURCES = [["Drum break, 95 BPM (2 bars)", brk()], ["808 kick", withLead(kickG(120, 42, .3, .05), .6)], ["Kick, snare, hat, clap, one by one", oneByOne()], ["Hi-hats, recorded quiet", quietHats()], ["Chord stab", withLead(clip(stab()), .4)]];
+function sung(f, sec) { return mk(sec, (a, n) => { let ph = 0; for (let i = 0; i < n; i++) { const t = i / SR, v = f * (1 + .006 * Math.sin(2 * Math.PI * 5.5 * t)); ph += 2 * Math.PI * v / SR; let s = 0; for (let h = 1; h <= 12; h++) s += Math.sin(ph * h) * Math.exp(-Math.pow((f * h - 700) / 500, 2)) / h; a[i] = s * .5 * Math.min(1, t / .04) * Math.min(1, (sec - t) / .15); } }); }
+function pluck(f, sec) { return lp(mk(sec, (a, n) => { for (let i = 0; i < n; i++) { const t = i / SR; a[i] = (((t * f) % 1) * 2 - 1) * .6 * Math.exp(-t / .35); } }), .12); }
+const SOURCES = [["Drum break, 95 BPM (2 bars)", brk()], ["808 kick", withLead(kickG(120, 42, .3, .05), .6)], ["Kick, snare, hat, clap, one by one", oneByOne()], ["Hi-hats, recorded quiet", quietHats()], ["Chord stab", withLead(clip(stab()), .4)], ["Sung note, A3", withLead(clip(sung(220, 1.4)), .5)], ["Bass pluck, E2", withLead(clip(pluck(82.41, 1.2)), .5)]];
 
 // IMA ADPCM, encoded and decoded: what the FM-1 keeps is what you hear
 const STEP = [7,8,9,10,11,12,13,14,16,17,19,21,23,25,28,31,34,37,41,45,50,55,60,66,73,80,88,97,107,118,130,143,157,173,190,209,230,253,279,307,337,371,408,449,494,544,598,658,724,796,876,963,1060,1166,1282,1411,1552,1707,1878,2066,2272,2499,2749,3024,3327,3660,4026,4428,4871,5358,5894,6484,7132,7845,8630,9493,10442,11487,12635,13899,15289,16818,18500,20350,22385,24623,27086,29794,32767];
@@ -322,6 +335,7 @@ const maxGain = x => { const p = peakOf(x.smp.d, x.smp.a0, x.smp.a1); return p >
   const d = adpcm(raw), K = kits[4];
   const put = (key, j) => { const a0 = Math.round((.248 + j * .5) * SR), a1 = a0 + Math.round(.45 * SR); K.keys[key] = { ...fresh(key), smp: { d, a0, a1, lo: a0, hi: a1, take: 0 } }; };
   put(0, 0); put(2, 1); put(1, 2); put(4, 3);
+  { const v = adpcm(clip(sung(220, 1.2))); K.keys[12] = { ...fresh(12), smp: { d: v, a0: 0, a1: v.length, lo: 0, hi: v.length, take: 0 } }; }
   K.saved = K.keys.map(cloneKey);
 }
 const DIRTN = ["off", "Drive", "Lofi", "Tape", "Crush"], DLYN = ["off", "1/16", "1/8", "1/8 dotted", "1/4"], DLYB = [0, .25, .5, .75, 1];
@@ -383,10 +397,10 @@ function render(x) {
   if (x.rev) a.reverse();
   return a;
 }
-function playKey(i, at = 0, v = 100) {       // a pad: its envelope, its DIRT, then dry + TRACK FX + DELAY + REVERB sends
+function playKey(i, at = 0, v = 100, semi = 0, choke = true) {       // a pad: its envelope, its DIRT, then dry + TRACK FX + DELAY + REVERB sends
   if (!ac) return; const x = key(i), d = render(x), s = ac.createBufferSource(), g = ac.createGain(), T = Math.max(ac.currentTime + .005, at);
-  s.buffer = buf(d); s.playbackRate.value = Math.pow(2, x.tune / 12);
-  if (x.grp) { groups[x.grp].forEach(v => { try { v.g.gain.cancelScheduledValues(T); v.g.gain.setTargetAtTime(0, T, .006); v.s.stop(T + .04); } catch (e) {} }); groups[x.grp] = []; }
+  s.buffer = buf(d); s.playbackRate.value = Math.pow(2, (x.tune + semi) / 12);
+  if (x.grp && choke) { groups[x.grp].forEach(v => { try { v.g.gain.cancelScheduledValues(T); v.g.gain.setTargetAtTime(0, T, .006); v.s.stop(T + .04); } catch (e) {} }); groups[x.grp] = []; }
   const lv = x.lvl / 10 * (1 - x.vel / 10 * (1 - v / 127)), at0 = ATTS[x.att] / 1000, ho = HOLDS[x.hold] / 1000, de = DECS[x.dec] / 1000;
   g.gain.setValueAtTime(at0 ? 0 : lv, T); if (at0) g.gain.linearRampToValueAtTime(lv, T + at0);
   if (isFinite(ho)) { g.gain.setValueAtTime(lv, T + at0 + ho + .0005); g.gain.linearRampToValueAtTime(0, T + at0 + ho + de); }
@@ -397,7 +411,7 @@ function playKey(i, at = 0, v = 100) {       // a pad: its envelope, its DIRT, t
   if (x.dly) { const q = ac.createGain(); q.gain.value = x.dly / 10; g.connect(q); q.connect(dlyIn); }
   if (x.rvb) { const q = ac.createGain(); q.gain.value = x.rvb / 10; g.connect(q); q.connect(rvbIn); }
   s.start(T);
-  if (x.grp) groups[x.grp].push({ s, g });
+  if (x.grp && choke) groups[x.grp].push({ s, g });
 }
 function playRaw(d, s, e) { if (!ac) return; stopRaw(); const n = ac.createBufferSource(); n.buffer = buf(d.slice(s, e)); n.connect(master); n.start(); st.prev = { t0: ac.currentTime, s, e, n }; n.onended = () => { if (st.prev && st.prev.n === n) st.prev = null; }; }
 function stopRaw() { if (st.prev) { try { st.prev.n.stop(); } catch (e) {} st.prev = null; } }
@@ -421,12 +435,10 @@ const THR = .02;
 
 // ------------------------------------------------------------------ the song: one bar of drums, recorded, played with GRID and FEEL
 const S = st.song;
-function eff(t) {                         // where a note plays: on the GRID, with the FEEL (only with a grid); what you played is kept
-  const gq = GRIDS[S.grid][1]; if (!gq) return t;
-  let q = Math.round(t * gq) / gq; if (q >= 1) q -= 1;
-  const [, sw, off] = FEELS[S.feel], unit = gq === 8 ? 1 / 8 : gq === 16 || gq === 32 ? 1 / 16 : 0, j = unit ? Math.round(q / unit) : 0;
-  if (unit && Math.abs(q - j * unit) < 1e-6 && j % 2) q += (sw - .5) * 2 * unit;
-  return (q + off / BAR + 1) % 1;
+function eff(t) {                         // where a note plays: FEEL moves the off-sixteenths (and all of it, laid back or pushed)
+  const [, sw, off] = FEELS[S.feel], j = Math.round(t * 16);
+  if (Math.abs(t - j / 16) < 1 / 64 && j % 2) t += (sw - .5) * 2 / 16;
+  return (t + off / BAR + 1) % 1;
 }
 const barPos = () => S.playing ? ((ac.currentTime - S.t0) / BAR) % 1 : 0;
 const snap = () => ({ notes: S.notes.map(n => ({ ...n })), order: [...S.order] });
@@ -443,17 +455,18 @@ function transport() {
       for (const n of [...S.notes]) {
         const e = eff(n.t); if (!(e >= a && e < b)) continue;
         if (S.erasing.has(n.k)) { S.notes.splice(S.notes.indexOf(n), 1); continue; }
-        playKey(n.k, barStart + e * BAR, n.v);
+        if (n.s) n.s.forEach(q => playKey(n.k, barStart + e * BAR, n.v, q, false)); else playKey(n.k, barStart + e * BAR, n.v);
       }
       nextT += .01 * BAR;
     }
   }, 20);
 }
-function recordHit(i, v) {
+function recordHit(i, v, semis) {
   if (!S.armed || !S.playing) return;
   const bar = Math.floor((ac.currentTime - S.t0) / BAR);
   if (S.passMark !== bar) { pushUndo(); S.passMark = bar; }        // each round of the loop you play in is one pass to undo
-  S.notes.push({ k: i, t: barPos(), v });
+  const tp = barPos(), gq = GRIDS[S.grid][1], t = gq ? (Math.round(tp * gq) / gq) % 1 : tp;     // GRID places it as you record
+  S.notes.push({ k: i, t, tp, v, s: semis });
   if (!S.order.includes(i)) S.order.push(i);
 }
 
@@ -532,6 +545,50 @@ function presets(d) {
   st.kit = (st.kit + d + kits.length) % kits.length;
 }
 
+// ------------------------------------------------------------------ LEVELS (ENV): one pad across the keys, as the MPC's 16 Levels and Pad Perform
+const LVM = ["TUNE", "SCALE", "CHORDS", "VELOCITY"];
+const SCALES = [["major", [0, 2, 4, 5, 7, 9, 11]], ["minor", [0, 2, 3, 5, 7, 8, 10]], ["minor pent.", [0, 3, 5, 7, 10]], ["major pent.", [0, 2, 4, 7, 9]], ["blues", [0, 3, 5, 6, 7, 10]], ["dorian", [0, 2, 3, 5, 7, 9, 10]], ["mixolydian", [0, 2, 4, 5, 7, 9, 10]], ["phrygian", [0, 1, 3, 5, 7, 8, 10]], ["harmonic minor", [0, 2, 3, 5, 7, 8, 11]]];
+const CHORDT = [["triads", [0, 2, 4]], ["7ths", [0, 2, 4, 6]], ["sus2", [0, 1, 4]], ["sus4", [0, 3, 4]], ["power", [0, 4, 7]]];
+const PCN = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const LV = { pad: 12, mode: 1, scale: 1, chord: 0, tonic: 0, last: "" };
+function detectRoot(d) {          // the sample's pitch (YIN): 60 ms from just after its loudest point
+  let pk = 0, at = 0; for (let i = 0; i < Math.min(d.length, SR); i++) if (Math.abs(d[i]) > pk) { pk = Math.abs(d[i]); at = i; }
+  const N = 1100, TM = 600, s0 = Math.min(at + Math.round(.02 * SR), d.length - N - TM - 1); if (s0 < 0) return null;
+  const df = new Float32Array(TM); let run = 0, tau = -1;
+  for (let L = 1; L < TM; L++) { let q = 0; for (let i = 0; i < N; i++) { const e = d[s0 + i] - d[s0 + i + L]; q += e * e; } run += q; df[L] = q * L / (run || 1); }
+  for (let L = 18; L < TM - 1; L++) if (df[L] < .15) { while (L + 1 < TM && df[L + 1] < df[L]) L++; tau = L; break; }
+  if (tau < 0) return null;
+  const a = df[tau - 1], b = df[tau], c = df[tau + 1], sh = (a - c) / (2 * (a - 2 * b + c) || 1);
+  return 69 + 12 * Math.log2(SR / (tau + sh) / 440);
+}
+const nn = m => PCN[((Math.round(m) % 12) + 12) % 12] + (Math.floor(Math.round(m) / 12) - 1);
+function lvEnter() {
+  const x = key(st.sel); LV.pad = st.sel;
+  if (x.root === undefined) { const f = detectRoot(render(x)); x.root = f === null ? 60 : f; x.found = f !== null; }
+  stopRaw(); st.page = "levels"; LV.last = "";
+}
+function lvNotes(i) {             // what key i plays: semitones from the sample's own pitch, a velocity, and a name
+  const x = key(LV.pad), root = x.root, sc = SCALES[LV.scale][1], wi = WH.indexOf(i);
+  const deg = d => { const o = Math.floor(d / sc.length); return o * 12 + sc[d - o * sc.length]; };
+  let t = root + ((LV.tonic - Math.round(root) % 12) + 24) % 12; if (t - root > 6) t -= 12;     // the song's key nearest the sample's pitch
+  if (LV.mode === 0) return { s: [i - 12], v: null, name: nn(root + i - 12) };
+  if (wi < 0) return null;
+  const d = wi - 7;
+  if (LV.mode === 1) { const m = t + deg(d); return { s: [m - root], v: null, name: nn(m) }; }
+  if (LV.mode === 2) {
+    const ms = CHORDT[LV.chord][0] === "power" ? [t + deg(d), t + deg(d) + 7, t + deg(d) + 12] : CHORDT[LV.chord][1].map(c => t + deg(d + c));
+    const third = ms.length > 2 ? ms[1] - ms[0] : 0, fifth = ms[2] - ms[0], q = CHORDT[LV.chord][0];
+    const kind = q === "power" ? "5" : q.startsWith("sus") ? q : (third === 3 ? (fifth === 6 ? "dim" : "m") : (fifth === 8 ? "+" : "")) + (q === "7ths" ? (ms[3] - ms[0] === 11 ? "maj7" : "7") : "");
+    return { s: ms.map(m => m - root), v: null, name: PCN[((Math.round(ms[0]) % 12) + 12) % 12] + kind };
+  }
+  return { s: [0], v: Math.round(8 + wi * 119 / 15), name: "velocity " + Math.round(8 + wi * 119 / 15) };
+}
+function lvPress(i, v) {
+  const L = lvNotes(i); if (!L) return; const vv = L.v || v;
+  L.s.forEach(q => playKey(LV.pad, 0, vv, q, false)); LV.last = L.name; LV.lastKey = i;
+  recordHit(LV.pad, vv, L.s);
+}
+
 // ------------------------------------------------------------------ controls
 function press(i, v = 100) {
   startAudio(); st.held.set(i, 1);
@@ -550,6 +607,7 @@ function press(i, v = 100) {
     if (!S.armed || !S.playing) { flash(!S.armed ? "REC on to erase" : "PLAY: erase while it plays"); return; }
     if (!S.erasing.size) pushUndo(); S.erasing.add(i); return;
   }
+  if (st.page === "levels") { lvPress(i, v); return; }
   st.sel = i; playKey(i, 0, v);
   if (st.page === "play") recordHit(i, v);
 }
@@ -559,6 +617,12 @@ function knob(k, d) {
   startAudio(); const P = st.page, x = key(st.sel);
   if (st.save) { if (k === 0) st.save.to = clampI(st.save.to + d, 4, 6); return; }
   if (st.pick) { if (k === 0) st.pick.to = clampI(st.pick.to + d, 4, 6); return; }
+  if (st.page === "levels") { const x = key(LV.pad);
+    if (k === 0) LV.mode = clampI(LV.mode + d, 0, LVM.length - 1);
+    if (k === 1) LV.scale = clampI(LV.scale + d, 0, SCALES.length - 1);
+    if (k === 2) { x.root = Math.round(x.root) + d; x.found = false; }
+    if (k === 3) LV.chord = clampI(LV.chord + d, 0, CHORDT.length - 1);
+    return; }
   if (st.layer) { if (k === 0) S.grid = clampI(S.grid + d, 0, GRIDS.length - 1); if (k === 1) S.feel = clampI(S.feel + d, 0, FEELS.length - 1); return; }
   if (P === "usb") {
     if (k === 0) st.usb.out = (st.usb.out + d + 2) % 2;
@@ -662,6 +726,7 @@ function sel(d) {
   if (st.page === "chop" && take && st.chop.sl.length) {      // only the slices there are; each one plays
     const c = st.chop; c.cur = (c.cur + d + c.sl.length) % c.sl.length; if (st.place) { st.place.key = -1; st.place.done = -1; } playSel(); return;
   }
+  if (st.page === "levels") { LV.tonic = (LV.tonic + d + 12) % 12; return; }
   if (editing() && EDITTABS[st.tab] === "SOUND") { const x = key(st.sel); x.grp = (x.grp + d + 5) % 5; touch(); }
 }
 function oct(d) {
@@ -669,10 +734,11 @@ function oct(d) {
   if (st.layer && d > 0) { if (st.ask === "clear") { pushUndo(); S.notes = []; S.order = []; st.ask = null; st.layer = false; flash("DRUMS cleared · SAVE held: undo"); } else st.ask = "clear"; return; }
   if (st.page === "chop") d > 0 ? split() : merge();
 }
+function envTap() { if (st.save || st.pick || st.layer) return; if (st.page === "levels") st.page = "play"; else if (st.page === "play" || st.page === "edit") lvEnter(); }
 function home() { stopRaw(); if (st.rec) stopRec(); closeOver(); st.place = null; st.page = "play"; routePhone(); }
 
 // ------------------------------------------------------------------ the panel
-const KNOBS = { play: ["LEVEL", "FX", "GRID", "FEEL"], take: ["", "IN LEVEL", "START", ""], chop: ["START", "END", "ZOOM", "SLICES"], usb: ["OUT", "MONITOR", "IN LEVEL", ""],
+const KNOBS = { levels: ["MODE", "SCALE", "ROOT", "CHORD"], play: ["LEVEL", "FX", "GRID", "FEEL"], take: ["", "IN LEVEL", "START", ""], chop: ["START", "END", "ZOOM", "SLICES"], usb: ["OUT", "MONITOR", "IN LEVEL", ""],
   KIT: ["LEVEL", "VELOCITY", "", ""], SOUND: ["TUNE", "ATTACK", "HOLD", "DECAY"], TRIM: ["START", "END", "REVERSE", "GAIN"], "PAD FX": ["DIRT", "DELAY", "REVERB", "TRACK FX"],
   PUNCH: ["COMP", "CLIP", "", ""], DIRT: ["TYPE", "AMOUNT", "", ""], SPACE: ["DELAY", "FEEDBACK", "REVERB", ""], ideas: ["", "", "", ""], auto: ["", "", "", ""] };
 for (let k = 0; k < 4; k++) {
@@ -712,7 +778,7 @@ $("phvol").oninput = e => { st.phone.vol = e.target.value / 100; if (phoneNode) 
 $("selL").onclick = () => sel(-1); $("selR").onclick = () => sel(1);
 $("preL").onclick = () => presets(-1); $("preR").onclick = () => presets(1);
 $("octD").onclick = () => oct(-1); $("octU").onclick = () => oct(1);
-$("play").onclick = playBtn; $("scl").onclick = sclTap;
+$("play").onclick = playBtn; $("scl").onclick = sclTap; $("env").onclick = () => { startAudio(); envTap(); };
 $("fx").onclick = () => { startAudio(); fxTap(); }; $("lfo").onclick = () => { startAudio(); lfoTap(); };
 $("home").onclick = home;
 $("glo").onclick = () => { stopRaw(); closeOver(); st.place = null; st.page = st.page === "usb" ? "play" : "usb"; routePhone(); };
@@ -747,6 +813,7 @@ addEventListener("keydown", e => {
   else if (c === "Tab") { startAudio(); lfoTap(); }
   else if (c === "Backquote") { startAudio(); fxTap(); }
   else if (c === "Backslash") sclTap();
+  else if (c === "BracketRight") { startAudio(); envTap(); }
   else if (c === "Enter") recDown();
   else if (c === "Backspace") saveDown();
   else if (c === "Escape") home();
@@ -818,7 +885,7 @@ function drawPlay() {
     if (y + h > Y0 + AH) return; const col = GCOL[GROUP(k)];
     if (h >= 9) T(shortName(k).slice(0, 8), 9, y + h / 2, Math.min(8, h - 2), col, 700); else { g.fillStyle = col; g.fillRect(9, y, 30, Math.max(1, h - 1)); }
     S.notes.filter(q => q.k === k).forEach(q => {
-      const e = eff(q.t), xe = X0 + W * e, xp = X0 + W * q.t, vh = Math.max(2, (h - 4) * (q.v || 100) / 127);
+      const e = eff(q.t), xe = X0 + W * e, xp = X0 + W * (q.tp === undefined ? q.t : q.tp), vh = Math.max(2, (h - 4) * (q.v || 100) / 127);
       if (h >= 9 && Math.abs(xe - xp) > 1 && Math.abs(xe - xp) < W / 2) { g.fillStyle = col + "88"; g.fillRect(Math.min(xe, xp), y + h / 2, Math.abs(xe - xp), 1); }
       g.fillStyle = col; rr(xe - 2.5, y + (h - vh) / 2, 5, vh, Math.min(2, vh / 2)); g.fill();
     });
@@ -828,7 +895,7 @@ function drawPlay() {
   if (S.playing && ac) { const x = X0 + W * barPos(); g.fillStyle = C.ok; g.fillRect(x, Y0, 1.5, AH); }
   T(keyNote(st.sel) + " · " + (isAuto(st.sel) ? ROLE[st.sel] : soundName(key(st.sel))), 6, 194, 8.5, C.mute, 700);
   const x = key(st.sel);
-  knobRow(KNOBS.play, [String(x.lvl), String(x.tfx), GRIDS[S.grid][0], S.grid ? FEELS[S.feel][0] : "-"]);
+  knobRow(KNOBS.play, [String(x.lvl), String(x.tfx), GRIDS[S.grid][0], FEELS[S.feel][0]]);
 }
 function draw() {
   g.fillStyle = C.bg; g.fillRect(0, 0, 240, 240);
@@ -844,7 +911,18 @@ function draw() {
     if (st.ask === "clear") { g.fillStyle = "#5a1f22"; rr(6, 158, 228, 30, 6); g.fill(); T("Clear DRUMS?  OCT+: yes · other: no", 120, 173, 9, C.fg, 700, "center"); }
     else T("OCT+: clear this track · REC: close", 120, 172, 8.5, C.mute, 600, "center");
     knobRow(["GRID", "FEEL", "CLICK", "COUNT-IN"], [GRIDS[S.grid][0], FEELS[S.feel][0], "rec", "off"]);
-  } else if (P === "play" || P === "ideas" || P === "auto") drawPlay(); else if (P === "edit") {
+  } else if (P === "play" || P === "ideas" || P === "auto") drawPlay();
+  else if (P === "levels") {
+    const px = key(LV.pad); T("DRUMS", 6, 12, 11, S.armed ? C.rec : C.acc, 700); T("LEVELS", 52, 12, 9, C.fg, 700); T(kit().name + " · " + BPM, 234, 12, 9, C.mute, 600, "right"); g.fillStyle = "#222936"; g.fillRect(6, 22, 228, 1);
+    T(keyNote(LV.pad) + " · " + (isAuto(LV.pad) ? ROLE[LV.pad] : soundName(px)), 6, 36, 11, C.fg, 700);
+    T("ROOT " + nn(px.root) + (px.found ? " (found)" : " (set)"), 234, 36, 8.5, px.found ? C.ok : C.mute, 700, "right");
+    T("KEY " + PCN[LV.tonic] + " " + SCALES[LV.scale][0] + "  (SELECT)", 6, 52, 8.5, C.mute, 600);
+    g.fillStyle = C.card; rr(6, 62, 228, 74, 6); g.fill();
+    T(LV.last || (LV.mode === 0 ? "every key a semitone" : LV.mode === 3 ? "16 white keys, soft to hard" : "the white keys: " + (LV.mode === 1 ? "the scale" : "its chords")), 120, 99, LV.last ? 24 : 9, LV.last ? C.fg : C.mute, 700, "center");
+    strip(146, 30, i => { const L = lvNotes(i); return L && LV.mode !== 3 && LV.mode !== 0 && ((Math.round(L.s[0] + px.root) % 12) + 12) % 12 === LV.tonic; });
+    T(LV.mode === 0 ? "F4 plays it as recorded" : LV.mode === 3 ? "" : "lit: the key's tonic", 120, 186, 8, C.mute, 600, "center");
+    knobRow(KNOBS.levels, [LVM[LV.mode], LV.mode === 1 || LV.mode === 2 ? SCALES[LV.scale][0] : "-", nn(px.root), LV.mode === 2 ? CHORDT[LV.chord][0] : "-"]);
+  } else if (P === "edit") {
     const tab = EDITTABS[st.tab]; top(EDITTABS, tab); keyHead(38);
     if (tab === "KIT") {
       const rd = render(x); g.fillStyle = C.card; rr(6, 62, 228, 76, 5); g.fill(); wave(rd, 0, rd.length, 10, 66, 220, 68, x.smp ? C.acc : "#6f7a8c", x.lvl / 8);
@@ -936,15 +1014,17 @@ function draw() {
     el.classList.toggle("held", st.held.has(i));
     el.querySelector(".smp").hidden = !key(i).smp;
     el.classList.toggle("lit", P === "chop" && !st.place && !!take && i < st.chop.sl.length);
+    el.style.opacity = P === "levels" && LV.mode && isBlack(LOW + i) ? .35 : "";
     el.classList.toggle("prev", !!st.place && st.place.key === i);
   });
   $("edit").classList.toggle("on", st.editHeld || P === "edit"); $("rec").classList.toggle("on", !!st.rec || !!st.place || S.armed || st.layer);
   $("play").classList.toggle("on", S.playing || !!st.prev); $("lfo").classList.toggle("on", sampling()); $("fx").classList.toggle("on", P === "fx");
-  $("scl").classList.toggle("on", P === "ideas" || P === "auto");
+  $("scl").classList.toggle("on", P === "ideas" || P === "auto"); $("env").classList.toggle("on", P === "levels");
   $("hint").textContent = HINT[st.save ? "save" : st.layer ? "layer" : P === "edit" ? EDITTABS[st.tab] : P] || "";
   requestAnimationFrame(draw);
 }
 const HINT = {
+  levels: "LEVELS (ENV): the pad you touched, across the keys. K1 MODE (TUNE, SCALE, CHORDS, VELOCITY), K2 SCALE, K3 ROOT (found from the sample; turn to correct), K4 CHORD. SELECT: the song's key. REC + PLAY record it on the drum track. ENV or HOME: back.",
   play: "PLAY: keys play the kit (press low on a key: harder). REC on + PLAY records. K1 LEVEL, K2 FX (the key played), K3 GRID, K4 FEEL (the track). PRESETS: the kit. EDIT held + key (REC on, playing): erase. SAVE held: undo; two taps: redo. REC held: REC layer.",
   ideas: "IDEAS, as built (on the new drum map). SCL: next.", auto: "AUTO, as built (on the new drum map). SCL: next.",
   KIT: "EDIT · KIT: touch a key; PRESETS: its sound, from every sound you have. K1 LEVEL, K2 VELOCITY (fixed, or how much it follows how hard you play). SAVE held: save the kit.",
