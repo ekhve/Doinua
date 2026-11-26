@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   gates:
@@ -43,6 +44,53 @@ jobs:
         run: tools/setup.sh
       - name: Gates
         run: factory/check.sh
+      - name: Replay the previously reviewed Clean Punch firmware
+        if: ${{ always() && !cancelled() && (github.head_ref == 'clean-punch' || github.ref_name == 'clean-punch') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          replay="$RUNNER_TEMP/clean-punch-replay"
+          gh run download --repo "$GITHUB_REPOSITORY" 45501602741 --name firmware-and-screens --dir "$replay"
+          old="$replay/build/companion/companion.fwsc"
+          echo "39515058014ceaea31a2da41588df9ea3171063dbb50fafb1fd21a9abf51cfc4  $old" | sha256sum --check
+          current="$PWD/build/companion/companion.fwsc"
+          cp "$current" "$replay/current.fwsc"
+          trap 'cp "$replay/current.fwsc" "$current"' EXIT
+          cp "$old" "$current"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from PIL import Image, ImageChops
+          from factory.run import run_emu
+
+          reviewed = {
+              "companion_sound_browser": (1300, 1900, 2500, 5000),
+              "companion_coralflower_va": (2860,),
+              "companion_clean_punch": (1700,),
+          }
+          replay = Path(os.environ["RUNNER_TEMP"]) / "clean-punch-replay"
+          evidence = Path("work/clean-punch-review")
+          evidence.mkdir(parents=True, exist_ok=True)
+          for name, times in reviewed.items():
+              scenario = json.loads(Path(f"factory/scenarios/{name}.json").read_text())
+              result = run_emu(scenario, replay / name)
+              for at in times:
+                  original = Image.fromarray(result["lcd"](at).astype("uint8")).convert("RGB")
+                  original.save(evidence / f"{name}_{at}_previous.png")
+                  with Image.open(f"work/factory/{name}/screen_{at}_device.png") as current:
+                      identical = ImageChops.difference(original, current.convert("RGB")).getbbox() is None
+                  print(f"{name} {at}: reviewed firmware vs current: {'identical' if identical else 'different'}")
+          PY
+      - name: Upload reviewed Clean Punch evidence
+        if: ${{ always() && !cancelled() && (github.head_ref == 'clean-punch' || github.ref_name == 'clean-punch') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-punch-review-evidence
+          path: work/clean-punch-review/*.png
+          if-no-files-found: ignore
       - name: Firmware and screens
         if: always()
         uses: actions/upload-artifact@v4
