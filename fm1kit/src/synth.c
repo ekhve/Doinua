@@ -157,11 +157,11 @@ int kit_sound_preset(void) { return tr_preset[0]; }
  * fmini-1's FA_XG: reverb TYPE DECAY TONE, delay TYPE TIME FEEDBACK, chorus TYPE DEPTH RATE, drive TYPE TONE OUTPUT), as
  * fmini-1 does when a patch is loaded. fmini-1's delay TYPEs P-PONG and MULTI play as DIGITAL here (mono), REVERSE and
  * A-SYNC as ANALOG; the reverb is the kit's room, its DECAY the TYPE's size */
-static void sound_fx(int t)
+static void sound_fx(int t, int shared_fx)
 {
     static const uint8_t DLY_OF[8] = { 0, 1, 2, 1, 1, 3, 0, 0 };
     uint8_t sends[4], x[12];
-    if (kit__eng_fx(t, sends, x)) {
+    if (kit__eng_fx(t, sends, x) && shared_fx) {
         kit_fx_t f;
         kit_fx_bus_of(&f);
         f.cho_type = (uint8_t)(x[6] % 3u);
@@ -176,7 +176,7 @@ static void sound_fx(int t)
     kit_track_sends(t, sends[0], sends[1], sends[2], sends[3]);
 }
 
-void kit_track_sound(int t, int e, int p)
+static void track_sound(int t, int e, int p, int shared_fx)
 {
     uint32_t k;
     int i;
@@ -194,8 +194,10 @@ void kit_track_sound(int t, int e, int p)
     tr_engine[t] = e;
     tr_preset[t] = p;
     kit__unlock(k);
-    sound_fx(t);
+    sound_fx(t, shared_fx);
 }
+void kit_track_sound(int t, int e, int p) { track_sound(t, e, p, 1); }
+void kit_track_sound_local(int t, int e, int p) { track_sound(t, e, p, 0); }
 void kit_sound(int e, int p) { kit_track_sound(0, e, p); }
 void kit_instrument(int inst) { kit_sound(KIT_ENGINE_BASIC, inst); }
 const char *kit_instrument_name(int inst)

@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 43
+#define FM1KIT_API 45
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -163,6 +163,8 @@ void kit_drum_pad_set(int track, int pad, int kit, int src, int tune, int decay)
 enum { KIT_TRACK_CHORDS = 0, KIT_TRACK_BASS, KIT_TRACK_MELODY, KIT_TRACK_DRUMS, KIT_NTRACKS };
 #define KIT_CPU_LIMIT 75        /* % of the CPU the voices may take (API 35, D-091: the cpu gate's limit is 80) */
 void kit_track_sound(int track, int engine, int preset);   /* stops what the track sounds, then switches */
+/* API 44 (D-119): select a base sound and its track sends while preserving the song's shared effects. */
+void kit_track_sound_local(int track, int engine, int preset);
 /* Factory arpeggio metadata. Ticks are at 24 per quarter. Gate is a fraction of 128.
  * Swing is 0..100; probability is 0..127 (127 always plays). */
 enum {
@@ -209,6 +211,10 @@ enum { KIT_OSC_WAVE1, KIT_OSC_WAVE2, KIT_OSC_DETUNE, KIT_OSC_MIX };
 typedef struct { uint8_t wave1, wave2, mix; int16_t detune; } kit_sound_osc_t;
 int kit_track_osc_of(int track, kit_sound_osc_t *osc);
 int kit_track_osc(int track, int control, int value);
+/* API 45 (D-120): exact active levels of oscillators 1 and 2, without balance rounding.
+ * Zero means the oscillator is off. Both calls return 0 on unsupported tracks. */
+int kit_track_osc_levels_of(int track, uint8_t levels[2]);
+int kit_track_osc_levels(int track, const uint8_t levels[2]);
 /* Native envelopes of an editable sound. Controls are 0..127; times use the engine's dial scale. */
 enum { KIT_ENV_FILTER, KIT_ENV_AMP };
 enum { KIT_ENV_ATTACK, KIT_ENV_DECAY, KIT_ENV_SUSTAIN, KIT_ENV_RELEASE };

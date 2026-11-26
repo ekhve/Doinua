@@ -1,10 +1,15 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* Sound Edit v3 (D-072): live sound controls in Producer. */
+#include "presetenv.c"
+#include "presetosc.c"
+
 enum { SED_OSC, SED_FILTER, SED_FENV, SED_AENV, SED_VOICE, SED_LFO, SED_MOD, SED_NPAGES };
 enum { SED_VIBRATO, SED_CUTOFF, SED_RESO, SED_RATE, SED_DRIVE, SED_DELAY, SED_REVERB, SED_NMOD };
 typedef struct { uint8_t target[2]; int8_t amount[2]; } sed_mod_t;
 static const sed_mod_t sed_mod_default = {{SED_VIBRATO, SED_CUTOFF}, {127, 0}};
 static sed_mod_t sed_mod[KIT_NTRACKS];
+static uint8_t sed_env_edits[KIT_NTRACKS];
+static uint8_t sed_osc_edits[KIT_NTRACKS];
 static const char *const sed_mod_targets[] = { "VIBRATO", "CUTOFF", "RESO", "LFO RATE", "DRIVE", "DELAY", "REVERB" };
 static int sed_page = -1, sed_press_track = -1;
 static uint32_t sed_press_at;
@@ -55,11 +60,27 @@ static void sound_mod_apply(int t, int value)
     if (t == track && sed_page == SED_MOD) dirty = 1;
 }
 
+static void preset_workflow_forget(int t);
+
 static void sound_mod_reset(int t)
 {
+    preset_workflow_forget(t);
+    sed_env_edits[t] = 0;
+    sed_osc_edits[t] = 0;
     sed_mod[t] = sed_mod_default;
     sound_mod_apply(t, fx_mod[t]);
 }
+
+#include "presetpatch.c"
+
+static int preset_workflow_available(const preset_record_t *item)
+{
+    preset_patch_view_t view;
+    return preset_patch_open(item, &view);
+}
+
+#include "presetworkflow.c"
+#include "presetpanel.c"
 
 static void sound_edit_close(void)
 {
@@ -155,23 +176,26 @@ static void sed_adjust_filter(int knob, int delta)
 static void sed_adjust_osc(int knob, int delta)
 {
     kit_sound_osc_t osc;
+    int value;
     if (!kit_track_osc_of(track, &osc)) return;
     if (knob < 2) {
-        int wave = knob ? osc.wave2 : osc.wave1;
-        wrap(&wave, delta, KIT_OSC_NWAVES);
-        kit_track_osc(track, knob == 0 ? KIT_OSC_WAVE1 : KIT_OSC_WAVE2, wave);
+        value = knob ? osc.wave2 : osc.wave1;
+        wrap(&value, delta, KIT_OSC_NWAVES);
     } else if (knob == 2) {
-        kit_track_osc(track, KIT_OSC_DETUNE, osc.detune + delta * 5);
+        value = osc.detune + delta * 5;
     } else {
-        kit_track_osc(track, KIT_OSC_MIX, osc.mix + delta * 4);
+        value = osc.mix + delta * 4;
     }
+    if (kit_track_osc(track, knob, value)) sed_osc_edits[track] |= 1u << knob;
 }
 
 static void sed_adjust_env(int knob, int delta)
 {
     uint8_t env[4];
     int kind = sed_page == SED_FENV ? KIT_ENV_FILTER : KIT_ENV_AMP;
-    if (kit_track_envelope_of(track, kind, env)) kit_track_envelope(track, kind, knob, env[knob] + delta * 4);
+    if (kit_track_envelope_of(track, kind, env) &&
+        kit_track_envelope(track, kind, knob, env[knob] + delta * 4))
+        sed_env_edits[track] |= preset_env_bit(kit_track_engine(track), kind, knob);
 }
 
 static void sed_adjust_voice(int knob, int delta)
@@ -445,7 +469,8 @@ static void sound_edit_draw(void)
     const char *const *labels = page_labels[sed_page];
     const char *page = names[sed_page];
     kit_color_t color = page_colors[sed_page];
-    const char *preset = kit_preset_name(kit_track_engine(track), kit_track_preset(track));
+    char user_name[PRESET_NAME_MAX + 1];
+    const char *preset = preset_track_name(track, user_name);
     kit_clear(FX_BG);
     sb_fit(title, preset, 220 - kit_text_width(page, KIT_FONT_XSMALL), KIT_FONT_SMALL);
     kit_text(6, 4, title, KIT_FONT_SMALL, KIT_ALIGN_LEFT, FX_INK);

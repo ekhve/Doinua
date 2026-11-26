@@ -1483,3 +1483,11 @@ Feature: FMini factory arpeggios (ST-77)
     Given a selected Juno-106 voice is releasing
     When I read its shared native envelope
     Then both envelope levels follow the voice
+
+  @D-119 @auto
+  Scenario: Sound Edit opens the preset save panel
+    Given a pitched sound on the selected Producer track and Sound Edit open
+    When I press SAVE
+    Then the preset save options appear with Cancel selected
+    When I choose Save As and confirm a name
+    Then the saved preset is offered an explicit overwrite action

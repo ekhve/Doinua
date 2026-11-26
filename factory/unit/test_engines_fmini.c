@@ -9,6 +9,7 @@
 #include <string.h>
 #include <math.h>
 #include "kit_internal.h"
+#include "../../apps/companion/presetosc.c"
 
 uint32_t kit__lock(void) { return 0; }             /* the bus's lock (fxbus.c, D-093) */
 void kit__unlock(uint32_t k) { (void)k; }
@@ -152,6 +153,31 @@ static void check_live_osc(int preset)
           current.detune == original.detune && current.mix == original.mix, "preset selection restores oscillator settings");
     kit__eng_select(0, -1, 0);
     CHECK(!kit_track_osc_of(0, &current) && !kit_track_osc(0, KIT_OSC_MIX, 0), "unsupported tracks reject oscillator edits");
+}
+
+static void check_preset_osc(int preset)
+{
+    const uint8_t levels[2] = {100, 31};
+    uint8_t captured[PRESET_OSC_BYTES], actual[2] = {0};
+    unsigned length;
+    kit_sound_osc_t current, original;
+    kit__eng_select(0, E, preset);
+    CHECK(kit_track_osc_of(0, &original), "read the oscillator base");
+    CHECK(kit_track_osc_levels(0, levels) && kit_track_osc(0, KIT_OSC_DETUNE, -245),
+          "edit exact mixer levels and signed detune");
+    length = preset_osc_capture(0, (1u << KIT_OSC_MIX) | (1u << KIT_OSC_DETUNE), captured);
+    CHECK(length == 5, "capture only the two edited controls");
+    if (length != 5) return;
+    kit__eng_select(0, E, preset);
+    captured[4] = 128;
+    CHECK(!preset_osc_restore(0, captured, length) && kit_track_osc_of(0, &current) &&
+          current.detune == original.detune, "reject malformed levels before applying detune");
+    captured[4] = levels[1];
+    CHECK(preset_osc_restore(0, captured, length) && kit_track_osc_levels_of(0, actual) &&
+          !memcmp(levels, actual, sizeof levels), "recall exact oscillator levels");
+    CHECK(kit_track_osc_of(0, &current) && current.detune == -245 &&
+          current.wave1 == original.wave1 && current.wave2 == original.wave2,
+          "recall signed detune while retaining the base waves");
 }
 
 static void check_live_envelopes(int preset)
@@ -313,6 +339,7 @@ int main(void)
     CHECK(sine >= 0 && pad >= 0, "SINE SOLO and LUSH STRINGS are picks");
     check_live_filter(sine);
     check_live_osc(sine);
+    check_preset_osc(sine);
     check_live_envelopes(sine);
     check_live_lfo(sine);
     check_wheel_filter(sine);

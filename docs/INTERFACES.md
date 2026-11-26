@@ -58,6 +58,10 @@ delay line limit are applied.
 track's existing send settings. `kit_track_dirt_curve` returns the static transfer for the graph. The actual
 tone filter is frequency-dependent.
 
+A user preset is based on an engine and factory preset. `kit_track_sound_local` selects that base and its sends while preserving the shared chorus, delay and room. Companion then restores the saved track parameters, DIRT and sends. FMini oscillator capture preserves the two exact native levels when balance was edited, and the envelope payload preserves factory release-follow behavior unless RELEASE was edited.
+
+Companion appends the versioned preset catalog to its existing settings record. It queues both through Store and exposes save completion after the write. A failed or interrupted write retains the previous committed catalog. The song bank uses its existing storage path.
+
 `kit_perform_fx` overlays one live WAH, DUB, SPACE, DIRT or WOBBLE pair on a track. Base send and effect readings stay
 available for the editor. Delay timing and feedback are shared while DUB is active. WOBBLE sweeps the cutoff of a
 temporary low-pass on that track before its sends. At minimum DEPTH the filter is bypassed.

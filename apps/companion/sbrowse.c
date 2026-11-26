@@ -14,10 +14,32 @@
 
 #define SB_OPEN_MS 2000u
 static int16_t sb_snd[SB_NALL];                 /* each list sound as the app's sound index (sound_index), -1: missing */
-static int sb_pos[SB_NGROUPS];                  /* where each group was left */
+static int sb_pos[SB_NGROUPS + 1];              /* where each group was left, including USER */
 static int sb_cur;                              /* the sound chosen in the list (an SB_ALL index); sb_open: it shows */
 static uint32_t sb_at;                          /* the last turn or key */
 #define SB_DRUMS (SB_NGROUPS - 1)
+#define SB_USER SB_NGROUPS
+static uint8_t sb_user_slots[255];
+static int sb_user_count;
+
+static inline int preset_workflow_recall(int t, unsigned slot);
+static int preset_workflow_available(const preset_record_t *item);
+
+static void sb_collect_users(void)
+{
+    preset_reader_t reader;
+    preset_record_t item;
+    sb_user_count = 0;
+    if (companion_preset_status == COMPANION_PRESET_PENDING ||
+        preset_catalog_open(&reader, companion_settings_record,
+                            companion_settings_record_size, sizeof set) != PRESET_VALID) return;
+    while (preset_catalog_next(&reader, &item) == PRESET_VALID)
+        if (preset_workflow_available(&item)) sb_user_slots[sb_user_count++] = item.slot;
+}
+
+static int sb_groups(void) { return SB_NGROUPS + (sb_user_count != 0); }
+static int sb_total(void) { return SB_NALL + sb_user_count; }
+static int sb_group_of(int i) { return i >= SB_NALL ? SB_USER : SB_ALL[i].group; }
 
 static int sb_eq(const char *a, const char *b) { while (*a && *a == *b) { a++; b++; } return *a == *b; }
 
@@ -31,20 +53,26 @@ static void sb_init(void)                       /* each picked sound's engine an
                 for (p = 0; p < kit_preset_count(e); p++)
                     if (sb_eq(kit_preset_name(e, p), SB_ALL[i].preset)) { sb_snd[i] = (int16_t)sound_index(e, p); break; }
     }
-    for (i = 0; i < SB_NGROUPS; i++) sb_pos[i] = -1;
+    for (i = 0; i <= SB_NGROUPS; i++) sb_pos[i] = -1;
 }
 
-static int sb_usable(int i) { return i >= 0 && i < SB_NALL && sb_snd[i] >= 0 && SB_ALL[i].group != SB_DRUMS; }
+static int sb_usable(int i)
+{
+    if (i < 0 || i >= sb_total()) return 0;
+    return i >= SB_NALL || (sb_snd[i] >= 0 && SB_ALL[i].group != SB_DRUMS);
+}
 static int sb_count(int g)
 {
     int i, n = 0;
+    if (g == SB_USER) return sb_user_count;
     for (i = 0; i < SB_NALL; i++) n += sb_usable(i) && SB_ALL[i].group == g;
     return n;
 }
 static int sb_first(int g)                      /* the group's sound where it was left, else its first; -1: none */
 {
     int i;
-    if (sb_usable(sb_pos[g]) && SB_ALL[sb_pos[g]].group == g) return sb_pos[g];
+    if (sb_usable(sb_pos[g]) && sb_group_of(sb_pos[g]) == g) return sb_pos[g];
+    if (g == SB_USER) return sb_user_count ? SB_NALL : -1;
     for (i = 0; i < SB_NALL; i++) if (sb_usable(i) && SB_ALL[i].group == g) return i;
     return -1;
 }
@@ -56,25 +84,38 @@ static int sb_home_group(void)                  /* the template's group (the lab
 static int sb_find(void)                        /* the track's sound in the list, or -1 */
 {
     int i;
+    if (preset_track_slot[track])
+        for (i = 0; i < sb_user_count; ++i)
+            if (sb_user_slots[i] == preset_track_slot[track]) return SB_NALL + i;
     for (i = 0; i < SB_NALL; i++) if (sb_usable(i) && sb_snd[i] == snd[track]) return i;
     return -1;
 }
 
 static void sb_choose(int i)
 {
+    if (i >= SB_NALL) {
+        unsigned slot = sb_user_slots[i - SB_NALL];
+        if (slot != preset_track_slot[track] && preset_workflow_recall(track, slot) != PRESET_VALID)
+            return;
+    } else if (snd[track] != sb_snd[i] || preset_track_slot[track]) {
+        snd[track] = sb_snd[i];
+        pick_sound(track);
+    }
     sb_cur = i;
-    sb_pos[SB_ALL[i].group] = i;
-    if (snd[track] != sb_snd[i]) { snd[track] = sb_snd[i]; pick_sound(track); }
+    sb_pos[sb_group_of(i)] = i;
 }
 
 static void sb_show(void) { sb_open = 1; sb_at = kit_ms(); dirty = 1; }
 
 static void sb_turn(int d)                      /* PRESETS: a sound at a time, on into the next group */
 {
-    int i = sb_find(), n;
+    int i, n, total;
+    if (!sb_open) sb_collect_users();
+    i = sb_find();
+    total = sb_total();
     if (i < 0) {                                /* not a list sound (a template's own): the template's group */
         int g = sb_home_group(), k;
-        for (k = 0; k < SB_NGROUPS && (i = sb_first((g + k) % SB_NGROUPS)) < 0; k++) ;
+        for (k = 0; k < sb_groups() && (i = sb_first((g + k) % sb_groups())) < 0; k++) ;
         if (i < 0) return;
         sb_choose(i);
         sb_show();
@@ -82,8 +123,8 @@ static void sb_turn(int d)                      /* PRESETS: a sound at a time, o
     }
     while (d) {                                 /* each click a sound (a fast turn brings several) */
         int s = d > 0 ? 1 : -1;
-        for (n = 0; n < SB_NALL; n++) {
-            i = (i + s + SB_NALL) % SB_NALL;
+        for (n = 0; n < total; n++) {
+            i = (i + s + total) % total;
             if (sb_usable(i)) break;
         }
         d -= s;
@@ -94,11 +135,11 @@ static void sb_turn(int d)                      /* PRESETS: a sound at a time, o
 
 static void sb_jump(int d)                      /* K1 while the list shows: a whole group */
 {
-    int g = SB_ALL[sb_cur].group, k, i = -1;
+    int g = sb_group_of(sb_cur), k, i = -1, groups = sb_groups();
     while (d) {                                 /* each click a group */
         int s = d > 0 ? 1 : -1;
-        for (k = 0, i = -1; k < SB_NGROUPS && i < 0; k++) {
-            g = (g + s + SB_NGROUPS) % SB_NGROUPS;
+        for (k = 0, i = -1; k < groups && i < 0; k++) {
+            g = (g + s + groups) % groups;
             i = sb_first(g);
         }
         d -= s;
@@ -145,29 +186,31 @@ static void sb_fit(char *d, const char *s, int w, int font)   /* s, cut to w pix
 #define SB_SEL_D KIT_RGB(29, 58, 110)
 static void sb_draw(void)                       /* the lab's list, over the page under the top line */
 {
-    int g = SB_ALL[sb_cur].group, k, r, i, n = 0, at = 0, first, y, rows[SB_NALL], nr = 0;
+    int g = sb_group_of(sb_cur), k, r, i, n = 0, at = 0, first, y, rows[SB_NALL], nr = 0;
+    int group_step = sb_user_count ? 16 : 17;
     char s[40], *d;
     kit_rect(0, 22, 240, 218, KIT_RGB(10, 13, 19));
     kit_round_rect(3, 25, 234, 212, 8, ACC);
     kit_round_rect(4, 26, 232, 210, 7, SB_BG);
-    for (k = 0; k < SB_NGROUPS; k++) {          /* the groups down the left, how many each has (DRUMS: the kits, for the
+    for (k = 0; k < sb_groups(); k++) {         /* the groups down the left, how many each has (DRUMS: the kits, for the
                                                  * drums track; dim here, as a synth track does not play them) */
         int on = k == g, c = 0;
         if (k == SB_DRUMS) { for (i = 0; i < SB_NALL; i++) c += sb_snd[i] >= 0 && SB_ALL[i].group == SB_DRUMS; }
         else c = sb_count(k);
-        if (k == SB_DRUMS) { y = 35 + k * 17; ch_text(10, y, SB_SHORT[k], KIT_FONT_TINY, KIT_ALIGN_LEFT, LINE); cat_int(s, c);
+        if (k == SB_DRUMS) { y = 35 + k * group_step; ch_text(10, y, SB_SHORT[k], KIT_FONT_TINY, KIT_ALIGN_LEFT, LINE); cat_int(s, c);
                              ch_text(66, y, s, KIT_FONT_TINY, KIT_ALIGN_RIGHT, LINE); continue; }
-        y = 35 + k * 17;
+        y = 35 + k * group_step;
         if (on) kit_round_rect(6, y - 8, 64, 16, 4, SB_SEL_D);
-        ch_text(10, y, SB_SHORT[k], KIT_FONT_TINY, KIT_ALIGN_LEFT, on ? FG : c ? MUTED : LINE);
+        ch_text(10, y, k == SB_USER ? "USER" : SB_SHORT[k], KIT_FONT_TINY, KIT_ALIGN_LEFT, on ? FG : c ? MUTED : LINE);
         cat_int(s, c);
         ch_text(66, y, s, KIT_FONT_TINY, KIT_ALIGN_RIGHT, on ? KIT_RGB(207, 224, 255) : KIT_RGB(74, 82, 99));
     }
     kit_rect(73, 30, 1, 202, KIT_RGB(34, 41, 54));
     kit_round_rect(6, 223, 64, 11, 3, CARD);
     ch_small(38, 228, "K1 GROUP", ACC);
-    for (i = 0; i < SB_NALL; i++) if (sb_usable(i) && SB_ALL[i].group == g) { if (i == sb_cur) at = n; rows[nr++] = i; n++; }
-    d = s; { const char *t = SB_GROUP[g]; while (*t) { *d++ = (char)(*t >= 'a' && *t <= 'z' ? *t - 32 : *t); t++; } *d = 0; }
+    if (g == SB_USER) { n = nr = sb_user_count; at = sb_cur - SB_NALL; }
+    else for (i = 0; i < SB_NALL; i++) if (sb_usable(i) && SB_ALL[i].group == g) { if (i == sb_cur) at = n; rows[nr++] = i; n++; }
+    d = s; { const char *t = g == SB_USER ? "USER" : SB_GROUP[g]; while (*t) { *d++ = (char)(*t >= 'a' && *t <= 'z' ? *t - 32 : *t); t++; } *d = 0; }
     ch_text(80, 36, s, KIT_FONT_TINY, KIT_ALIGN_LEFT, ACC);
     d = cat_int(s, at + 1); d = cat(d, " / "); cat_int(d, n);
     ch_text(230, 36, s, KIT_FONT_TINY, KIT_ALIGN_RIGHT, MUTED);
@@ -178,7 +221,14 @@ static void sb_draw(void)                       /* the lab's list, over the page
         int on = first + r == at;
         y = 52 + r * 15;
         if (on) kit_round_rect(77, y - 7, 156, 14, 3, ACC);
-        sb_fit(s, SB_ALL[rows[first + r]].name, 136, KIT_FONT_TINY);
+        if (g == SB_USER) {
+            preset_record_t item;
+            char name[PRESET_NAME_MAX + 1];
+            if (companion_preset_find(sizeof set, sb_user_slots[first + r], &item) != PRESET_VALID) continue;
+            for (i = 0; i < item.name_len; ++i) name[i] = (char)item.name[i];
+            name[i] = 0;
+            sb_fit(s, name, 136, KIT_FONT_TINY);
+        } else sb_fit(s, SB_ALL[rows[first + r]].name, 136, KIT_FONT_TINY);
         ch_text(89, y, s, KIT_FONT_TINY, KIT_ALIGN_LEFT, on ? KIT_WHITE : FG);
     }
     for (k = 0; k < 3; k++) {                   /* more above, more below */

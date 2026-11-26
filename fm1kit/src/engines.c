@@ -225,13 +225,41 @@ int kit_track_filter(int pt, const kit_sound_filter_t *filter)
 int kit_track_osc_of(int pt, kit_sound_osc_t *osc)
 {
     const uint8_t *g;
-    int level1, level2;
-    if (!okp(pt) || !fmx[pt] || !osc) return 0;
+    uint8_t levels[2];
+    int total;
+    if (!osc || !kit_track_osc_levels_of(pt, levels)) return 0;
     g = fmini_patch[pt];
-    level1 = g[FG_SW1] & FS_O1 ? g[FG_L1] : 0;
-    level2 = g[FG_SW1] & FS_O2 ? g[FG_L2] : 0;
-    *osc = (kit_sound_osc_t){g[FG_W1], g[FG_W2], level1 + level2 ? level2 * 127 / (level1 + level2) : 0,
+    total = levels[0] + levels[1];
+    *osc = (kit_sound_osc_t){g[FG_W1], g[FG_W2], total ? levels[1] * 127 / total : 0,
                             fmini_det(g, FG_DC2L)};
+    return 1;
+}
+
+int kit_track_osc_levels_of(int pt, uint8_t levels[2])
+{
+    const uint8_t *g;
+    if (!okp(pt) || !fmx[pt] || !levels) return 0;
+    g = fmini_patch[pt];
+    levels[0] = g[FG_SW1] & FS_O1 ? g[FG_L1] : 0;
+    levels[1] = g[FG_SW1] & FS_O2 ? g[FG_L2] : 0;
+    return 1;
+}
+
+/* Caller holds the synth lock. Preserve all switches outside the two oscillators. */
+static void osc_levels(uint8_t *g, int level1, int level2)
+{
+    g[FG_L1] = level1;
+    g[FG_L2] = level2;
+    g[FG_SW1] = (g[FG_SW1] & ~(FS_O1 | FS_O2)) | (level1 ? FS_O1 : 0) | (level2 ? FS_O2 : 0);
+}
+
+int kit_track_osc_levels(int pt, const uint8_t levels[2])
+{
+    uint32_t lock;
+    if (!okp(pt) || !fmx[pt] || !levels || levels[0] > 127 || levels[1] > 127) return 0;
+    lock = kit__lock();
+    osc_levels(fmini_patch[pt], levels[0], levels[1]);
+    kit__unlock(lock);
     return 1;
 }
 
@@ -253,9 +281,8 @@ int kit_track_osc(int pt, int control, int value)
         int larger = mix > 63 ? mix : 127 - mix;
         if (!total) total = 127;
         total = clamp(total, 1, 127 * 127 / larger);
-        g[FG_L2] = (total * mix + 63) / 127;
-        g[FG_L1] = total - g[FG_L2];
-        g[FG_SW1] = (g[FG_SW1] & ~(FS_O1 | FS_O2)) | (g[FG_L1] ? FS_O1 : 0) | (g[FG_L2] ? FS_O2 : 0);
+        int level2 = (total * mix + 63) / 127;
+        osc_levels(g, total - level2, level2);
     } else {
         g[control == KIT_OSC_WAVE1 ? FG_W1 : FG_W2] = clamp(value, 0, KIT_OSC_NWAVES - 1);
     }

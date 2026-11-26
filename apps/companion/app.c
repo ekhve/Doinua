@@ -74,6 +74,7 @@ static int home_long, glo_long;
 static uint32_t home_at, glo_at;
 #define HOLD_MS 500                             /* a press this long is a hold */
 static int snd[KIT_NTRACKS];        /* each track's sound: an index over every engine's presets */
+static uint8_t preset_track_slot[KIT_NTRACKS]; /* current user preset identity, or zero for factory */
 static int last_note = -1, last_channel;   /* the last note played, and its MIDI channel (0: from the keys) */
 static uint32_t black_at[KIT_NKEYS], presses;   /* when each black key went down, for "the last one held" */
 static int chord_key = -1, chord_row, chord_vel;   /* the key sounding the pad's chord */
@@ -229,7 +230,9 @@ static int midi_track(int channel)
     return -1;
 }
 
-static void settings_save(void) { kit_store_save(&set, sizeof set); }
+#include "settingsrecord.c"
+
+static void settings_save(void) { companion_settings_save(&set, sizeof set); }
 
 /* the key the pads use: the song's (locked, or AUTO's when it is sure); looked at when the song is not playing, so
  * the pads never move under the hands */
@@ -848,6 +851,7 @@ static void sound_mod_apply(int t, int value);
 static void sound_edit_press(void);
 static void sound_edit_release(void);
 static int sound_edit_event(const kit_event_t *e);
+static int preset_panel_event(const kit_event_t *e);
 static void sound_edit_close(void);
 static int dr_src_kit(int t, int p);
 static int rl_open;                             /* (reclayer.c) */
@@ -884,7 +888,7 @@ void app_init(void)
     int t;
     {                                           /* the settings, as kept (D-045), with each track's template (D-046) */
         settings_t k;
-        int n = kit_store_load(&k, sizeof k);
+        int n = companion_settings_load(&k, sizeof k, SETTINGS_VERSION);
         int j;
         if (n == (int)sizeof k && k.version == SETTINGS_VERSION) set = k;
         else if (n == SETTINGS_V5 && k.version == 5) { k.g_lesson = k.g_step = k.g_stars = 0; k.version = SETTINGS_VERSION; set = k; }   /* before ST-57 */
@@ -1069,6 +1073,8 @@ void app_event(const kit_event_t *e)
     }
     if (eat && panel) return;
     if (e->type == KIT_EV_ENC) exp_knob(e->id);  /* explain the card once the page shows its new value (ST-43) */
+    if (preset_panel_event(e))
+        return;
     if (sb_event(e))                            /* the Sound Browser: PRESETS, and K1 and HOME while it shows (ST-68) */
         return;
     if (mode_event(e))
@@ -2420,6 +2426,8 @@ static void keyboard_lights(void)
 
 void app_frame(uint32_t now_ms)
 {
+    preset_workflow_poll();
+    preset_panel_frame();
     harm_sync();
     if (!picker && !home_long && kit_btn_held(KIT_BTN_HOME) && now_ms - home_at >= HOLD_MS) {
         home_long = 1;                          /* HOME held: the mode picker */
@@ -2562,6 +2570,7 @@ void app_frame(uint32_t now_ms)
     if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open() && !sound_edit_open()) draw_rec_layer();
     if (!asleep && !help) draw_count();
     if (!asleep && !help && !sound_fx_open() && !sound_edit_open()) exp_draw(now_ms);
+    if (!asleep && !help && !song_page) preset_panel_draw();
     if (sb_open && !asleep && !help && !song_page) sb_draw();   /* the Sound Browser over the page (ST-68) */
     if (sq_view == SQV_SONG && !help && !song_page) sq_lights();
     else if (sq_view == SQV_STEPS && !help && !song_page) st_lights();
