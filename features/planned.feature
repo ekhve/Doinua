@@ -48,14 +48,6 @@ Feature: The sequencer (ST-85 to ST-91, drafts for the owner)
 
 Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2026-11-26, from the Sampler Lab v11)
 
-  @ST-96 @UC-10 @planned @approved:owner
-  Scenario: PLAY sets the key's level and reverb, and the track's grid and feel
-    Given a drums track's PLAY page, the snare played last
-    When K1 and K2 turn
-    Then the snare is quieter and sends to the reverb, and the kick is unchanged
-    When K3 sets GRID 1/16 and K4 sets FEEL MPC 66
-    Then the top of the page shows GRID 1/16 and FEEL MPC 66
-
   @ST-96 @UC-13 @planned @approved:owner
   Scenario: GRID places notes as they are recorded, and FEEL moves them afterwards
     Given GRID 1/16, REC on and the song playing
@@ -75,27 +67,6 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
     Then the hats are back
     When SAVE is tapped twice within 400 ms
     Then the hats are gone again, and a single tap shows HOLD: UNDO
-
-  @ST-96 @UC-14 @planned @approved:owner
-  Scenario: EDIT builds the kit from every sound, grouped by kit
-    Given MY KIT 2, F4 played last, EDIT tapped
-    Then the KIT page shows
-    When PRESETS turns
-    Then F4 plays the next sound of the list, and its settings are the defaults
-    When K3 turns
-    Then F4 plays the first sound of the next kit in the list
-    When EDIT is tapped three times
-    Then SOUND, TRIM and PAD FX show in turn
-
-  @ST-96 @UC-21 @planned @approved:owner
-  Scenario: SOUND shapes a key with tune, attack, hold and decay, and mute groups
-    Given EDIT SOUND on the snare
-    When K3 HOLD and K4 DECAY turn down
-    Then the snare is shorter, and no sound plays while the knobs turn
-    When SELECT sets the open hat and the hat to group A, and the open hat then the hat are played
-    Then the hat stops the open hat within 10 ms
-    When HOLD is set to key on a sung note and its key is held for 2 s
-    Then it sounds for 2 s and then fades over its DECAY
 
   @ST-96 @UC-14 @planned @approved:owner
   Scenario: A kit is saved as MY KIT 1, 2 or 3 and kept

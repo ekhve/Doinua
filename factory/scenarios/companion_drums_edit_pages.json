@@ -1,0 +1,18 @@
+{
+  "scenario": "EDIT builds the kit from every sound, grouped by kit",
+  "name": "companion, DRUMS EDIT (ST-96): EDIT opens KIT on the snare (G3); PRESETS gives it the next sound (snare2, settings back to the defaults); K3 the same key's sound in the next kit (808); EDIT again: SOUND, TRIM, PAD FX in turn; HOME back to PLAY",
+  "app": "companion",
+  "ms": 4600,
+  "keys": "900:e1:+3,1000:G3@100,1100:G3^,1300:EDIT,1350:EDIT^,1600:e6:+1,1900:e4:+1,2300:EDIT,2350:EDIT^,2700:EDIT,2750:EDIT^,3100:EDIT,3150:EDIT^,3500:HOME,3550:HOME^",
+  "checks": [
+    {"type": "sound", "from": 1602, "to": 1700},
+    {"type": "sound", "from": 1902, "to": 2000},
+    {"type": "screen", "at": 1500},
+    {"type": "screen", "at": 1800},
+    {"type": "screen", "at": 2200},
+    {"type": "screen", "at": 2600},
+    {"type": "screen", "at": 3000},
+    {"type": "screen", "at": 3400},
+    {"type": "screen", "at": 3800}
+  ]
+}

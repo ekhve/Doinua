@@ -1,0 +1,37 @@
+{
+  "scenario": "PLAY sets the key's level and reverb, and the track's grid and feel",
+  "name": "companion, DRUMS PLAY (ST-96): the snare (G3) at LEVEL 8, then K1 to LEVEL 4 (about half as loud), then K2 REVERB 8 (its tail rings on); K3 GRID and K4 FEEL shown on the cards",
+  "app": "companion",
+  "ms": 4200,
+  "keys": "900:e1:+3,1000:G3@100,1100:G3^,1600:e2:-4,1700:G3@100,1800:G3^,2300:e2:+4,2350:e3:+8,2500:G3@100,2600:G3^,3300:e4:+2,3350:e5:+3",
+  "checks": [
+    {
+      "type": "level_ratio",
+      "a": [
+        1702,
+        1900
+      ],
+      "b": [
+        1002,
+        1200
+      ],
+      "ratio": 2.0,
+      "tol": 0.2
+    },
+    {
+      "type": "silence",
+      "from": 1350,
+      "to": 1550
+    },
+    {
+      "type": "sound",
+      "from": 2850,
+      "to": 3050,
+      "rms": 15
+    },
+    {
+      "type": "screen",
+      "at": 3600
+    }
+  ]
+}

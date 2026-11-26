@@ -235,9 +235,7 @@ track", per the way of working; the rule that always holds is here).
 | R-126 | When PRESETS turns on a drums track, the companion app shall change the track's kit. | D-053, UC-10, ST-30 | A | Approved (owner) | PRESETS changes the kit; a held key and PRESETS change that key's sound |
 | R-127 | When PRESETS turns while a key is held on a drums track, the companion app shall change that key's sound to the next of the four kits' sounds. | D-053, UC-14, ST-39 | A | Approved (owner) | PRESETS changes the kit; a held key and PRESETS change that key's sound |
 | R-128 | While a drums track has a key whose sound was changed, the companion app shall name the kit My kit on the top line. | D-053, UC-14, ST-39 | A | Approved (owner) | PRESETS changes the kit; a held key and PRESETS change that key's sound |
-| R-129 | When K1, K2 or K3 turns on a drums track's PLAY page, the companion app shall change the repeat, the tuning or the decay of the sound played last. | D-053, UC-10, ST-38 | A | Approved (owner) | Each pad keeps its own repeat, tuning and decay |
-| R-130 | While a key with a repeat is held on a drums track, the companion app shall play its sound again at the repeat's interval at the song's tempo. | D-053, UC-10, ST-38 | A | Approved (owner) | Each pad keeps its own repeat, tuning and decay |
-| R-131 | When a pitched drum sound is tuned, the companion app shall show the note it sounds. | D-053, UC-14, ST-38 | A | Approved (owner) | Each pad keeps its own repeat, tuning and decay |
+| R-131 | When a pitched drum sound is tuned, the companion app shall show the note it sounds. | D-053, UC-14, ST-38 | A | Approved (owner) | A tuned pitched drum names its note |
 
 **The drums: AUTO, IDEAS and the feel drawn** (stories ST-31, ST-32 and ST-33; D-054.)
 
@@ -570,6 +568,25 @@ implement all sounds".)
 | R-364 | When a key from F3 to E4 is played on a drums track, the companion app shall show the key's drum map role. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
 | R-365 | When a key from F4 to G5 is played on a drums track, the companion app shall show the name of its sound. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
 | R-366 | While a drums track plays AUTO or IDEAS, the companion app shall play each drum part on its drum map key. | D-121, ST-95 | A | Approved (owner) | The drum map puts AUTO's sounds on the first octave |
+
+**The DRUMS track's PLAY knobs and EDIT pages** (story ST-96, first part; D-121, D-124.)
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-367 | While a drums track's PLAY page shows, when K1 turns, the companion app shall change the level of the key played last. | D-121, replaces R-129, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
+| R-368 | While a drums track's PLAY page shows, when K2 turns, the companion app shall change the reverb send of the key played last. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
+| R-369 | While a drums track's PLAY page shows, when K3 turns, the companion app shall change the track's GRID. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
+| R-370 | While a drums track's PLAY page shows, when K4 turns, the companion app shall change the track's FEEL. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
+| R-378 | When EDIT is tapped on a drums track, the companion app shall show the KIT, SOUND, TRIM and PAD FX pages in turn. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
+| R-379 | While EDIT KIT shows, when PRESETS turns, the companion app shall give the key played last the next sound of the list of the kits' sounds. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
+| R-380 | While EDIT KIT shows, when K3 turns, the companion app shall give the key played last the first sound of the next kit in the list. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
+| R-381 | When a key gets a new sound, the companion app shall set that key's settings to their defaults. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
+| R-382 | While EDIT KIT shows, when K2 turns, the companion app shall set how much the key's level follows the velocity, from fixed to 10. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
+| R-383 | While EDIT SOUND shows, the companion app shall set the key's tune, attack, hold and decay with K1, K2, K3 and K4. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
+| R-384 | While EDIT SOUND shows, when a knob turns, the companion app shall leave the key silent. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
+| R-385 | While EDIT SOUND shows, when SELECT turns, the companion app shall set the key's mute group to off, A, B, C or D. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
+| R-386 | When a key of a mute group sounds, the companion app shall stop the other keys of that group within 10 ms. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
+| R-387 | While a key's HOLD is key, the companion app shall sound that key until it is released and then fade it over its DECAY. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
 
 ## Glossary
 

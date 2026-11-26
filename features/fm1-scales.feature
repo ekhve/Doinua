@@ -671,12 +671,10 @@ Feature: The drums
     Then that key takes the next sound of any kit and the top line says My kit
 
   @D-053 @ST-38 @UC-14 @approved:owner @auto
-  Scenario: Each pad keeps its own repeat, tuning and decay
-    Given hat1 played last and K1 REPEAT on 1/16
-    When hat1 is held for a beat
-    Then it plays four times, and kick1 still plays once
-    When kick4 of the 808 kit is played and K2 TUNE turns
-    Then the screen names the note it sounds, A1 after enough turns
+  Scenario: A tuned pitched drum names its note
+    Given kick1 played on Dusty, then kick4 of the 808 kit
+    When EDIT SOUND's K1 TUNE turns up five semitones
+    Then kick1 played once, and the screen names the note kick4 sounds, A1
 
   @D-054 @ST-32 @UC-10 @approved:owner @gate:unit @auto
   Scenario: Holding a pad plays a style's beat, with fills and ghost notes
@@ -1493,3 +1491,34 @@ Feature: The drum map v2 (ST-95, D-121, D-122)
     Then they sound the kick, the hat and the snare, and the screen names them KICK, HAT, SNARE, then F4's sound name
     And AUTO's beat plays its kick on F3, its snare on G3 and its hats on F#3
 
+
+Feature: The DRUMS track's PLAY knobs and EDIT pages (ST-96, D-121, D-124)
+
+  @D-124 @ST-96 @UC-10 @approved:owner @auto
+  Scenario: PLAY sets the key's level and reverb, and the track's grid and feel
+    Given a drums track's PLAY page, the snare played last
+    When K1 and K2 turn
+    Then the snare is quieter and sends to the reverb, and the kick is unchanged
+    When K3 sets GRID 1/16 and K4 sets FEEL MPC 66
+    Then the top of the page shows GRID 1/16 and FEEL MPC 66
+
+  @D-124 @ST-96 @UC-14 @approved:owner @auto
+  Scenario: EDIT builds the kit from every sound, grouped by kit
+    Given MY KIT 2, F4 played last, EDIT tapped
+    Then the KIT page shows
+    When PRESETS turns
+    Then F4 plays the next sound of the list, and its settings are the defaults
+    When K3 turns
+    Then F4 plays the first sound of the next kit in the list
+    When EDIT is tapped three times
+    Then SOUND, TRIM and PAD FX show in turn
+
+  @D-124 @ST-96 @UC-21 @approved:owner @auto
+  Scenario: SOUND shapes a key with tune, attack, hold and decay, and mute groups
+    Given EDIT SOUND on the snare
+    When K3 HOLD and K4 DECAY turn down
+    Then the snare is shorter, and no sound plays while the knobs turn
+    When SELECT sets the open hat and the hat to group A, and the open hat then the hat are played
+    Then the hat stops the open hat within 10 ms
+    When HOLD is set to key on a sung note and its key is held for 2 s
+    Then it sounds for 2 s and then fades over its DECAY
