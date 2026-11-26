@@ -54,9 +54,11 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 .k.w { background: var(--wk); color: #4a515c; height: 150px; border: 1px solid #9aa1ad; z-index: 1; }
 .k.b { background: var(--bk); color: #aab2bf; height: 92px; z-index: 2; border: 1px solid #000; }
 .k .lab { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: .52rem; line-height: 1.15; }
+.k.w .lab { top: 96px; }
 .k .g { position: absolute; left: 2px; right: 2px; bottom: 2px; height: 5px; border-radius: 2px; }
 .k .smp { position: absolute; top: 34px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #d77cc2; }
 .k.b .smp { top: 40px; }
+.k.w .smp { top: 80px; }
 .k.lit { box-shadow: inset 0 0 0 150px rgba(215,124,194,.55); color: #fff; }
 .k.prev { outline: 3px solid #ef5b5b; outline-offset: -3px; }
 .k.held { box-shadow: inset 0 0 0 150px rgba(60,207,122,.85) !important; color: #fff; }
@@ -129,8 +131,12 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
     </ol></div>
 
     <div class="card scen" id="scen"><h3>Usage scenarios: try each one</h3>
-      <p>With a mouse, turn on <b>HOLD (lab)</b> for "held" steps: then a button or key stays held until you press it again.
-      On a phone or tablet you can simply hold with two fingers. Knobs: drag up or down, or use − and +.</p>
+      <p><b>On a computer, use the keyboard</b>: it plays the FM-1 keys (the letter is on each key: <b>a w s e d r f g</b>… the
+      white keys on the middle row, the black ones above, the top keys on <b>z n x m c v , b</b>), and it holds the buttons:
+      <b>Shift = EDIT</b>, <b>Space = PLAY</b>, <b>Enter = REC</b>, <b>Backspace = SAVE</b> (hold), <b>← → = PRESETS</b>,
+      <b>↑ ↓ = SELECT</b>, <b>Esc = HOME</b>, <b>1–4 = K1–K4</b> up (Shift+1–4 down). So "hold a key + PRESETS" is: hold
+      <b>a</b> and press <b>→</b>; "EDIT held + PLAY" is Shift + Space. With the mouse only, <b>HOLD (lab)</b> latches instead.
+      On a phone or tablet, hold with two fingers.</p>
       <h4>1. Pick a kit</h4><ol>
         <li>Press keys: each plays its sound; the screen names it on the <b>drum map</b> (F3 · KICK 1). The coloured bar on each
         key is its group (red kicks, amber snares and claps, teal hats, purple toms and percussion); ★ marks the keys AUTO and
@@ -576,13 +582,16 @@ for (let k = 0; k < 4; k++) {
   const [m, p] = w.querySelectorAll("button"); m.onclick = () => turn(-1); p.onclick = () => turn(1);
   $("knobs").appendChild(w);
 }
+// the computer keyboard plays the 27 keys (by position, so it works on any layout) and holds the buttons
+const PCCODE = ["KeyA","KeyW","KeyS","KeyE","KeyD","KeyR","KeyF","KeyG","KeyY","KeyH","KeyU","KeyJ","KeyK","KeyO","KeyL","KeyP","Semicolon","BracketLeft","Quote","KeyZ","KeyN","KeyX","KeyM","KeyC","KeyV","Comma","KeyB"];
+const PCLAB = ["a","w","s","e","d","r","f","g","y","h","u","j","k","o","l","p",";","[","'","z","n","x","m","c","v",",","b"];
 const keyEls = [], WH = []; for (let i = 0; i < NK; i++) if (!isBlack(LOW + i)) WH.push(i);
 (function () {
   const ww = 100 / WH.length;
   for (let i = 0; i < NK; i++) {
     const el = document.createElement("div"), b = isBlack(LOW + i), wi = b ? WH.indexOf(i - 1) : WH.indexOf(i);
     el.className = "k " + (b ? "b" : "w"); el.style.left = (b ? (wi + 1) * ww - ww * .32 : wi * ww) + "%"; el.style.width = (b ? ww * .64 : ww) + "%";
-    el.innerHTML = `<span class="lab">${(AUTO.has(i) ? "★ " : "") + MAP[i].replace(" ", "<br>")}</span><span class="smp" hidden></span><span class="g" style="background:${GCOL[GROUP(i)]}"></span>${keyNote(i)}`;
+    el.innerHTML = `<span class="lab">${(AUTO.has(i) ? "★ " : "") + MAP[i].replace(" ", "<br>")}</span><span class="smp" hidden></span><span class="g" style="background:${GCOL[GROUP(i)]}"></span><span style="position:absolute;bottom:${b ? 24 : 22}px;left:0;right:0;text-align:center;font-size:.72rem;font-weight:700;color:${b ? "#fff" : "#1d3a6e"}">${PCLAB[i]}</span>${keyNote(i)}`;
     el.addEventListener("pointerdown", e => { e.preventDefault(); if (st.latch && st.held.has(i)) { st.held.delete(i); return; } press(i); });
     el.addEventListener("pointerup", () => release(i)); el.addEventListener("pointercancel", () => release(i)); el.addEventListener("pointerleave", () => { if (!st.latch) st.held.delete(i); });
     $("keys").appendChild(el); keyEls.push(el);
@@ -608,11 +617,35 @@ $("rec").onclick = () => {
   flash("REC records the song here; the sampler records on TAKE (EDIT)");
 };
 const editB = $("edit");
-editB.addEventListener("pointerdown", () => { startAudio(); if (st.latch) { if (st.editHeld) { st.editHeld = false; if (!st.editUsed) editTap(); } else { st.editHeld = true; st.editUsed = false; } return; } st.editHeld = true; st.editUsed = false; });
-editB.addEventListener("pointerup", () => { if (st.latch) return; st.editHeld = false; if (!st.editUsed) editTap(); });
+function editDown() { startAudio(); if (st.latch) { if (st.editHeld) { st.editHeld = false; if (!st.editUsed) editTap(); } else { st.editHeld = true; st.editUsed = false; } return; } st.editHeld = true; st.editUsed = false; }
+function editUp() { if (st.latch) return; st.editHeld = false; if (!st.editUsed) editTap(); }
+editB.addEventListener("pointerdown", editDown); editB.addEventListener("pointerup", editUp);
 let saveT = null; const saveB = $("save");
-saveB.addEventListener("pointerdown", () => { startAudio(); saveT = setTimeout(() => { saveT = null; saveHeld(); }, 600); });
-saveB.addEventListener("pointerup", () => { if (saveT) { clearTimeout(saveT); saveT = null; flash("Hold SAVE (0.6 s)"); } });
+const saveDown = () => { startAudio(); saveT = setTimeout(() => { saveT = null; saveHeld(); }, 600); };
+const saveUp = () => { if (saveT) { clearTimeout(saveT); saveT = null; flash("Hold SAVE (0.6 s)"); } };
+saveB.addEventListener("pointerdown", saveDown); saveB.addEventListener("pointerup", saveUp);
+const pcDown = new Set();
+addEventListener("keydown", e => {
+  if (e.target.closest && e.target.closest("select,input,.dial") || e.ctrlKey || e.metaKey || e.altKey) return;
+  const c = e.code, i = PCCODE.indexOf(c); if (e.repeat) { if (i >= 0 || ["Space","ShiftLeft","ShiftRight","Backspace","Enter"].includes(c)) e.preventDefault(); return; }
+  if (i >= 0) { pcDown.add(c); press(i); }
+  else if (c === "Space") playBtn();
+  else if (c === "ShiftLeft" || c === "ShiftRight") editDown();
+  else if (c === "Enter") $("rec").click();
+  else if (c === "Backspace") saveDown();
+  else if (c === "Escape") $("home").click();
+  else if (c === "ArrowLeft" || c === "ArrowRight") presets(c === "ArrowLeft" ? -1 : 1);
+  else if (c === "ArrowUp" || c === "ArrowDown") sel(c === "ArrowDown" ? -1 : 1);
+  else if (/^Digit[1-4]$/.test(c)) { if (st.editHeld) st.editUsed = true; knob(+c[5] - 1, e.shiftKey ? -1 : 1); }
+  else return;
+  e.preventDefault();
+});
+addEventListener("keyup", e => {
+  const c = e.code, i = PCCODE.indexOf(c);
+  if (i >= 0) { pcDown.delete(c); release(i); }
+  else if (c === "ShiftLeft" || c === "ShiftRight") editUp();
+  else if (c === "Backspace") saveUp();
+});
 saveB.addEventListener("pointerleave", () => { if (saveT) { clearTimeout(saveT); saveT = null; } });
 
 // ------------------------------------------------------------------ the screen
