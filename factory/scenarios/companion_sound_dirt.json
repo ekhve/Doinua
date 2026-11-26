@@ -1,0 +1,16 @@
+{
+  "scenario": "FX opens the track dirt page",
+  "name": "companion, ST-69: the DIRT page shows wet shaping and the dry bypass",
+  "app": "companion",
+  "ms": 5950,
+  "keys": "900:FX,960:FX^,1200:FX,1260:FX^,1500:FX,1560:FX^,1800:FX,1860:FX^,2100:e2:+21,2340:e3:+24,2600:e4:-18,3180:C4@100,3500:C4^,3800:e5:-32,4400:C4@100,4720:C4^",
+  "checks": [
+    {"type": "screen", "at": 2000},
+    {"type": "screen", "at": 2980},
+    {"type": "sound", "from": 3250, "to": 3450},
+    {"type": "peak", "from": 3180, "to": 3800, "max_dbfs": -1},
+    {"type": "screen", "at": 4200},
+    {"type": "sound", "from": 4450, "to": 4650},
+    {"type": "silence", "from": 5630, "to": 5900}
+  ]
+}

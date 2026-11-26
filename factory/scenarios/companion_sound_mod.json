@@ -1,0 +1,16 @@
+{
+  "scenario": "MOD applies a signed cutoff route",
+  "name": "companion, ST-46: two MOD routes with MIDI CC1 and a held FMini note",
+  "app": "companion",
+  "ms": 9700,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,2400:FX,2470:FX^,2730:e0:-2,3020:e4:-18,3600:LFO,3670:LFO^,3900:e0:+1,4140:e2:+1,4300:e3:-32,4600:e3:-32,4960:e4:+5,5110:e5:-16,5500:C5@100,6200:mb2017f,7700:mb20100,9250:C5^",
+  "checks": [
+    {"type": "screen", "at": 4030},
+    {"type": "screen", "at": 5300},
+    {"type": "sound", "from": 5780, "to": 6100},
+    {"type": "screen", "at": 6900},
+    {"type": "level_ratio", "a": [5780, 6100], "b": [7050, 7500], "ratio": 0.045, "tol": 0.25},
+    {"type": "sound", "from": 8800, "to": 9100},
+    {"type": "peak", "from": 5500, "to": 9250, "max_dbfs": -1}
+  ]
+}

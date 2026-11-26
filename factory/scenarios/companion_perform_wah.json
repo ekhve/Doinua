@@ -1,0 +1,15 @@
+{
+  "scenario": "PERFORM opens WAH one step before DUB",
+  "name": "companion, ST-69: WAH is a band-pass pair with live sweep and sharpness",
+  "app": "companion",
+  "ms": 5000,
+  "keys": "900:FX,960:FX^,1200:e0:-1,1450:e4:+14,1710:e5:+6,2200:C5@100,2500:C5^,3400:e4:-20,3900:C5@100,4200:C5^",
+  "checks": [
+    {"type": "screen", "at": 2020},
+    {"type": "sound", "from": 2260, "to": 2460, "rms": 100},
+    {"type": "peak", "from": 2200, "to": 3200, "max_dbfs": -1},
+    {"type": "screen", "at": 3740},
+    {"type": "sound", "from": 3950, "to": 4150},
+    {"type": "silence", "from": 4780, "to": 4960}
+  ]
+}

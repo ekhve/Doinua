@@ -23,6 +23,7 @@ const char *kit__eng_name(int i);
 int kit__eng_npresets(int i);
 const char *kit__eng_preset_name(int i, int p);
 void kit__eng_select(int part, int i, int p);     /* i < 0: none */
+void kit__fx_mod(int track, int drive, int delay, int reverb);    /* caller holds the kit lock */
 void kit__eng_note_on(int part, int note, int vel);
 /* API 27: from16 the pitch (1/16 semitones) the note slides from (-1: none) over glide_ms; mono: the part's one voice takes
  * the note (legato: without a new attack). Returns 1 when it played. */
@@ -78,6 +79,15 @@ int kit__juno_npresets(void);
 const char *kit__juno_preset_name(int p);
 void kit__juno_select(int t, int p);
 int kit__juno_on(int t);
+int kit__juno_envelope_of(int t, uint8_t values[4]);
+int kit__juno_envelope(int t, int control, int value);
+int kit__juno_envelope_ms(int control, int dial);
+int kit__juno_motion_of(int t, kit_sound_motion_t *motion);
+int kit__juno_filter_of(int t, kit_sound_filter_t *filter);
+int kit__juno_filter(int t, const kit_sound_filter_t *filter);
+unsigned kit__juno_cutoff_bin(int cutoff);
+int kit__spectrum_wants(int pt);
+void kit__spectrum_capture(const int32_t *out, int count);
 void kit__juno_note_on(int t, int note, int vel);
 void kit__juno_note_off(int t, int note);
 void kit__juno_all_off(int t);
