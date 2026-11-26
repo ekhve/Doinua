@@ -20,9 +20,7 @@ h1{font-size:1.6rem} h2{font-size:1rem}
 </head>
 <body><main>
 <h1>INIT Patch Lab</h1>
-<p>Compare two places to start a fresh patch. This lab simulates the controls and keeps edits on this page only.</p>
-<label>Placement <select id="placement"><option value="edit">Sound Edit action</option><option value="browser">Sound Browser entry</option></select></label>
-<label>Engine <select id="engine"><option value="FMini">FMini</option><option value="Juno-106">Juno-106</option></select></label>
+<p>Choose an INIT preset, press EDIT to change its cutoff, then choose the preset again to reload its starting values.</p>
 <section class="screen" aria-live="polite">
 <header><strong id="patch"></strong><span id="page"></span></header>
 <h2 id="title"></h2>
@@ -30,62 +28,55 @@ h1{font-size:1.6rem} h2{font-size:1rem}
 <p id="hint"></p>
 </section>
 <div aria-label="FM-1 controls">
-<button id="open">EDIT</button><button id="left">SELECT −</button><button id="right">SELECT +</button>
-<button id="apply">OK</button><button id="home">HOME</button><button id="lower">K1 −</button><button id="raise">K1 +</button>
+<button id="presets">PRESETS</button><button id="edit">EDIT</button>
+<button id="lower">K1 −</button><button id="raise">K1 +</button>
 </div>
-<p>Try changing cutoff, opening INIT and cancelling. Then load INIT, change cutoff and load it again to check the reset.</p>
+<p>This preview simulates the controls. Cutoff values are illustrative.</p>
 </main>
 <script>
 "use strict";
 const el = id => document.getElementById(id);
-const baseline = {FMini:64,"Juno-106":64};
-let engine = "FMini", placement = "edit", page = "work", cursor = 0, initial = false, cutoff = 78;
-function options() {
-  if (page === "browse") return ["Keep current sound", "INIT · " + engine];
-  if (page === "actions") return ["Keep editing", "Initialize " + engine];
-  if (page === "confirm") return ["Cancel", "Load INIT"];
-  return [];
-}
-function clearPatch() {
-  initial = false;
-  cutoff = 78;
-  page = "work";
-}
-function step(key) {
-  if (key === "home") page = "work";
-  else if (key === "open") {
-    page = placement === "edit" ? "actions" : "browse";
-    cursor = 0;
-  } else if (page === "work") {
-    if (key === "lower" || key === "raise") cutoff = Math.max(0, Math.min(127, cutoff + (key === "raise" ? 4 : -4)));
-  } else if (key === "left" || key === "right") cursor = 1 - cursor;
-  else if (key === "apply") {
-    if (!cursor) page = "work";
-    else if (page !== "confirm") { page = "confirm"; cursor = 0; }
-    else { cutoff = baseline[engine]; initial = true; page = "work"; }
-  }
+const patches = [
+  {name:"Init Mini", engine:"FMini", controls:"Oscillators, filter, separate envelopes and LFO", cutoff:64},
+  {name:"Init Juno", engine:"Juno-106", controls:"Filter and shared ADSR", cutoff:64}
+];
+let current = null, cutoff = 0, page = "presets";
+function selectPreset(preset) {
+  current = preset;
+  cutoff = preset.cutoff;
   draw();
 }
 function draw() {
-  el("patch").textContent = initial ? engine + " INIT" : engine + " patch";
-  el("page").textContent = {work:"FILTER",actions:"SOUND EDIT",browse:"BROWSER",confirm:"INIT"}[page];
-  el("title").textContent = page === "work" ? "Cutoff · " + cutoff :
-    page === "confirm" ? "Replace the current track sound?" :
-    page === "actions" ? "Sound Edit actions" : "Choose a starting patch";
+  el("patch").textContent = current ? current.name : "Sound Browser";
+  el("page").textContent = page === "presets" ? "PRESETS" : "FILTER";
+  el("title").textContent = page === "presets" ? "INIT" : current.engine + " · Cutoff " + cutoff;
   el("rows").replaceChildren();
-  options().forEach((label, index) => {
-    const row = document.createElement("p");
-    row.dataset.selected = String(index === cursor);
-    row.textContent = label;
-    el("rows").append(row);
-  });
-  el("open").textContent = placement === "edit" ? "EDIT" : "PRESETS";
-  el("hint").textContent = page === "work" ? "K1 changes cutoff" :
-    "SELECT chooses · OK confirms · HOME goes back";
+  if (page === "presets") {
+    for (const preset of patches) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = preset.name;
+      button.onclick = () => selectPreset(preset);
+      el("rows").append(button);
+    }
+  } else {
+    const details = document.createElement("p");
+    details.textContent = current.controls;
+    el("rows").append(details);
+  }
+  el("hint").textContent = page === "presets" ? "Choose an engine's starting preset" : "K1 changes cutoff";
+  el("edit").disabled = !current;
+  el("lower").disabled = el("raise").disabled = page !== "edit";
 }
-el("engine").onchange = e => { engine = e.target.value; clearPatch(); draw(); };
-el("placement").onchange = e => { placement = e.target.value; page = "work"; draw(); };
-for (const k of ["open","left","right","apply","home","lower","raise"]) el(k).onclick = () => step(k);
+el("presets").onclick = () => { page = "presets"; draw(); };
+el("edit").onclick = () => { if (current) { page = "edit"; draw(); } };
+for (const [id, delta] of [["lower",-4],["raise",4]]) {
+  el(id).onclick = () => {
+    if (page !== "edit") return;
+    cutoff = Math.max(0, Math.min(127, cutoff + delta));
+    draw();
+  };
+}
 draw();
 </script>
 </body>
