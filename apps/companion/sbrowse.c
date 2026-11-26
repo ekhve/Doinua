@@ -126,7 +126,11 @@ static int sb_event(const kit_event_t *e)
     if ((e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_HOME) || (e->type == KIT_EV_ENC && e->id == KIT_ENC_ALGORITHM)) {
         sb_open = 0;
         dirty = 1;
-        return e->id == KIT_BTN_HOME && e->type == KIT_EV_BTN_DOWN;     /* HOME only closes it; ALGORITHM goes on */
+        if (e->type == KIT_EV_BTN_DOWN) {
+            home_long = 1;                     /* consume the rest of this HOME gesture too */
+            return 1;
+        }
+        return 0;                              /* ALGORITHM still changes track */
     }
     return 0;
 }

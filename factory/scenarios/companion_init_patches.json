@@ -2,7 +2,7 @@
   "scenario": "The Sound Browser opens each engine's INIT sound in Sound Edit",
   "name": "companion, issue #10: preview Init Mini and Init Juno and open their native Sound Edit pages",
   "app": "companion",
-  "ms": 4900,
+  "ms": 7800,
   "keys": "900:e1:+2,1000:e6:+1,1250:e2:-2,1550:C4@100,1950:C4^,2100:HOME,2170:HOME^,2300:EDIT,2370:EDIT^,2650:HOME,2720:HOME^,3000:e6:+1,3300:C4@100,3700:C4^,3900:HOME,3970:HOME^,4150:EDIT,4220:EDIT^,4350:e0:+1",
   "checks": [
     {"type": "screen", "at": 1450},
