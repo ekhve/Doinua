@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 44
+#define FM1KIT_API 45
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -211,6 +211,10 @@ enum { KIT_OSC_WAVE1, KIT_OSC_WAVE2, KIT_OSC_DETUNE, KIT_OSC_MIX };
 typedef struct { uint8_t wave1, wave2, mix; int16_t detune; } kit_sound_osc_t;
 int kit_track_osc_of(int track, kit_sound_osc_t *osc);
 int kit_track_osc(int track, int control, int value);
+/* API 45 (D-120): exact active levels of oscillators 1 and 2, without balance rounding.
+ * Zero means the oscillator is off. Both calls return 0 on unsupported tracks. */
+int kit_track_osc_levels_of(int track, uint8_t levels[2]);
+int kit_track_osc_levels(int track, const uint8_t levels[2]);
 /* Native envelopes of an editable sound. Controls are 0..127; times use the engine's dial scale. */
 enum { KIT_ENV_FILTER, KIT_ENV_AMP };
 enum { KIT_ENV_ATTACK, KIT_ENV_DECAY, KIT_ENV_SUSTAIN, KIT_ENV_RELEASE };
