@@ -685,10 +685,6 @@ Feature: The drums
     Given a drums track with a beat recorded, GRID 1/16, FEEL Dilla
     Then each hit is drawn where it plays, with a line from its grid position: the snare to the right, the kick swung
 
-  @D-055 @ST-34 @UC-10 @approved:owner @auto
-  Scenario: The drums go through Punch, MPC, Lofi or Tape
-    When the drums' FX turns to MPC
-    Then the drums are compressed and soft-clipped, louder at the same peak
 
   @D-056 @ST-35 @UC-14 @approved:owner @gate:build @auto
   Scenario: The user kit comes from numbered sound files with a licence
@@ -1537,3 +1533,12 @@ Feature: The DRUMS track's PLAY knobs and EDIT pages (ST-96, D-121, D-124)
     When SAVE is held on EDIT, K1 picks MY KIT 3 and SAVE is held again
     Then PRESETS reaches MY KIT 3 after Latin, with the changed snare
     And after power-off MY KIT 3 still has it
+
+  @ST-97 @UC-21 @D-129 @approved:owner @auto
+  Scenario: The kit's effects run once, and each pad sends to them
+    Given FX PUNCH with COMP 6, FX COLOR with TAPE 5 and LOFI 3, FX SPACE with REVERB plate
+    When the hats' COLOR send is 0 and the snare's REVERB send is 7 on EDIT PAD FX
+    Then the kick and snare are compressed and coloured, the hats are clean, and only the snare rings in the plate
+    When COMP and CLIP are 0
+    Then PAD FX shows PUNCH off
+    And the CPU gate stays under 80 % with eight keys sending to the four effects

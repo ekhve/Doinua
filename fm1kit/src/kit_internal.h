@@ -109,6 +109,7 @@ void kit__fx_begin(void);
 void kit__fx_track(int track, int32_t *x, int32_t *mix);
 void kit__fx_buses(int32_t *mix);
 int32_t *kit__fx_rev_in(void);
+int32_t *kit__fx_dly_in(void);
 void kit__rv_room(int size);                    /* synth.c: the reverb's DECAY 0..127 */
 void kit__eng_render_part(int part, int32_t *buf, int n);
 int kit__eng_fx(int part, uint8_t sends[4], uint8_t bus12[12]);   /* the preset's sends; 1: bus12 holds an FMini patch's FX */

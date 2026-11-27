@@ -239,6 +239,7 @@ typedef struct {
     uint16_t pdec;
     /* the pad's shape (API 45): its level (Q15), the outer envelope in samples, its group, its reverb send (Q15) */
     int32_t oamp, rsend, olast, orelv;
+    int32_t psend, csend, dsend;                /* API 47: its sends to PUNCH, COLOR and the DELAY (Q15) */
     uint32_t oatt, ohold, odec, opos, orel;     /* orel: where the release started (0: not yet) */
     uint8_t group, okey, ofull;
 } dvoice_t;
@@ -323,9 +324,12 @@ static void drum_start(int i, int kit, int pad, int tune, int decay)   /* decay:
 static int drum_is_hat(int key) { int s = pad_of(0, key).slot; return s == SL_HATC || s == SL_HATO; }
 static uint32_t ms_smp(uint32_t ms) { return ms * (KIT_FS / 1000u); }
 /* the pad's shape at its start: level and velocity (vel_sens 0..10), attack, hold (or FULL, KEY) and decay, group, send */
-static void drum_shape(int i, int level, int vel_sens, int vel, int att, int hold, int dec, int group, int reverb)
+static void drum_shape(int i, int level, int vel_sens, int vel, int att, int hold, int dec, int group, int reverb, int ps, int cs, int ds)
 {
     dvoice_t *d = &dv[i];
+    d->psend = ps * 2621;                       /* 0..10 as 0..0.8 (the lab's) */
+    d->csend = cs * 2621;
+    d->dsend = ds * 3276;
     int32_t follow = 10 * 127 - vel_sens * (127 - vel);   /* x/1270 of the level */
     d->oamp = (int32_t)((uint32_t)level * 4096u * (uint32_t)follow / 1270u);   /* level 8: 32768 at full velocity */
     d->oatt = ms_smp((uint32_t)att);
@@ -373,7 +377,7 @@ static int32_t drum_env(dvoice_t *d, uint32_t p, int gate)
 }
 static int drum_render(int i, int32_t *mix, int32_t amp);
 /* voice i: a block through its pad's level, envelope and reverb send, into dst and rev; 0 when it has gone silent */
-static int drum_play(int i, int32_t *dst, int32_t *rev)
+static int drum_play(int i, int32_t *dst, int32_t *rev, int32_t *pin, int32_t *cin, int32_t *din)
 {
     static int32_t tmp[KIT_BLOCK];
     dvoice_t *d = &dv[i];
@@ -391,6 +395,9 @@ static int drum_play(int i, int32_t *dst, int32_t *rev)
         if (d->oamp > 32768) s += s >> 2;     /* levels 9 and 10: louder than the kit plays it */
         dst[j] += s;
         if (d->rsend) rev[j] += ((s >> 1) * (d->rsend >> 1)) >> 13;
+        if (pin && d->psend) pin[j] += ((s >> 1) * (d->psend >> 1)) >> 13;   /* the kit's effects (API 47) */
+        if (cin && d->csend) cin[j] += ((s >> 1) * (d->csend >> 1)) >> 13;
+        if (d->dsend) din[j] += ((s >> 1) * (d->dsend >> 1)) >> 13;
         e += de;
     }
     d->opos += KIT_BLOCK;

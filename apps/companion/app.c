@@ -828,6 +828,7 @@ static int u_event(const kit_event_t *e);
 static int game_event(const kit_event_t *e);
 static int dr_event(const kit_event_t *e);
 static int dr_ed;                               /* the drums' EDIT page (drumpage.c), -1: closed */
+static int dr_fxp;                              /* the drums' FX page (drumpage.c), -1: closed */
 static int is_drums(void);
 static void dr_init(void);
 static void song_restore(void);
@@ -928,6 +929,7 @@ static void home_tap(void)
     sound_fx_close();
     sound_edit_close();
     dr_ed = -1;                                 /* the drums' EDIT pages close too (ST-96) */
+    dr_fxp = -1;                                /* and its FX pages (ST-97) */
     if (confirm) {                              /* confirmed: switch, the song kept */
         chord_release();
         marp_off();
@@ -2563,6 +2565,7 @@ void app_frame(uint32_t now_ms)
     else if (is_bass()) draw_bass();
     else if (is_melody()) draw_melody();
     else if (is_drums() && dr_ed >= 0) draw_drums_edit();
+    else if (is_drums() && dr_fxp >= 0) draw_drums_fx();
     else if (is_drums()) { if (drt[track].page == DR_IDEAS) draw_drums_ideas(); else if (drt[track].page == DR_AUTO) draw_drums_auto(); else draw_drums(); }
     else draw_keyboard();
     if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open() && !sound_edit_open()) draw_rec_layer();

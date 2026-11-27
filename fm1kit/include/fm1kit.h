@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 46
+#define FM1KIT_API 47
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -164,6 +164,15 @@ int kit_drum_key_of(int sound);
  * 10 ms), reverb 0..127 (the pad's own send to the reverb bus). Defaults: 8, 10, 0, FULL, 80, the hats in group 1, 0. */
 int kit_drum_len_ms(int kit, int pad);        /* API 45: how long a kit's sound lasts at its own decay, ms (to -80 dB;
                                                  * a sample: its length), for drawing it */
+/* API 47 (D-129, ST-97): a drums track's two kit effects, each run once a block, fed by its keys' sends: PUNCH (COMP
+ * 0..10, SPEED 0 fast 1 medium 2 slow, CLIP 0..10, SHAPE 0 soft 1 hard) and COLOR (TAPE, LOFI, DRIVE, CRUSH 0..10; they
+ * add up). A key keeps its dry sound and sends 0..10 to PUNCH, COLOR and the bus's DELAY (10, 10, 0 at first; its
+ * REVERB send is kit_drum_pad_shape's). An effect whose amounts are all 0 does not run. */
+typedef struct { uint8_t comp, speed, clip, shape, tape, lofi, drive, crush; } kit_drum_fx_t;
+void kit_drum_fx(int track, const kit_drum_fx_t *fx);
+void kit_drum_fx_of(int track, kit_drum_fx_t *fx);
+void kit_drum_pad_sends(int track, int pad, int punch, int color, int delay);
+int kit_delay_time_for(int ms);                 /* API 47: the bus's DELAY TIME (0..127) nearest ms, for its type */
 #define KIT_DRUM_HOLD_FULL 0xFFFF
 #define KIT_DRUM_HOLD_KEY 0xFFFE
 void kit_drum_pad_shape(int track, int pad, int level, int vel, int attack_ms, int hold_ms, int decay_ms, int group, int reverb);                 /* API 44: the key (pad) a kit sound is on in the drum map (0 kick1, 4 snare1, 12 hat1 ...) */

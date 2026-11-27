@@ -116,3 +116,10 @@ Feature: GRID on playback and erasing with REC off (D-051), retired by ST-96 (D-
     Given a melody recorded with two Bb notes
     When EDIT is held with Bb as the song plays past them
     Then both Bb notes are gone and the others stay
+
+Feature: The drums' four FX in turn (D-055), retired by ST-97 (D-121)
+
+  @D-055 @ST-34 @UC-10 @retired
+  Scenario: The drums go through Punch, MPC, Lofi or Tape
+    When the drums' FX turns to MPC
+    Then the drums are compressed and soft-clipped, louder at the same peak

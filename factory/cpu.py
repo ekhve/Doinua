@@ -55,6 +55,25 @@ with ThreadPoolExecutor(max_workers=os.cpu_count() or 2) as pool:
     mixes = list(pool.map(lambda i: load(i, MIX), range(len(sounds))))
     twelves = list(pool.map(lambda i: load(i, TWELVE), range(len(sounds))))
 fails = 0
+if app == "companion":                 # R-399 (ST-97): a drums track's four effects, eight keys sending to them all
+    KEYS8 = ["F3", "F#3", "G3", "G#3", "A3", "A#3", "B3", "C4"]
+    ev = ["900:e1:+3", "1000:F3@100", "1050:F3^"] + [f"{1100 + 60 * i}:EDIT" if j == 0 else f"{1130 + 60 * i}:EDIT^" for i in range(4) for j in range(2)]
+    for i, k in enumerate(KEYS8):      # EDIT PAD FX: each key's DELAY and REVERB sends up (PUNCH and COLOR are 10 already)
+        t = 1400 + 120 * i
+        ev += [f"{t}:{k}@100", f"{t + 30}:{k}^", f"{t + 50}:e4:+5", f"{t + 70}:e5:+5"]
+    ev += ["2400:HOME", "2430:HOME^", "2450:FX", "2480:FX^", "2500:e2:+6", "2520:e4:+5",       # PUNCH: COMP 6, CLIP 5
+           "2600:FX", "2630:FX^", "2650:e2:+5", "2670:e3:+3", "2690:e4:+5", "2710:e5:+3",     # COLOR: all four
+           "2800:FX", "2830:FX^", "2850:e3:+1", "2900:HOME", "2930:HOME^"]                    # SPACE: plate
+    for r in range(9):                 # the eight keys struck again every 100 ms, so all eight sound through the window
+        ev += [f"{3000 + 100 * r + 5 * i}:{k}@100" for i, k in enumerate(KEYS8)] + [f"{3060 + 100 * r + 5 * i}:{k}^" for i, k in enumerate(KEYS8)]
+    rr = subprocess.run([str(EMU), "--usb", "--fwsc", str(out / f"{app}.fwsc"), "--shot", "3800"], cwd=work,
+                        env=dict(os.environ, FM1_STRICT="1", FM1_BENCH_KEYS=",".join(sorted(ev, key=lambda e: int(e.split(":")[0])))),
+                        capture_output=True, text=True)
+    m = re.search(r"(\d+)% of instructions in ISRs", rr.stdout + rr.stderr)
+    kpct = int(m.group(1)) if m else None
+    ok = kpct is not None and kpct < BUDGET
+    fails += not ok
+    print(f"  {'ok  ' if ok else 'FAIL'} DRUMS with PUNCH, COLOR, DELAY and REVERB, eight keys sending to all four: {kpct}% interrupt load")
 for what, got in (("8 voices", loads), ("four tracks", mixes), ("twelve voices", twelves)):
     for (e, p, en, pn), pct in zip(sounds, got):
         ok = pct is not None and pct < BUDGET
