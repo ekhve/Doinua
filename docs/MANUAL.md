@@ -505,14 +505,28 @@ PERFORM and press **HOME** to return to playing. On PERFORM, **SELECT** changes 
 its two controls. For WOBBLE, **K3** sets the cutoff sweep speed and **K4** sets its depth. Turn depth to zero to
 bypass the sweep. The sweep is temporary and applies to the selected track.
 
+| FX page | K1 | K2 | K3 | K4 |
+| --- | --- | --- | --- | --- |
+| PERFORM | BEND | MOD | X | Y |
+| DELAY | TIME | FEEDBACK | SEND | TONE |
+| REVERB | SIZE | SEND | DAMP | PRE-DELAY |
+| DIRT | DRIVE | CRUSH | TONE | MIX |
+
+DELAY and REVERB sends apply to the selected track. Their other controls shape the shared effects. DIRT shapes
+the selected track, with zero MIX bypassing the crush and tone blend. Turn **SELECT** on PERFORM to choose
+FILTER, WAH, DUB, SPACE, DIRT or WOBBLE. On the other FX pages, SELECT moves between pages.
+
 On FMini and Juno-106 sounds, PERFORM FILTER uses **K3** for cutoff and **K4** for resonance. Reselect the preset to reload
 its original settings. The X and Y values show dashes on sounds that do not have these controls mapped yet.
 
-Tap **EDIT** to open OSC, then tap **EDIT** again or turn **SELECT** to reach FILTER. Hold **EDIT** and release to
-return to OSC. On an FMini sound, the four knobs on OSC change the first two waves, oscillator 2 detune and their
-balance. On FILTER they change cutoff, resonance, envelope amount and key tracking. The cutoff and resonance
-also appear on PERFORM FILTER. **HOME** returns to playing.
-FILTER draws the selected FMini or Juno-106 track's live spectrum before the shared delay and reverb.
+On a Producer sound track, tap **EDIT** to open OSC. Tap again to step through OSC, FILTER, F.ENV, A.ENV,
+VOICE, LFO and MOD. Turn **SELECT** to move in either direction. Hold **EDIT** and release to return to OSC.
+**HOME** returns to the track. The keys keep their playing mode, and **OCT** still changes their octave.
+Unmapped controls show dashes.
+
+On FMini, the OSC knobs change the first two waves, oscillator 2 detune and their balance. On FMini and Juno-106,
+FILTER changes cutoff, resonance, envelope amount and key tracking. Cutoff and resonance are shared with
+PERFORM FILTER. The graph shows the selected track's live spectrum before shared delay and reverb.
 
 Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
 preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.

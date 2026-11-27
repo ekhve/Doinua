@@ -163,6 +163,32 @@ stateDiagram-v2
 Orthogonal to these, the transport: **stopped**, **playing**, and **armed** (REC: the current track records while it
 plays). The song's key is read again when the song stops (D-034), so pages never move under the hands.
 
+### Producer sound panels
+
+On a pitched Producer track, Sound Edit and Sound FX are alternate panels over the current track page.
+The track's playing mode and transport stay active while either panel is open. Held-key releases still reach the
+instrument. The panel closes when the player switches tracks or enters a view that takes over the controls.
+
+```mermaid
+flowchart TD
+    Track["Track page"] -->|EDIT, ENV or LFO| Edit["Sound Edit"]
+    Track -->|FX| FX["Sound FX"]
+    Edit -->|HOME| Return["Track page restored"]
+    FX -->|HOME| Return
+```
+
+From Sound Edit, FX opens Sound FX. From Sound FX, EDIT, ENV and LFO open Sound Edit.
+
+| Panel | Page order and controls |
+| --- | --- |
+| Sound Edit | EDIT steps through OSC, FILTER, F.ENV, A.ENV, VOICE, LFO and MOD. SELECT steps in either direction. Hold EDIT to return to OSC. ENV toggles the two envelope pages and LFO opens LFO directly. |
+| Sound FX | FX steps through PERFORM, DELAY, REVERB and DIRT. Hold FX to return to PERFORM. SELECT chooses the X/Y pair on PERFORM and changes pages elsewhere. |
+
+Plain EDIT enters the panel when the player releases it. When EDIT is used as a chord for recording or sequencing,
+the relevant sequencer interaction takes precedence. On Sound Edit FILTER, the meter reads the selected FMini or
+Juno-106 track before the shared effects. Both Juno envelope pages access its shared ADSR. In Sound FX, DELAY and
+REVERB expose shared effects plus the current track's send. DIRT acts on the current track.
+
 ### An interaction: one finger plays a chord while recording
 
 ```mermaid
@@ -176,12 +202,12 @@ sequenceDiagram
     A->>A: pad_next_degree: the progression's next step (ii, colour 9)
     A->>T: kit_triads, kit_colour_chord (ii, minor, 9, voicing)
     T-->>A: Dm9: D3 F3 A3 C4 E4
-    loop each note (block; strum 30 ms apart; arp at eighths)
+    loop each note (block, strum 30 ms apart, or arp at eighths)
         A->>Q: kit_seq_note_on(CHORDS, note, vel)
         Q->>S: kit_track_note_on (sounds now)
         Q-->>Q: armed and playing: remember the start tick
     end
-    A->>A: lights: ii full, V breathing; screen: Dm9, next G13
+    A->>A: lights: ii full, V breathing, screen shows Dm9 and next G13
     P->>A: F5 up
     A->>Q: kit_seq_note_off for each note
     Q-->>Q: adds each note with its start, length and velocity, as played
