@@ -51,6 +51,9 @@ static int nundo, rec_snap = -1;                /* the track whose recording sna
 static struct { int8_t track; uint8_t count; kit_song_note_t notes[KIT_SONG_MAX_NOTES]; } redo[RL_NUNDO];   /* what undo took (R-377) */
 static int nredo;
 static uint32_t sv_tap;                         /* the last SAVE tap, for two taps: redo */
+static const char *toast_msg;                   /* a short note in a pill above the foot, as the lab shows it (D-084) */
+static uint32_t toast_until;
+static void toast(const char *m) { toast_msg = m; toast_until = kit_ms() + 1500; if (!toast_until) toast_until = 1; dirty = 1; }
 
 static void rl_copy(kit_song_note_t *to, const kit_song_note_t *from, int n) { while (n-- > 0) *to++ = *from++; }   /* (apps use fm1kit.h alone: no C library) */
 static int rl_same(const kit_song_note_t *a, const kit_song_note_t *b, int n)
@@ -285,7 +288,7 @@ static int rl_event(const kit_event_t *e)
     if (e->type == KIT_EV_KEY_DOWN && kit_btn_held(KIT_BTN_EDIT)) {   /* EDIT + key: it erases, it does not play */
         edit_used = 1;
         erase_keys |= 1u << e->id;
-        if (!armed) exp_say("REC ON", "to erase");   /* R-375 */
+        if (!armed) toast("REC on to erase");   /* R-375 */
         dirty = 1;
         return 1;
     }
@@ -294,9 +297,9 @@ static int rl_event(const kit_event_t *e)
     if (e->type == KIT_EV_BTN_UP && e->id == KIT_BTN_SAVE && !song_page) {   /* tapped: it says how; held: rl_frame undid (R-147) */
         if (!sv_long) {
             uint32_t now = kit_ms();
-            if (is_drums() && dr_ed >= 0) exp_say("HOLD: SAVE", "");   /* EDIT on the drums: SAVE keeps the kit (R-388) */
+            if (is_drums() && dr_ed >= 0) toast("HOLD: SAVE");   /* EDIT on the drums: SAVE keeps the kit (R-388) */
             else if (sv_tap && now - sv_tap < 400 && nredo) { redo_pop(); sv_tap = 0; dirty = 1; }   /* two taps: redo (R-377) */
-            else { exp_say("HOLD: UNDO", ""); sv_tap = now; }   /* R-376 */
+            else { toast("HOLD: UNDO"); sv_tap = now; }   /* R-376 */
         }
         sv_long = 0;
         return 1;
@@ -318,6 +321,7 @@ static void rl_frame(uint32_t now)
         dirty = 1;
     }
     if (undo_until && (int32_t)(now - undo_until) >= 0) { undo_until = 0; dirty = 1; }
+    if (toast_until && (int32_t)(now - toast_until) >= 0) { toast_until = 0; dirty = 1; }
     erase_poll();
 }
 
@@ -340,6 +344,12 @@ static void draw_rec_layer(void)                /* over the page: the layer's ca
         kit_round_rect(6, 92, 228, 40, 8, CARD2);
         kit_text(120, 98, undo_msg[0] == 'R' ? "REDO" : "UNDO", KIT_FONT_SMALL, KIT_ALIGN_CENTER, FG);
         kit_text(120, 116, undo_msg, KIT_FONT_XSMALL, KIT_ALIGN_CENTER, MUTED);
+    }
+    if (toast_until) {                          /* the pill: an accent outline, the note in it */
+        int w = kit_text_width(toast_msg, KIT_FONT_TINY) + 40;
+        kit_round_rect(120 - w / 2, 196, w, 18, 9, KIT_RGB(215, 124, 194));
+        kit_round_rect(121 - w / 2, 197, w - 2, 16, 8, BG);
+        ctext(120, 205, toast_msg, KIT_FONT_TINY, FG);
     }
     if (!rl_open && !rl_ask) return;
     kit_rect(0, 28, KIT_W, 112, BG);

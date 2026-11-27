@@ -102,6 +102,7 @@ static void dr_load_kit(int t, int my)          /* a built-in kit's own sounds (
         dr_apply(t, p);
     }
 }
+static void toast(const char *m);
 static void dr_save_held(void)                  /* SAVE held on EDIT: the panel opens; held again on it: the kit is kept (R-388, R-389) */
 {
     int p;
@@ -113,7 +114,7 @@ static void dr_save_held(void)                  /* SAVE held on EDIT: the panel 
         if (dr_pads[track][p].kit < 0) dr_mykit[dr_save_to - 1].pads[p].kit = (int8_t)dr_kit(track);
     }
     dr_my[track] = (uint8_t)dr_save_to;
-    exp_say(dr_kit_title(track), "saved");
+    { static char m[20]; cat(cat(m, dr_kit_title(track)), " saved"); toast(m); }
     dr_save_to = 0;
     dirty = 1;
 }
