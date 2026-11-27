@@ -827,6 +827,7 @@ static void rl_apply(int t);
 static int u_event(const kit_event_t *e);
 static int game_event(const kit_event_t *e);
 static int dr_event(const kit_event_t *e);
+static int dr_ed;                               /* the drums' EDIT page (drumpage.c), -1: closed */
 static int is_drums(void);
 static void dr_init(void);
 static void song_restore(void);
@@ -926,6 +927,7 @@ static void home_tap(void)
 {
     sound_fx_close();
     sound_edit_close();
+    dr_ed = -1;                                 /* the drums' EDIT pages close too (ST-96) */
     if (confirm) {                              /* confirmed: switch, the song kept */
         chord_release();
         marp_off();

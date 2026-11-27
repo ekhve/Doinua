@@ -100,6 +100,21 @@ static void dr_new_sound(int key, int kit, int src)   /* R-379..R-381: a new sou
     rl_apply(track);
     dr_hit(key, 100);
 }
+/* the sound list: kit by kit; in a kit, kicks first, then snares and claps, hats, toms and percussion (key order within) */
+static void dr_list_at(int i, int *kit, int *src)
+{
+    int g, k, n = 0;
+    *kit = i / KIT_DRUM_PADS; i %= KIT_DRUM_PADS; *src = 0;
+    for (g = 0; g < 4; g++)
+        for (k = 0; k < KIT_DRUM_PADS; k++)
+            if (kit_drum_group(*kit, k) == g) { if (n == i) { *src = k; return; } n++; }
+}
+static int dr_list_pos(int kit, int src)
+{
+    int i;
+    for (i = 0; i < KIT_DRUM_PADS; i++) { int kk, ss; dr_list_at(kit * KIT_DRUM_PADS + i, &kk, &ss); if (ss == src) return kit * KIT_DRUM_PADS + i; }
+    return kit * KIT_DRUM_PADS;
+}
 static int dr_edit_event(const kit_event_t *e)
 {
     int p = dr_last[track], v;
@@ -109,10 +124,11 @@ static int dr_edit_event(const kit_event_t *e)
     if (e->type == KIT_EV_KEY_UP) { kit_seq_note_off(track, KIT_DRUM_LO + e->id); kit_midi_note_off(channel_of(track), KIT_DRUM_LO + e->id); return 1; }
     if (e->type != KIT_EV_ENC) return 0;
     if (e->id == KIT_ENC_ALGORITHM) { dr_ed = -1; return 0; }
-    if (dr_ed == DE_KIT && e->id == KIT_ENC_PRESETS) {   /* the next of every kit's sounds (R-379) */
-        int i = dr_src_kit(track, p) * KIT_DRUM_PADS + d->src, n = kit_preset_count(KIT_ENGINE_DRUMS) * KIT_DRUM_PADS;
+    if (dr_ed == DE_KIT && e->id == KIT_ENC_PRESETS) {   /* the next of every kit's sounds, a kit by kind: kicks, snares, hats, the rest (R-379) */
+        int n = kit_preset_count(KIT_ENGINE_DRUMS) * KIT_DRUM_PADS, i = dr_list_pos(dr_src_kit(track, p), d->src), k, src;
         i = ((i + (e->delta > 0 ? 1 : -1)) % n + n) % n;
-        dr_new_sound(p, i / KIT_DRUM_PADS, i % KIT_DRUM_PADS);
+        dr_list_at(i, &k, &src);
+        dr_new_sound(p, k, src);
     } else if (dr_ed == DE_KIT && e->id == KIT_ENC_KNOB3) {   /* the next kit, the same key's sound there (R-380) */
         int k = dr_src_kit(track, p), n = kit_preset_count(KIT_ENGINE_DRUMS);
         k = ((k + (e->delta > 0 ? 1 : -1)) % n + n) % n;
