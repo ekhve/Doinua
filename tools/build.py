@@ -195,6 +195,10 @@ def package(app, out, binp, ota):
     fwsc = out / f"{app}.fwsc"
     run(sys.executable, BSP / "tools" / "fm1pkg.py", binp, ota, fwsc, "--product", PRODUCT, "--sdk", sdk)
     print(f"package  {fwsc}  {fwsc.stat().st_size} B, identity {PRODUCT}")
+    if app == "companion":                      # the product, under its name (D-128): the same bytes the gates test
+        named = out / "Doinua.fwsc"
+        named.write_bytes(fwsc.read_bytes())
+        print(f"package  {named}  (the same file, the product's name)")
     return fwsc
 
 
