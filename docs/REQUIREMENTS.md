@@ -206,12 +206,8 @@ track", per the way of working; the rule that always holds is here).
 | ID | Requirement | Source | Mode | Status | Verified by |
 |---|---|---|---|---|---|
 | R-139 | When REC is held, the companion app shall open the track's REC layer with GRID, FEEL, CLICK and COUNT-IN on the knobs. | D-051, UC-13, ST-40 | A | Approved (owner) | Holding REC opens the track's REC layer |
-| R-140 | While a track's GRID is set, the companion app shall play the track's notes at the nearest grid position. | D-051, UC-13, ST-40 | A | Approved (owner) | GRID and FEEL change the playback, never the recording |
-| R-141 | The companion app shall keep a track's recorded notes as played when its GRID or FEEL changes. | D-051, UC-13, ST-40 | A | Approved (owner) | GRID and FEEL change the playback, never the recording |
-| R-142 | While a track's FEEL is set and its GRID is on, the companion app shall move each note by that feel's swing and shift for the note's drum group or track. | D-051, UC-10, ST-31 | A | Approved (owner) | GRID and FEEL change the playback, never the recording |
 | R-144 | When OCT+ is pressed in the REC layer, the companion app shall ask before it clears the track. | D-051, UC-13, ST-40 | A | Approved (owner) | OCT+ in the REC layer clears the track after asking |
 | R-145 | When OCT+ is pressed again while the companion app asks to clear the track, the companion app shall remove the track's notes. | D-051, UC-13, ST-40 | A | Approved (owner) | OCT+ in the REC layer clears the track after asking |
-| R-146 | While EDIT is held with a key held as the song plays, the companion app shall remove that key's notes of the track as the playhead passes them. | D-051, UC-13, ST-41 | A | Approved (owner) | EDIT and a key erase that key's notes as they play |
 | R-147 | When SAVE is held, the companion app shall undo the last recording, erase or clear. | D-051, UC-13, ST-41 | A | Approved (owner) | SAVE held undoes the last change |
 | R-148 | When REC is pressed while the song is stopped and COUNT-IN is on, the companion app shall play the count-in's bars of clicks before it records. | D-051, UC-13, ST-40 | A | Approved (owner) | Holding REC opens the track's REC layer |
 | R-149 | While a track is on IDEAS with SPEED below 100 %, the companion app shall play the song at that share of its tempo. | D-051, UC-12, ST-42 | A | Approved (owner) | SPEED slows the whole song while practising |
@@ -587,6 +583,17 @@ implement all sounds".)
 | R-385 | While EDIT SOUND shows, when SELECT turns, the companion app shall set the key's mute group to off, A, B, C or D. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
 | R-386 | When a key of a mute group sounds, the companion app shall stop the other keys of that group within 10 ms. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
 | R-387 | While a key's HOLD is key, the companion app shall sound that key until it is released and then fade it over its DECAY. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
+| R-371 | While REC records with a GRID set, the companion app shall record each note at the nearest position of that grid. | D-121, replaces R-140 and R-141, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
+| R-372 | While a track's FEEL is set, the companion app shall move each recorded note that lies on an off-sixteenth by that feel's swing. | D-121, replaces R-142, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
+| R-373 | While a drums track's PLAY page shows, the companion app shall draw one row for each key recorded, in the order the keys were first recorded, sharing the bar's height. | D-121, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
+| R-374 | While REC is on and the song plays, when EDIT and a key are held, the companion app shall remove that key's notes of the track as the playhead passes them. | D-121, replaces R-146, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
+| R-375 | If EDIT and a key are held while REC is off, then the companion app shall show that erasing needs REC on. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
+| R-376 | When SAVE is tapped once on a page where holding it undoes, the companion app shall show HOLD: UNDO. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
+| R-377 | When SAVE is tapped twice within 400 ms after an undo, the companion app shall redo the change undone. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
+| R-388 | When SAVE is held on an EDIT page of a drums track, the companion app shall show MY KIT 1, 2 and 3 to save the kit to. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
+| R-389 | When SAVE is held on the save panel, the companion app shall store the kit's keys in the MY KIT K1 chose. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
+| R-390 | The companion app shall keep MY KIT 1, 2 and 3 over power-off. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
+| R-391 | When PRESETS turns on a drums track's PLAY page, the companion app shall step through the built-in kits and then MY KIT 1, 2 and 3. | D-121, replaces R-126, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 
 ## Glossary
 

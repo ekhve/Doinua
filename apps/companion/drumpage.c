@@ -24,6 +24,11 @@ static const uint16_t DR_DECS[DR_NDECS] = { 5, 10, 20, 40, 80, 150, 300, 600, 12
 enum { DE_KIT = 0, DE_SOUND, DE_TRIM, DE_PADFX, DE_N };
 static const char *const DR_ED[DE_N] = { "KIT", "SOUND", "TRIM", "PAD FX" };
 static int dr_ed = -1;                          /* EDIT on a drums track: its tab, or -1 (ST-96) */
+/* MY KIT 1-3 (R-388..R-391): a kit's keys as saved, each its own kit's sound (never -1), kept with the song (songsave.c) */
+#define DR_NMY 3
+static struct { uint8_t used, base; dr_pad_t pads[KIT_DRUM_PADS]; } dr_mykit[DR_NMY];
+static uint8_t dr_my[KIT_NTRACKS];              /* the track plays MY KIT n (1..3), or 0 */
+static int dr_save_to;                          /* the save panel is open on MY KIT n (1..3), or 0 */
 static int dr_hat_key(int p) { return p == 1 || p == 3 || p == 13 || p == 15 || p == 17; }   /* the drum map's hats: group A */
 static dr_pad_t dr_pads[KIT_NTRACKS][KIT_DRUM_PADS];
 static int dr_last[KIT_NTRACKS];                /* the pad played last (the knobs' pad) */
@@ -77,7 +82,41 @@ static const char *dr_name(int t, int p) { return kit_drum_name(dr_src_kit(t, p)
 /* the drum map v2 (D-121, R-364): F3..E4 hold the 12 sounds AUTO and IDEAS play; their keys are named by their role */
 static const char *const DR_ROLE[12] = { "KICK", "HAT", "SNARE", "OPEN HAT", "CLAP", "SHAKER", "RIM", "TOM 1", "GHOST", "TOM 2", "PERC", "TOM 3" };
 static const char *dr_title(int t, int p) { return p >= 0 && p < 12 ? DR_ROLE[p] : dr_name(t, p); }
-static const char *dr_kit_title(int t) { return dr_custom(t) ? "My kit" : kit_drum_kit_name(dr_kit(t)); }
+static const char *dr_kit_title(int t)
+{
+    static const char *const MY[DR_NMY] = { "MY KIT 1", "MY KIT 2", "MY KIT 3" };
+    if (dr_my[t]) return MY[dr_my[t] - 1];
+    return dr_custom(t) ? "My kit" : kit_drum_kit_name(dr_kit(t));
+}
+static void dr_load_kit(int t, int my)          /* a built-in kit's own sounds (my 0), or MY KIT my as saved (an unsaved one: Dusty's) */
+{
+    int p, base = my && dr_mykit[my - 1].used ? dr_mykit[my - 1].base : my ? 0 : dr_kit(t);
+    kit_track_notes_off(t);
+    dr_my[t] = (uint8_t)my;
+    snd[t] = sound_index(KIT_ENGINE_DRUMS, base);
+    pick_sound(t);
+    for (p = 0; p < KIT_DRUM_PADS; p++) {
+        if (my && dr_mykit[my - 1].used) dr_pads[t][p] = dr_mykit[my - 1].pads[p];
+        else { dr_pads[t][p].kit = -1; dr_pads[t][p].src = (int8_t)p; dr_reset(&dr_pads[t][p], p); }
+        if (dr_pads[t][p].kit == base) dr_pads[t][p].kit = -1;   /* its own kit's: as the kit plays it */
+        dr_apply(t, p);
+    }
+}
+static void dr_save_held(void)                  /* SAVE held on EDIT: the panel opens; held again on it: the kit is kept (R-388, R-389) */
+{
+    int p;
+    if (!dr_save_to) { dr_save_to = dr_my[track] ? dr_my[track] : 1; dirty = 1; return; }
+    dr_mykit[dr_save_to - 1].used = 1;
+    dr_mykit[dr_save_to - 1].base = (uint8_t)dr_kit(track);
+    for (p = 0; p < KIT_DRUM_PADS; p++) {
+        dr_mykit[dr_save_to - 1].pads[p] = dr_pads[track][p];
+        if (dr_pads[track][p].kit < 0) dr_mykit[dr_save_to - 1].pads[p].kit = (int8_t)dr_kit(track);
+    }
+    dr_my[track] = (uint8_t)dr_save_to;
+    exp_say(dr_kit_title(track), "saved");
+    dr_save_to = 0;
+    dirty = 1;
+}
 
 static uint32_t dr_repeat_ms(int ticks) { return (uint32_t)ticks * 60000u / ((uint32_t)song.bpm * KIT_TICKS_PER_BEAT); }
 
@@ -119,6 +158,11 @@ static int dr_edit_event(const kit_event_t *e)
 {
     int p = dr_last[track], v;
     dr_pad_t *d = &dr_pads[track][p];
+    if (dr_save_to) {                           /* the save panel: K1 picks MY KIT 1-3, HOME cancels */
+        if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_HOME) { dr_save_to = 0; dirty = 1; return 1; }
+        if (e->type == KIT_EV_ENC && e->id == KIT_ENC_KNOB1) { v = dr_save_to - 1; clampi(&v, e->delta, 0, DR_NMY - 1); dr_save_to = v + 1; dirty = 1; return 1; }
+        if (e->type == KIT_EV_ENC) return 1;
+    }
     if (e->type == KIT_EV_BTN_DOWN && (e->id == KIT_BTN_HOME || e->id == KIT_BTN_SCL)) { dr_ed = -1; dirty = 1; return 1; }
     if (e->type == KIT_EV_KEY_DOWN) { dr_last[track] = e->id; dr_hit(e->id, e->vel); dirty = 1; return 1; }
     if (e->type == KIT_EV_KEY_UP) { kit_seq_note_off(track, KIT_DRUM_LO + e->id); kit_midi_note_off(channel_of(track), KIT_DRUM_LO + e->id); return 1; }
@@ -238,11 +282,12 @@ static int dr_event(const kit_event_t *e)
             dr_last[track] = held;
             dr_shown_until = kit_ms() + 1500;
             dr_hit(held, 100);                  /* hear it */
-        } else {                                /* the kit */
-            int kit = dr_kit(track);
-            wrap(&kit, e->delta > 0 ? 1 : -1, kit_preset_count(KIT_ENGINE_DRUMS));
-            snd[track] = sound_index(KIT_ENGINE_DRUMS, kit);
-            pick_sound(track);
+        } else {                                /* the kit: the built-in kits, then MY KIT 1-3 (R-391) */
+            int n = kit_preset_count(KIT_ENGINE_DRUMS), i = dr_my[track] ? n + dr_my[track] - 1 : dr_kit(track);
+            wrap(&i, e->delta > 0 ? 1 : -1, n + DR_NMY);
+            if (i >= n) dr_load_kit(track, i - n + 1);
+            else if (dr_my[track]) { snd[track] = sound_index(KIT_ENGINE_DRUMS, i); dr_load_kit(track, 0); }
+            else { snd[track] = sound_index(KIT_ENGINE_DRUMS, i); pick_sound(track); }
             rl_apply(track);
         }
         dirty = 1;
@@ -313,7 +358,7 @@ static void dr_order_update(int t)              /* keys recorded since: at the e
 static void dr_bar(void)
 {
     const int X0 = 44, W = 190, Y0 = 70, AH = 146;
-    int n, h, r, i, y = Y0 + 1, b = kit_seq_playing() ? kit_seq_tick() / KIT_TICKS_PER_BAR : 0, g0 = rl_grid_ticks(track);
+    int n, h, r, i, y = Y0 + 1, b = kit_seq_playing() ? kit_seq_tick() / KIT_TICKS_PER_BAR : 0;
     dr_order_update(track);
     n = dr_norder[track];
     kit_round_rect(6, Y0 - 1, 228, AH + 2, 4, CARD);
@@ -337,7 +382,7 @@ static void dr_bar(void)
             int at, gt, x, gx, vh;
             if (kit_drum_pad_of(v->note) != k) continue;
             at = kit_seq_place(&song, track, i);
-            gt = g0 ? (v->start + g0 / 2) / g0 * g0 : v->start;
+            gt = v->start;                      /* where it was recorded (on the GRID, R-371) */
             if (at / 16 / KIT_TICKS_PER_BAR != b && gt / KIT_TICKS_PER_BAR != b) continue;
             x = X0 + (at - b * KIT_TICKS_PER_BAR * 16) * W / (KIT_TICKS_PER_BAR * 16);
             gx = X0 + (gt - b * KIT_TICKS_PER_BAR) * W / KIT_TICKS_PER_BAR;
@@ -426,8 +471,29 @@ static void de_strip(int x0, int y, int h)      /* the drum map: a key each, its
         kit_rect(x + 1, y + bh - 3, 6, 2, DR_GROUP_COL[g]);
     }
 }
+static void draw_drums_save(void)               /* the save panel (R-388): MY KIT 1-3, K1 picks; as the lab draws it */
+{
+    int i;
+    char v[4];
+    kit_clear(DE_BG);
+    kit_text(6, 4, "SAVE THE KIT", KIT_FONT_SMALL, KIT_ALIGN_LEFT, DE_INK);
+    kit_text(234, 7, "SAVE", KIT_FONT_XSMALL, KIT_ALIGN_RIGHT, DE_PAGE_COL[DE_PADFX]);
+    kit_rect_outline(4, 34, 232, 120, 1, DE_GRID);
+    for (i = 0; i < DR_NMY; i++) {
+        int y = 40 + i * 34, on = dr_save_to == i + 1;
+        static const char *const MY[DR_NMY] = { "MY KIT 1", "MY KIT 2", "MY KIT 3" };
+        kit_round_rect(10, y, 220, 30, 5, on ? KIT_RGB(74, 42, 68) : DE_GRID);
+        kit_text(18, y + 8, MY[i], KIT_FONT_XSMALL, KIT_ALIGN_LEFT, on ? DE_INK : DE_DIM);
+        kit_text(222, y + 10, dr_mykit[i].used ? "saved" : "empty", KIT_FONT_TINY, KIT_ALIGN_RIGHT, on ? DE_INK : DE_DIM);
+    }
+    kit_text(120, 142, "SAVE: keep it here   HOME: cancel", KIT_FONT_TINY, KIT_ALIGN_CENTER, DE_DIM);
+    v[0] = (char)('0' + dr_save_to); v[1] = 0;
+    fx_dial(30, "MY KIT", v, (dr_save_to - 1) * 50, DE_KNOB_COL[0]);
+}
 static void draw_drums_edit(void)
 {
+    if (dr_save_to) { draw_drums_save(); return; }
+    {
     static const char *const LAB[DE_N][4] = {
         { "LEVEL", "VELOCITY", "GROUP", "" }, { "TUNE", "ATTACK", "HOLD", "DECAY" },
         { "START", "END", "REVERSE", "GAIN" }, { "PUNCH", "COLOR", "DELAY", "REVERB" } };
@@ -502,6 +568,7 @@ static void draw_drums_edit(void)
     }
     for (i = 0; i < 4; i++)
         if (LAB[dr_ed][i][0]) fx_dial(30 + i * 60, LAB[dr_ed][i], val[i], pct[i], on[i] ? DE_KNOB_COL[i] : DE_DIM);
+    }
 }
 
 static void dr_ideas_lights(void);

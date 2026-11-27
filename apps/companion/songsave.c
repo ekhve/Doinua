@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* The song kept over power-off (ST-89, R-297, D-085): the sequences' notes, tempo, length and key, the song's order,
- * each track's sound, level, GRID and FEEL, the drums' pads, and each track's page settings, in fm1kit's bank
+ * each track's sound, level, GRID and FEEL, the drums' pads, MY KIT 1-3, and each track's page settings, in fm1kit's bank
  * (kit_bank_*, API 31). Written as tagged chunks, so a chunk the next firmware lays out differently is left out (its
  * defaults stay) and the notes, the precious part, always come back.
  *
@@ -10,7 +10,7 @@
  * to the bank, which writes it to flash once it has stayed the same for 3 s while the song is stopped and nothing is
  * held (bank.c). So a song is kept a few seconds after STOP; while it plays, it waits. */
 #define SG_VERSION 1
-enum { SG_SEQ = 1, SG_ORDER, SG_TRACKS, SG_PADS, SG_MANS, SG_BASSES, SG_MELS, SG_DRPADS, SG_DRTRACKS, SG_CHORDS, SG_PAGES, SG_ARPS };
+enum { SG_SEQ = 1, SG_ORDER, SG_TRACKS, SG_PADS, SG_MANS, SG_BASSES, SG_MELS, SG_DRPADS, SG_DRTRACKS, SG_CHORDS, SG_PAGES, SG_ARPS, SG_MYKITS, SG_DRMY };
 static uint8_t sg_buf[KIT_BANK_MAX] KIT_BIG;
 static int sg_len, sg_over;
 static uint32_t sg_crc, sg_at;
@@ -80,6 +80,8 @@ static int sg_build(void)                       /* the song into sg_buf; its len
     }
     sg_raw(SG_PAGES, pages, (int)sizeof pages);
     sg_raw(SG_ARPS, arps, (int)sizeof arps);    /* each track's ARP (ST-77) */
+    sg_raw(SG_MYKITS, dr_mykit, (int)sizeof dr_mykit);   /* MY KIT 1-3, kept with the song (R-390, D-127) */
+    sg_raw(SG_DRMY, dr_my, (int)sizeof dr_my);
     return sg_over ? 0 : (int)(sg_p - sg_buf);
 }
 
@@ -150,6 +152,8 @@ static int sg_parse(const uint8_t *b, int n)    /* 1 when a song was taken from 
         else if (tag == SG_DRTRACKS) sg_copy(drt, (int)sizeof drt, d, len);
         else if (tag == SG_PAGES) sg_copy(pages, (int)sizeof pages, d, len);
         else if (tag == SG_ARPS) sg_copy(arps, (int)sizeof arps, d, len);
+        else if (tag == SG_MYKITS) sg_copy(dr_mykit, (int)sizeof dr_mykit, d, len);   /* MY KIT 1-3 (R-390) */
+        else if (tag == SG_DRMY) sg_copy(dr_my, (int)sizeof dr_my, d, len);
         else if (tag == SG_CHORDS && len == KIT_NTRACKS * 8 * (int)sizeof(int)) {
             int v[KIT_NTRACKS * 8];
             sg_copy(v, (int)sizeof v, d, len);
