@@ -162,6 +162,8 @@ int kit_drum_key_of(int sound);
  * velocity fully), attack, hold and decay in ms (hold KIT_DRUM_HOLD_FULL: the whole sound; KIT_DRUM_HOLD_KEY: while the
  * key is held, a sample's end looping, then decay), group 0..4 (0 none; a pad stops the others of its group within
  * 10 ms), reverb 0..127 (the pad's own send to the reverb bus). Defaults: 8, 10, 0, FULL, 80, the hats in group 1, 0. */
+int kit_drum_len_ms(int kit, int pad);        /* API 45: how long a kit's sound lasts at its own decay, ms (to -80 dB;
+                                                 * a sample: its length), for drawing it */
 #define KIT_DRUM_HOLD_FULL 0xFFFF
 #define KIT_DRUM_HOLD_KEY 0xFFFE
 void kit_drum_pad_shape(int track, int pad, int level, int vel, int attack_ms, int hold_ms, int decay_ms, int group, int reverb);                 /* API 44: the key (pad) a kit sound is on in the drum map (0 kick1, 4 snare1, 12 hat1 ...) */

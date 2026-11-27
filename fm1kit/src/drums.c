@@ -162,6 +162,20 @@ static pad_t pad_of(int kit, int key)
     return p;
 }
 
+int kit_drum_len_ms(int kit, int key)
+{
+    pad_t p;
+    const recipe_t *r;
+    uint32_t m;
+    if (kit < 0 || kit >= nkits() || key < 0 || key >= KIT_DRUM_PADS) return 0;
+    if (kit == KIT_DRUM_USER && user_pad[key]) return (int)(user_pad[key]->len * 1000u / 22050u);
+    p = pad_of(kit, key);
+    r = &RECIPES[p.rk][p.slot];
+    m = r->tlen;
+    if (r->nlen > m) m = r->nlen;
+    if (r->mlen > m) m = r->mlen;
+    return (int)(m * p.df / 64u);
+}
 const char *kit_drum_kit_name(int kit) { return kit >= 0 && kit < nkits() ? KIT_NAMES[kit] : "?"; }
 const char *kit_drum_name(int kit, int pad)
 {

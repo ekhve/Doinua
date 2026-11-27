@@ -323,62 +323,139 @@ static void draw_drums(void)
     dr_keys(150, 90);
 }
 
-/* EDIT on a drums track (ST-96): the tabs at the foot of the cards, the key, its page */
+/* EDIT on a drums track (ST-96), drawn as the Sound Edit pages are and as the sampler lab draws it (D-084): the key and
+ * its page on top, the four pages as segments, a panel with the sound, the four knobs as dials */
+static void fx_dial(int cx, const char *label, const char *value, int percent, kit_color_t col);
+#define DE_INK KIT_RGB(233, 236, 242)
+#define DE_BG KIT_RGB(14, 16, 23)
+#define DE_DIM KIT_RGB(108, 115, 134)
+#define DE_GRID KIT_RGB(38, 44, 58)
+static const kit_color_t DE_PAGE_COL[DE_N] = { KIT_RGB(111, 183, 255), KIT_RGB(126, 224, 138), KIT_RGB(255, 179, 71), KIT_RGB(255, 158, 203) };
+static const kit_color_t DE_KNOB_COL[4] = { KIT_RGB(255, 107, 107), KIT_RGB(255, 209, 102), KIT_RGB(83, 214, 232), KIT_RGB(199, 155, 255) };
+
+static int de_env(int t, const dr_pad_t *d)     /* the pad's shape at t ms, 0..1000 (full: 1000) */
+{
+    uint16_t h = DR_HOLDS[d->hold];
+    int at = DR_ATTS[d->att], de = DR_DECS[d->dec];
+    if (t < at) return t * 1000 / at;
+    if (h == KIT_DRUM_HOLD_FULL || h == KIT_DRUM_HOLD_KEY || t < at + h) return 1000;
+    t -= at + h;
+    return t >= de ? 0 : 1000 - t * 1000 / de;
+}
+static int de_nat(int t, int len)               /* the sound's own fall: 80 dB over len ms, 0..1000 */
+{
+    int e = len > 0 ? t * 1329 / len : 0, v = 1000 >> (e / 100);
+    return v - (v / 2) * (e % 100) / 100;
+}
+/* the sound over win ms: a bar a column, as tall as it sounds (its fall, times the pad's shape when shape) */
+static void de_wave(int y, int h, int win, int len, const dr_pad_t *d, int shape, kit_color_t col)
+{
+    int x, mid = y + h / 2;
+    uint32_t r = 0x9E3779B9u;
+    for (x = 0; x < 220; x++) {
+        int t = x * win / 220, a = de_nat(t, len), v;
+        if (shape) a = a * de_env(t, d) / 1000;
+        r = r * 1664525u + 1013904223u;
+        v = a * (60 + (int)(r >> 28) * 40 / 15) / 100 * (h / 2) / 1000;
+        if (v < 1) v = a ? 1 : 0;
+        if (v) kit_rect(10 + x, mid - v, 1, v * 2, col);
+    }
+}
+static void de_strip(int x0, int y, int h)      /* the drum map: a key each, its group's colour, the key played last */
+{
+    int k, wi = 0, ww = 13, last = dr_last[track];
+    for (k = 0; k < KIT_NKEYS; k++) {
+        int n = KIT_DRUM_LO + k, g = kit_drum_group(dr_src_kit(track, k), dr_pads[track][k].src);
+        if (!kit_is_white(n)) continue;
+        kit_rect(x0 + wi * ww, y, ww - 1, h, k == last ? DR_GROUP_COL[g] : DE_GRID);
+        kit_rect(x0 + wi * ww + 1, y + h - 4, ww - 3, 3, DR_GROUP_COL[g]);
+        wi++;
+    }
+    wi = 0;
+    for (k = 0; k < KIT_NKEYS; k++) {
+        int n = KIT_DRUM_LO + k, g = kit_drum_group(dr_src_kit(track, k), dr_pads[track][k].src), x, bh = h * 58 / 100;
+        if (kit_is_white(n)) { wi++; continue; }
+        x = x0 + wi * ww - 4;
+        kit_rect(x, y, 8, bh, k == last ? DR_GROUP_COL[g] : DE_BG);
+        kit_rect(x + 1, y + bh - 3, 6, 2, DR_GROUP_COL[g]);
+    }
+}
 static void draw_drums_edit(void)
 {
-    int p = dr_last[track], i, x = 8;
+    static const char *const LAB[DE_N][4] = {
+        { "LEVEL", "VELOCITY", "GROUP", "" }, { "TUNE", "ATTACK", "HOLD", "DECAY" },
+        { "START", "END", "REVERSE", "GAIN" }, { "PUNCH", "COLOR", "DELAY", "REVERB" } };
+    int p = dr_last[track], i, k = dr_src_kit(track, p), pct[4] = {0}, on[4] = {1, 1, 1, 1};
+    int len = kit_drum_len_ms(k, dr_pads[track][p].src) * DR_DECAYS[dr_pads[track][p].decay] / 64;
     dr_pad_t *d = &dr_pads[track][p];
-    char a[16], b[16], c[16], e[16], s[48], *q;
-    kit_clear(BG);
-    top(DR_ED[dr_ed]);
-    a[0] = b[0] = c[0] = e[0] = 0;
+    uint16_t h = DR_HOLDS[d->hold];
+    kit_color_t col = DE_PAGE_COL[dr_ed];
+    char val[4][16], s[48], *q;
+    int note = KIT_DRUM_LO + p;
+    kit_clear(DE_BG);
+    q = cat_int(cat(s, kit_note_name(note, KIT_NAMES_LETTERS)), kit_octave(note));
+    cat(cat(q, "  "), dr_title(track, p));
+    kit_text(6, 4, s, KIT_FONT_SMALL, KIT_ALIGN_LEFT, DE_INK);
+    kit_text(234, 7, DR_ED[dr_ed], KIT_FONT_XSMALL, KIT_ALIGN_RIGHT, col);
+    for (i = 0; i < DE_N; i++) {
+        int a = 6 + 228 * i / DE_N, b = 6 + 228 * (i + 1) / DE_N;
+        kit_rect(a, 25, b - a - 4, 3, i == dr_ed ? col : DE_GRID);
+    }
+    kit_rect_outline(4, 34, 232, 120, 1, DE_GRID);
+    for (i = 0; i < 4; i++) val[i][0] = 0;
+    if (len < 20) len = 20;
     if (dr_ed == DE_KIT) {
-        cat_int(a, d->level);
-        if (d->vel) cat_int(b, d->vel); else cat(b, "fixed");
-        card(0, "LEVEL", a, d->level != 8);
-        card(1, "VELOCITY", b, d->vel != 10);
-        card(2, "GROUP", kit_drum_kit_name(dr_src_kit(track, p)), 0);
-        card(3, "", "", 0);
+        int n = 0;
+        while (kit_drum_kit_name(n)[0] != '?') n++;
+        q = cat(s, dr_name(track, p)); cat(cat(q, "  "), kit_drum_kit_name(k));
+        kit_text(10, 38, s, KIT_FONT_TINY, KIT_ALIGN_LEFT, DE_DIM);
+        de_wave(50, 56, len * 3 / 5, len, d, 0, DR_GROUP_COL[kit_drum_group(k, d->src)]);
+        de_strip(12, 112, 38);
+        cat_int(val[0], d->level); pct[0] = d->level * 10;
+        if (d->vel) cat_int(val[1], d->vel); else cat(val[1], "fixed");
+        pct[1] = d->vel * 10;
+        cat(val[2], kit_drum_kit_name(k)); pct[2] = n > 1 ? k * 100 / (n - 1) : 0;
+        on[3] = 0;
     } else if (dr_ed == DE_SOUND) {
-        uint16_t h = DR_HOLDS[d->hold];
-        {   /* TUNE: a pitched sound names its note (R-131, an 808 tuned to the song); else semitones */
-            int note = kit_drum_note(dr_src_kit(track, p), d->src, d->tune);
-            if (note >= 0) cat_int(cat(a, kit_note_name(note, KIT_NAMES_LETTERS)), kit_octave(note));
-            else { char *q2 = a; if (d->tune > 0) q2 = cat(q2, "+"); cat(cat_int(q2, d->tune), " st"); }
-        }
-        cat(cat_int(b, DR_ATTS[d->att]), " ms");
-        if (h == KIT_DRUM_HOLD_FULL) cat(c, "full"); else if (h == KIT_DRUM_HOLD_KEY) cat(c, "key"); else cat(cat_int(c, h), " ms");
-        if (h == KIT_DRUM_HOLD_FULL) cat(e, "-"); else cat(cat_int(e, DR_DECS[d->dec]), " ms");
-        card(0, "TUNE", a, d->tune != 0);
-        card(1, "ATTACK", b, d->att != 0);
-        card(2, "HOLD", c, d->hold != DR_HOLD_FULL);
-        card(3, "DECAY", e, h != KIT_DRUM_HOLD_FULL);
-    } else if (dr_ed == DE_TRIM) {
-        card(0, "START", "-", 0); card(1, "END", "-", 0); card(2, "REVERSE", "-", 0); card(3, "GAIN", "-", 0);
-    } else {
-        cat_int(e, d->rvb);
-        card(0, "PUNCH", "-", 0); card(1, "COLOR", "-", 0); card(2, "DELAY", "-", 0);
-        card(3, "REVERB", e, d->rvb != 0);
-    }
-    for (i = 0; i < DE_N; i++) {                /* the tabs: where EDIT goes next */
-        int w = kit_text(x, 64, DR_ED[i], KIT_FONT_TINY, KIT_ALIGN_LEFT, i == dr_ed ? FG : MUTED);
-        if (i == dr_ed) kit_rect(x, 72, w, 2, ACC);
-        x += w + 10;
-    }
-    kit_text(8, 82, dr_title(track, p), KIT_FONT_MEDIUM, KIT_ALIGN_LEFT, FG);
-    q = s; if (p < 12) q = cat(cat(q, dr_name(track, p)), ", ");
-    cat(q, kit_drum_kit_name(dr_src_kit(track, p)));
-    kit_text(8, 114, s, KIT_FONT_XSMALL, KIT_ALIGN_LEFT, MUTED);
-    if (dr_ed == DE_KIT) kit_text(8, 134, "PRESETS: its sound   K3: the next kit", KIT_FONT_TINY, KIT_ALIGN_LEFT, MUTED);
-    if (dr_ed == DE_SOUND) {
+        int win = len * 3 / 5, x, last = 0, at = DR_ATTS[d->att];
+        if (h != KIT_DRUM_HOLD_FULL && h != KIT_DRUM_HOLD_KEY && at + h + DR_DECS[d->dec] > win) win = at + h + DR_DECS[d->dec];
         q = cat(s, "MUTE GROUP ");
-        if (d->grp) { char g[2] = { (char)('A' + d->grp - 1), 0 }; q = cat(q, g); } else q = cat(q, "off");
-        cat(q, "  (SELECT)");
-        kit_text(8, 134, s, KIT_FONT_XSMALL, KIT_ALIGN_LEFT, d->grp ? FG : MUTED);
+        if (d->grp) { char g[2] = { (char)('A' + d->grp - 1), 0 }; cat(q, g); } else cat(q, "OFF");
+        kit_text(10, 38, s, KIT_FONT_TINY, KIT_ALIGN_LEFT, d->grp ? DE_INK : DE_DIM);
+        de_wave(52, 96, win, len, d, 1, KIT_RGB(70, 78, 96));
+        for (x = 0; x <= 220; x++) {            /* the shape, straight lines over the sound */
+            int y = 146 - de_env(x * win / 220, d) * 92 / 1000;
+            if (h == KIT_DRUM_HOLD_FULL) y = 54;
+            if (x) kit_line(9 + x, last, 10 + x, y, col);
+            last = y;
+        }
+        {   /* TUNE: a pitched sound names its note (R-131); else semitones */
+            int n2 = kit_drum_note(k, d->src, d->tune);
+            if (n2 >= 0) cat_int(cat(val[0], kit_note_name(n2, KIT_NAMES_LETTERS)), kit_octave(n2));
+            else { q = val[0]; if (d->tune > 0) q = cat(q, "+"); cat(cat_int(q, d->tune), " st"); }
+        }
+        pct[0] = (d->tune + 12) * 100 / 24;
+        cat(cat_int(val[1], DR_ATTS[d->att]), " ms"); pct[1] = d->att * 100 / (DR_NATTS - 1);
+        if (h == KIT_DRUM_HOLD_FULL) cat(val[2], "full"); else if (h == KIT_DRUM_HOLD_KEY) cat(val[2], "key"); else cat(cat_int(val[2], h), " ms");
+        pct[2] = d->hold * 100 / (DR_NHOLDS - 1);
+        if (h == KIT_DRUM_HOLD_FULL) { cat(val[3], "-"); on[3] = 0; } else cat(cat_int(val[3], DR_DECS[d->dec]), " ms");
+        pct[3] = d->dec * 100 / (DR_NDECS - 1);
+    } else if (dr_ed == DE_TRIM) {              /* samples: ST-99 */
+        kit_text(120, 88, "SYNTH SOUND: NOTHING TO TRIM", KIT_FONT_TINY, KIT_ALIGN_CENTER, DE_DIM);
+        for (i = 0; i < 4; i++) { cat(val[i], "--"); on[i] = 0; }
+    } else {                                    /* the pad's sends; PUNCH, COLOR, DELAY with the kit FX (ST-97) */
+        for (i = 0; i < 4; i++) {
+            int y = 46 + i * 26, live = i == 3;
+            kit_text(10, y, LAB[DE_PADFX][i], KIT_FONT_XSMALL, KIT_ALIGN_LEFT, live ? DE_INK : DE_DIM);
+            kit_rect(92, y + 7, 112, 5, DE_GRID);
+            if (live && d->rvb) kit_rect(92, y + 7, d->rvb * 112 / 10, 5, col);
+            if (live) cat_int(val[i], d->rvb); else { cat(val[i], "--"); on[i] = 0; }
+            kit_text(230, y + 3, val[i], KIT_FONT_TINY, KIT_ALIGN_RIGHT, live ? DE_INK : DE_DIM);
+        }
+        pct[3] = d->rvb * 10;
     }
-    if (dr_ed == DE_TRIM) kit_text(8, 134, "A synth sound: nothing to trim", KIT_FONT_XSMALL, KIT_ALIGN_LEFT, MUTED);
-    if (dr_ed == DE_PADFX) kit_text(8, 134, "sends: how much of each effect this pad gets", KIT_FONT_TINY, KIT_ALIGN_LEFT, MUTED);
-    dr_keys(150, 90);
+    for (i = 0; i < 4; i++)
+        if (LAB[dr_ed][i][0]) fx_dial(30 + i * 60, LAB[dr_ed][i], val[i], pct[i], on[i] ? DE_KNOB_COL[i] : DE_DIM);
 }
 
 static void dr_ideas_lights(void);
