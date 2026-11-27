@@ -54,5 +54,5 @@ the contract for the screen, D-084); this file holds the brief the owner sent wi
 - A 240x240 painted background costs roughly 15–40 KB of flash even compressed; the app has about 30 KB left (493 of
   523 KB, the 90 % gate of `safety.py`). The visualizer will need the owner's flash decision (the gate at 95 %, or
   images in a data area as Felucca keeps samples), with measured numbers.
-- Order (the owner, 2026-11-27, D-125): the first flashable build, the owner's test and a first release come first; the
+- Order (the owner, 2026-11-27, D-126): the first flashable build, the owner's test and a first release come first; the
   guided mode next; this visualizer and the InfeKt-FM1 audition after.
