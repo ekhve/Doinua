@@ -6,7 +6,7 @@
  * REC tapped while stopped with a COUNT-IN counts in and records. */
 
 #define RL_NGRIDS 5
-static const char *const RL_GRIDS[RL_NGRIDS] = { "as played", "1/16", "1/8", "1/16T", "1/8T" };
+static const char *const RL_GRIDS[RL_NGRIDS] = { "off", "1/16", "1/8", "1/16T", "1/8T" };
 static const uint8_t RL_GRID_TICKS[RL_NGRIDS] = { 0, 6, 12, 4, 8 };
 /* the feels: swing, shift and looseness for the kick, snare, hats and the rest (a pitched track: the rest's) */
 typedef struct { const char *name, *what; uint8_t sw[4]; int8_t sh[4]; uint8_t jit[4]; } rl_feel_t;

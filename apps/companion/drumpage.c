@@ -294,7 +294,7 @@ static void dr_keys(int y, int h)
 
 /* PLAY on a drums track, as the sampler lab draws it (D-084, R-367..R-370, R-373): the bar, a row a key in the order
  * the keys were first recorded, sharing its height; each hit where it plays, a line back to where it was played; the
- * key played last; the knobs at the foot */
+ * key played last; the knobs on top, as on every PLAY page */
 static int8_t dr_order[KIT_NTRACKS][KIT_DRUM_PADS];
 static uint8_t dr_norder[KIT_NTRACKS];
 static void dr_order_update(int t)              /* keys recorded since: at the end; keys gone: out */
@@ -310,17 +310,9 @@ static void dr_order_update(int t)              /* keys recorded since: at the e
     }
     dr_norder[t] = (uint8_t)n;
 }
-static void dr_knob_card(int i, const char *label, const char *value, int hi)   /* the lab's knob row */
-{
-    int x = 4 + i * 58;
-    exp_card(i, label, value, 0);
-    kit_round_rect(x, 204, 54, 33, 5, CARD);
-    ctext(x + 27, 212, label, KIT_FONT_TINY, MUTED);
-    ctext(x + 27, 226, value, KIT_FONT_XSMALL, hi ? ACC : FG);
-}
 static void dr_bar(void)
 {
-    const int X0 = 44, W = 190, Y0 = 26, AH = 160;
+    const int X0 = 44, W = 190, Y0 = 70, AH = 146;
     int n, h, r, i, y = Y0 + 1, b = kit_seq_playing() ? kit_seq_tick() / KIT_TICKS_PER_BAR : 0, g0 = rl_grid_ticks(track);
     dr_order_update(track);
     n = dr_norder[track];
@@ -368,13 +360,13 @@ static void draw_drums(void)
     dr_bar();
     q = cat_int(cat(s, kit_note_name(note, KIT_NAMES_LETTERS)), kit_octave(note));
     cat(cat(q, "  "), dr_title(track, p));
-    kit_text(6, 189, s, KIT_FONT_TINY, KIT_ALIGN_LEFT, dr_shown_until ? ACC : MUTED);
+    kit_text(6, 222, s, KIT_FONT_TINY, KIT_ALIGN_LEFT, dr_shown_until ? ACC : MUTED);
     cat_int(v, d->level);
-    dr_knob_card(0, "LEVEL", v, d->level != 8);
+    card(0, "LEVEL", v, d->level != 8);
     cat_int(v, d->rvb);
-    dr_knob_card(1, "REVERB", v, d->rvb != 0);
-    dr_knob_card(2, "GRID", rl_grid_name(track), rl_grid[track] != 0);
-    dr_knob_card(3, "FEEL", rl_feel_name(track), rl_feel[track] != 0);
+    card(1, "REVERB", v, d->rvb != 0);
+    card(2, "GRID", rl_grid_name(track), rl_grid[track] != 0);
+    card(3, "FEEL", rl_feel_name(track), rl_feel[track] != 0);
 }
 
 /* EDIT on a drums track (ST-96), drawn as the Sound Edit pages are and as the sampler lab draws it (D-084): the key and
