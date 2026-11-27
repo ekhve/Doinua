@@ -88,8 +88,8 @@ The owner (`ekhve`) is short of time and tokens: **communication is short, concr
 
 Build it **as its lab draws it** (`docs/labs/`, rule 10 / D-084): same layout, names, places, colours, messages. Put
 each new screen next to the lab in the same state and fix what differs; list remaining differences in the PR. New
-screens show as "new" in the scenarios until the **owner** approves them (Actions > Approve screens, then you
-fast-forward your branch to `screens-approved-<run>`). Never approve screens yourself.
+screens show as "new" in the scenarios until the **owner** approves them in the conversation; then you run Approve
+screens on their say-so and fast-forward your branch to `screens-approved-<run>` (D-123). Never approve screens yourself.
 
 ### 4c. A scenario
 

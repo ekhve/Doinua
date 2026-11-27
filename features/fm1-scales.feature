@@ -1182,6 +1182,185 @@ Feature: fmini-1's Minimoog engine (ST-70)
     Then it sounds below the mix's clip and ends after its release, and a fifth note on LUSH STRINGS takes the oldest
 
 Feature: The effects bus (ST-69)
+
+  @D-102 @ST-69 @auto @gate:unit
+  Scenario: Delay tone softens the echo
+    Given the delay receives a short impulse
+    When its tone is changed from brightest to darkest
+    Then the first echo has a lower peak at the same delay time
+    And the dry impulse keeps its level
+
+  @D-072 @ST-69 @auto
+  Scenario: FX opens a live performance page and delay
+    Given a synth track is ready to play
+    When FX opens PERFORM and another tap opens DELAY
+    And K3 raises the delay send
+    Then the track's note and its echo sound
+    And holding FX returns to PERFORM
+    And HOME returns to the track
+
+  @D-103 @ST-69 @auto @gate:unit
+  Scenario: Room pre-delay delays only the wet onset
+    Given a dry sound and the same sound with a room send
+    When the room pre-delay is set to 100 ms
+    Then the wet onset moves by 100 ms and the dry sound starts as before
+
+  @D-072 @ST-69 @auto
+  Scenario: FX opens a live reverb page
+    Given a synth track is ready to play
+    When FX steps through PERFORM and DELAY to REVERB
+    And the room send and pre-delay are raised
+    Then a note has an audible room tail
+
+  @D-104 @ST-69 @auto @gate:unit
+  Scenario: Dirt crushes on one track with a dry bypass
+    Given DIRT crush is raised on one track
+    When samples pass through DIRT at full mix
+    Then the output is quantized
+    And zero mix passes the same samples unchanged
+
+  @D-072 @ST-69 @auto
+  Scenario: FX opens the track dirt page
+    Given a synth track is ready to play
+    When FX steps through PERFORM, DELAY and REVERB to DIRT
+    And the crush amount is raised
+    Then the DIRT screen shows the altered transfer curve
+    And the track still sounds with full mix and with zero mix
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM switches live effect pairs
+    Given PERFORM is open with DUB selected
+    When X and Y are turned and a note is played
+    Then the note echoes
+    And SELECT steps through SPACE and DIRT
+
+  @D-105 @ST-69 @auto @gate:unit
+  Scenario: Performance pairs preserve the track settings
+    Given a track with its original effects
+    When DUB, SPACE, and DIRT are applied in turn
+    Then their audible effects are added while the base settings stay available
+
+  @D-106 @ST-69 @auto @gate:unit
+  Scenario: WAH emphasizes its sweep band
+    Given WAH sweeps near 1 kHz
+    When 100 Hz and 1 kHz tones play at equal input levels
+    Then WAH attenuates the 100 Hz tone more strongly
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM opens WAH one step before DUB
+    Given PERFORM shows DUB
+    When SELECT moves back one step
+    Then WAH shows its SWEEP and SHARPNESS controls
+
+  @D-107 @ST-69 @auto @gate:unit
+  Scenario: Wobble sweeps cutoff on one track
+    Given WOBBLE is active on the selected track
+    When SPEED and DEPTH are changed
+    Then the cutoff cycles at that speed and bypasses at zero depth
+    And the other track keeps its original samples
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM opens WOBBLE after DIRT
+    Given PERFORM shows DIRT
+    When SELECT moves forward one step
+    Then WOBBLE shows its SPEED and DEPTH controls
+
+  @D-108 @ST-69 @auto @gate:unit
+  Scenario: FMini cutoff edits affect a held note
+    Given an FMini sound with a note held
+    When its cutoff is closed
+    Then the held note becomes quieter without releasing
+    And reselecting the sound restores its original filter settings
+
+  @D-072 @ST-69 @auto
+  Scenario: PERFORM FILTER edits the current FMini sound
+    Given an FMini sound is selected and PERFORM FILTER is open
+    When K3 and K4 are turned
+    Then FILTER shows the edited cutoff and resonance
+
+  @D-072 @D-110 @ST-46 @auto
+  Scenario: EDIT opens the native FMini oscillator and filter
+    Given an FMini sound is selected
+    When EDIT opens OSC and SELECT moves to FILTER
+    Then K1 sets the same native cutoff shown in PERFORM FILTER
+    And HOME returns to playing
+
+  @D-110 @ST-46 @auto @gate:unit
+  Scenario: FMini oscillator edits affect a held note
+    Given oscillator 1 of an FMini sound is playing a note
+    When its waveform changes
+    Then the held note uses the new waveform
+
+  @D-072 @D-111 @ST-46 @auto
+  Scenario: ENV opens the native FMini contours
+    Given a Producer track plays an FMini sound
+    When ENV is pressed twice
+    Then the first press opens F.ENV and the second opens A.ENV
+    And the amp release is editable
+
+  @D-111 @ST-46 @auto @gate:unit
+  Scenario: FMini envelope edits change the amp release
+    Given two notes play with the same FMini attack and sustain
+    When the second note has a longer release
+    Then the second note keeps sounding longer after it is let go
+
+  @D-112 @ST-46 @auto
+  Scenario: VOICE changes the track bend range
+    Given a Basic sound is playing
+    When VOICE sets BEND RANGE to 12 semitones
+    Then full upward pitch bend raises the note by an octave
+
+  @D-072 @D-113 @ST-46 @auto
+  Scenario: LFO opens the editable FMini modulation
+    Given a Producer track with an FMini sound selected
+    When LFO is pressed
+    Then the rate, depth, target and waveform can be edited
+
+  @D-113 @ST-46 @auto @gate:unit
+  Scenario: FMini LFO changes a held sound
+    Given an FMini note held with a square LFO
+    When the editable route targets volume
+    Then the held note cycles between two levels
+
+  @D-114 @ST-46 @auto
+  Scenario: MOD applies a signed cutoff route
+    Given FMini MOD routes the wheel to cutoff with a negative amount
+    When the modulation wheel is raised during a note
+    Then the held note becomes darker
+    And clearing the wheel restores the original cutoff
+
+  @D-114 @ST-46 @auto @gate:unit
+  Scenario: Wheel offsets preserve base FX sends
+    Given the track has base delay and reverb sends
+    When signed wheel offsets change those sends
+    Then the audible send changes and the base settings remain available
+
+  @D-115 @ST-46 @auto
+  Scenario: FILTER shows the FMini spectrum while playing
+    Given FMini FILTER is open
+    When a note plays on the selected track
+    Then its spectrum shows behind the cutoff curve
+
+  @D-115 @ST-46 @auto @gate:unit
+  Scenario: Spectrum measures the selected FMini track
+    Given a C4 sine plays on the selected track
+    When the spectrum window is read
+    Then it peaks near the note's fundamental
+    And sound from another track does not appear in the selected spectrum
+
+  @D-116 @ST-46 @auto
+  Scenario: Sound Edit plots the sounding note's markers
+    Given an FMini sound is selected in Sound Edit
+    When a note is played across F.ENV, A.ENV and LFO
+    Then their graphs show live markers while the voice sounds
+
+  @D-116 @ST-46 @auto @gate:unit
+  Scenario: FMini motion reports live contour and phase
+    Given a note plays on the selected FMini track
+    When the note is released
+    Then the contour levels fall as the LFO phase advances
+
+
   @D-093 @ST-69 @gate:unit @auto
   Scenario: The effects bus delays, drives and choruses a track's sound by its sends, and ends
     Given a track that sends to the delay, the drive or the chorus
@@ -1244,3 +1423,80 @@ Feature: Bass Something 2 (ST-92)
     Given Square Solo is selected with PRESETS
     When C4 is pressed and released
     Then C4 sounds within 15 cents and its release ends in silence
+
+Feature: OberVave (ST-72)
+
+  @D-096 @ST-72 @auto
+  Scenario: OberVave Sync Lead sounds when played
+    Given Sync Lead is selected with PRESETS
+    When C4 is pressed
+    Then the selected preset sounds
+
+  @D-097 @ST-72 @auto
+  Scenario: Selecting Shadow Arp enables the track arpeggiator
+    Given the Sound Browser is open on the track's sounds
+    When Shadow Arp is selected and C4 is held
+    Then the track plays its factory arpeggio
+
+Feature: CoralFlower VA (ST-73)
+
+  @D-098 @ST-73 @auto
+  Scenario: CoralFlower Punch Bass sounds when played
+    Given Punch Bass is selected with PRESETS
+    When C4 is pressed
+    Then the selected preset sounds
+
+  @D-098 @ST-73 @auto @gate:unit
+  Scenario: The Sound Browser selects each picked CoralFlower VA patch
+    Given the nine selected CoralFlower sounds in the browser
+    When a selected sound is loaded
+    Then the matching CoralFlower factory patch is used
+
+Feature: FMini factory arpeggios (ST-77)
+
+  @D-099 @ST-77 @auto @gate:unit
+  Scenario: FMini Pluck Arp plays through the track arpeggiator
+    Given Pluck Arp is selected for the melody track
+    When C4 is held
+    Then the track plays the factory's up-down pattern across its three octaves
+
+  @D-117 @ST-46 @auto
+  Scenario: Juno EDIT FILTER shares the active cutoff
+    Given a Juno-106 sound on the selected track
+    When I turn cutoff on EDIT FILTER with a note held
+    Then the cutoff shown on PERFORM FILTER changes
+
+  @D-117 @ST-46 @auto @gate:unit
+  Scenario: Juno native filter edits affect a held note
+    Given the selected track plays a held Juno-106 note
+    When I sample the selected track spectrum
+    Then the bands show the held note's energy
+
+  @D-118 @ST-46 @auto
+  Scenario: Juno envelope edits appear on both pages
+    Given a Juno-106 sound on the selected track
+    When I edit release on F.ENV
+    Then A.ENV shows the same release
+
+  @D-118 @ST-46 @auto @gate:unit
+  Scenario: Juno reports its shared native envelope
+    Given a selected Juno-106 voice is releasing
+    When I read its shared native envelope
+    Then both envelope levels follow the voice
+
+Feature: The drum map v2 (ST-95, D-121, D-122)
+
+  @D-122 @ST-95 @UC-21 @gate:unit @auto
+  Scenario: The drum map puts AUTO's sounds on the first octave
+    Given a drums track on Dusty
+    When F3, F#3 and G3 are played, then F4
+    Then they sound the kick, the hat and the snare, and the screen names them KICK, HAT, SNARE, then F4's sound name
+    And AUTO's beat plays its kick on F3, its snare on G3 and its hats on F#3
+
+
+  @D-125 @UC-07 @approved:owner @auto
+  Scenario: Startup shows the Doinua artwork and proceeds to the first page
+    Given Companion is starting
+    Then the Doinua artwork and firmware build revision are visible
+    When startup finishes
+    Then the normal first page is visible

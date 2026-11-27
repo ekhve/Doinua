@@ -4,6 +4,8 @@
 producers. **Version:** the chord pages PLAY, IDEAS and AUTO (D-042, D-075..D-080), the bass (D-040, D-041). Where this manual and the firmware disagree, the firmware is wrong: tell us in a Problem
 report.
 
+At startup, Companion briefly shows the Doinua artwork and the firmware’s build revision. Pressing a control brings up the normal page immediately.
+
 ## 1. The idea
 
 The FM-1 holds one **song**: up to four tracks (CHORDS, BASS, MELODY, DRUMS) that loop together. You play a track,
@@ -376,10 +378,13 @@ The FM-1 talks MIDI over USB (in and out) and on its TRS jack (in only: the jack
 
 ## 8. The drums (DRUMS)
 
-ALGORITHM to DRUMS. Every key is its own sound: **27 a kit**, kicks low on the left, snares and claps, the hats in the
-middle, toms and the kit's own percussion, a crash at the top. Play a key and the screen names its sound (kick1,
-snare2, conga1); the keys' colours show where each kind lives (red kicks, amber snares and claps, teal hats and
-shakers, purple toms and percussion). OCT− and OCT+ do not move the drums.
+ALGORITHM to DRUMS. Every key is its own sound: **27 a kit**, laid out on the **drum map**, the same on every kit. The
+first octave, **F3 to E4**, holds the 12 sounds AUTO and IDEAS play, as on General MIDI and the MPC, so you can drum them
+with one hand: **F3 kick**, **F#3 hat**, **G3 snare**, **G#3 open hat**, **A3 clap**, **A#3 shaker**, **B3 rim**, **C4 tom 1**,
+**C#4 ghost**, **D4 tom 2**, **D#4 perc**, **E4 tom 3**. **F4 to G5** hold the rest: more kicks, snares and hats, the kit's
+own percussion, a crash at the top. Play a key and the screen names it: its role on the first octave (KICK, with its
+sound, kick1, under it), its sound above (kick2, conga1). The keys' colours show where each kind lives (red kicks, amber
+snares and claps, teal hats and shakers, purple toms and percussion). OCT− and OCT+ do not move the drums.
 
 | Control | Does |
 |---|---|
@@ -418,10 +423,10 @@ one: the song starts and the beat plays on your kit; let go and it stops. REC re
 | **K4 GHOSTS** | **off**, **soft**, **more**: the quiet snares between the beats |
 
 A MIDI keyboard on channel 10 plays the drums too: its notes F3 to G5 are the 27 keys, and General MIDI's drum notes
-(36 kick, 38 snare, 42 hat ...) play the kit's kick, snare and hat. **Your own kit**: put your sounds in `kits/user/` named `01-kick1.wav` (the number is the key, 01 for F3 to 27 for
+(36 kick, 38 snare, 42 hat ...) play the kit's kick, snare and hat. **Your own kit**: put your sounds in `kits/user/` named `01-kick1.wav` (the number is the key on the drum map, 01 kick, 02 hat, 03 snare … for F3 to 27 for
 G5; the rest is the name the screen shows) with a `LICENSE` file saying whose they are, and build the firmware. They
 are the fifth kit, **USER**. Without the `LICENSE` file the build stops. `kits/user/README.md` has the details.
-The firmware comes with a USER kit already: the owner's own kick (F3), snare (A3) and hat (F4), free for anyone (CC0);
+The firmware comes with a USER kit already: the owner's own kick (F3), snare (G3) and hat (F#3), free for anyone (CC0);
 the other keys play Dusty's sounds. Replace or add files to make it yours.
 
 ## 9. The sequencer: SONG (SEQ)
@@ -489,13 +494,42 @@ Bass, MELODY on Lead). PRESETS goes through the sounds one at a time, and on int
 While the list shows, **K1** jumps a whole group (K1 GROUP), back to the sound you were on in it. Play the keys to hear a
 sound: the list stays open while a key is held, and closes by itself 2 seconds after you stop turning or playing (or
 press HOME). The list holds the sounds you picked in the audition, as their engines arrive: now FMini's 66, the Juno-106's 28
-(FM-106's engine), the 11 Bass Something 2 patches and five of ours. The DRUMS track's PRESETS still chooses its kit.
+(FM-106's engine), the 11 Bass Something 2 patches, 19 OberVave programs, nine CoralFlower VA sounds and five of ours. The DRUMS track's PRESETS still chooses its kit.
 
 ### Effects
 
 Every sound brings its own effects, as it was made: its chorus, its echo and its reverb (and some a little drive), so
-it sounds like it did in the audition. The echo and the reverb ring on a moment after you let go. The FX pages to change
-a sound's effects come later.
+it sounds like it did in the audition. The echo and the reverb ring on a moment after you let go.
+
+On a Producer sound track, tap **FX** to step through PERFORM, DELAY, REVERB and DIRT. Hold **FX** to return to
+PERFORM and press **HOME** to return to playing. On PERFORM, **SELECT** changes the X/Y pair and **K3/K4** move
+its two controls. For WOBBLE, **K3** sets the cutoff sweep speed and **K4** sets its depth. Turn depth to zero to
+bypass the sweep. The sweep is temporary and applies to the selected track.
+
+On FMini and Juno-106 sounds, PERFORM FILTER uses **K3** for cutoff and **K4** for resonance. Reselect the preset to reload
+its original settings. The X and Y values show dashes on sounds that do not have these controls mapped yet.
+
+Tap **EDIT** to open OSC, then tap **EDIT** again or turn **SELECT** to reach FILTER. Hold **EDIT** and release to
+return to OSC. On an FMini sound, the four knobs on OSC change the first two waves, oscillator 2 detune and their
+balance. On FILTER they change cutoff, resonance, envelope amount and key tracking. The cutoff and resonance
+also appear on PERFORM FILTER. **HOME** returns to playing.
+FILTER draws the selected FMini or Juno-106 track's live spectrum before the shared delay and reverb.
+
+Press **ENV** for F.ENV and again for A.ENV. The four knobs change attack, decay, sustain and release. An FMini
+preset's release follows its decay until you turn RELEASE. On that envelope, release then has its own time.
+Juno-106 shows **SHARED ADSR** on both pages. Changes on either page appear on the other. The preset's VCA
+mode determines whether the amp follows this envelope or the key gate.
+
+On VOICE, choose POLY, MONO or LEGATO, then set the glide time, when it slides, and the pitch-bend range. Bend defaults
+to two semitones. Changing the mode releases the track's currently sounding notes. VOICE is available for Basic, the
+shared Felucca engines and FMini.
+
+On FMini, press **LFO** to edit rate, depth, target and wave. Pitch, cutoff and volume are available as targets on
+the mono FM-1. At zero depth only the preset's original modulation routes apply.
+
+On FMini's **MOD** page, choose two destinations and their signed amounts. PERFORM MOD and MIDI CC1 apply the
+same routes. Bringing MOD to zero returns the sound to its base settings. Reselecting the sound restores the
+original vibrato route.
 
 ### How many notes at once
 
@@ -521,6 +555,10 @@ playing after you let go, until you hold new ones. While ARP is on, the keys fee
 
 On **CHORDS** each key arpeggiates its chord. On **DRUMS** ARP is note repeat: hold a sound and it repeats at RATE; K1
 RAMP makes it grow or fade, K3 PITCH makes it rise or fall. REC records what ARP plays.
+
+Selecting an FMini patch with a factory arpeggio turns on the track's ARP with its factory settings. It follows the
+song's tempo and keeps the preset's octave span, gate, swing and note order, including repeat and up + oct where used.
+Selecting a sound without a factory arpeggio restores the track's previous ARP settings.
 
 ## 9d. Your song is kept
 

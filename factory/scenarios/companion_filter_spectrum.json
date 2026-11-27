@@ -1,0 +1,13 @@
+{
+  "scenario": "FILTER shows the FMini spectrum while playing",
+  "name": "companion, ST-46: FMini shows a live spectrum on FILTER",
+  "app": "companion",
+  "ms": 6500,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:EDIT,3670:EDIT^,3900:e0:+1,4600:C4@100,5650:C4^",
+  "checks": [
+    {"type": "screen", "at": 4200},
+    {"type": "screen", "at": 5440},
+    {"type": "sound", "from": 5000, "to": 5600},
+    {"type": "peak", "from": 4600, "to": 6300, "max_dbfs": -1}
+  ]
+}

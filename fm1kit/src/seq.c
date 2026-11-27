@@ -272,6 +272,7 @@ void kit_seq_stop(void)
 }
 
 int kit_seq_playing(void) { return playing; }
+int kit_seq_tick_fine(void) { return playing ? (last_fine < 0 ? 0 : last_fine) : -1; }
 int kit_seq_tick(void) { return playing ? (last_tick < 0 ? 0 : last_tick) : -1; }
 void kit_seq_record(int track) { rec_track = track >= 0 && track < KIT_NTRACKS ? track : -1; }
 

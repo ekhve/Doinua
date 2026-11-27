@@ -86,6 +86,24 @@ int main(void)
     kit_track_sound(KIT_TRACK_MELODY, KIT_ENGINE_BASIC, KIT_INST_SINE);
     CHECK(kit_track_voice_mode(KIT_TRACK_MELODY) == KIT_VMODE_POLY && kit_track_glide_ms(KIT_TRACK_MELODY) == 0, "a track starts POLY with no glide");
 
+    kit_track_note_on(KIT_TRACK_MELODY, 60, 100); run(80);
+    kit_track_bend(KIT_TRACK_MELODY, 8191);
+    f = hz(60);
+    CHECK(near(f, 293.66), "default positive bend stays two semitones (%.1f Hz)", f);
+    kit_track_bend_range(KIT_TRACK_MELODY, 12);
+    f = hz(60);
+    CHECK(near(f, C4 * 2), "an already-held wheel follows the new range (%.1f Hz)", f);
+    CHECK(kit_track_bend_range_of(KIT_TRACK_CHORDS) == 2, "bend range belongs to one track");
+    kit_track_bend(KIT_TRACK_MELODY, -8192);
+    f = hz(60);
+    CHECK(near(f, C4 / 2), "negative octave bend (%.1f Hz)", f);
+    kit_track_bend(KIT_TRACK_MELODY, 6144);
+    f = hz(60);
+    CHECK(near(f, 440.0), "octave folding preserves a nine-semitone bend (%.1f Hz)", f);
+    kit_track_bend(KIT_TRACK_MELODY, 0);
+    kit_track_bend_range(KIT_TRACK_MELODY, 2);
+    kit_track_note_off(KIT_TRACK_MELODY, 60); run(500);
+
     /* no glide: a new note is at its pitch at once */
     kit_track_note_on(KIT_TRACK_MELODY, 60, 100); run(100); kit_track_note_off(KIT_TRACK_MELODY, 60); run(300);
     kit_track_note_on(KIT_TRACK_MELODY, 67, 100); f = hz(30);

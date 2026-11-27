@@ -1,0 +1,17 @@
+{
+  "scenario": "Sound Edit plots the sounding note's markers",
+  "name": "companion, ST-46: FMini envelope and LFO markers follow a sounding voice",
+  "app": "companion",
+  "ms": 9100,
+  "keys": "900:e1:+2,1000:e6:+1,1230:e6:+21,3600:ENV,3670:ENV^,4300:C5@100,4890:ENV,4960:ENV^,5200:e5:+7,5720:C5^,6400:LFO,6470:LFO^,6800:C5@100,7950:C5^",
+  "checks": [
+    {"type": "screen", "at": 3890},
+    {"type": "screen", "at": 4740},
+    {"type": "screen", "at": 5540},
+    {"type": "screen", "at": 6060},
+    {"type": "screen", "at": 7110},
+    {"type": "screen", "at": 7390},
+    {"type": "sound", "from": 5340, "to": 5650},
+    {"type": "peak", "from": 4280, "to": 8500, "max_dbfs": -1}
+  ]
+}

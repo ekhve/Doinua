@@ -25,7 +25,9 @@ A scenario (JSON):
                                            levels: off, dim, half (API 28), on, breath
       {"type": "screen", "at": 1500}       the device frame equals the host frame, and the host frame
                                            equals the approved one in factory/approved/ (if any); with
-                                           "dark": true, also that the screen is black (under 1% of pixels lit)
+                                           "dark": true, also that the screen is black (under 1% of pixels lit).
+                                           "volatile_rect": [x, y, w, h] excludes a variable label from
+                                           the approved reference only. The full host and device frames still match.
     ],
     "reboot": { "ms": ..., "keys": "...", "checks": [...] }   optional: a second run that starts with the store
                                            (host --store, emulator --flash) the first one left }
@@ -227,7 +229,13 @@ def screen_checks(sc, results, out, approve):
                 lines.append(("ok", f"screen {at}: approved -> {ref.relative_to(ROOT)}"))
             elif ref.exists():
                 want = np.asarray(Image.open(ref).convert("RGB"), dtype=np.int16)
-                diff = float((np.abs(want - host).max(axis=2) > 8).mean())
+                different = np.abs(want - host).max(axis=2) > 8
+                if "volatile_rect" in c:
+                    x, y, w, h = c["volatile_rect"]
+                    mask = np.ones(different.shape, dtype=bool)
+                    mask[y:y + h, x:x + w] = False
+                    different = different[mask]
+                diff = float(different.mean())
                 ok = diff <= 0.001
                 ok_all &= ok
                 lines.append(("ok" if ok else "FAIL", f"screen {at}: host vs approved, {diff * 100:.2f}% pixels differ"))

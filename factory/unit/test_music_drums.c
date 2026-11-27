@@ -25,6 +25,8 @@ int main(void)
     CHECK(has(h, n, DS_KICK, 0) && has(h, n, DS_KICK, 42) && has(h, n, DS_SNARE, 24) && has(h, n, DS_SNARE, 72), "boom bap: kick 1, a 7th-sixteenth kick, snares on 2 and 4");
     CHECK(count(h, n, DS_HATC) == 8 && has(h, n, DS_GHOST, 84), "eight hats and a ghost");
     for (i = 0; i < n; i++) if (h[i].slot == DS_KICK) CHECK(h[i].pad == 0, "the kick plays kick1 (F3)");
+    for (i = 0; i < n; i++) if (h[i].slot == DS_SNARE) CHECK(h[i].pad == 2, "the snare plays on G3 (drum map v2, D-121)");
+    for (i = 0; i < n; i++) if (h[i].slot == DS_HATC) CHECK(h[i].pad == 1, "the hat plays on F#3 (drum map v2, D-121)");
     n = ds_hits(0, DV_MAIN, 0, h, 96);
     CHECK(!has(h, n, DS_GHOST, -1), "GHOSTS off: no ghost");
     n = ds_hits(0, DV_BUSY, 1, h, 96);

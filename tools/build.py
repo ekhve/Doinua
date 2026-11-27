@@ -29,7 +29,7 @@ CFLAGS = ["-Os", "-ffunction-sections", "-fno-builtin", "-Wall", "-Wno-unused-fu
 # (-mcpu=r3 -mfprev1, the SDK's flags; without them clang emits soft-float calls this link has no library for).
 # The FPU is used on the audio path alone, so no other code's float state can be disturbed.
 FPU_FLAGS = {src: ["-mcpu=r3", "-mfprev1", "-ffp-contract=off"] for src in ("juno.c", "bs2.c")}
-PORTABLE = ["core.c", "gfx.c", "synth.c", "music.c", "engines.c", "store.c", "bank.c", "bs2.c", "juno.c", "fxbus.c", "midi.c", "player.c", "image.c", "seq.c"]
+PORTABLE = ["core.c", "gfx.c", "synth.c", "music.c", "engines.c", "store.c", "bank.c", "bs2.c", "obervave.c", "juno.c", "fxbus.c", "midi.c", "player.c", "image.c", "seq.c"]
 ENGINES = ROOT / "third_party" / "felucca-engines"
 APP_BASE = 0x02000120
 APP_SLOT = 0x8DFBC                        # the app area's size (fm1pkg.py APP_SLOT)
@@ -214,6 +214,12 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     generate(gen)
     app_assets(a.app, out)
+    if a.app == "companion":
+        revision = subprocess.run(["git", "rev-parse", "--short=8", "HEAD"], cwd=ROOT,
+                                  capture_output=True, text=True).stdout.strip()
+        if not re.fullmatch(r"[0-9a-f]{8,40}", revision):
+            revision = "unknown"
+        (out / "gen" / "build_version.h").write_text(f'#define DOINUA_BUILD_VERSION "{revision[:8]}"\n')
     build_host(a.app, out, gen)
     if a.host_only:
         return

@@ -1,0 +1,11 @@
+{
+  "scenario": "OberVave Sync Lead sounds when played",
+  "name": "hello, ST-72: PRESETS selects OberVave Sync Lead",
+  "app": "hello",
+  "ms": 6500,
+  "keys": "900:e6:+100,1900:e6:+49,3000:C4@100,3900:C4^",
+  "checks": [
+    {"type": "silence", "from": 800, "to": 2900},
+    {"type": "sound", "from": 3150, "to": 3800}
+  ]
+}

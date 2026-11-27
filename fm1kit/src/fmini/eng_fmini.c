@@ -102,7 +102,10 @@ static void fmini_block(track_t *t)
         static const uint8_t KN[3] = {P_E0, P_E1, P_E2};
         uint32_t j;
         for (j = 0; j < 3; j++) {
-            int32_t want = (int32_t)clamp(t->p[KN[j]], 0, 127) << 16, d = want - fmini_sm[tr][j], st;
+            int target = t->p[KN[j]];
+            if (j == 0) target += t->mod_cutoff;
+            if (j == 1) target += t->mod_resonance;
+            int32_t want = (int32_t)clamp(target, 0, 127) << 16, d = want - fmini_sm[tr][j], st;
             if (i == NVOICE || !(fmini_sm_ok & (1u << tr))) {
                 fmini_sm[tr][j] = want;
                 continue;
@@ -255,8 +258,8 @@ static void fmini_note_on(track_t *t, voice_t *v)
     v->s[7] = (int32_t)(1u << 24) | (v->s[7] & 0xFFFFFF);  /* the contour attacks from where it is */
 }
 
-/* the contour, once a block: stage 1 attack, 2 decay to the sustain, 3 release (the DECAY time); level Q23 */
-static int32_t fmini_contour(const int16_t *p, voice_t *v, int32_t kr)
+/* the contour, once a block: stage 1 attack, 2 decay to the sustain, 3 release; level Q23 */
+static int32_t fmini_contour(const int16_t *p, voice_t *v)
 {
     uint32_t st = (uint32_t)v->s[7] >> 24;
     int32_t e = v->s[7] & 0xFFFFFF, sus = (int32_t)p[P_E5] << 16, k = (int32_t)FM_ENV_EXP[p[P_E4] & 127];
@@ -277,7 +280,7 @@ static int32_t fmini_contour(const int16_t *p, voice_t *v, int32_t kr)
         e += mulq16(sus - e, (uint32_t)k);                  /* the DECAY time is the drop from the peak to the SUSTAIN level, whatever it is */
         break;
     case 3:
-        e -= mulq16(e, (uint32_t)kr);                       /* the RELEASE: its own time (E4 when the preset has none) */
+        e -= mulq16(e, p[P_FREL] == FM_ENV_FOLLOW_DECAY ? (uint32_t)k : FM_ENV_EXP[p[P_FREL]]);
         break;
     default:
         break;
@@ -316,7 +319,7 @@ static void fmini_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     uint32_t ph0 = v->ph[0], ph1 = v->ph[1], ph2 = v->ph[2];
     if (n > CTL)
         n = CTL;
-    env15 = fmini_contour(p, v, (int32_t)FM_ENV_EXP[p[P_E4] & 127]);   /* the release: the DECAY's time (a factory patch has no own) */
+    env15 = fmini_contour(p, v);
 
     /* modulation: the LFO (a square when FT_SQR) or noise held for the block, MOD deep */
     lfo = mulq15(t->lfo_val, t->lfo_fade);

@@ -128,14 +128,27 @@ static const pad_t PADS_EXTRA[4][4] = {
 };
 static const pad_t PAD_CRASH = { "crash1", SL_CRASH, -1, 64, 64 };
 
-static pad_t pad_of(int kit, int pad)
+/* The drum map v2 (D-121, D-122): the key each sound is on. The 12 sounds AUTO and IDEAS play on F3..E4, General MIDI's
+ * way (F3 kick, F#3 hat, G3 snare, G#3 open hat, A3 clap, A#3 shaker, B3 rim, C4 tom 1, C#4 ghost, D4 tom 2, D#4 perc,
+ * E4 tom 3); F4..G5 the others. A "sound" below is the index in PADS_COMMON / PADS_EXTRA / PAD_CRASH order. */
+static const uint8_t KEY_SOUND[KIT_DRUM_PADS] = { 0, 12, 4, 15, 9, 17, 7, 19, 11, 20, 22, 21,
+                                                  1, 13, 5, 16, 10, 14, 8, 2, 18, 6, 23, 3, 24, 25, 26 };
+int kit_drum_key_of(int sound)
+{
+    int k;
+    for (k = 0; k < KIT_DRUM_PADS; k++) if (KEY_SOUND[k] == sound) return k;
+    return 0;
+}
+static pad_t pad_of(int kit, int key)
 {
     pad_t p;
-    if (kit == KIT_DRUM_USER) {                 /* the user kit: its sound's name; a pad without one is Dusty's */
-        p = pad_of(0, pad);
-        if (user_pad[pad]) p.name = user_pad[pad]->name;
+    int pad;
+    if (kit == KIT_DRUM_USER) {                 /* the user kit: its sound's name (by key); a key without one is Dusty's */
+        p = pad_of(0, key);
+        if (user_pad[key]) p.name = user_pad[key]->name;
         return p;
     }
+    pad = KEY_SOUND[key];
     if (pad < 22) p = PADS_COMMON[pad];
     else if (pad < 26) p = PADS_EXTRA[kit][pad - 22];
     else p = PAD_CRASH;
