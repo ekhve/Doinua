@@ -388,10 +388,11 @@ snares and claps, teal hats and shakers, purple toms and percussion). OCT− and
 |---|---|
 | **PRESETS** | The kit: **Dusty**, **808**, **Live**, **Latin**. Its name is on the top line |
 | **A key held + PRESETS** | Puts the next sound of any kit on that key: build your own kit, as on an MPC. The top line says **My kit** |
-| **K1 REPEAT** | Of the key played last: **off**, 1/4, 1/8, 1/8T, 1/16, 1/16T, 1/32. Held, the key plays again at that value of the song's tempo (a hi-hat roll); REC records every hit |
-| **K2 TUNE** | Of the key played last: −12 to +12 semitones. A kick or a tom shows the note it sounds, so you can tune an 808 to your song ("+5 A1") |
-| **K3 DECAY** | Of the key played last: 25 % to 400 % of the sound's length |
-| **K4 FX** | The whole drums track through **Punch** (a compressor: tighter, louder), **MPC** (squashed and soft-clipped: hits hard), **Lofi** (fewer bits, a narrow band, vinyl crackle: dusty) or **Tape** (warm saturation) |
+| **K1 LEVEL** | Of the key played last: 0 to 10 (8 is the kit as it plays) |
+| **K2 REVERB** | Of the key played last: how much of it goes to the reverb (0 to 10) |
+| **K3 GRID**, **K4 FEEL** | The track's, as on the REC layer (section 2.2) |
+| **FX** | The whole drums track through **Punch** (a compressor: tighter, louder), **MPC** (squashed and soft-clipped: hits hard), **Lofi** (fewer bits, a narrow band, vinyl crackle: dusty) or **Tape** (warm saturation), a tap each |
+| **EDIT** | Builds the kit, a page a tap: **KIT** (PRESETS gives the key played last the next sound of any kit, K3 the next kit; K1 LEVEL, K2 VELOCITY: fixed to 10), **SOUND** (K1 TUNE, a pitched sound names its note; K2 ATTACK, K3 HOLD in ms then *full* or *key* (as long as the key is held), K4 DECAY; SELECT its mute group: keys of one group stop each other, the hats at first), **TRIM** (your samples), **PAD FX** (K4 REVERB). A new sound on a key starts from its defaults; turning a knob plays nothing. HOME: back. The ARP repeats a held drum (hi-hat rolls) |
 
 Once a beat is recorded, PLAY draws its bar: four rows (kick, snare, hats, the rest), each hit where it plays, with a
 line from its place on the grid, so you see the feel (GRID and FEEL on the REC layer, section 2.2).

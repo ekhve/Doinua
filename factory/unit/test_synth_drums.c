@@ -117,8 +117,25 @@ int main(void)
     /* the closed hat chokes the open one */
     kit_track_note_on(t, KIT_DRUM_LO + 3, 127);    /* open1 (G#3) */
     run(4, 0);
-    kit_track_note_on(t, KIT_DRUM_LO + 1, 127);    /* hat1 (F#3) */
-    CHECK(kit__track_voices(t) == 1, "the closed hat chokes the open (%d)", kit__track_voices(t));
+    kit_track_note_on(t, KIT_DRUM_LO + 1, 127);    /* hat1 (F#3): the hats' mute group (API 45) */
+    run(KIT_FS / 1000 * 10 / KIT_BLOCK + 1, 0);      /* within 10 ms (R-385) */
+    CHECK(kit__track_voices(t) == 1, "the closed hat stops the open one within 10 ms (%d)", kit__track_voices(t));
+    run(KIT_FS / KIT_BLOCK * 3, 0);
+    /* a pad's shape (API 45, ST-96): level, hold and decay, reverb send, HOLD key */
+    {
+        long full, low, cut;
+        kit_track_note_on(t, KIT_DRUM_LO + 2, 127); full = run(20, 0); run(KIT_FS / KIT_BLOCK * 3, 0);
+        kit_drum_pad_shape(t, 2, 4, 10, 0, KIT_DRUM_HOLD_FULL, 80, 0, 0);
+        kit_track_note_on(t, KIT_DRUM_LO + 2, 127); low = run(20, 0); run(KIT_FS / KIT_BLOCK * 3, 0);
+        CHECK(low * 3 < full * 2 && low > full / 4, "LEVEL 4 is about half of 8 (%ld %ld)", low, full);
+        kit_drum_pad_shape(t, 2, 8, 10, 0, 20, 10, 0, 0);
+        kit_track_note_on(t, KIT_DRUM_LO + 2, 127); run(KIT_FS / 1000 * 40 / KIT_BLOCK, 0);
+        CHECK(kit__track_voices(t) == 0, "HOLD 20 ms and DECAY 10 ms: silent after 40 ms (%d)", kit__track_voices(t));
+        kit_drum_pad_shape(t, 2, 8, 0, 0, KIT_DRUM_HOLD_FULL, 80, 0, 0);
+        kit_track_note_on(t, KIT_DRUM_LO + 2, 20); cut = run(20, 0); run(KIT_FS / KIT_BLOCK * 3, 0);
+        CHECK(cut > full * 9 / 10, "VELOCITY fixed: a soft hit plays as loud as a hard one (%ld %ld)", cut, full);
+        kit_drum_pad_shape(t, 2, 8, 10, 0, KIT_DRUM_HOLD_FULL, 80, 0, 0);
+    }
     printf("%s: drum kits, %d failed\n", fails ? "FAIL" : "PASS", fails);
     return fails != 0;
 }

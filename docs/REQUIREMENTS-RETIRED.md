@@ -32,3 +32,12 @@ Retired on 2026-11-20 by the owner (#108, D-080): the chords' AUTO page is now s
 | R-079 | While a black key is held, the chord pad shall add that key's colour to the chord played. | D-034, D-033 | A | Retired (#108) | A held black key adds its colour and AUTO locks it |
 | R-080 | When AUTO is pressed with a colour held, the chord pad shall add that colour to every chord until AUTO is pressed again. | D-034 | A | Retired (#108) | A held black key adds its colour and AUTO locks it |
 | R-082 | While the song plays, the chord pad shall light the pads of the chord recorded at that moment at the full level. | D-034, D-031 | A | Retired (#108) | Chords played on the pad are recorded as played and light their pads as the song plays |
+
+## The drums PLAY knobs REPEAT, TUNE, DECAY (D-053), retired by ST-96
+
+Retired on 2026-11-26 by the owner (D-121, the Sampler Lab): PLAY's knobs are LEVEL, REVERB, GRID, FEEL (R-367..R-370); TUNE and DECAY moved to EDIT SOUND (R-383); the ARP repeats a held drum (R-305).
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-129 | When K1, K2 or K3 turns on a drums track's PLAY page, the companion app shall change the repeat, the tuning or the decay of the sound played last. | D-053, UC-10, ST-38 | A | Retired (D-121) | Each pad keeps its own repeat, tuning and decay |
+| R-130 | While a key with a repeat is held on a drums track, the companion app shall play its sound again at the repeat's interval at the song's tempo. | D-053, UC-10, ST-38 | A | Retired (D-121) | Each pad keeps its own repeat, tuning and decay |
