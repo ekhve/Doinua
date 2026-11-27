@@ -39,14 +39,6 @@ owner on 2026-11-26 ("Approve all, implement").
 
 | ID | Requirement | Source | Mode | Status | Verified by |
 |---|---|---|---|---|---|
-| R-392 | When FX is tapped on a drums track, the companion app shall show the PUNCH, COLOR and SPACE pages in turn. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-393 | While FX PUNCH shows, the companion app shall set the compressor amount, its speed, the clipper amount and its shape with K1, K2, K3 and K4. | D-121, replaces R-136, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-394 | While FX COLOR shows, the companion app shall set the tape, lofi, drive and crush amounts with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-395 | While FX SPACE shows, the companion app shall set the delay time, the delay feedback, the reverb type and the reverb size with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-396 | While EDIT PAD FX shows, the companion app shall set the key's sends to PUNCH, COLOR, DELAY and REVERB with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-397 | The firmware shall run each of a drums track's four effects once, fed by the sends of its keys. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-398 | While an effect's amounts are 0 on FX, the companion app shall show that effect as off on EDIT PAD FX. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-399 | While a drums track sends to its four effects with eight keys sounding, the firmware shall keep the audio work under 80 % of the CPU. | D-121, D-091, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
 | R-400 | While the FM-1 is connected by USB, the firmware shall send the FM-1's stereo output to the USB host as audio. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
 | R-401 | While the FM-1 is connected by USB, the firmware shall receive the USB host's audio as the input. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
 | R-402 | While GLO USB AUDIO's MONITOR is when sampling, the firmware shall play the input through the FM-1 only while TAKE or CHOP shows. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |

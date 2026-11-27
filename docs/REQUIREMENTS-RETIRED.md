@@ -54,3 +54,12 @@ R-375).
 | R-141 | The companion app shall keep a track's recorded notes as played when its GRID or FEEL changes. | D-051, UC-13, ST-40 | A | Retired (D-121) | GRID and FEEL change the playback, never the recording |
 | R-142 | While a track's FEEL is set and its GRID is on, the companion app shall move each note by that feel's swing and shift for the note's drum group or track. | D-051, UC-10, ST-31 | A | Retired (D-121) | GRID and FEEL change the playback, never the recording |
 | R-146 | While EDIT is held with a key held as the song plays, the companion app shall remove that key's notes of the track as the playhead passes them. | D-051, UC-13, ST-41 | A | Retired (D-121) | EDIT and a key erase that key's notes as they play |
+
+## The drums' four FX in turn (D-055), retired by ST-97
+
+Retired on 2026-11-26 by the owner (D-121, the Sampler Lab): the drums' FX are the kit's PUNCH, COLOR and SPACE, each key
+sending to them (R-392..R-398; D-129).
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-136 | While a drums track's FX is Punch, MPC, Lofi or Tape, the companion app shall process that track's sound through that effect. | D-055, UC-10, ST-34 | A | Retired (D-121) | The drums go through Punch, MPC, Lofi or Tape |

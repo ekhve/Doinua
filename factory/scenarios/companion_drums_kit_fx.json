@@ -1,0 +1,72 @@
+{
+  "scenario": "The kit's effects run once, and each pad sends to them",
+  "name": "companion, DRUMS FX (ST-97, R-392..R-398): the kick dry; FX PUNCH COMP 6, COLOR TAPE 5 LOFI 3, SPACE REVERB plate; the kick again (compressed and coloured: louder, under the ceiling); the hat, then its COLOR send 0 on EDIT PAD FX (it loses the colour); the snare's REVERB send 7: the snare rings on after it ends, the kick (send 0) does not; COMP back to 0: PAD FX shows PUNCH off",
+  "app": "companion",
+  "ms": 9000,
+  "keys": "900:e1:+3,1000:F3@100,1100:F3^,1300:FX,1350:FX^,1400:e2:+6,1500:FX,1550:FX^,1600:e2:+5,1620:e3:+3,1700:FX,1750:FX^,1800:e4:+1,1900:HOME,1950:HOME^,2100:F3@100,2200:F3^,2500:F#3@100,2600:F#3^,2800:EDIT,2850:EDIT^,2900:EDIT,2950:EDIT^,3000:EDIT,3050:EDIT^,3100:EDIT,3150:EDIT^,3300:e3:-10,3500:F#3@100,3600:F#3^,3900:G3@100,4000:G3^,4200:e5:+7,4500:F3@100,4600:F3^,5500:G3@100,5600:G3^,6700:HOME,6750:HOME^,6900:FX,6950:FX^,7000:e2:-6,7200:HOME,7250:HOME^,7400:G3@100,7500:G3^,7600:EDIT,7650:EDIT^,7700:EDIT,7750:EDIT^,7800:EDIT,7850:EDIT^,7900:EDIT,7950:EDIT^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 1450
+    },
+    {
+      "type": "screen",
+      "at": 1680
+    },
+    {
+      "type": "screen",
+      "at": 1850
+    },
+    {
+      "type": "peak",
+      "from": 2100,
+      "to": 2400,
+      "max_dbfs": -1.0
+    },
+    {
+      "type": "level_ratio",
+      "a": [
+        1002,
+        1100
+      ],
+      "b": [
+        2102,
+        2200
+      ],
+      "ratio": 3.62,
+      "tol": 0.15
+    },
+    {
+      "type": "level_ratio",
+      "a": [
+        2502,
+        2560
+      ],
+      "b": [
+        3502,
+        3560
+      ],
+      "ratio": 0.855,
+      "tol": 0.05
+    },
+    {
+      "type": "silence",
+      "from": 4700,
+      "to": 4900
+    },
+    {
+      "type": "sound",
+      "from": 5700,
+      "to": 5800,
+      "rms": 100
+    },
+    {
+      "type": "screen",
+      "at": 3400
+    },
+    {
+      "type": "screen",
+      "at": 8300
+    }
+  ]
+}

@@ -10,7 +10,7 @@
  * to the bank, which writes it to flash once it has stayed the same for 3 s while the song is stopped and nothing is
  * held (bank.c). So a song is kept a few seconds after STOP; while it plays, it waits. */
 #define SG_VERSION 1
-enum { SG_SEQ = 1, SG_ORDER, SG_TRACKS, SG_PADS, SG_MANS, SG_BASSES, SG_MELS, SG_DRPADS, SG_DRTRACKS, SG_CHORDS, SG_PAGES, SG_ARPS, SG_MYKITS, SG_DRMY };
+enum { SG_SEQ = 1, SG_ORDER, SG_TRACKS, SG_PADS, SG_MANS, SG_BASSES, SG_MELS, SG_DRPADS, SG_DRTRACKS, SG_CHORDS, SG_PAGES, SG_ARPS, SG_MYKITS, SG_DRMY, SG_DRFX };
 static uint8_t sg_buf[KIT_BANK_MAX] KIT_BIG;
 static int sg_len, sg_over;
 static uint32_t sg_crc, sg_at;
@@ -82,6 +82,7 @@ static int sg_build(void)                       /* the song into sg_buf; its len
     sg_raw(SG_ARPS, arps, (int)sizeof arps);    /* each track's ARP (ST-77) */
     sg_raw(SG_MYKITS, dr_mykit, (int)sizeof dr_mykit);   /* MY KIT 1-3, kept with the song (R-390, D-127) */
     sg_raw(SG_DRMY, dr_my, (int)sizeof dr_my);
+    sg_raw(SG_DRFX, dr_kfx, (int)sizeof dr_kfx);   /* the kit's FX (ST-97) */
     return sg_over ? 0 : (int)(sg_p - sg_buf);
 }
 
@@ -154,6 +155,7 @@ static int sg_parse(const uint8_t *b, int n)    /* 1 when a song was taken from 
         else if (tag == SG_ARPS) sg_copy(arps, (int)sizeof arps, d, len);
         else if (tag == SG_MYKITS) sg_copy(dr_mykit, (int)sizeof dr_mykit, d, len);   /* MY KIT 1-3 (R-390) */
         else if (tag == SG_DRMY) sg_copy(dr_my, (int)sizeof dr_my, d, len);
+        else if (tag == SG_DRFX) sg_copy(dr_kfx, (int)sizeof dr_kfx, d, len);
         else if (tag == SG_CHORDS && len == KIT_NTRACKS * 8 * (int)sizeof(int)) {
             int v[KIT_NTRACKS * 8];
             sg_copy(v, (int)sizeof v, d, len);
@@ -186,8 +188,10 @@ static void song_restore(void)
     for (t = 0; t < KIT_NTRACKS; t++) {
         pick_sound(t);
         rl_apply(t);
-        if (t == KIT_TRACK_DRUMS || set.role[t] == ROLE_DRUMS)
+        if (t == KIT_TRACK_DRUMS || set.role[t] == ROLE_DRUMS) {
             for (p = 0; p < KIT_DRUM_PADS; p++) dr_apply(t, p);
+            kit_drum_fx(t, &dr_kfx[t].f);       /* the kit's FX as kept (ST-97) */
+        }
     }
     update_key();
     sg_len = sg_build();

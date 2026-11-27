@@ -47,7 +47,11 @@ static volatile int tr_preset[KIT_NTRACKS] = { KIT_INST_PIANO, KIT_INST_PIANO, K
 
 /* the drum kits: drums.c (API 23, D-053); each drums track's pads: which kit's sound, tuned, its decay (x/64) */
 static struct { int8_t kit, src, tune; uint8_t decay; } tr_pad[KIT_NTRACKS][KIT_DRUM_PADS];
-static struct { uint8_t level, vel, group, reverb; uint16_t att, hold, dec; } tr_shape[KIT_NTRACKS][KIT_DRUM_PADS];   /* API 45 */
+static struct { uint8_t level, vel, group, reverb, ps, cs, ds; uint16_t att, hold, dec; } tr_shape[KIT_NTRACKS][KIT_DRUM_PADS];   /* API 45, 47 */
+/* the kit's effects (API 47, D-129): each drums track's PUNCH and COLOR, their inputs, their state */
+static kit_drum_fx_t dfx[KIT_NTRACKS];
+static int32_t dfx_pin[KIT_NTRACKS][KIT_BLOCK], dfx_cin[KIT_NTRACKS][KIT_BLOCK];
+static struct { int32_t env, gain, tlp, llp; } dfs[KIT_NTRACKS];
 
 /* a track's FX (API 23, D-055): its Basic and drum voices go through it (the drum lab's Punch, MPC, Lofi, Tape) */
 static volatile uint8_t tr_fx[KIT_NTRACKS];
@@ -92,6 +96,7 @@ static void pads_init(void)
             tr_pad[t][p].kit = -1; tr_pad[t][p].src = (int8_t)p; tr_pad[t][p].tune = 0; tr_pad[t][p].decay = 64;
             tr_shape[t][p].level = 8; tr_shape[t][p].vel = 10; tr_shape[t][p].att = 0; tr_shape[t][p].hold = KIT_DRUM_HOLD_FULL;
             tr_shape[t][p].dec = 80; tr_shape[t][p].group = (uint8_t)(drum_is_hat(p) ? 1 : 0); tr_shape[t][p].reverb = 0;
+            tr_shape[t][p].ps = 10; tr_shape[t][p].cs = 10; tr_shape[t][p].ds = 0;
         }
     tr_pads_init = 1;
 }
@@ -107,6 +112,23 @@ void kit_drum_pad_shape(int t, int pad, int level, int vel, int attack_ms, int h
     tr_shape[t][pad].group = (uint8_t)(group < 0 ? 0 : group > 4 ? 4 : group);
     tr_shape[t][pad].reverb = (uint8_t)(reverb < 0 ? 0 : reverb > 127 ? 127 : reverb);
 }
+void kit_drum_pad_sends(int t, int pad, int punch, int color, int delay)
+{
+    if (!okt(t) || pad < 0 || pad >= KIT_DRUM_PADS) return;
+    if (!tr_pads_init) pads_init();
+    tr_shape[t][pad].ps = (uint8_t)(punch < 0 ? 0 : punch > 10 ? 10 : punch);
+    tr_shape[t][pad].cs = (uint8_t)(color < 0 ? 0 : color > 10 ? 10 : color);
+    tr_shape[t][pad].ds = (uint8_t)(delay < 0 ? 0 : delay > 10 ? 10 : delay);
+}
+static uint8_t c10(int v) { return (uint8_t)(v < 0 ? 0 : v > 10 ? 10 : v); }
+void kit_drum_fx(int t, const kit_drum_fx_t *f)
+{
+    if (!okt(t) || !f) return;
+    dfx[t].comp = c10(f->comp); dfx[t].speed = (uint8_t)(f->speed > 2 ? 2 : f->speed); dfx[t].clip = c10(f->clip);
+    dfx[t].shape = (uint8_t)(f->shape ? 1 : 0);
+    dfx[t].tape = c10(f->tape); dfx[t].lofi = c10(f->lofi); dfx[t].drive = c10(f->drive); dfx[t].crush = c10(f->crush);
+}
+void kit_drum_fx_of(int t, kit_drum_fx_t *f) { if (okt(t) && f) *f = dfx[t]; }
 void kit_drum_pad_set(int t, int pad, int kit, int src, int tune, int decay)
 {
     if (!okt(t) || pad < 0 || pad >= KIT_DRUM_PADS) return;
@@ -862,7 +884,8 @@ void kit_track_note_on(int t, int note, int vel)
         drum_start(vi, kit, tr_pad[t][pad].src, tr_pad[t][pad].tune, tr_pad[t][pad].decay);
         {   /* the pad's shape (API 45): its level and velocity, its envelope, its group, its reverb send */
             int g = tr_shape[t][pad].group;
-            drum_shape(vi, tr_shape[t][pad].level, tr_shape[t][pad].vel, vel, tr_shape[t][pad].att, tr_shape[t][pad].hold, tr_shape[t][pad].dec, g, tr_shape[t][pad].reverb);
+            drum_shape(vi, tr_shape[t][pad].level, tr_shape[t][pad].vel, vel, tr_shape[t][pad].att, tr_shape[t][pad].hold, tr_shape[t][pad].dec, g, tr_shape[t][pad].reverb,
+                       tr_shape[t][pad].ps, tr_shape[t][pad].cs, tr_shape[t][pad].ds);
             if (g)                                  /* a mute group: the others of it stop, in 5 ms */
                 for (i = 0; i < KIT_NVOICES; i++)
                     if (i != vi && vs[i].active && vs[i].drum && vs[i].track == t && dv[i].group == g) drum_cut(i);
@@ -1072,6 +1095,81 @@ static void fx_block(int t, int32_t *mix)
     }
 }
 
+/* ---- the kit's effects (API 47, D-129): the lab's PUNCH and COLOR, in its units (1.0 = 32768), 32-bit only ---- */
+static const uint16_t DFX_THR[11] = { 32767, 23198, 16423, 11627, 8231, 5827, 4125, 2920, 2067, 1464, 1036 };   /* -3 dB a step */
+static const uint16_t DFX_MAKE[11] = { 256, 301, 354, 416, 489, 575, 676, 794, 933, 1097, 1289 };   /* +1.4 dB a step, Q8 */
+static const uint8_t DFX_ATT[3] = { 131, 22, 6 }, DFX_REL[3] = { 3, 2, 1 };   /* a block (0.73 ms): 1, 8, 30 ms up; 60, 120, 250 ms down (Q8) */
+static const uint16_t DFX_NORM[11] = { 32768, 36203, 33992, 33212, 32930, 32827, 32790, 32776, 32771, 32769, 32768 };   /* 1/tanh(1+c/2) */
+static int32_t dfx_lp(int f)                    /* a one-pole low-pass at f Hz, Q15: w / (1 + w) */
+{
+    int32_t w = f * 4669 / 1000;
+    return w * 32768 / (32768 + w);
+}
+static int32_t dfx_step(int32_t u, int q)       /* round(x q) / q: q steps a side */
+{
+    int32_t st = 32768 / q;
+    return (u >= 0 ? (u + st / 2) / st : -((-u + st / 2) / st)) * st;
+}
+static void dfx_punch(int t, int32_t *x, int32_t *dst)
+{
+    const kit_drum_fx_t *f = &dfx[t];
+    int32_t peak = 0, g0 = dfs[t].gain ? dfs[t].gain : 32768, g1 = 32768, dg, g;
+    int j;
+    for (j = 0; j < KIT_BLOCK; j++) {
+        int32_t a;
+        x[j] = x[j] * FX_IN >> 8;
+        a = x[j] < 0 ? -x[j] : x[j];
+        if (a > peak) peak = a;
+    }
+    if (f->comp) {                              /* the compressor: -3 dB, 2 + 0.6 ratio and +1.4 dB makeup a step */
+        int r10 = 20 + f->comp * 6;
+        dfs[t].env += (peak - dfs[t].env) * (peak > dfs[t].env ? DFX_ATT[f->speed] : DFX_REL[f->speed]) >> 8;
+        if (dfs[t].env > DFX_THR[f->comp]) {
+            int32_t over = log2q8((uint32_t)dfs[t].env) - log2q8(DFX_THR[f->comp]);
+            g1 = exp2neg_q15(over * (r10 - 10) / r10);
+        }
+    }
+    dfs[t].gain = g1;
+    dg = (g1 - g0) / KIT_BLOCK;
+    g = g0;
+    for (j = 0; j < KIT_BLOCK; j++) {
+        int32_t u = x[j];
+        if (u > 131071) u = 131071;
+        if (u < -131071) u = -131071;
+        if (f->comp) { u = (u >> 2) * (g >> 2) >> 11; u = u * DFX_MAKE[f->comp] >> 8; }
+        if (f->clip) {                          /* the clipper: soft tanh(k x) / tanh(k), or hard clamp(k x) x 0.9; k = 1 + c / 2 */
+            int k8 = 256 + f->clip * 128;
+            if (f->shape) { u = u * k8 >> 8; if (u > 32767) u = 32767; if (u < -32767) u = -32767; u = u * 29491 >> 15; }
+            else u = soft(u, k8, DFX_NORM[f->clip]);
+        }
+        if (u > 59600) u = 59600;
+        if (u < -59600) u = -59600;
+        dst[j] += u * 197 >> 8;
+        g += dg;
+    }
+}
+static void dfx_color(int t, int32_t *x, int32_t *dst)
+{
+    const kit_drum_fx_t *f = &dfx[t];
+    int32_t tl = f->tape ? dfx_lp(12000 - f->tape * 600) : 0, ll = f->lofi ? dfx_lp(9000 - f->lofi * 600) : 0;
+    int32_t td = 256 + f->tape * 51, dd = 256 + f->drive * 154;   /* tape: tanh((1 + 2a) x); drive: tanh(k x), k = 1 + 0.6 d */
+    int lq = 40 - f->lofi * 3, cq = 16 - f->crush * 13 / 10;
+    int j;
+    if (cq < 2) cq = 2;
+    for (j = 0; j < KIT_BLOCK; j++) {
+        int32_t u = x[j] * FX_IN >> 8;
+        if (u > 65535) u = 65535;
+        if (u < -65535) u = -65535;
+        if (f->tape) { u = soft(u, td, 32768) * 27853 >> 15; dfs[t].tlp += ((u - dfs[t].tlp) >> 1) * tl >> 14; u = dfs[t].tlp; }   /* x 0.85 */
+        if (f->lofi) { u = dfx_step(u, lq); dfs[t].llp += ((u - dfs[t].llp) >> 1) * ll >> 14; u = dfs[t].llp; }
+        if (f->drive) u = soft(u, dd, 32768) * 29491 >> 15;   /* x 0.9 (tanh(k) about 1) */
+        if (f->crush) u = dfx_step(u, cq);
+        dst[j] += u * 197 >> 8;
+    }
+}
+static int dfx_punch_on(int t) { return dfx[t].comp || dfx[t].clip; }
+static int dfx_color_on(int t) { return dfx[t].tape || dfx[t].lofi || dfx[t].drive || dfx[t].crush; }
+
 void kit__synth_render(int16_t *out, int n)
 {
     static int32_t mix[KIT_BLOCK], tb[KIT_BLOCK];
@@ -1091,6 +1189,8 @@ void kit__synth_render(int16_t *out, int n)
             routed[i] = (uint8_t)(tr_fx[i] || kit__fx_sends(i));   /* through its own buffer: its FX, its sends (D-093) */
             if (routed[i])
                 for (j = 0; j < KIT_BLOCK; j++) fxbuf[i][j] = 0;
+            if (dfx_punch_on(i)) for (j = 0; j < KIT_BLOCK; j++) dfx_pin[i][j] = 0;   /* the kit's effects' inputs (API 47) */
+            if (dfx_color_on(i)) for (j = 0; j < KIT_BLOCK; j++) dfx_cin[i][j] = 0;
         }
         for (i = 0; i < KIT_NVOICES; i++) {
             voice_t *v = &vs[i];
@@ -1103,7 +1203,9 @@ void kit__synth_render(int16_t *out, int n)
             ph = v->ph;
             inc = v->inc;
             if (v->drum) {                                 /* the drum kits (drums.c) */
-                if (!drum_play(i, routed[v->track] ? fxbuf[v->track] : mix, kit__fx_rev_in())) v->active = 0;
+                int t = v->track;
+                if (!drum_play(i, routed[t] ? fxbuf[t] : mix, kit__fx_rev_in(), dfx_punch_on(t) ? dfx_pin[t] : 0,
+                               dfx_color_on(t) ? dfx_cin[t] : 0, kit__fx_dly_in())) v->active = 0;
                 continue;
             }
             {
@@ -1132,6 +1234,10 @@ void kit__synth_render(int16_t *out, int n)
                 }
             }
             v->ph = ph;
+        }
+        for (i = 0; i < KIT_NTRACKS; i++) {          /* the kit's effects, once each, beside the keys' dry sound (API 47) */
+            if (dfx_punch_on(i)) dfx_punch(i, dfx_pin[i], routed[i] ? fxbuf[i] : mix);
+            if (dfx_color_on(i)) dfx_color(i, dfx_cin[i], routed[i] ? fxbuf[i] : mix);
         }
         for (i = 0; i < KIT_NTRACKS; i++) {          /* the tracks' FX, then into the mix (and the bus: D-093) */
             if (!routed[i]) continue;

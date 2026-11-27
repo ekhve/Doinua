@@ -149,6 +149,16 @@ static int32_t delay_samples(int time)
 }
 
 int kit_delay_ms_of(void) { return (delay_samples(bus.dly_time) * 10 + 220) / 441; }
+int kit_delay_time_for(int ms)
+{
+    int v, best = 0, bd = 0x7FFFFFFF;
+    for (v = 0; v < 128; v++) {
+        int d = (delay_samples(v) * 10 + 220) / 441 - ms;
+        if (d < 0) d = -d;
+        if (d < bd) { bd = d; best = v; }
+    }
+    return best;
+}
 
 static int32_t tone_coefficient(int tone)
 {
@@ -309,6 +319,7 @@ void kit__fx_track(int t, int32_t *x, int32_t *mix)
 }
 
 int32_t *kit__fx_rev_in(void) { return rev_in; }
+int32_t *kit__fx_dly_in(void) { return dly_in; }   /* API 47: the drums' delay sends */
 
 static int any(const int32_t *b) { int i; for (i = 0; i < KIT_BLOCK; i++) if (b[i]) return 1; return 0; }
 
