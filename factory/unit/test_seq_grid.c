@@ -73,6 +73,20 @@ int main(void)
     CHECK(near(when(36, 0), 20000 + 1000 - 4, 1), "the kick 4 ms early (%ld)", when(36, 0));
     CHECK(near(when(36, 1), 20000 + 2000 - 4, 1), "the kick on the loop's start pushed early plays at the end of the loop before (%ld)", when(36, 1));
     CHECK(kit_seq_place(&song, KIT_TRACK_DRUMS, 1) / 16 == 24 + 1, "kit_seq_place: the snare drawn a tick and a half late (%d)", kit_seq_place(&song, KIT_TRACK_DRUMS, 1));
+    /* API 46 (R-371): with a record grid, a note lands on the nearest grid place as it is recorded; without, as played */
+    kit_song_clear(&song, KIT_TRACK_MELODY);
+    kit_seq_rec_grid(KIT_TRACK_MELODY, 6);
+    kit_seq_record(KIT_TRACK_MELODY);
+    now = 30000; non = 0;
+    kit_seq_play(&song); run(146);              /* 7 ticks in: a tick after the 2nd sixteenth */
+    kit_seq_note_on(KIT_TRACK_MELODY, 60, 100); run(100); kit_seq_note_off(KIT_TRACK_MELODY, 60);
+    kit_seq_rec_grid(KIT_TRACK_MELODY, 0);
+    run(250);                                   /* 23 ticks in (496 ms): one before the beat */
+    kit_seq_note_on(KIT_TRACK_MELODY, 62, 100); run(50); kit_seq_note_off(KIT_TRACK_MELODY, 62);
+    kit_seq_stop(); kit_seq_record(-1);
+    CHECK(song.count[KIT_TRACK_MELODY] == 2 && song.notes[KIT_TRACK_MELODY][0].start == 6 && song.notes[KIT_TRACK_MELODY][1].start == 23,
+          "a record grid places the note as it is recorded, none keeps it as played (%d: %d %d)", song.count[KIT_TRACK_MELODY],
+          song.notes[KIT_TRACK_MELODY][0].start, song.notes[KIT_TRACK_MELODY][1].start);
     printf("%s: seq grid and feel, %d failed\n", fails ? "FAIL" : "PASS", fails);
     return fails != 0;
 }

@@ -41,3 +41,16 @@ Retired on 2026-11-26 by the owner (D-121, the Sampler Lab): PLAY's knobs are LE
 |---|---|---|---|---|---|
 | R-129 | When K1, K2 or K3 turns on a drums track's PLAY page, the companion app shall change the repeat, the tuning or the decay of the sound played last. | D-053, UC-10, ST-38 | A | Retired (D-121) | Each pad keeps its own repeat, tuning and decay |
 | R-130 | While a key with a repeat is held on a drums track, the companion app shall play its sound again at the repeat's interval at the song's tempo. | D-053, UC-10, ST-38 | A | Retired (D-121) | Each pad keeps its own repeat, tuning and decay |
+
+## GRID on playback, and erasing with REC off (D-051), retired by ST-96
+
+Retired on 2026-11-26 by the owner (D-121, the Sampler Lab): GRID places each note as it is recorded and FEEL moves the
+notes afterwards, from where each was recorded (R-371, R-372; D-127); erasing with EDIT and a key needs REC on (R-374,
+R-375).
+
+| ID | Requirement | Source | Mode | Status | Verified by |
+|---|---|---|---|---|---|
+| R-140 | While a track's GRID is set, the companion app shall play the track's notes at the nearest grid position. | D-051, UC-13, ST-40 | A | Retired (D-121) | GRID and FEEL change the playback, never the recording |
+| R-141 | The companion app shall keep a track's recorded notes as played when its GRID or FEEL changes. | D-051, UC-13, ST-40 | A | Retired (D-121) | GRID and FEEL change the playback, never the recording |
+| R-142 | While a track's FEEL is set and its GRID is on, the companion app shall move each note by that feel's swing and shift for the note's drum group or track. | D-051, UC-10, ST-31 | A | Retired (D-121) | GRID and FEEL change the playback, never the recording |
+| R-146 | While EDIT is held with a key held as the song plays, the companion app shall remove that key's notes of the track as the playhead passes them. | D-051, UC-13, ST-41 | A | Retired (D-121) | EDIT and a key erase that key's notes as they play |

@@ -48,32 +48,8 @@ Feature: The sequencer (ST-85 to ST-91, drafts for the owner)
 
 Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2026-11-26, from the Sampler Lab v11)
 
-  @ST-96 @UC-13 @planned @approved:owner
-  Scenario: GRID places notes as they are recorded, and FEEL moves them afterwards
-    Given GRID 1/16, REC on and the song playing
-    When the kick is played 20 ms after a sixteenth, then the snare and the hat
-    Then the kick is recorded on that sixteenth, and the bar draws a row for each key in that order
-    When FEEL is set to Swing 62
-    Then the hats on the off-sixteenths play later, and the kick on the beat does not move
 
-  @ST-96 @UC-13 @planned @approved:owner
-  Scenario: Erasing needs REC on, and SAVE undoes and redoes
-    Given a recorded beat playing with REC off
-    When EDIT and the hat key are held
-    Then the hats stay and the screen says REC on to erase
-    When REC is on and EDIT and the hat key are held for a bar
-    Then the hats are gone
-    When SAVE is held
-    Then the hats are back
-    When SAVE is tapped twice within 400 ms
-    Then the hats are gone again, and a single tap shows HOLD: UNDO
 
-  @ST-96 @UC-14 @planned @approved:owner
-  Scenario: A kit is saved as MY KIT 1, 2 or 3 and kept
-    Given Dusty with the snare's sound changed
-    When SAVE is held on EDIT, K1 picks MY KIT 3 and SAVE is held again
-    Then PRESETS reaches MY KIT 3 after Latin, with the changed snare
-    And after power-off MY KIT 3 still has it
 
   @ST-97 @UC-21 @planned @approved:owner
   Scenario: The kit's effects run once, and each pad sends to them

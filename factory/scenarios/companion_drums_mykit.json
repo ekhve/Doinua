@@ -1,0 +1,51 @@
+{
+  "scenario": "A kit is saved as MY KIT 1, 2 or 3 and kept",
+  "name": "companion, DRUMS (ST-96, R-388..R-391): Dusty, G3 played, EDIT KIT, PRESETS: the next of the snares and claps (clap1) on G3; SAVE held: MY KIT 1-3; K1 to MY KIT 3; SAVE held: kept (MY KIT 3 on the top line); HOME; PRESETS back to MY KIT 2 (an empty one: Dusty's) and on to MY KIT 3: EDIT shows clap1 on G3; after power-off the drums still play MY KIT 3 with clap1",
+  "app": "companion",
+  "ms": 13000,
+  "keys": "900:e1:+3,1000:G3@100,1100:G3^,1300:EDIT,1350:EDIT^,1600:e6:+1,1900:SAVE,2500:SAVE^,2700:e2:+2,2900:SAVE,3500:SAVE^,3800:HOME,3850:HOME^,4200:e6:-1,4600:e6:+1,5000:G3@100,5100:G3^,5300:EDIT,5350:EDIT^,5700:HOME,5750:HOME^",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 2600
+    },
+    {
+      "type": "screen",
+      "at": 4100
+    },
+    {
+      "type": "screen",
+      "at": 4500
+    },
+    {
+      "type": "screen",
+      "at": 5550
+    },
+    {
+      "type": "sound",
+      "from": 5002,
+      "to": 5100,
+      "rms": 100
+    }
+  ],
+  "reboot": {
+    "ms": 3000,
+    "keys": "900:e1:+3,1000:G3@100,1100:G3^,1300:EDIT,1350:EDIT^",
+    "checks": [
+      {
+        "type": "screen",
+        "at": 1200
+      },
+      {
+        "type": "screen",
+        "at": 1600
+      },
+      {
+        "type": "sound",
+        "from": 1002,
+        "to": 1100,
+        "rms": 100
+      }
+    ]
+  }
+}

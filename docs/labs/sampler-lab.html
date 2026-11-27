@@ -74,7 +74,7 @@ h1 { font: 700 1.6rem/1.2 var(--display); margin: 0; text-wrap: balance; }
 
 <div class="wrap">
   <h1>Sampler Lab</h1>
-  <p class="lead">Version 11 (2026-11-26): the FX are the kit's and each pad's (PUNCH, COLOR, DELAY, REVERB), KIT sounds by kit (K3), HOLD key (sustain), ENV from anywhere: NOTES (16 LEVELS first) and CHORDS (the CHORDS track's pads). Version 10: ENV has three pages, NOTES (a small MELODY), CHORDS (a small CHORDS, with progressions) and VELOCITY; a loop's tempo is found and fits the song by speed or by slices. Version 9: LEVELS keys play their own notes (C is C) with MELODY's help lights. Version 8: a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
+  <p class="lead">Version 12 (2026-11-27): on PLAY a hit starts where it plays (its left edge on the grid line) and is as long as it was held. Version 11 (2026-11-26): the FX are the kit's and each pad's (PUNCH, COLOR, DELAY, REVERB), KIT sounds by kit (K3), HOLD key (sustain), ENV from anywhere: NOTES (16 LEVELS first) and CHORDS (the CHORDS track's pads). Version 10: ENV has three pages, NOTES (a small MELODY), CHORDS (a small CHORDS, with progressions) and VELOCITY; a loop's tempo is found and fits the song by speed or by slices. Version 9: LEVELS keys play their own notes (C is C) with MELODY's help lights. Version 8: a take shows its <b>note</b> or its <b>key</b> (and can set the song's key); <b>TUNE</b> shows the note a pad sounds and snaps it in tune. Version 7: <b>ENV</b> plays a pad across the keys (LEVELS: tune, scale, chords, velocity, in the song's key); GRID now places hits as you record, FEEL moves them afterwards. From v6: the top line as on the other tracks (DRUMS PLAY, the kit, the
   tempo); the bar's rows share the screen; GRID off … 1/32; velocity; SOUND with ATTACK, HOLD, DECAY; the track's FX as PUNCH
   (COMP, CLIP), DIRT and SPACE (DELAY and REVERB together); CHOP's put mode silent. Press <b>Start sound</b>, then try the
   <a href="#scen">usage scenarios</a>.</p>
@@ -1044,7 +1044,7 @@ function drawPlay() {
     S.notes.filter(q => q.k === k).forEach(q => {
       const e = eff(q.t), xe = X0 + W * e, xp = X0 + W * (q.tp === undefined ? q.t : q.tp), vh = Math.max(2, (h - 4) * (q.v || 100) / 127);
       if (h >= 9 && Math.abs(xe - xp) > 1 && Math.abs(xe - xp) < W / 2) { g.fillStyle = col + "88"; g.fillRect(Math.min(xe, xp), y + h / 2, Math.abs(xe - xp), 1); }
-      g.fillStyle = col; rr(xe - 2.5, y + (h - vh) / 2, 5, vh, Math.min(2, vh / 2)); g.fill();
+      g.fillStyle = col; { const wd = Math.max(4, Math.min(X0 + W - xe, W * (q.len || 0))); rr(xe, y + (h - vh) / 2, wd, vh, Math.min(2, vh / 2)); } g.fill();   /* the left edge where it plays, as long as held (v12) */
       if (q.s && q.s.length > 1 && h >= 9) T("×" + q.s.length, xe + 4, y + h / 2, 7, C.fg, 700);
     });
     if (S.erasing.has(k)) { g.fillStyle = C.rec; g.fillRect(X0, y + h - 1, W, 1); }

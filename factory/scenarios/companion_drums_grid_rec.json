@@ -1,0 +1,34 @@
+{
+  "scenario": "GRID places notes as they are recorded, and FEEL moves them afterwards",
+  "name": "companion, DRUMS 1-bar loop at 90 BPM (ST-96, R-371..R-373): GRID 1/16, REC, PLAY; the kick played 20 ms after beat 2, the snare on beat 3, the hat on the last off-sixteenth; the next loop the kick sounds on beat 2 (on the grid), and the bar draws kick, snare, hat in that order; FEEL Swing 62: the hat plays about 40 ms later, the kick stays",
+  "app": "companion",
+  "ms": 9300,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+3,1250:e4:+2,1300:REC,1350:REC^,1400:PLAY,1450:PLAY^,2087:F3@100,2200:F3^,2733:G3@100,2850:G3^,3567:F#3@100,3650:F#3^,3900:REC,3950:REC^,5000:e5:+2",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 4690,
+      "to": 4730
+    },
+    {
+      "type": "sound",
+      "from": 4738,
+      "to": 4752
+    },
+    {
+      "type": "screen",
+      "at": 4500
+    },
+    {
+      "type": "silence",
+      "from": 8905,
+      "to": 8935
+    },
+    {
+      "type": "sound",
+      "from": 8939,
+      "to": 8955,
+      "rms": 100
+    }
+  ]
+}

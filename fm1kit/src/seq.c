@@ -84,6 +84,7 @@ static kit_song_t *cnt_song;
 #define FINE 16
 static uint16_t grid[KIT_NTRACKS];              /* sixteenths of a tick (API 30); 0: as played */
 static uint8_t strength[KIT_NTRACKS] = { 100, 100, 100, 100 };   /* how far a note moves to the grid, % (API 30) */
+static uint8_t rgrid[KIT_NTRACKS];              /* API 46 (D-127): the grid a note is recorded on, ticks; 0: as played */
 static kit_feel_t feel[KIT_NTRACKS][128];       /* by note (API 23: a drums track's pads each their own) */
 static int last_fine;                           /* the fine place reached in this loop; -1 before its start */
 
@@ -143,6 +144,11 @@ void kit_seq_quantize(int track, int fine, int strength_pct)
 }
 
 void kit_seq_grid(int track, int ticks) { kit_seq_quantize(track, ticks * FINE, 100); }
+void kit_seq_rec_grid(int track, int ticks)
+{
+    if (track >= 0 && track < KIT_NTRACKS)
+        rgrid[track] = (uint8_t)(ticks < 0 ? 0 : ticks > KIT_TICKS_PER_BAR ? KIT_TICKS_PER_BAR : ticks);
+}
 
 static kit_feel_t feel_clamp(kit_feel_t f)
 {
@@ -447,6 +453,10 @@ void kit_seq_note_on(int track, int note, int vel)
         held[nheld].vel = (uint8_t)vel;
         held[nheld].at = (int16_t)tick_at(kit_ms());
         held[nheld].loop = loops;
+        if (rgrid[track]) {                     /* recorded on the nearest grid place (R-371) */
+            int g = rgrid[track];
+            held[nheld].at = (int16_t)((held[nheld].at + g / 2) / g * g);
+        }
         if (kit_song_length(song) - held[nheld].at < KIT_TICKS_PER_BEAT / 8) {   /* under half a 16th before the end: */
             held[nheld].at = 0;                 /* the next loop's first step (R-288, API 30) */
             held[nheld].loop = loops + 1;
