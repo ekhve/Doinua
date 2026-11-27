@@ -47,6 +47,7 @@ static volatile int tr_preset[KIT_NTRACKS] = { KIT_INST_PIANO, KIT_INST_PIANO, K
 
 /* the drum kits: drums.c (API 23, D-053); each drums track's pads: which kit's sound, tuned, its decay (x/64) */
 static struct { int8_t kit, src, tune; uint8_t decay; } tr_pad[KIT_NTRACKS][KIT_DRUM_PADS];
+static struct { uint8_t level, vel, group, reverb; uint16_t att, hold, dec; } tr_shape[KIT_NTRACKS][KIT_DRUM_PADS];   /* API 45 */
 
 /* a track's FX (API 23, D-055): its Basic and drum voices go through it (the drum lab's Punch, MPC, Lofi, Tape) */
 static volatile uint8_t tr_fx[KIT_NTRACKS];
@@ -87,8 +88,24 @@ static void pads_init(void)
 {
     int t, p;
     for (t = 0; t < KIT_NTRACKS; t++)
-        for (p = 0; p < KIT_DRUM_PADS; p++) { tr_pad[t][p].kit = -1; tr_pad[t][p].src = (int8_t)p; tr_pad[t][p].tune = 0; tr_pad[t][p].decay = 64; }
+        for (p = 0; p < KIT_DRUM_PADS; p++) {
+            tr_pad[t][p].kit = -1; tr_pad[t][p].src = (int8_t)p; tr_pad[t][p].tune = 0; tr_pad[t][p].decay = 64;
+            tr_shape[t][p].level = 8; tr_shape[t][p].vel = 10; tr_shape[t][p].att = 0; tr_shape[t][p].hold = KIT_DRUM_HOLD_FULL;
+            tr_shape[t][p].dec = 80; tr_shape[t][p].group = (uint8_t)(drum_is_hat(p) ? 1 : 0); tr_shape[t][p].reverb = 0;
+        }
     tr_pads_init = 1;
+}
+void kit_drum_pad_shape(int t, int pad, int level, int vel, int attack_ms, int hold_ms, int decay_ms, int group, int reverb)
+{
+    if (!okt(t) || pad < 0 || pad >= KIT_DRUM_PADS) return;
+    if (!tr_pads_init) pads_init();
+    tr_shape[t][pad].level = (uint8_t)(level < 0 ? 0 : level > 10 ? 10 : level);
+    tr_shape[t][pad].vel = (uint8_t)(vel < 0 ? 0 : vel > 10 ? 10 : vel);
+    tr_shape[t][pad].att = (uint16_t)(attack_ms < 0 ? 0 : attack_ms > 2000 ? 2000 : attack_ms);
+    tr_shape[t][pad].hold = (uint16_t)(hold_ms == KIT_DRUM_HOLD_FULL || hold_ms == KIT_DRUM_HOLD_KEY ? hold_ms : hold_ms < 0 ? 0 : hold_ms > 5000 ? 5000 : hold_ms);
+    tr_shape[t][pad].dec = (uint16_t)(decay_ms < 1 ? 1 : decay_ms > 5000 ? 5000 : decay_ms);
+    tr_shape[t][pad].group = (uint8_t)(group < 0 ? 0 : group > 4 ? 4 : group);
+    tr_shape[t][pad].reverb = (uint8_t)(reverb < 0 ? 0 : reverb > 127 ? 127 : reverb);
 }
 void kit_drum_pad_set(int t, int pad, int kit, int src, int tune, int decay)
 {
@@ -843,9 +860,13 @@ void kit_track_note_on(int t, int note, int vel)
         if (!tr_pads_init) pads_init();
         kit = tr_pad[t][pad].kit < 0 ? tr_preset[t] : tr_pad[t][pad].kit;
         drum_start(vi, kit, tr_pad[t][pad].src, tr_pad[t][pad].tune, tr_pad[t][pad].decay);
-        if (dv[vi].slot == SL_HATC)                 /* the closed hat chokes the open one */
-            for (i = 0; i < KIT_NVOICES; i++)
-                if (i != vi && vs[i].active && vs[i].drum && vs[i].track == t && dv[i].choke) vs[i].active = 0;
+        {   /* the pad's shape (API 45): its level and velocity, its envelope, its group, its reverb send */
+            int g = tr_shape[t][pad].group;
+            drum_shape(vi, tr_shape[t][pad].level, tr_shape[t][pad].vel, vel, tr_shape[t][pad].att, tr_shape[t][pad].hold, tr_shape[t][pad].dec, g, tr_shape[t][pad].reverb);
+            if (g)                                  /* a mute group: the others of it stop, in 5 ms */
+                for (i = 0; i < KIT_NVOICES; i++)
+                    if (i != vi && vs[i].active && vs[i].drum && vs[i].track == t && dv[i].group == g) drum_cut(i);
+        }
         v->drum = 1;
         v->env = ONE;
         v->stage = 2;
@@ -1082,7 +1103,7 @@ void kit__synth_render(int16_t *out, int n)
             ph = v->ph;
             inc = v->inc;
             if (v->drum) {                                 /* the drum kits (drums.c) */
-                if (!drum_render(i, routed[v->track] ? fxbuf[v->track] : mix, amp)) v->active = 0;
+                if (!drum_play(i, routed[v->track] ? fxbuf[v->track] : mix, kit__fx_rev_in())) v->active = 0;
                 continue;
             }
             {

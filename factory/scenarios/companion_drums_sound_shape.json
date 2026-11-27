@@ -1,0 +1,38 @@
+{
+  "scenario": "SOUND shapes a key with tune, attack, hold and decay, and mute groups",
+  "name": "companion, DRUMS EDIT SOUND (ST-96): turning K3 HOLD and K4 DECAY down plays nothing; the snare then ends within 120 ms; SELECT sets its mute group A; HOLD key on the crash (G5): it lasts while held and ends 80 ms after it is let go (with HOLD full it rings on)",
+  "app": "companion",
+  "ms": 4800,
+  "keys": "900:e1:+3,1000:G3@100,1100:G3^,1300:EDIT,1350:EDIT^,1500:EDIT,1550:EDIT^,1700:e4:-17,1750:e5:-4,1800:e0:+1,2400:G3@100,2500:G3^,2900:G5@100,2950:G5^,3800:e4:+1,4000:G5@100,4100:G5^",
+  "checks": [
+    {
+      "type": "silence",
+      "from": 1700,
+      "to": 2300
+    },
+    {
+      "type": "sound",
+      "from": 2402,
+      "to": 2440
+    },
+    {
+      "type": "silence",
+      "from": 2560,
+      "to": 2900
+    },
+    {
+      "type": "screen",
+      "at": 2200
+    },
+    {
+      "type": "sound",
+      "from": 4002,
+      "to": 4080
+    },
+    {
+      "type": "silence",
+      "from": 4300,
+      "to": 4500
+    }
+  ]
+}

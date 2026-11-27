@@ -39,10 +39,6 @@ owner on 2026-11-26 ("Approve all, implement").
 
 | ID | Requirement | Source | Mode | Status | Verified by |
 |---|---|---|---|---|---|
-| R-367 | While a drums track's PLAY page shows, when K1 turns, the companion app shall change the level of the key played last. | D-121, replaces R-129, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
-| R-368 | While a drums track's PLAY page shows, when K2 turns, the companion app shall change the reverb send of the key played last. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
-| R-369 | While a drums track's PLAY page shows, when K3 turns, the companion app shall change the track's GRID. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
-| R-370 | While a drums track's PLAY page shows, when K4 turns, the companion app shall change the track's FEEL. | D-121, ST-96 | A | Approved (owner) | PLAY sets the key's level and reverb, and the track's grid and feel |
 | R-371 | While REC records with a GRID set, the companion app shall record each note at the nearest position of that grid. | D-121, replaces R-140 and R-141, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
 | R-372 | While a track's FEEL is set, the companion app shall move each recorded note that lies on an off-sixteenth by that feel's swing. | D-121, replaces R-142, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
 | R-373 | While a drums track's PLAY page shows, the companion app shall draw one row for each key recorded, in the order the keys were first recorded, sharing the bar's height. | D-121, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
@@ -50,16 +46,6 @@ owner on 2026-11-26 ("Approve all, implement").
 | R-375 | If EDIT and a key are held while REC is off, then the companion app shall show that erasing needs REC on. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
 | R-376 | When SAVE is tapped once on a page where holding it undoes, the companion app shall show HOLD: UNDO. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
 | R-377 | When SAVE is tapped twice within 400 ms after an undo, the companion app shall redo the change undone. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
-| R-378 | When EDIT is tapped on a drums track, the companion app shall show the KIT, SOUND, TRIM and PAD FX pages in turn. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
-| R-379 | While EDIT KIT shows, when PRESETS turns, the companion app shall give the key played last the next sound of the list of the kits' sounds. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
-| R-380 | While EDIT KIT shows, when K3 turns, the companion app shall give the key played last the first sound of the next kit in the list. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
-| R-381 | When a key gets a new sound, the companion app shall set that key's settings to their defaults. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
-| R-382 | While EDIT KIT shows, when K2 turns, the companion app shall set how much the key's level follows the velocity, from fixed to 10. | D-121, ST-96 | A | Approved (owner) | EDIT builds the kit from every sound, grouped by kit |
-| R-383 | While EDIT SOUND shows, the companion app shall set the key's tune, attack, hold and decay with K1, K2, K3 and K4. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
-| R-384 | While EDIT SOUND shows, when a knob turns, the companion app shall leave the key silent. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
-| R-385 | While EDIT SOUND shows, when SELECT turns, the companion app shall set the key's mute group to off, A, B, C or D. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
-| R-386 | When a key of a mute group sounds, the companion app shall stop the other keys of that group within 10 ms. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
-| R-387 | While a key's HOLD is key, the companion app shall sound that key until it is released and then fade it over its DECAY. | D-121, ST-96 | A | Approved (owner) | SOUND shapes a key with tune, attack, hold and decay, and mute groups |
 | R-388 | When SAVE is held on an EDIT page of a drums track, the companion app shall show MY KIT 1, 2 and 3 to save the kit to. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 | R-389 | When SAVE is held on the save panel, the companion app shall store the kit's keys in the MY KIT K1 chose. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 | R-390 | The companion app shall keep MY KIT 1, 2 and 3 over power-off. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |

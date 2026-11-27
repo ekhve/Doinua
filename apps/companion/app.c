@@ -827,6 +827,7 @@ static void rl_apply(int t);
 static int u_event(const kit_event_t *e);
 static int game_event(const kit_event_t *e);
 static int dr_event(const kit_event_t *e);
+static int dr_ed;                               /* the drums' EDIT page (drumpage.c), -1: closed */
 static int is_drums(void);
 static void dr_init(void);
 static void song_restore(void);
@@ -852,8 +853,11 @@ static void sound_edit_close(void);
 static int dr_src_kit(int t, int p);
 static int rl_open;                             /* (reclayer.c) */
 static void rl_close(void);                     /* (reclayer.c) the layer and its question closed (R-241) */
-static uint8_t rl_feel[KIT_NTRACKS];
+static uint8_t rl_feel[KIT_NTRACKS], rl_grid[KIT_NTRACKS];
 static int rl_nfeels(void);
+static int rl_ngrids(void);
+static const char *rl_grid_name(int t);
+static const char *rl_feel_name(int t);
 static int rl_grid_ticks(int t);
 static const char *rl_feel_word(int t);
 static int rl_feel_fine(int t, int g, int tick);
@@ -923,6 +927,7 @@ static void home_tap(void)
 {
     sound_fx_close();
     sound_edit_close();
+    dr_ed = -1;                                 /* the drums' EDIT pages close too (ST-96) */
     if (confirm) {                              /* confirmed: switch, the song kept */
         chord_release();
         marp_off();
@@ -2557,6 +2562,7 @@ void app_frame(uint32_t now_ms)
     else if (is_play()) draw_play();
     else if (is_bass()) draw_bass();
     else if (is_melody()) draw_melody();
+    else if (is_drums() && dr_ed >= 0) draw_drums_edit();
     else if (is_drums()) { if (drt[track].page == DR_IDEAS) draw_drums_ideas(); else if (drt[track].page == DR_AUTO) draw_drums_auto(); else draw_drums(); }
     else draw_keyboard();
     if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open() && !sound_edit_open()) draw_rec_layer();

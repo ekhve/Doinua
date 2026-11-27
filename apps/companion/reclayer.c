@@ -6,7 +6,7 @@
  * REC tapped while stopped with a COUNT-IN counts in and records. */
 
 #define RL_NGRIDS 5
-static const char *const RL_GRIDS[RL_NGRIDS] = { "as played", "1/16", "1/8", "1/16T", "1/8T" };
+static const char *const RL_GRIDS[RL_NGRIDS] = { "off", "1/16", "1/8", "1/16T", "1/8T" };
 static const uint8_t RL_GRID_TICKS[RL_NGRIDS] = { 0, 6, 12, 4, 8 };
 /* the feels: swing, shift and looseness for the kick, snare, hats and the rest (a pitched track: the rest's) */
 typedef struct { const char *name, *what; uint8_t sw[4]; int8_t sh[4]; uint8_t jit[4]; } rl_feel_t;
@@ -33,6 +33,9 @@ static uint32_t sv_at;                          /* when SAVE went down */
 static void rl_close(void) { rl_open = 0; rl_ask = 0; }
 static uint32_t rl_at;                          /* when REC went down */
 static uint8_t rl_grid[KIT_NTRACKS], rl_feel[KIT_NTRACKS];
+static int rl_ngrids(void) { return RL_NGRIDS; }
+static const char *rl_grid_name(int t) { return RL_GRIDS[rl_grid[t]]; }
+static const char *rl_feel_name(int t) { return RL_FEELS[rl_feel[t]].name; }
 static int edit_used;                           /* EDIT: a key was held with it (no lights toggle) */
 static uint32_t erase_keys;                     /* keys held with EDIT: they erase, they do not play */
 static int erase_from = -1, erase_snap;         /* the playhead the erase has reached; snapshot taken this hold */
@@ -239,6 +242,7 @@ static int rl_event(const kit_event_t *e)
     if (e->type == KIT_EV_BTN_UP && e->id == KIT_BTN_EDIT) {
         if (!edit_used) {
             if (is_manual()) lights_offs[track] = !lights_offs[track];
+            else if (is_drums()) dr_edit_tap();   /* a drums track: EDIT builds the kit (ST-96, R-378) */
             else sound_edit_release();
         }
         erase_keys = 0;
