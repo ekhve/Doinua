@@ -1069,7 +1069,10 @@ static int panel_held(void)
 void app_event(const kit_event_t *e)
 {
     int panel = panel_event(e);
-    if (panel || e->type == KIT_EV_MIDI_NOTE_ON) startup_visible = 0;
+    if (startup_visible && (panel || e->type == KIT_EV_MIDI_NOTE_ON)) {
+        startup_visible = 0;
+        dirty = 1;
+    }
     harm_sync();
     if (panel || (e->type == KIT_EV_MIDI_NOTE_ON && set.wake)) {
         last_input = kit_ms();
@@ -2432,9 +2435,9 @@ static void keyboard_lights(void)
 
 void app_frame(uint32_t now_ms)
 {
-    if (startup_visible) {
-        if (now_ms - startup_at < STARTUP_MS) return;
+    if (startup_visible && now_ms - startup_at >= STARTUP_MS) {
         startup_visible = 0;
+        dirty = 1;
     }
     harm_sync();
     if (!picker && !home_long && kit_btn_held(KIT_BTN_HOME) && now_ms - home_at >= HOLD_MS) {
@@ -2556,29 +2559,31 @@ void app_frame(uint32_t now_ms)
     dirty = 0;
     if (is_bass()) bass_levels();
     if (is_melody()) mel_levels();
-    if (asleep) ;                               /* dark: nothing drawn, the lights go on */
-    else if (help) draw_help();
-    else if (song_page && song_sub != SUB_SONG) draw_sub();
-    else if (song_page) draw_song();
-    else if (sq_view == SQV_SONG && mode == MODE_PRODUCER) sq_draw();
-    else if (sq_view == SQV_SEQ && mode == MODE_PRODUCER) sq_seq_draw();
-    else if (sq_view == SQV_STEPS && mode == MODE_PRODUCER) st_draw();
-    else if (sound_fx_open()) sound_fx_draw();
-    else if (sound_edit_open()) sound_edit_draw();
-    else if (ar_page()) ar_draw();              /* ARP on: its page (ST-77) */
-    else if (pd) draw_pad();
-    else if (is_ideas()) ci_draw();
-    else if (is_auto()) au_draw();
-    else if (is_play_pads()) ph_draw_pads_page();
-    else if (is_play()) draw_play();
-    else if (is_bass()) draw_bass();
-    else if (is_melody()) draw_melody();
-    else if (is_drums()) { if (drt[track].page == DR_IDEAS) draw_drums_ideas(); else if (drt[track].page == DR_AUTO) draw_drums_auto(); else draw_drums(); }
-    else draw_keyboard();
-    if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open() && !sound_edit_open()) draw_rec_layer();
-    if (!asleep && !help) draw_count();
-    if (!asleep && !help && !sound_fx_open() && !sound_edit_open()) exp_draw(now_ms);
-    if (sb_open && !asleep && !help && !song_page) sb_draw();   /* the Sound Browser over the page (ST-68) */
+    if (!startup_visible) {
+        if (asleep) ;                               /* dark: nothing drawn, the lights go on */
+        else if (help) draw_help();
+        else if (song_page && song_sub != SUB_SONG) draw_sub();
+        else if (song_page) draw_song();
+        else if (sq_view == SQV_SONG && mode == MODE_PRODUCER) sq_draw();
+        else if (sq_view == SQV_SEQ && mode == MODE_PRODUCER) sq_seq_draw();
+        else if (sq_view == SQV_STEPS && mode == MODE_PRODUCER) st_draw();
+        else if (sound_fx_open()) sound_fx_draw();
+        else if (sound_edit_open()) sound_edit_draw();
+        else if (ar_page()) ar_draw();              /* ARP on: its page (ST-77) */
+        else if (pd) draw_pad();
+        else if (is_ideas()) ci_draw();
+        else if (is_auto()) au_draw();
+        else if (is_play_pads()) ph_draw_pads_page();
+        else if (is_play()) draw_play();
+        else if (is_bass()) draw_bass();
+        else if (is_melody()) draw_melody();
+        else if (is_drums()) { if (drt[track].page == DR_IDEAS) draw_drums_ideas(); else if (drt[track].page == DR_AUTO) draw_drums_auto(); else draw_drums(); }
+        else draw_keyboard();
+        if (!asleep && !help && !song_page && !ar_page() && !sound_fx_open() && !sound_edit_open()) draw_rec_layer();
+        if (!asleep && !help) draw_count();
+        if (!asleep && !help && !sound_fx_open() && !sound_edit_open()) exp_draw(now_ms);
+        if (sb_open && !asleep && !help && !song_page) sb_draw();   /* the Sound Browser over the page (ST-68) */
+    }
     if (sq_view == SQV_SONG && !help && !song_page) sq_lights();
     else if (sq_view == SQV_STEPS && !help && !song_page) st_lights();
     else if (ar_page()) ar_lights();
