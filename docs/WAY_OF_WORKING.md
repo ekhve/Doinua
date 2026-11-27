@@ -219,6 +219,10 @@ flowchart TD
     O5 -.->|findings| A6
 ```
 
+### Implementation and review roles
+
+[Agent coordination](AGENT_COORDINATION.md) describes story ownership, independent review when both agents are available, and the single-agent fallback.
+
 ### Who decides what (CLAUDE.md's tiers)
 
 | Tier | Who | Examples |
