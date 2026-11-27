@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 46
+#define FM1KIT_API 48
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -554,6 +554,17 @@ int kit_bank_pending(void);                     /* 1 while a queued record waits
 int kit_bank_status(void);                      /* the last write: 0 or KIT_BANK_ERR_* (the previous record stands) */
 #define KIT_BANK_SETTLE_MS 3000u
 #define KIT_BANK_GAP_MS 10000u
+
+/* ------------------------------------------------------------------------ usb audio --- */
+/* API 48 (D-130, ST-98): the FM-1 is a USB audio device both ways (class compliant, 16-bit stereo, 44.1 kHz): its
+ * output always goes to the computer, and the computer's audio always comes in. MONITOR says when that input is heard
+ * through the FM-1: off, while sampling (kit_usb_audio_sampling(1): the app's TAKE or CHOP shows), or always; IN LEVEL
+ * -12..+24 dB. kit_usb_audio_connected: a computer has opened the FM-1's audio (either way). The host simulator has
+ * no USB: never connected. */
+enum { KIT_USB_MON_OFF = 0, KIT_USB_MON_SAMPLING, KIT_USB_MON_ON };
+void kit_usb_audio(int monitor, int in_db);
+void kit_usb_audio_sampling(int on);
+int kit_usb_audio_connected(void);
 
 /* -------------------------------------------------------------------------- misc --- */
 uint32_t kit_ms(void);

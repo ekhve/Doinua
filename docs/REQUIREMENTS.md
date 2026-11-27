@@ -594,6 +594,11 @@ implement all sounds".)
 | R-389 | When SAVE is held on the save panel, the companion app shall store the kit's keys in the MY KIT K1 chose. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 | R-390 | The companion app shall keep MY KIT 1, 2 and 3 over power-off. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 | R-391 | When PRESETS turns on a drums track's PLAY page, the companion app shall step through the built-in kits and then MY KIT 1, 2 and 3. | D-121, replaces R-126, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
+| R-400 | While the FM-1 is connected by USB, the firmware shall send the FM-1's stereo output to the USB host as audio. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-401 | While the FM-1 is connected by USB, the firmware shall receive the USB host's audio as the input. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-402 | While GLO USB AUDIO's MONITOR is when sampling, the firmware shall play the input through the FM-1 only while TAKE or CHOP shows. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-403 | While GLO USB AUDIO's MONITOR is on, the firmware shall play the input through the FM-1. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-404 | While GLO USB AUDIO shows, when K3 turns, the companion app shall set the input level from -12 dB to +24 dB. | D-121, ST-98 | A | Approved (owner) | GLO USB AUDIO shows the input's monitor and level, and the FM-1 is recorded over USB |
 
 ## Glossary
 

@@ -86,6 +86,7 @@ int kit_midi_connected(void) { return 1; }
 uint32_t kit__lock(void) { return 0; }
 void kit__unlock(uint32_t k) { (void)k; }
 int kit__pot(void) { return pot; }
+int kit_usb_audio_connected(void) { return 0; }   /* API 48: no USB on the PC */
 uint32_t kit_ms(void) { return now_ms_; }
 void kit__light_set(int id, int level) { if (id >= 0 && id < 41) lights[id] = (uint8_t)level; }
 void kit_log(const char *s)

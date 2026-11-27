@@ -32,6 +32,8 @@ echo "== safety"
 for a in $APPS; do python3 "$ROOT/factory/safety.py" "$a"; done
 echo "== usb midi (out and in, emulated USB cable)"
 for a in $APPS; do python3 "$ROOT/factory/usb_midi.py" "$a"; done
+echo "== usb audio (the FM-1 recorded over USB, emulated)"
+for a in $APPS; do python3 "$ROOT/factory/usb_audio.py" "$a"; done
 echo "== cpu (every sound, 8 voices, cycle-modelled)"
 for a in $APPS; do python3 "$ROOT/factory/cpu.py" "$a"; done
 echo "== scenarios (host simulator and emulated firmware)"

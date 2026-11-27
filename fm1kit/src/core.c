@@ -83,3 +83,18 @@ void kit_midi_note_on(int ch, int note, int vel) { kit__midi_send((uint8_t)(0x90
 void kit_midi_note_off(int ch, int note) { kit__midi_send((uint8_t)(0x80u | chan(ch)), (uint8_t)clamp7(note), 0); }
 void kit_midi_realtime(int b) { if (b >= 0xF8 && b <= 0xFF) kit__midi_send_rt((uint8_t)b); }
 void kit_midi_cc(int ch, int cc, int val) { kit__midi_send((uint8_t)(0xB0u | chan(ch)), (uint8_t)clamp7(cc), (uint8_t)clamp7(val)); }
+
+/* ---- USB audio (API 48, D-130): when the computer's audio is heard, and how loud ---- */
+static const uint16_t USB_DB_Q12[37] = { 1029, 1154, 1295, 1453, 1631, 1830, 2053, 2303, 2584, 2900, 3254, 3651, 4096, 4596, 5157, 5786, 6492, 7284, 8173, 9170, 10289, 11544, 12953, 14533, 16306, 18296, 20529, 23034, 25844, 28997, 32536, 36506, 40960, 45958, 51566, 57858, 64917 };   /* -12..+24 dB */
+static volatile uint8_t usb_mon, usb_sampling;
+static volatile uint16_t usb_gain = 4096;
+void kit_usb_audio(int monitor, int in_db)
+{
+    usb_mon = (uint8_t)(monitor < 0 ? 0 : monitor > KIT_USB_MON_ON ? KIT_USB_MON_ON : monitor);
+    usb_gain = USB_DB_Q12[(in_db < -12 ? -12 : in_db > 24 ? 24 : in_db) + 12];
+}
+void kit_usb_audio_sampling(int on) { usb_sampling = (uint8_t)(on != 0); }
+uint32_t kit__usb_in_gain(void)
+{
+    return usb_mon == KIT_USB_MON_ON || (usb_mon == KIT_USB_MON_SAMPLING && usb_sampling) ? usb_gain : 0u;
+}

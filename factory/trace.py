@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-GATES = {"build", "unit", "oracle", "safety", "usb_midi", "cpu"}
+GATES = {"build", "unit", "oracle", "safety", "usb_midi", "usb_audio", "cpu"}
 fails = []
 
 

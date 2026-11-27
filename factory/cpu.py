@@ -43,9 +43,12 @@ def load(i, held=CHORD):
     keys = ",".join(([f"900:e6:{i - START:+d}"] if i != START else [])
                     + [f"{int(t) + late}:{k}" for t, k in (e.split(":", 1) for e in held.split(","))])
     # --usb: a cable in, as when the FM-1 is played from a computer: USB's interrupts are counted, and the firmware does
-    # not retry the USB once a second (a 25 ms wait the model skips, which made one window in 25 look busier: D-091)
+    # not retry the USB once a second (a 25 ms wait the model skips, which made one window in 25 look busier: D-091);
+    # and the computer records the FM-1's USB audio as it plays (D-130), so the audio streaming's work is counted too
     r = subprocess.run([str(EMU), "--usb", "--fwsc", str(out / f"{app}.fwsc"), "--shot", str(2000 + late)], cwd=work,
-                       env=dict(os.environ, FM1_STRICT="1", FM1_BENCH_KEYS=keys), capture_output=True, text=True)
+                       env=dict(os.environ, FM1_STRICT="1", FM1_BENCH_KEYS=keys, FM1_USB_WAV=str(work / f"usb{i}-{len(held)}.raw")),
+                       capture_output=True, text=True)   # a computer recording the FM-1 over USB (D-130): the worst case
+    (work / f"usb{i}-{len(held)}.raw").unlink(missing_ok=True)   # what the computer recorded: not kept
     m = re.search(r"(\d+)% of instructions in ISRs", r.stdout + r.stderr)
     return int(m.group(1)) if m else None
 

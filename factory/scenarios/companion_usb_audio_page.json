@@ -1,0 +1,25 @@
+{
+  "scenario": "GLO USB AUDIO shows the input's monitor and level, and the FM-1 is recorded over USB",
+  "name": "companion, GLO USB AUDIO (ST-98, R-404): GLO, SCL five times to USB AUDIO (OUT mix, MONITOR when sampling, IN LEVEL 0 dB, the computer not connected on the PC); K3 up past the top: +24 dB; down past the bottom: -12 dB; K2 MONITOR to on",
+  "app": "companion",
+  "ms": 3200,
+  "keys": "900:GLO,950:GLO^,1000:SCL,1030:SCL^,1100:SCL,1130:SCL^,1200:SCL,1230:SCL^,1300:SCL,1330:SCL^,1400:SCL,1430:SCL^,1700:e4:+30,2100:e4:-40,2500:e3:+1",
+  "checks": [
+    {
+      "type": "screen",
+      "at": 1600
+    },
+    {
+      "type": "screen",
+      "at": 2000
+    },
+    {
+      "type": "screen",
+      "at": 2400
+    },
+    {
+      "type": "screen",
+      "at": 2800
+    }
+  ]
+}
