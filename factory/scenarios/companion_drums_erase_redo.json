@@ -1,0 +1,39 @@
+{
+  "scenario": "Erasing needs REC on, and SAVE undoes and redoes",
+  "name": "companion, DRUMS 1-bar loop (ST-96, R-374..R-377): hats on beats 2 and 4 and a kick on 3 recorded; REC off, EDIT and the hat key held for a loop: the hats stay and the screen says REC on to erase; REC on, EDIT and the hat held for a loop: the hats are gone; SAVE held: back; SAVE tapped twice within 400 ms: gone again, a tap shows HOLD: UNDO",
+  "app": "companion",
+  "ms": 15600,
+  "keys": "900:GLO,950:GLO^,1000:e4:-1,1020:e4:-1,1040:e4:-1,1100:GLO,1150:GLO^,1200:e1:+3,1300:REC,1350:REC^,1400:PLAY,1450:PLAY^,2067:F#3@100,2150:F#3^,2733:F3@100,2850:F3^,3400:F#3@100,3480:F#3^,3900:REC,3950:REC^,4100:EDIT,4120:F#3@100,6700:F#3^,6720:EDIT^,6800:REC,6820:REC^,6850:EDIT,6870:F#3@100,9380:F#3^,9390:EDIT^,9420:REC,9440:REC^,10200:SAVE,10800:SAVE^,13000:SAVE,13050:SAVE^,13200:SAVE,13250:SAVE^",
+  "checks": [
+    {
+      "type": "sound",
+      "from": 4730,
+      "to": 4745,
+      "rms": 100
+    },
+    {
+      "type": "screen",
+      "at": 4300
+    },
+    {
+      "type": "silence",
+      "from": 10060,
+      "to": 10150
+    },
+    {
+      "type": "sound",
+      "from": 12730,
+      "to": 12745,
+      "rms": 100
+    },
+    {
+      "type": "screen",
+      "at": 13100
+    },
+    {
+      "type": "silence",
+      "from": 15395,
+      "to": 15460
+    }
+  ]
+}

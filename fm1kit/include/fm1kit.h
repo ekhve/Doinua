@@ -14,7 +14,7 @@
 #define FM1KIT_H
 #include <stdint.h>
 
-#define FM1KIT_API 45
+#define FM1KIT_API 46
 
 /* ------------------------------------------------------------------ app entry points --- */
 /* The app defines these three. The kit calls app_init once after the hardware is up, then
@@ -381,6 +381,8 @@ void kit_seq_grid(int track, int ticks);
 void kit_seq_quantize(int track, int fine, int strength_pct);
 void kit_seq_feel(int track, const kit_feel_t *by_pitch_class);
 void kit_seq_feel_note(int track, int note, kit_feel_t f);   /* API 23: one note's (a drums pad's) own feel */
+void kit_seq_rec_grid(int track, int ticks);   /* API 46 (D-127): notes recorded into track land on the nearest
+                                                 * multiple of ticks (0: as played); the playback is not changed */
 int kit_seq_place(const kit_song_t *s, int track, int i);
 /* the song's settings (API 11, D-032: concept v0.2's GLO page underneath): none of them changes a note that was played,
  * except kit_song_transpose, which is the explicit way to move the song */

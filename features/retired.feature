@@ -100,3 +100,19 @@ Feature: The chord pad on AUTO (retired by ST-83)
     Then when the song comes round, Dm9 sounds with no key pressed
     And the ii pads light full while it sounds, beside the iii pad just played
     And it is silent before it comes round
+
+Feature: GRID on playback and erasing with REC off (D-051), retired by ST-96 (D-121)
+
+  @D-051 @ST-40 @UC-13 @retired
+  Scenario: GRID and FEEL change the playback, never the recording
+    Given a bassline recorded a little early and late
+    When GRID is 1/16
+    Then it plays on the sixteenths
+    When GRID is back to as played
+    Then it plays as it was recorded
+
+  @D-051 @ST-41 @UC-13 @retired
+  Scenario: EDIT and a key erase that key's notes as they play
+    Given a melody recorded with two Bb notes
+    When EDIT is held with Bb as the song plays past them
+    Then both Bb notes are gone and the others stay

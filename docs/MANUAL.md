@@ -61,23 +61,25 @@ The FM-1 starts on **CHORDS · PLAY** (section 3): play some notes and it names 
 
 ### 2.2 Recording: the REC layer, erasing and undo (every track)
 
-What you play is kept as you played it. How it *plays back* is up to you, track by track.
+GRID decides where what you play lands as you record it; FEEL decides how it plays back. Track by track.
 
 **Hold REC** (half a second): the REC layer opens over the page. **REC** again closes it.
 
 | On the layer | Does |
 |---|---|
-| **K1 GRID** | **as played** · **1/16** · **1/8** · **1/16T** · **1/8T**: on playback each note moves to the nearest place on the grid. What you played is kept: back to *as played* and it plays as you played it |
-| **K2 FEEL** | With a GRID: **Straight**, **Swing 55**, **Swing 62**, **MPC 66** (the off-sixteenths late), **Dilla** (kick swung hard, snare late, hats loose), **Laid back**, **Pushed**, **Dembow**, **Shatta**, **Drunk**. On a drums track each drum keeps its own part of the feel (C kick, D and E snare, F to B hats) |
+| **K1 GRID** | **off** · **1/8** · **1/16** · **1/32** · **1/8T** · **1/16T**: each note you record lands on the nearest place of the grid. **off**: kept as you played it. It changes what you record from now on, not what is there |
+| **K2 FEEL** | How the track plays back, from where each note was recorded: **Straight**, **Swing 55**, **Swing 62**, **MPC 66** (the off-sixteenths late), **Dilla** (kick swung hard, snare late, hats loose), **Laid back**, **Pushed**, **Dembow**, **Shatta**, **Drunk**. On a drums track each drum keeps its own part of the feel (C kick, D and E snare, F to B hats) |
 | **K3 CLICK** | Off, **rec** (while recording), **on** (always) |
 | **K4 COUNT-IN** | Off, 1 or 2 bars |
 | **OCT+** | Clear this track: it asks first. **OCT+** again clears it; any other button keeps it |
 
-**Erase**: hold **EDIT** and the key whose notes you want gone, while the song plays: each of that note's notes on
-this track (in any octave) is erased just before it would sound. Let go when they are gone.
+**Erase**: with **REC on** and the song playing, hold **EDIT** and the key whose notes you want gone: each of that
+note's notes on this track (in any octave) is erased just before it would sound. Let go when they are gone. With REC
+off nothing is erased, and the screen says **REC ON to erase**.
 
-**Undo**: hold **SAVE** (half a second) to undo the last recording pass, erase or clear, up to four back. A tap only shows how. A pass where you played nothing
-is not counted.
+**Undo**: hold **SAVE** (half a second) to undo the last recording pass, erase or clear, up to four back. A tap shows
+**HOLD: UNDO**. **Redo**: tap SAVE twice quickly (within 0.4 s) and what you undid comes back. A pass where you played
+nothing is not counted.
 
 **Practising slower**: on a melody's IDEAS page, **SPEED** slows the whole song (the top line shows, say, **63 of
 90**). What you record then lands where it belongs in the song, which plays at its own tempo again when SPEED is back
@@ -386,7 +388,7 @@ snares and claps, teal hats and shakers, purple toms and percussion). OCT− and
 
 | Control | Does |
 |---|---|
-| **PRESETS** | The kit: **Dusty**, **808**, **Live**, **Latin**. Its name is on the top line |
+| **PRESETS** | The kit: **Dusty**, **808**, **Live**, **Latin**, then **MY KIT 1**, **2** and **3** (your own; an empty one starts as Dusty). Its name is on the top line |
 | **A key held + PRESETS** | Puts the next sound of any kit on that key: build your own kit, as on an MPC. The top line says **My kit** |
 | **K1 LEVEL** | Of the key played last: 0 to 10 (8 is the kit as it plays) |
 | **K2 REVERB** | Of the key played last: how much of it goes to the reverb (0 to 10) |
@@ -394,8 +396,13 @@ snares and claps, teal hats and shakers, purple toms and percussion). OCT− and
 | **FX** | The whole drums track through **Punch** (a compressor: tighter, louder), **MPC** (squashed and soft-clipped: hits hard), **Lofi** (fewer bits, a narrow band, vinyl crackle: dusty) or **Tape** (warm saturation), a tap each |
 | **EDIT** | Builds the kit, a page a tap: **KIT** (PRESETS gives the key played last the next sound of any kit, K3 the next kit; K1 LEVEL, K2 VELOCITY: fixed to 10), **SOUND** (K1 TUNE, a pitched sound names its note; K2 ATTACK, K3 HOLD in ms then *full* or *key* (as long as the key is held), K4 DECAY; SELECT its mute group: keys of one group stop each other, the hats at first), **TRIM** (your samples), **PAD FX** (K4 REVERB). A new sound on a key starts from its defaults; turning a knob plays nothing. HOME: back. The ARP repeats a held drum (hi-hat rolls) |
 
-Once a beat is recorded, PLAY draws its bar: four rows (kick, snare, hats, the rest), each hit where it plays, with a
-line from its place on the grid, so you see the feel (GRID and FEEL on the REC layer, section 2.2).
+Once a beat is recorded, PLAY draws its bar: a row for each key you recorded, in the order you first recorded them,
+sharing the height; each hit where it plays, taller the harder you hit, with a line back to where you recorded it, so
+you see the feel (GRID and FEEL, section 2.2).
+
+**Keep your kit**: on any EDIT page, hold **SAVE**: **MY KIT 1, 2, 3** show; K1 picks one, hold **SAVE** again and the
+kit (every key's sound and settings) is kept there, also when the FM-1 is off. HOME: cancel. PRESETS then finds it after
+the built-in kits.
 
 ### IDEAS: learn a style's beat
 

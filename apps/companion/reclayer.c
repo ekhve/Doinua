@@ -1,13 +1,15 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* The REC layer, the same on every track (ST-40..42, D-051), included by app.c after its state. Felucca's way: REC
- * held opens it (REC again closes it). On it the knobs are this track's GRID and FEEL (they change the playback only:
- * what was played is kept), the CLICK and the COUNT-IN; OCT+ clears the track, asking first. Anywhere: EDIT held with a
- * key erases that key's notes of the track as the song plays past them; SAVE undoes the last recording, erase or clear.
- * REC tapped while stopped with a COUNT-IN counts in and records. */
+/* The REC layer, the same on every track (ST-40..42, D-051; ST-96, D-121, D-127), included by app.c after its state.
+ * Felucca's way: REC held opens it (REC again closes it). On it the knobs are this track's GRID (each note lands on it
+ * as it is recorded; off: as played) and FEEL (it moves the track's notes as they play, from where they were
+ * recorded), the CLICK and the COUNT-IN; OCT+ clears the track, asking first. Anywhere: with REC on, EDIT held with a
+ * key erases that key's notes of the track as the song plays past them (REC off: it says so); SAVE held undoes the last
+ * recording, erase or clear, a tap says HOLD: UNDO and two taps redo what was undone. REC tapped while stopped with a
+ * COUNT-IN counts in and records. */
 
-#define RL_NGRIDS 5
-static const char *const RL_GRIDS[RL_NGRIDS] = { "off", "1/16", "1/8", "1/16T", "1/8T" };
-static const uint8_t RL_GRID_TICKS[RL_NGRIDS] = { 0, 6, 12, 4, 8 };
+#define RL_NGRIDS 6
+static const char *const RL_GRIDS[RL_NGRIDS] = { "off", "1/8", "1/16", "1/32", "1/8T", "1/16T" };   /* the lab's (D-084) */
+static const uint8_t RL_GRID_TICKS[RL_NGRIDS] = { 0, 12, 6, 3, 8, 4 };
 /* the feels: swing, shift and looseness for the kick, snare, hats and the rest (a pitched track: the rest's) */
 typedef struct { const char *name, *what; uint8_t sw[4]; int8_t sh[4]; uint8_t jit[4]; } rl_feel_t;
 enum { GK = 0, GS, GH, GP };
@@ -46,6 +48,12 @@ static const char *undo_msg;
 #define RL_NUNDO 4
 static struct { int8_t track; uint8_t count; kit_song_note_t notes[KIT_SONG_MAX_NOTES]; } undo[RL_NUNDO];
 static int nundo, rec_snap = -1;                /* the track whose recording snapshot is on top, or -1 */
+static struct { int8_t track; uint8_t count; kit_song_note_t notes[KIT_SONG_MAX_NOTES]; } redo[RL_NUNDO];   /* what undo took (R-377) */
+static int nredo;
+static uint32_t sv_tap;                         /* the last SAVE tap, for two taps: redo */
+static const char *toast_msg;                   /* a short note in a pill above the foot, as the lab shows it (D-084) */
+static uint32_t toast_until;
+static void toast(const char *m) { toast_msg = m; toast_until = kit_ms() + 1500; if (!toast_until) toast_until = 1; dirty = 1; }
 
 static void rl_copy(kit_song_note_t *to, const kit_song_note_t *from, int n) { while (n-- > 0) *to++ = *from++; }   /* (apps use fm1kit.h alone: no C library) */
 static int rl_same(const kit_song_note_t *a, const kit_song_note_t *b, int n)
@@ -55,7 +63,9 @@ static int rl_same(const kit_song_note_t *a, const kit_song_note_t *b, int n)
     return 1;
 }
 
-static void undo_push(int t)
+static void undo_push_keep(int t);
+static void undo_push(int t) { nredo = 0; undo_push_keep(t); }   /* a new change: nothing to redo */
+static void undo_push_keep(int t)
 {
     if (nundo == RL_NUNDO) {                    /* full: the oldest goes */
         int j;
@@ -81,7 +91,7 @@ static void rec_snap_end(void)                  /* a recording pass ends: nothin
     if (rec_snap >= 0 && undo_same(rec_snap)) nundo--;
     rec_snap = -1;
 }
-static void rec_snap_begin(void) { rec_snap_end(); undo_push(track); rec_snap = track; }
+static void rec_snap_begin(void) { rec_snap_end(); undo_push_keep(track); rec_snap = track; }
 
 static void undo_pop(void)
 {
@@ -90,11 +100,36 @@ static void undo_pop(void)
     if (!nundo) { undo_msg = "Nothing to undo"; undo_until = kit_ms() + 1500; if (armed) rec_snap_begin(); return; }
     nundo--;
     t = undo[nundo].track;
+    if (nredo == RL_NUNDO) {                    /* keep the last four: the oldest goes */
+        int j;
+        for (j = 0; j < RL_NUNDO - 1; j++) { redo[j].track = redo[j + 1].track; redo[j].count = redo[j + 1].count; rl_copy(redo[j].notes, redo[j + 1].notes, redo[j + 1].count); }
+        nredo--;
+    }
+    redo[nredo].track = (int8_t)t;              /* what it was, for a redo */
+    redo[nredo].count = song.count[t];
+    rl_copy(redo[nredo].notes, song.notes[t], song.count[t]);
+    nredo++;
     kit_track_notes_off(t);
     song.count[t] = undo[nundo].count;
     rl_copy(song.notes[t], undo[nundo].notes, undo[nundo].count);
     if (armed) rec_snap_begin();                /* still recording: a new pass from here */
     undo_msg = "The last change is undone";
+    undo_until = kit_ms() + 1500;
+    update_key();
+}
+static void redo_pop(void)                      /* two SAVE taps after an undo: it comes back (R-377) */
+{
+    int t;
+    if (!nredo) return;
+    rec_snap_end();
+    nredo--;
+    t = redo[nredo].track;
+    undo_push_keep(t);
+    kit_track_notes_off(t);
+    song.count[t] = redo[nredo].count;
+    rl_copy(song.notes[t], redo[nredo].notes, redo[nredo].count);
+    if (armed) rec_snap_begin();
+    undo_msg = "Redone";
     undo_until = kit_ms() + 1500;
     update_key();
 }
@@ -110,7 +145,8 @@ static void rl_apply(int t)                     /* the track's GRID and FEEL to 
 {
     const rl_feel_t *r = &RL_FEELS[rl_feel[t]];
     int n;
-    kit_seq_grid(t, RL_GRID_TICKS[rl_grid[t]]);
+    kit_seq_rec_grid(t, RL_GRID_TICKS[rl_grid[t]]);   /* GRID: as a note is recorded (R-371) */
+    kit_seq_quantize(t, rl_feel[t] ? 6 * 16 : 0, 0);   /* FEEL: from where each note was recorded, its sixteenth (R-372) */
     for (n = 0; n < 128; n++) {                 /* a drums track: each pad its drum's part of the feel; else the rest's */
         int g = GP;
         if (set.role[t] == ROLE_DRUMS) {
@@ -170,7 +206,7 @@ static void erase_poll(void)                    /* EDIT + keys: the track's note
 {
     int tick, len, i, k, n;
     uint16_t pcs = 0;
-    if (!erase_keys || !kit_btn_held(KIT_BTN_EDIT) || !kit_seq_playing()) { erase_from = -1; return; }
+    if (!erase_keys || !armed || !kit_btn_held(KIT_BTN_EDIT) || !kit_seq_playing()) { erase_from = -1; return; }   /* REC on (R-374) */
     for (k = 0; k < KIT_NKEYS; k++) if (erase_keys >> k & 1u) pcs |= (uint16_t)(1u << pc12(key_note(k)));
     len = kit_song_length(&song);
     tick = (kit_seq_tick() + 3) % len;          /* a little ahead of the playhead, so an erased note does not sound first */
@@ -181,7 +217,7 @@ static void erase_poll(void)                    /* EDIT + keys: the track's note
         if (!(pcs >> pc12(song.notes[track][i].note) & 1u) || song.notes[track][i].start >= len) continue;
         hit = tick >= erase_from ? at > erase_from && at <= tick : at > erase_from || at <= tick;   /* (from, tick], over the loop's end too */
         if (!hit) continue;
-        if (!erase_snap) { undo_push(track); erase_snap = 1; }
+        if (!erase_snap) { if (!(rec_snap == track && undo_same(track))) undo_push(track); else nredo = 0; erase_snap = 1; }   /* the pass's snapshot is before it */
         kit_track_note_off(track, song.notes[track][i].note);
         for (k = i; k < n - 1; k++) song.notes[track][k] = song.notes[track][k + 1];   /* (no memmove on the FM-1) */
         n--; i--;
@@ -252,13 +288,19 @@ static int rl_event(const kit_event_t *e)
     if (e->type == KIT_EV_KEY_DOWN && kit_btn_held(KIT_BTN_EDIT)) {   /* EDIT + key: it erases, it does not play */
         edit_used = 1;
         erase_keys |= 1u << e->id;
+        if (!armed) toast("REC on to erase");   /* R-375 */
         dirty = 1;
         return 1;
     }
     if (e->type == KIT_EV_KEY_UP && (erase_keys >> e->id & 1u)) { erase_keys &= ~(1u << e->id); return 1; }
     if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_SAVE && !song_page) { sv_at = kit_ms(); sv_long = 0; return 1; }
     if (e->type == KIT_EV_BTN_UP && e->id == KIT_BTN_SAVE && !song_page) {   /* tapped: it says how; held: rl_frame undid (R-147) */
-        if (!sv_long) exp_say("HOLD", "");
+        if (!sv_long) {
+            uint32_t now = kit_ms();
+            if (is_drums() && dr_ed >= 0) toast("HOLD: SAVE");   /* EDIT on the drums: SAVE keeps the kit (R-388) */
+            else if (sv_tap && now - sv_tap < 400 && nredo) { redo_pop(); sv_tap = 0; dirty = 1; }   /* two taps: redo (R-377) */
+            else { toast("HOLD: UNDO"); sv_tap = now; }   /* R-376 */
+        }
         sv_long = 0;
         return 1;
     }
@@ -274,11 +316,12 @@ static void rl_frame(uint32_t now)
         dirty = 1;
     }
     if (kit_btn_held(KIT_BTN_SAVE) && !sv_long && !song_page && now - sv_at >= HOLD_MS) {
-        sv_long = 1;                            /* SAVE held: undo (R-147) */
-        undo_pop();
+        sv_long = 1;                            /* SAVE held: undo (R-147); on the drums' EDIT, keep the kit (R-388) */
+        if (is_drums() && dr_ed >= 0) dr_save_held(); else undo_pop();
         dirty = 1;
     }
     if (undo_until && (int32_t)(now - undo_until) >= 0) { undo_until = 0; dirty = 1; }
+    if (toast_until && (int32_t)(now - toast_until) >= 0) { toast_until = 0; dirty = 1; }
     erase_poll();
 }
 
@@ -293,14 +336,20 @@ static void draw_rec_layer(void)                /* over the page: the layer's ca
         char cl[24];
         const char *m;
         cat(cat(cl, track_name(track)), " cleared");
-        m = undo_msg[0] == 'N' ? "nothing to undo" : undo_msg[4] == 'l' ? "take undone" : cl;
+        m = undo_msg[0] == 'N' ? "nothing to undo" : undo_msg[0] == 'R' ? "redone" : undo_msg[4] == 'l' ? "take undone" : cl;
         int w = kit_text_width(m, KIT_FONT_XSMALL) + 16;
         kit_round_rect(120 - w / 2, 214, w, 20, 6, SQ_ACCD);
         ctext(120, 224, m, KIT_FONT_XSMALL, FG);
     } else if (undo_until) {
         kit_round_rect(6, 92, 228, 40, 8, CARD2);
-        kit_text(120, 98, "UNDO", KIT_FONT_SMALL, KIT_ALIGN_CENTER, FG);
+        kit_text(120, 98, undo_msg[0] == 'R' ? "REDO" : "UNDO", KIT_FONT_SMALL, KIT_ALIGN_CENTER, FG);
         kit_text(120, 116, undo_msg, KIT_FONT_XSMALL, KIT_ALIGN_CENTER, MUTED);
+    }
+    if (toast_until) {                          /* the pill: an accent outline, the note in it */
+        int w = kit_text_width(toast_msg, KIT_FONT_TINY) + 40;
+        kit_round_rect(120 - w / 2, 196, w, 18, 9, KIT_RGB(215, 124, 194));
+        kit_round_rect(121 - w / 2, 197, w - 2, 16, 8, BG);
+        ctext(120, 205, toast_msg, KIT_FONT_TINY, FG);
     }
     if (!rl_open && !rl_ask) return;
     kit_rect(0, 28, KIT_W, 112, BG);
@@ -316,7 +365,6 @@ static void draw_rec_layer(void)                /* over the page: the layer's ca
         kit_text(120, 100, "OCT+ again: yes    any other: no", KIT_FONT_XSMALL, KIT_ALIGN_CENTER, FG);
         return;
     }
-    if (rl_feel[track] && !rl_grid[track]) kit_text(232, 66, "FEEL needs a GRID", KIT_FONT_TINY, KIT_ALIGN_RIGHT, WARN);
     for (i = 0; i < 4; i++) {
         kit_text(10, 74 + i * 16, keys[i], KIT_FONT_XSMALL, KIT_ALIGN_LEFT, ACC);
         kit_text(92, 74 + i * 16, does[i], KIT_FONT_XSMALL, KIT_ALIGN_LEFT, MUTED);

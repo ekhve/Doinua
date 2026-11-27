@@ -39,17 +39,6 @@ owner on 2026-11-26 ("Approve all, implement").
 
 | ID | Requirement | Source | Mode | Status | Verified by |
 |---|---|---|---|---|---|
-| R-371 | While REC records with a GRID set, the companion app shall record each note at the nearest position of that grid. | D-121, replaces R-140 and R-141, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
-| R-372 | While a track's FEEL is set, the companion app shall move each recorded note that lies on an off-sixteenth by that feel's swing. | D-121, replaces R-142, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
-| R-373 | While a drums track's PLAY page shows, the companion app shall draw one row for each key recorded, in the order the keys were first recorded, sharing the bar's height. | D-121, ST-96 | A | Approved (owner) | GRID places notes as they are recorded, and FEEL moves them afterwards |
-| R-374 | While REC is on and the song plays, when EDIT and a key are held, the companion app shall remove that key's notes of the track as the playhead passes them. | D-121, replaces R-146, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
-| R-375 | If EDIT and a key are held while REC is off, then the companion app shall show that erasing needs REC on. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
-| R-376 | When SAVE is tapped once on a page where holding it undoes, the companion app shall show HOLD: UNDO. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
-| R-377 | When SAVE is tapped twice within 400 ms after an undo, the companion app shall redo the change undone. | D-121, ST-96 | A | Approved (owner) | Erasing needs REC on, and SAVE undoes and redoes |
-| R-388 | When SAVE is held on an EDIT page of a drums track, the companion app shall show MY KIT 1, 2 and 3 to save the kit to. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
-| R-389 | When SAVE is held on the save panel, the companion app shall store the kit's keys in the MY KIT K1 chose. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
-| R-390 | The companion app shall keep MY KIT 1, 2 and 3 over power-off. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
-| R-391 | When PRESETS turns on a drums track's PLAY page, the companion app shall step through the built-in kits and then MY KIT 1, 2 and 3. | D-121, replaces R-126, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 | R-392 | When FX is tapped on a drums track, the companion app shall show the PUNCH, COLOR and SPACE pages in turn. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
 | R-393 | While FX PUNCH shows, the companion app shall set the compressor amount, its speed, the clipper amount and its shape with K1, K2, K3 and K4. | D-121, replaces R-136, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
 | R-394 | While FX COLOR shows, the companion app shall set the tape, lofi, drive and crush amounts with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
