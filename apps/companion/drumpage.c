@@ -292,35 +292,89 @@ static void dr_keys(int y, int h)
     }
 }
 
-static void dr_rec_graph(int y);
+/* PLAY on a drums track, as the sampler lab draws it (D-084, R-367..R-370, R-373): the bar, a row a key in the order
+ * the keys were first recorded, sharing its height; each hit where it plays, a line back to where it was played; the
+ * key played last; the knobs at the foot */
+static int8_t dr_order[KIT_NTRACKS][KIT_DRUM_PADS];
+static uint8_t dr_norder[KIT_NTRACKS];
+static void dr_order_update(int t)              /* keys recorded since: at the end; keys gone: out */
+{
+    uint32_t has = 0;
+    int i, j, n = 0;
+    for (i = 0; i < song.count[t]; i++) has |= 1u << kit_drum_pad_of(song.notes[t][i].note);
+    for (i = 0; i < dr_norder[t]; i++) if (has & (1u << dr_order[t][i])) dr_order[t][n++] = dr_order[t][i];
+    for (j = 0; j < KIT_DRUM_PADS; j++) {
+        if (!(has & (1u << j))) continue;
+        for (i = 0; i < n && dr_order[t][i] != j; i++) ;
+        if (i == n) dr_order[t][n++] = (int8_t)j;
+    }
+    dr_norder[t] = (uint8_t)n;
+}
+static void dr_knob_card(int i, const char *label, const char *value, int hi)   /* the lab's knob row */
+{
+    int x = 4 + i * 58;
+    exp_card(i, label, value, 0);
+    kit_round_rect(x, 204, 54, 33, 5, CARD);
+    ctext(x + 27, 212, label, KIT_FONT_TINY, MUTED);
+    ctext(x + 27, 226, value, KIT_FONT_XSMALL, hi ? ACC : FG);
+}
+static void dr_bar(void)
+{
+    const int X0 = 44, W = 190, Y0 = 26, AH = 160;
+    int n, h, r, i, y = Y0 + 1, b = kit_seq_playing() ? kit_seq_tick() / KIT_TICKS_PER_BAR : 0, g0 = rl_grid_ticks(track);
+    dr_order_update(track);
+    n = dr_norder[track];
+    kit_round_rect(6, Y0 - 1, 228, AH + 2, 4, CARD);
+    for (i = 0; i <= 16; i++) kit_rect(X0 + W * i / 16, Y0, 1, AH, i % 4 ? KIT_RGB(29, 35, 46) : KIT_RGB(58, 66, 82));
+    if (!n) { ctext(120, Y0 + AH / 2 - 5, "REC, PLAY, then play: your beat appears here", KIT_FONT_TINY, MUTED); return; }
+    h = (AH - n) / n;
+    if (h > 24) h = 24;
+    if (h < 3) h = 3;
+    for (r = 0; r < n && y + h <= Y0 + AH; r++, y += h + 1) {
+        int k = dr_order[track][r], g = kit_drum_group(dr_src_kit(track, k), dr_pads[track][k].src);
+        kit_color_t col = DR_GROUP_COL[g];
+        if (h >= 9) {
+            char nm[8];
+            const char *t = dr_title(track, k);
+            for (i = 0; i < 6 && t[i]; i++) nm[i] = t[i];
+            nm[i] = 0;
+            kit_text(9, y + h / 2 - 4, nm, KIT_FONT_TINY, KIT_ALIGN_LEFT, col);
+        } else kit_rect(9, y, 30, h > 1 ? h - 1 : 1, col);
+        for (i = 0; i < song.count[track]; i++) {
+            const kit_song_note_t *v = &song.notes[track][i];
+            int at, gt, x, gx, vh;
+            if (kit_drum_pad_of(v->note) != k) continue;
+            at = kit_seq_place(&song, track, i);
+            gt = g0 ? (v->start + g0 / 2) / g0 * g0 : v->start;
+            if (at / 16 / KIT_TICKS_PER_BAR != b && gt / KIT_TICKS_PER_BAR != b) continue;
+            x = X0 + (at - b * KIT_TICKS_PER_BAR * 16) * W / (KIT_TICKS_PER_BAR * 16);
+            gx = X0 + (gt - b * KIT_TICKS_PER_BAR) * W / KIT_TICKS_PER_BAR;
+            if (x < X0 - 4 || x > X0 + W + 4) continue;
+            if (h >= 9 && x != gx) kit_rect(gx < x ? gx : x, y + h / 2, (x > gx ? x - gx : gx - x) + 1, 1, MUTED);
+            vh = (h - 4) * (v->vel ? v->vel : 100) / 127;
+            if (vh < 2) vh = 2;
+            kit_round_rect(x - 2, y + (h - vh) / 2, 5, vh, vh < 4 ? vh / 2 : 2, col);
+        }
+    }
+    if (kit_seq_playing()) kit_rect(X0 + W * (kit_seq_tick() % KIT_TICKS_PER_BAR) / KIT_TICKS_PER_BAR, Y0, 2, AH, KIT_RGB(60, 207, 122));
+}
 static void draw_drums(void)
 {
-    int p = dr_last[track], note;
+    int p = dr_last[track], note = KIT_DRUM_LO + p;
     dr_pad_t *d = &dr_pads[track][p];
     char v[16], s[40], *q;
     kit_clear(BG);
     top("PLAY");
-    (void)note;                                 /* PLAY (ST-96, R-367..R-370): the key's level and reverb; the track's grid and feel */
+    dr_bar();
+    q = cat_int(cat(s, kit_note_name(note, KIT_NAMES_LETTERS)), kit_octave(note));
+    cat(cat(q, "  "), dr_title(track, p));
+    kit_text(6, 189, s, KIT_FONT_TINY, KIT_ALIGN_LEFT, dr_shown_until ? ACC : MUTED);
     cat_int(v, d->level);
-    card(0, "LEVEL", v, d->level != 8);
+    dr_knob_card(0, "LEVEL", v, d->level != 8);
     cat_int(v, d->rvb);
-    card(1, "REVERB", v, d->rvb != 0);
-    card(2, "GRID", rl_grid_name(track), rl_grid[track] != 0);
-    card(3, "FEEL", rl_feel_name(track), rl_feel[track] != 0);
-    q = s; if (p < 12) q = cat(cat(q, dr_name(track, p)), ", ");   /* a role key: its sound, then the kit */
-    q = cat(q, kit_drum_kit_name(dr_src_kit(track, p)));
-    if (dr_pads[track][p].kit >= 0 || dr_pads[track][p].src != p) q = cat(q, "  on this key");
-    if (song.count[track]) {                    /* a beat recorded: its bar, each hit where the feel puts it (R-143) */
-        int w = kit_text(8, 68, dr_title(track, p), KIT_FONT_MEDIUM, KIT_ALIGN_LEFT, FG);
-        kit_text(16 + w, 74, s, KIT_FONT_XSMALL, KIT_ALIGN_LEFT, dr_shown_until ? ACC : MUTED);
-        dr_rec_graph(96);
-        dr_keys(150, 90);
-        return;
-    }
-    kit_text(8, 74, dr_title(track, p), KIT_FONT_LARGE, KIT_ALIGN_LEFT, FG);
-    kit_text(8, 116, s, KIT_FONT_XSMALL, KIT_ALIGN_LEFT, dr_shown_until ? ACC : MUTED);
-    kit_text(8, 134, "PRESETS: the kit   key + PRESETS: its sound", KIT_FONT_TINY, KIT_ALIGN_LEFT, MUTED);
-    dr_keys(150, 90);
+    dr_knob_card(1, "REVERB", v, d->rvb != 0);
+    dr_knob_card(2, "GRID", rl_grid_name(track), rl_grid[track] != 0);
+    dr_knob_card(3, "FEEL", rl_feel_name(track), rl_feel[track] != 0);
 }
 
 /* EDIT on a drums track (ST-96), drawn as the Sound Edit pages are and as the sampler lab draws it (D-084): the key and
@@ -617,27 +671,3 @@ static void dr_ideas_lights(void)               /* IDEAS: the key of the next hi
     for (k = 0; k < KIT_NKEYS; k++) kit_key_light(k, kit_key_held(k) ? KIT_LIGHT_ON : lv[k]);
 }
 
-/* the recorded beat's bar (the one playing, else the first): each hit where it plays (kit_seq_place: GRID and FEEL),
- * a tick at its place on the grid and a line between (R-143) */
-static void dr_rec_graph(int y)
-{
-    static const char *const ROW[4] = { "kick", "snare", "hats", "perc" };
-    int i, r, x0 = 36, w = 196, b = kit_seq_playing() ? kit_seq_tick() / KIT_TICKS_PER_BAR : 0, g0 = rl_grid_ticks(track);
-    for (r = 0; r < 4; r++) {
-        kit_text(4, y + r * 12 + 1, ROW[r], KIT_FONT_TINY, KIT_ALIGN_LEFT, MUTED);
-        kit_rect(x0, y + r * 12 + 5, w, 1, LINE);
-    }
-    for (i = 0; i <= 16; i += 4) kit_rect(x0 + i * w / 16, y, 1, 46, LINE);
-    for (i = 0; i < song.count[track]; i++) {
-        const kit_song_note_t *v = &song.notes[track][i];
-        int pad = kit_drum_pad_of(v->note), g = kit_drum_group(dr_src_kit(track, pad), dr_pads[track][pad].src);
-        int at = kit_seq_place(&song, track, i), gt = g0 ? (v->start + g0 / 2) / g0 * g0 : v->start, yy = y + g * 12 + 5, x, gx;
-        if (at / 16 / KIT_TICKS_PER_BAR != b && gt / KIT_TICKS_PER_BAR != b) continue;
-        x = x0 + (at - b * KIT_TICKS_PER_BAR * 16) * w / (KIT_TICKS_PER_BAR * 16);
-        gx = x0 + (gt - b * KIT_TICKS_PER_BAR) * w / KIT_TICKS_PER_BAR;
-        if (x < x0 - 4 || x > x0 + w + 4) continue;
-        if (x != gx) kit_rect(gx < x ? gx : x, yy, (x > gx ? x - gx : gx - x) + 1, 1, MUTED);
-        kit_rect(gx, yy - 3, 1, 7, MUTED);
-        kit_round_rect(x - 2, yy - 3, 5, 7, 2, DR_GROUP_COL[g]);
-    }
-}
