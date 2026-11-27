@@ -242,7 +242,6 @@ track", per the way of working; the rule that always holds is here).
 | R-134 | While GHOSTS is off, the companion app shall leave the ghost notes out of a drum style's beats. | D-054, UC-10, ST-32 | A | Approved (owner) | Holding a pad plays a style's beat, with fills and ghost notes |
 | R-135 | While a drums track is on IDEAS, the companion app shall show the beat's hits falling onto the keys of their sounds. | D-054, UC-12, ST-33 | A | Approved (owner) | A drum beat falls onto its keys to learn |
 | R-143 | While a drums track plays with a feel, the companion app shall draw each hit where the feel places it, with a line from its grid position. | D-054, UC-10, ST-31 | A | Approved (owner) | The screen draws where the feel puts each hit |
-| R-136 | While a drums track's FX is Punch, MPC, Lofi or Tape, the companion app shall process that track's sound through that effect. | D-055, UC-10, ST-34 | A | Approved (owner) | The drums go through Punch, MPC, Lofi or Tape |
 
 **The user kit** (story ST-35; D-056.)
 
@@ -594,6 +593,14 @@ implement all sounds".)
 | R-389 | When SAVE is held on the save panel, the companion app shall store the kit's keys in the MY KIT K1 chose. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 | R-390 | The companion app shall keep MY KIT 1, 2 and 3 over power-off. | D-121, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
 | R-391 | When PRESETS turns on a drums track's PLAY page, the companion app shall step through the built-in kits and then MY KIT 1, 2 and 3. | D-121, replaces R-126, ST-96 | A | Approved (owner) | A kit is saved as MY KIT 1, 2 or 3 and kept |
+| R-392 | When FX is tapped on a drums track, the companion app shall show the PUNCH, COLOR and SPACE pages in turn. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-393 | While FX PUNCH shows, the companion app shall set the compressor amount, its speed, the clipper amount and its shape with K1, K2, K3 and K4. | D-121, replaces R-136, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-394 | While FX COLOR shows, the companion app shall set the tape, lofi, drive and crush amounts with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-395 | While FX SPACE shows, the companion app shall set the delay time, the delay feedback, the reverb type and the reverb size with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-396 | While EDIT PAD FX shows, the companion app shall set the key's sends to PUNCH, COLOR, DELAY and REVERB with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-397 | The firmware shall run each of a drums track's four effects once, fed by the sends of its keys. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-398 | While an effect's amounts are 0 on FX, the companion app shall show that effect as off on EDIT PAD FX. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-399 | While a drums track sends to its four effects with eight keys sounding, the firmware shall keep the audio work under 80 % of the CPU. | D-121, D-091, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
 | R-400 | While the FM-1 is connected by USB, the firmware shall send the FM-1's stereo output to the USB host as audio. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
 | R-401 | While the FM-1 is connected by USB, the firmware shall receive the USB host's audio as the input. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
 | R-402 | While GLO USB AUDIO's MONITOR is when sampling, the firmware shall play the input through the FM-1 only while TAKE or CHOP shows. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |

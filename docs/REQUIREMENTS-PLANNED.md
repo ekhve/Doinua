@@ -39,14 +39,6 @@ owner on 2026-11-26 ("Approve all, implement").
 
 | ID | Requirement | Source | Mode | Status | Verified by |
 |---|---|---|---|---|---|
-| R-392 | When FX is tapped on a drums track, the companion app shall show the PUNCH, COLOR and SPACE pages in turn. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-393 | While FX PUNCH shows, the companion app shall set the compressor amount, its speed, the clipper amount and its shape with K1, K2, K3 and K4. | D-121, replaces R-136, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-394 | While FX COLOR shows, the companion app shall set the tape, lofi, drive and crush amounts with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-395 | While FX SPACE shows, the companion app shall set the delay time, the delay feedback, the reverb type and the reverb size with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-396 | While EDIT PAD FX shows, the companion app shall set the key's sends to PUNCH, COLOR, DELAY and REVERB with K1, K2, K3 and K4. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-397 | The firmware shall run each of a drums track's four effects once, fed by the sends of its keys. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-398 | While an effect's amounts are 0 on FX, the companion app shall show that effect as off on EDIT PAD FX. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
-| R-399 | While a drums track sends to its four effects with eight keys sounding, the firmware shall keep the audio work under 80 % of the CPU. | D-121, D-091, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
 | R-405 | When LFO is tapped on a drums track, the companion app shall show the TAKE and CHOP pages in turn. | D-121, ST-99 | A | Approved (owner) | TAKE records from the input on sound and stops on REC |
 | R-406 | While TAKE shows, the companion app shall draw the input's level with its peak and two marks, at -6 dBFS and -1 dBFS. | D-121, ST-99 | A | Approved (owner) | TAKE records from the input on sound and stops on REC |
 | R-407 | While TAKE shows with START on sound, when REC is tapped, the companion app shall start recording when the input passes -34 dBFS. | D-121, ST-99 | A | Approved (owner) | TAKE records from the input on sound and stops on REC |

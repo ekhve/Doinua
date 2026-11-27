@@ -12,7 +12,7 @@ static const uint8_t DR_REPEAT_TICKS[DR_NREPEATS] = { 0, 24, 12, 8, 6, 4, 3 };
 static const uint8_t DR_DECAYS[DR_NDECAYS] = { 16, 24, 32, 48, 64, 90, 128, 180, 255 };   /* x/64 of the sound's */
 static const char *const DR_DECAY_NAMES[DR_NDECAYS] = { "25 %", "38 %", "50 %", "75 %", "100 %", "140 %", "200 %", "280 %", "400 %" };
 
-typedef struct { int8_t kit, src, tune; uint8_t decay, repeat, level, vel, att, hold, dec, grp, rvb; } dr_pad_t;   /* kit -1: the track's own kit */
+typedef struct { int8_t kit, src, tune; uint8_t decay, repeat, level, vel, att, hold, dec, grp, rvb, pp, pc, dly; } dr_pad_t;   /* pp, pc, dly: sends (ST-97) */   /* kit -1: the track's own kit */
 /* a pad's shape (ST-96, API 45): EDIT SOUND's ATTACK, HOLD and DECAY in ms; HOLD ends with full (the whole sound) and key */
 #define DR_NATTS 8
 static const uint16_t DR_ATTS[DR_NATTS] = { 0, 1, 2, 5, 10, 20, 50, 100 };
@@ -53,11 +53,13 @@ static int dr_kit(int t) { int e, p; sound_of(snd[t], &e, &p); return e == KIT_E
 static void dr_reset(dr_pad_t *d, int p)        /* a key's settings to their defaults (R-381) */
 {
     d->tune = 0; d->decay = 4; d->repeat = 0; d->level = 8; d->vel = 10; d->att = 0; d->hold = DR_HOLD_FULL; d->dec = 4;
-    d->grp = (uint8_t)(dr_hat_key(p) ? 1 : 0); d->rvb = 0;
+    d->grp = (uint8_t)(dr_hat_key(p) ? 1 : 0); d->rvb = 0; d->pp = 10; d->pc = 10; d->dly = 0;   /* the lab's sends (R-396) */
 }
+static void dr_kfx_init(void);
 static void dr_init(void)
 {
     int t, p;
+    dr_kfx_init();
     for (t = 0; t < KIT_NTRACKS; t++) {
         for (p = 0; p < KIT_DRUM_PADS; p++) { dr_pads[t][p].kit = -1; dr_pads[t][p].src = (int8_t)p; dr_reset(&dr_pads[t][p], p); }
         dr_last[t] = 0;
@@ -70,6 +72,7 @@ static void dr_apply(int t, int p)              /* the pad's sound to fm1kit */
     dr_pad_t *d = &dr_pads[t][p];
     kit_drum_pad_set(t, p, d->kit, d->src, d->tune, DR_DECAYS[d->decay]);
     kit_drum_pad_shape(t, p, d->level, d->vel, DR_ATTS[d->att], DR_HOLDS[d->hold], DR_DECS[d->dec], d->grp, d->rvb * 12);
+    kit_drum_pad_sends(t, p, d->pp, d->pc, d->dly);
 }
 static int dr_custom(int t)                     /* a key plays another sound than the kit's: My kit */
 {
@@ -129,7 +132,66 @@ static void dr_hit(int key, int vel)
 }
 
 /* EDIT (ST-96): KIT, SOUND, TRIM, PAD FX in turn (R-378) */
-static void dr_edit_tap(void) { dr_ed = dr_ed < 0 ? DE_KIT : (dr_ed + 1) % DE_N; dirty = 1; }
+/* the kit's FX (ST-97, R-392..R-395, D-129): PUNCH, COLOR, SPACE; FX steps them, HOME closes */
+typedef struct { kit_drum_fx_t f; uint8_t dtime, dfb, rtype, rsize; } dr_kfx_t;
+static dr_kfx_t dr_kfx[KIT_NTRACKS];
+static int dr_fxp = -1;                         /* the FX page shown, or -1 */
+enum { DF_PUNCH = 0, DF_COLOR, DF_SPACE, DF_N };
+static const char *const DR_FXP[DF_N] = { "PUNCH", "COLOR", "SPACE" };
+static const char *const DR_SPEEDS[3] = { "fast", "medium", "slow" }, *const DR_SHAPES[2] = { "soft", "hard" };
+#define DR_NDLY 5
+static const char *const DR_DLYN[DR_NDLY] = { "1/16", "1/8", "1/8 dot", "1/4", "1/4 dot" };
+static const uint8_t DR_DLYB[DR_NDLY] = { 1, 2, 3, 4, 6 };   /* in sixteenths */
+#define DR_NRVB 4
+static const char *const DR_RVBN[DR_NRVB] = { "room", "plate", "hall", "spring" };
+static void dr_kfx_init(void)
+{
+    int t;
+    for (t = 0; t < KIT_NTRACKS; t++) { dr_kfx_t z = { { 0, 1, 0, 0, 0, 0, 0, 0 }, 1, 4, 0, 5 }; dr_kfx[t] = z; }
+}
+static void dr_space_apply(int t)               /* SPACE: the bus's delay at the song's tempo and its reverb (shared, D-093) */
+{
+    static const uint8_t M[DR_NRVB] = { 5, 16, 28, 12 }, DAMP[DR_NRVB] = { 60, 15, 35, 70 }, PRE[DR_NRVB] = { 4, 0, 25, 8 };
+    dr_kfx_t *k = &dr_kfx[t];
+    kit_fx_t b;
+    kit_reverb_shape_t r;
+    int ms = DR_DLYB[k->dtime] * 15000 / song.bpm, sz = M[k->rtype] * (4 + k->rsize * 12 / 10) * 127 / 448;
+    kit_fx_bus_of(&b);
+    b.dly_time = (uint8_t)kit_delay_time_for(ms);
+    b.dly_fb = (uint8_t)(k->dfb * 12);
+    if (!b.dly_mix) b.dly_mix = 100;
+    kit_fx_bus(&b);
+    r.size = (uint8_t)(sz > 127 ? 127 : sz); r.damp = DAMP[k->rtype]; r.pre_ms = PRE[k->rtype];
+    kit_reverb_shape(&r);
+}
+static int dr_punch_on(int t) { return dr_kfx[t].f.comp || dr_kfx[t].f.clip; }
+static int dr_color_on(int t) { const kit_drum_fx_t *f = &dr_kfx[t].f; return f->tape || f->lofi || f->drive || f->crush; }
+static int dr_fx_event(const kit_event_t *e)    /* the FX pages' events, while they show */
+{
+    dr_kfx_t *k = &dr_kfx[track];
+    int v;
+    if (e->type == KIT_EV_BTN_DOWN && (e->id == KIT_BTN_HOME || e->id == KIT_BTN_SCL || e->id == KIT_BTN_EDIT)) { dr_fxp = -1; dirty = 1; return e->id != KIT_BTN_EDIT; }
+    if (e->type == KIT_EV_ENC && e->id == KIT_ENC_ALGORITHM) { dr_fxp = -1; return 0; }
+    if (e->type != KIT_EV_ENC || e->id < KIT_ENC_KNOB1 || e->id > KIT_ENC_KNOB4) return 0;
+    v = e->id - KIT_ENC_KNOB1;
+    if (dr_fxp == DF_PUNCH) {                   /* R-393 */
+        uint8_t *a[4] = { &k->f.comp, &k->f.speed, &k->f.clip, &k->f.shape };
+        static const uint8_t hi[4] = { 10, 2, 10, 1 };
+        int x = *a[v]; clampi(&x, e->delta, 0, hi[v]); *a[v] = (uint8_t)x;
+    } else if (dr_fxp == DF_COLOR) {            /* R-394 */
+        uint8_t *a[4] = { &k->f.tape, &k->f.lofi, &k->f.drive, &k->f.crush };
+        int x = *a[v]; clampi(&x, e->delta, 0, 10); *a[v] = (uint8_t)x;
+    } else {                                    /* R-395 */
+        uint8_t *a[4] = { &k->dtime, &k->dfb, &k->rtype, &k->rsize };
+        static const uint8_t hi[4] = { DR_NDLY - 1, 10, DR_NRVB - 1, 10 };
+        int x = *a[v]; clampi(&x, e->delta, 0, hi[v]); *a[v] = (uint8_t)x;
+        dr_space_apply(track);
+    }
+    kit_drum_fx(track, &k->f);
+    dirty = 1;
+    return 1;
+}
+static void dr_edit_tap(void) { dr_fxp = -1; dr_ed = dr_ed < 0 ? DE_KIT : (dr_ed + 1) % DE_N; dirty = 1; }
 static void dr_new_sound(int key, int kit, int src)   /* R-379..R-381: a new sound on a key, its settings the defaults */
 {
     dr_pad_t *d = &dr_pads[track][key];
@@ -165,6 +227,7 @@ static int dr_edit_event(const kit_event_t *e)
         if (e->type == KIT_EV_ENC) return 1;
     }
     if (e->type == KIT_EV_BTN_DOWN && (e->id == KIT_BTN_HOME || e->id == KIT_BTN_SCL)) { dr_ed = -1; dirty = 1; return 1; }
+    if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_FX) { dr_ed = -1; dr_fxp = DF_PUNCH; dirty = 1; return 1; }
     if (e->type == KIT_EV_KEY_DOWN) { dr_last[track] = e->id; dr_hit(e->id, e->vel); dirty = 1; return 1; }
     if (e->type == KIT_EV_KEY_UP) { kit_seq_note_off(track, KIT_DRUM_LO + e->id); kit_midi_note_off(channel_of(track), KIT_DRUM_LO + e->id); return 1; }
     if (e->type != KIT_EV_ENC) return 0;
@@ -191,8 +254,9 @@ static int dr_edit_event(const kit_event_t *e)
     } else if (dr_ed == DE_SOUND && e->id == KIT_ENC_SELECT) {   /* the mute group: off, A, B, C, D (R-385) */
         v = d->grp; wrap(&v, e->delta > 0 ? 1 : -1, 5); d->grp = (uint8_t)v;
         dr_apply(track, p);
-    } else if (dr_ed == DE_PADFX && e->id == KIT_ENC_KNOB4) {   /* the reverb send (PUNCH, COLOR, DELAY: ST-97) */
-        v = d->rvb; clampi(&v, e->delta, 0, 10); d->rvb = (uint8_t)v;
+    } else if (dr_ed == DE_PADFX && e->id >= KIT_ENC_KNOB1 && e->id <= KIT_ENC_KNOB4) {   /* the key's sends (R-396) */
+        uint8_t *a[4] = { &d->pp, &d->pc, &d->dly, &d->rvb };
+        v = *a[e->id - KIT_ENC_KNOB1]; clampi(&v, e->delta, 0, 10); *a[e->id - KIT_ENC_KNOB1] = (uint8_t)v;
         dr_apply(track, p);
     }
     dirty = 1;
@@ -204,14 +268,12 @@ static int dr_event(const kit_event_t *e)
 {
     if (!is_drums() || song_page || help) return 0;
     if (dr_ed >= 0) return dr_edit_event(e);
-    if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_FX) {   /* the track's FX in turn (ST-97 brings its pages) */
-        int v = kit_track_fx_of(track);
-        wrap(&v, 1, KIT_NFX);
-        kit_track_fx(track, v);
-        exp_say("FX", DR_FX_NAMES[v]);
+    if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_FX) {   /* the kit's FX: PUNCH, COLOR, SPACE in turn (R-392) */
+        dr_fxp = dr_fxp < 0 ? DF_PUNCH : (dr_fxp + 1) % DF_N;
         dirty = 1;
         return 1;
     }
+    if (dr_fxp >= 0 && dr_fx_event(e)) return 1;
     if (e->type == KIT_EV_BTN_DOWN && e->id == KIT_BTN_SCL) {   /* the pages: PLAY, IDEAS, AUTO */
         int v = drt[track].page;
         wrap(&v, 1, DR_NPAGES);
@@ -562,20 +624,99 @@ static void draw_drums_edit(void)
     } else if (dr_ed == DE_TRIM) {              /* samples: ST-99 */
         kit_text(120, 88, "SYNTH SOUND: NOTHING TO TRIM", KIT_FONT_TINY, KIT_ALIGN_CENTER, DE_DIM);
         for (i = 0; i < 4; i++) { cat(val[i], "--"); on[i] = 0; }
-    } else {                                    /* the pad's sends; PUNCH, COLOR, DELAY with the kit FX (ST-97) */
+    } else {                                    /* the key's sends (R-396); an effect off on FX says so (R-398) */
+        const uint8_t sv[4] = { d->pp, d->pc, d->dly, d->rvb };
         for (i = 0; i < 4; i++) {
-            int y = 46 + i * 26, live = i == 3;
+            int y = 46 + i * 26, live = i == 0 ? dr_punch_on(track) : i == 1 ? dr_color_on(track) : 1;
             kit_text(10, y, LAB[DE_PADFX][i], KIT_FONT_XSMALL, KIT_ALIGN_LEFT, live ? DE_INK : DE_DIM);
             kit_rect(92, y + 7, 112, 5, DE_GRID);
-            if (live && d->rvb) kit_rect(92, y + 7, d->rvb * 112 / 10, 5, col);
-            if (live) cat_int(val[i], d->rvb); else { cat(val[i], "--"); on[i] = 0; }
-            kit_text(230, y + 3, val[i], KIT_FONT_TINY, KIT_ALIGN_RIGHT, live ? DE_INK : DE_DIM);
+            if (sv[i]) kit_rect(92, y + 7, sv[i] * 112 / 10, 5, live ? col : DE_DIM);
+            cat_int(val[i], sv[i]);
+            pct[i] = sv[i] * 10;
+            on[i] = live;
+            kit_text(230, y + 3, live ? val[i] : "off", KIT_FONT_TINY, KIT_ALIGN_RIGHT, live ? DE_INK : KIT_RGB(239, 91, 91));
         }
-        pct[3] = d->rvb * 10;
     }
     for (i = 0; i < 4; i++)
         if (LAB[dr_ed][i][0]) fx_dial(30 + i * 60, LAB[dr_ed][i], val[i], pct[i], on[i] ? DE_KNOB_COL[i] : DE_DIM);
     }
+}
+
+/* the kit's FX pages (ST-97), drawn as Sound Edit's (D-084): the kit and the page on top, the three pages as segments, the
+ * effect's input to output (PUNCH, COLOR) or its repeats and tail (SPACE), the knobs as dials */
+static int32_t de_tanh(int32_t x)               /* tanh, Q12, by a rational fit: x (27 + x^2) / (27 + 9 x^2) */
+{
+    int32_t x2 = x * x >> 12;
+    if (x > 4 * 4096) return 4096;
+    if (x < -4 * 4096) return -4096;
+    return (int32_t)((x * ((27 * 4096 + x2) >> 6)) / ((27 * 4096 + 9 * x2) >> 6));
+}
+static int32_t de_steps(int32_t x, int q) { int32_t st = 4096 / q; return (x + st / 2) / st * st; }   /* x >= 0, Q12 */
+static int32_t de_curve(const kit_drum_fx_t *f, int punch, int32_t x)   /* the effect's static curve, x and out Q12 */
+{
+    static const uint16_t THR[11] = { 4096, 2900, 2053, 1453, 1029, 728, 516, 365, 258, 183, 130 };
+    static const uint16_t MAKE[11] = { 256, 301, 354, 416, 489, 575, 676, 794, 933, 1097, 1289 };
+    int32_t u = x;
+    if (punch) {
+        if (f->comp) { if (u > THR[f->comp]) u = THR[f->comp] + (u - THR[f->comp]) * 10 / (20 + f->comp * 6); u = u * MAKE[f->comp] >> 8; }
+        if (f->clip) { int32_t k = 4096 + f->clip * 2048; u = f->shape ? (u * k >> 12 > 4096 ? 4096 : u * k >> 12) * 9 / 10 : de_tanh(u * k >> 12) * 4096 / de_tanh(k); }
+    } else {
+        if (f->tape) u = de_tanh(u * (4096 + f->tape * 819) >> 12) * 85 / 100;
+        if (f->lofi) u = de_steps(u, 40 - f->lofi * 3);
+        if (f->drive) { int32_t k = 4096 + f->drive * 2458; u = de_tanh(u * k >> 12) * 4096 / de_tanh(k) * 9 / 10; }
+        if (f->crush) { int q = 16 - f->crush * 13 / 10; u = de_steps(u, q < 2 ? 2 : q); }
+    }
+    return u > 4096 ? 4096 : u;
+}
+static void draw_drums_fx(void)
+{
+    static const kit_color_t PC[DF_N] = { KIT_RGB(255, 107, 107), KIT_RGB(255, 179, 71), KIT_RGB(83, 214, 232) };
+    static const char *const LB[DF_N][4] = { { "COMP", "SPEED", "CLIP", "SHAPE" }, { "TAPE", "LOFI", "DRIVE", "CRUSH" }, { "DELAY", "FEEDBACK", "REVERB", "SIZE" } };
+    const dr_kfx_t *k = &dr_kfx[track];
+    const kit_drum_fx_t *f = &k->f;
+    kit_color_t col = PC[dr_fxp];
+    int i, x, last = 0, pct[4], on[4] = { 1, 1, 1, 1 };
+    char val[4][12];
+    kit_clear(DE_BG);
+    kit_text(6, 4, dr_kit_title(track), KIT_FONT_SMALL, KIT_ALIGN_LEFT, DE_INK);
+    kit_text(234, 7, DR_FXP[dr_fxp], KIT_FONT_XSMALL, KIT_ALIGN_RIGHT, col);
+    for (i = 0; i < DF_N; i++) { int a = 6 + 228 * i / DF_N, b = 6 + 228 * (i + 1) / DF_N; kit_rect(a, 25, b - a - 4, 3, i == dr_fxp ? col : DE_GRID); }
+    kit_rect_outline(4, 34, 232, 120, 1, DE_GRID);
+    for (i = 0; i < 4; i++) val[i][0] = 0;
+    if (dr_fxp != DF_SPACE) {                   /* input to output, the plain line under it */
+        int p = dr_fxp == DF_PUNCH, live = p ? dr_punch_on(track) : dr_color_on(track);
+        kit_text(10, 38, "INPUT TO OUTPUT", KIT_FONT_TINY, KIT_ALIGN_LEFT, DE_DIM);
+        kit_line(10, 148, 230, 52, DE_GRID);
+        for (x = 0; x <= 220; x++) {
+            int y = 148 - (live ? de_curve(f, p, x * 4096 / 220) : x * 4096 / 220) * 96 / 4096;
+            if (x) kit_line(9 + x, last, 10 + x, y, live ? col : DE_DIM);
+            last = y;
+        }
+        if (p) {
+            if (f->comp) cat_int(val[0], f->comp); else cat(val[0], "off");
+            cat(val[1], DR_SPEEDS[f->speed]);
+            if (f->clip) cat_int(val[2], f->clip); else cat(val[2], "off");
+            cat(val[3], DR_SHAPES[f->shape]);
+            pct[0] = f->comp * 10; pct[1] = f->speed * 50; pct[2] = f->clip * 10; pct[3] = f->shape * 100;
+            if (!f->comp) on[1] = 0;
+            if (!f->clip) on[3] = 0;
+        } else {
+            const uint8_t a[4] = { f->tape, f->lofi, f->drive, f->crush };
+            for (i = 0; i < 4; i++) { if (a[i]) cat_int(val[i], a[i]); else cat(val[i], "off"); pct[i] = a[i] * 10; }
+        }
+    } else {                                    /* SPACE: the hit, its repeats at the delay's time, the reverb's tail behind */
+        int step = DR_DLYB[k->dtime] * 220 / 16, h = 88, r, tail = 30 + (k->rsize + 1) * (k->rtype == 2 ? 17 : k->rtype == 1 ? 13 : 9);
+        kit_text(10, 38, "REPEATS AND TAIL", KIT_FONT_TINY, KIT_ALIGN_LEFT, DE_DIM);
+        for (x = 0; x < tail && x < 220; x++) { int hh = 70 * (tail - x) / tail; kit_rect(10 + x, 148 - hh, 1, hh, KIT_RGB(38, 58, 72)); }
+        for (r = 0, x = 0; x <= 220 && h > 2; r++, x += step) {
+            kit_rect(10 + x, 148 - h, 3, h, r ? col : DE_INK);
+            h = h * k->dfb * 8 / 100;
+            if (!k->dfb) break;
+        }
+        cat(val[0], DR_DLYN[k->dtime]); cat_int(val[1], k->dfb); cat(val[2], DR_RVBN[k->rtype]); cat_int(val[3], k->rsize);
+        pct[0] = k->dtime * 25; pct[1] = k->dfb * 10; pct[2] = k->rtype * 33; pct[3] = k->rsize * 10;
+    }
+    for (i = 0; i < 4; i++) fx_dial(30 + i * 60, LB[dr_fxp][i], val[i], pct[i], on[i] ? DE_KNOB_COL[i] : DE_DIM);
 }
 
 static void dr_ideas_lights(void);

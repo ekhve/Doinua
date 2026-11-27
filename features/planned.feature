@@ -51,14 +51,6 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
 
 
 
-  @ST-97 @UC-21 @planned @approved:owner
-  Scenario: The kit's effects run once, and each pad sends to them
-    Given FX PUNCH with COMP 6, FX COLOR with TAPE 5 and LOFI 3, FX SPACE with REVERB plate
-    When the hats' COLOR send is 0 and the snare's REVERB send is 7 on EDIT PAD FX
-    Then the kick and snare are compressed and coloured, the hats are clean, and only the snare rings in the plate
-    When COMP and CLIP are 0
-    Then PAD FX shows PUNCH off
-    And the CPU gate stays under 80 % with eight keys sending to the four effects
 
 
   @ST-99 @UC-21 @planned @approved:owner
