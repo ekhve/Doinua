@@ -66,7 +66,7 @@ factory/check.sh               # build + every gate (about 45 min: 816 checks on
 ```
 
 Outputs:
-- `build/companion/companion.fwsc`: the package an FM-1 installs (the product).
+- `build/companion/Doinua.fwsc`: the package an FM-1 installs (the product; the same bytes as `companion.fwsc`, which the gates test).
 - `build/companion/app-host`: the PC simulator.
 - `work/factory/`: screens, audio and results.
 
@@ -77,12 +77,12 @@ mkdir -p work/try && build/companion/app-host --ms 3000 --keys '1000:C4@100,1800
 ```
 
 Try the real firmware in the emulator: open https://joakimeriksson.github.io/fm1-emu/ and drop
-`build/companion/companion.fwsc` onto it.
+`build/companion/Doinua.fwsc` onto it.
 
 ## Play it in the browser
 
 No FM-1 needed: open [fm1-emu's page](https://joakimeriksson.github.io/fm1-emu/), click **Open .fwsc…** (or drop the file
-on the synth) and pick `build/companion/companion.fwsc`. It is the real firmware in the emulator's WebAssembly build, with sound,
+on the synth) and pick `build/companion/Doinua.fwsc`. It is the real firmware in the emulator's WebAssembly build, with sound,
 screen, lights and keys (checked on 2026-11-07 with fm1-emu's own `web/smoke.mjs`: it boots, sounds, and a MIDI note
 plays). The browser keeps the file for next time. A page of our own, with Doinua already loaded, needs the
 emulator pin moved to fm1-emu's current version (an owner's decision).
@@ -93,7 +93,7 @@ Nobody has run this on hardware. Before the first install:
 
 1. Back up your FM-1, and have a way back to stock firmware: [Felucca's web installer](https://hugelton.github.io/Felucca/)
    has "Return to official V15", and there are rescue tools if an install fails.
-2. Install with felucca-bsp's installer: `python3 third_party/felucca-bsp/tools/fm1_install.py build/companion/companion.fwsc`
+2. Install with felucca-bsp's installer: `python3 third_party/felucca-bsp/tools/fm1_install.py build/companion/Doinua.fwsc`
    (needs `pip install mido python-rtmidi`).
 3. If it doesn't start, it drops into update mode after two failed boots. Holding **OCT- and OCT+ for 5 s**
    also enters update mode at any time.
