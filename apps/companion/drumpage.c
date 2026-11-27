@@ -391,7 +391,13 @@ static void dr_bar(void)
             if (h >= 9 && x != gx) kit_rect(gx < x ? gx : x, y + h / 2, (x > gx ? x - gx : gx - x) + 1, 1, MUTED);
             vh = (h - 4) * (v->vel ? v->vel : 100) / 127;
             if (vh < 2) vh = 2;
-            kit_round_rect(x - 2, y + (h - vh) / 2, 5, vh, vh < 4 ? vh / 2 : 2, col);
+            {   /* its left edge where it plays (on the grid line), as long as it was held (the owner, 2026-11-27) */
+                int wd = v->len * W / KIT_TICKS_PER_BAR;
+                if (wd < 4) wd = 4;
+                if (x + wd > X0 + W) wd = X0 + W - x;
+                if (wd < 2) wd = 2;
+                kit_round_rect(x, y + (h - vh) / 2, wd, vh, vh < 4 ? vh / 2 : 2, col);
+            }
         }
     }
     if (kit_seq_playing()) kit_rect(X0 + W * (kit_seq_tick() % KIT_TICKS_PER_BAR) / KIT_TICKS_PER_BAR, Y0, 2, AH, KIT_RGB(60, 207, 122));
