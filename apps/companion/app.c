@@ -1713,9 +1713,8 @@ static void draw_sub(void)                      /* CLICK, MIDI, SYSTEM (D-045) *
         if (usb_set.lvl > 0) d = cat(d, "+");
         cat(cat_int(d, usb_set.lvl), " dB");
         card(2, "IN LEVEL", v, usb_set.lvl != 0);
-        row(76, "To USB", "what you hear", 0);
-        row(98, "Input heard", usb_set.mon == 2 ? "always" : usb_set.mon == 1 ? "on TAKE and CHOP" : "never", 0);
-        row(120, "Computer", c ? "connected" : "not connected", c);
+        kit_circle(28, 110, 8, c ? KIT_RGB(60, 207, 122) : LINE);   /* the cable, and nothing else (the owner, 2026-11-28) */
+        kit_text(46, 100, c ? "Connected" : "Not connected", KIT_FONT_MEDIUM, KIT_ALIGN_LEFT, c ? FG : MUTED);
         usb_shown = c;
     } else {
         int hz10 = 4400 + set.tune * 254 / 100;         /* A4, near enough: 440 Hz x 2^(cents / 1200) */
