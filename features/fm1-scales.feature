@@ -1557,3 +1557,12 @@ Feature: The DRUMS track's PLAY knobs and EDIT pages (ST-96, D-121, D-124)
     When K3 turns past the top and past the bottom, and K2 sets MONITOR on
     Then IN LEVEL shows +24 dB, then -12 dB, and MONITOR shows on
     And a computer recording the FM-1 over USB hears what it plays, in stereo at 44.1 kHz
+
+Feature: Companion startup (D-125)
+
+  @D-125 @UC-07 @approved:owner @auto
+  Scenario: Startup shows the Doinua artwork and proceeds to the first page
+    Given Companion is starting
+    Then the Doinua artwork and firmware build revision are visible
+    When startup finishes
+    Then the normal first page is visible

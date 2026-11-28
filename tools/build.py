@@ -218,6 +218,12 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     generate(gen)
     app_assets(a.app, out)
+    if a.app == "companion":
+        revision = subprocess.run(["git", "rev-parse", "--short=8", "HEAD"], cwd=ROOT,
+                                  capture_output=True, text=True).stdout.strip()
+        if not re.fullmatch(r"[0-9a-f]{8,40}", revision):
+            revision = "unknown"
+        (out / "gen" / "build_version.h").write_text(f'#define DOINUA_BUILD_VERSION "{revision[:8]}"\n')
     build_host(a.app, out, gen)
     if a.host_only:
         return

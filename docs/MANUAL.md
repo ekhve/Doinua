@@ -4,6 +4,8 @@
 producers. **Version:** the chord pages PLAY, IDEAS and AUTO (D-042, D-075..D-080), the bass (D-040, D-041). Where this manual and the firmware disagree, the firmware is wrong: tell us in a Problem
 report.
 
+At startup, Companion briefly shows the Doinua artwork and the firmware’s build revision. Pressing a control brings up the normal page immediately.
+
 ## 1. The idea
 
 The FM-1 holds one **song**: up to four tracks (CHORDS, BASS, MELODY, DRUMS) that loop together. You play a track,
