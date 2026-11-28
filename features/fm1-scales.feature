@@ -1542,3 +1542,18 @@ Feature: The DRUMS track's PLAY knobs and EDIT pages (ST-96, D-121, D-124)
     When COMP and CLIP are 0
     Then PAD FX shows PUNCH off
     And the CPU gate stays under 80 % with eight keys sending to the four effects
+
+  @ST-98 @UC-21 @D-130 @manual @approved:owner
+  Scenario: The FM-1 is a USB audio device both ways
+    Given the FM-1 connected to a phone by USB
+    When a beat plays
+    Then the phone records it in stereo
+    When the phone plays and GLO USB AUDIO's MONITOR is when sampling
+    Then the FM-1 plays the phone only on TAKE and CHOP, and K3 sets its level from -12 dB to +24 dB
+
+  @ST-98 @UC-21 @D-130 @approved:agent @gate:usb_audio @auto
+  Scenario: GLO USB AUDIO shows the input's monitor and level, and the FM-1 is recorded over USB
+    Given GLO's USB AUDIO page
+    When K3 turns past the top and past the bottom, and K2 sets MONITOR on
+    Then IN LEVEL shows +24 dB, then -12 dB, and MONITOR shows on
+    And a computer recording the FM-1 over USB hears what it plays, in stereo at 44.1 kHz

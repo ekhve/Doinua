@@ -133,7 +133,11 @@ static settings_t set = { SETTINGS_VERSION, 0, 6, 0, { 1, 2, 3, 10 }, 0, 1, 0, 0
 #define SETTINGS_V4 (SETTINGS_V5 - 1)              /* a version 4 record: no stars */
 #define SETTINGS_V3 (SETTINGS_V4 - MY_SONGS - MY_SONGS * MY_SONG_MAX)   /* a version 3 record: no songs */
 static const uint8_t SCR_MIN[6] = { 0, 1, 5, 15, 30, 60 };
-enum { SUB_SONG = 0, SUB_TRACKS, SUB_CLICK, SUB_MIDI, SUB_SYSTEM, NSUBS };
+enum { SUB_SONG = 0, SUB_TRACKS, SUB_CLICK, SUB_MIDI, SUB_SYSTEM, SUB_USB, NSUBS };
+/* GLO USB AUDIO (ST-98, R-400..R-404, D-130): OUT, MONITOR, IN LEVEL; kept with the song (songsave.c) */
+static struct { uint8_t mon; int8_t lvl; } usb_set = { KIT_USB_MON_SAMPLING, 0 };
+static const char *const USB_MON[3] = { "off", "sampling", "on" };
+static int usb_shown = -1;                      /* the connection drawn */
 static int pend_track = -1, pend_role;
 static uint32_t steal_seen, steal_until;        /* D-047: the last count of voices taken, and the dot's end */
 static int voices_shown = -1;                   /* TRACKS: the voices and load drawn */          /* TRACKS: a template change waiting for SAVE (the track has notes) */
@@ -885,6 +889,7 @@ static void role_set(int t, int r)              /* a track takes a template: its
 void app_init(void)
 {
     kit_volume_limit(85);
+    kit_usb_audio(usb_set.mon, usb_set.lvl);    /* USB audio (ST-98): monitor when sampling, 0 dB, until a song says otherwise */
     kit_volume(80);
     int t;
     {                                           /* the settings, as kept (D-045), with each track's template (D-046) */
@@ -977,6 +982,11 @@ static void sub_knob(int id, int d)             /* TRACKS (D-046), CLICK, MIDI, 
         if (id == KIT_ENC_KNOB1) { v = set.scr_off; clampi(&v, d, 0, 5); set.scr_off = (uint8_t)v; }
         if (id == KIT_ENC_KNOB2) { v = set.tune; clampi(&v, d, -50, 50); set.tune = (int8_t)v; kit_tune(v); }
         if (id == KIT_ENC_KNOB3) { v = set.explain; clampi(&v, d, 0, 1); set.explain = (uint8_t)v; }
+    } else if (song_sub == SUB_USB) {          /* K1 OUT: the mix (4 tracks later); K2 MONITOR; K3 IN LEVEL (R-404) */
+        if (id == KIT_ENC_KNOB2) { v = usb_set.mon; clampi(&v, d, 0, 2); usb_set.mon = (uint8_t)v; }
+        if (id == KIT_ENC_KNOB3) { v = usb_set.lvl; clampi(&v, d, -12, 24); usb_set.lvl = (int8_t)v; }
+        kit_usb_audio(usb_set.mon, usb_set.lvl);
+        return;
     }
     settings_save();
 }
@@ -1613,11 +1623,11 @@ static void row(int y, const char *label, const char *value, int hi)
 
 static void sub_tabs(void)                      /* SONG CLICK MIDI SYSTEM, the one on screen lit (SCL steps them) */
 {
-    static const char *const N[NSUBS] = { "SONG", "TRACKS", "CLICK", "MIDI", "SYSTEM" };
+    static const char *const N[NSUBS] = { "SONG", "TRACKS", "CLICK", "MIDI", "SYSTEM", "USB" };
     int i;
     for (i = 0; i < NSUBS; i++) {
-        kit_round_rect(4 + i * 47, 214, 44, 20, 5, i == song_sub ? ACC_D : CARD);
-        ctext(26 + i * 47, 224, N[i], KIT_FONT_TINY, i == song_sub ? FG : MUTED);
+        kit_round_rect(4 + i * 39, 214, 37, 20, 5, i == song_sub ? ACC_D : CARD);
+        ctext(22 + i * 39, 224, N[i], KIT_FONT_TINY, i == song_sub ? FG : MUTED);
     }
 }
 
@@ -1626,7 +1636,7 @@ static void draw_sub(void)                      /* CLICK, MIDI, SYSTEM (D-045) *
     char s[40], v[16], *d;
     int i;
     kit_clear(BG);
-    top_title = song_sub == SUB_TRACKS ? "TRACKS" : song_sub == SUB_CLICK ? "CLICK" : song_sub == SUB_MIDI ? "MIDI" : "SYSTEM";
+    top_title = song_sub == SUB_TRACKS ? "TRACKS" : song_sub == SUB_CLICK ? "CLICK" : song_sub == SUB_MIDI ? "MIDI" : song_sub == SUB_USB ? "USB AUDIO" : "SYSTEM";
     top(0);
     top_title = 0;
     if (song_sub == SUB_TRACKS) {               /* each track's template (D-046) */
@@ -1695,6 +1705,17 @@ static void draw_sub(void)                      /* CLICK, MIDI, SYSTEM (D-045) *
                          : set.midi_in == 2 ? "In: by channel, the screen follows" : "In: each channel plays its track",
                  KIT_FONT_XSMALL, KIT_ALIGN_LEFT, MUTED);
         kit_text(8, 180, "Out (USB): on these channels, the clock", KIT_FONT_XSMALL, KIT_ALIGN_LEFT, MUTED);
+    } else if (song_sub == SUB_USB) {           /* as the lab draws it (D-084): what each setting does, the cable */
+        int c = kit_usb_audio_connected();
+        card(0, "OUT", "mix", 0);
+        card(1, "MONITOR", USB_MON[usb_set.mon], usb_set.mon != KIT_USB_MON_SAMPLING);
+        d = v;
+        if (usb_set.lvl > 0) d = cat(d, "+");
+        cat(cat_int(d, usb_set.lvl), " dB");
+        card(2, "IN LEVEL", v, usb_set.lvl != 0);
+        kit_circle(28, 110, 8, c ? KIT_RGB(60, 207, 122) : LINE);   /* the cable, and nothing else (the owner, 2026-11-28) */
+        kit_text(46, 100, c ? "Connected" : "Not connected", KIT_FONT_MEDIUM, KIT_ALIGN_LEFT, c ? FG : MUTED);
+        usb_shown = c;
     } else {
         int hz10 = 4400 + set.tune * 254 / 100;         /* A4, near enough: 440 Hz x 2^(cents / 1200) */
         if (set.scr_off) cat(cat_int(v, SCR_MIN[set.scr_off]), " min"); else cat(v, "Never");
@@ -2475,7 +2496,8 @@ void app_frame(uint32_t now_ms)
         steal_until = 0;
         dirty = 1;
     }
-    if (song_page && song_sub == SUB_TRACKS && kit_voices_used() * 1000 + kit_voices_load() != voices_shown) dirty = 1;          /* everything let go: the panel plays again */
+    if (song_page && song_sub == SUB_TRACKS && kit_voices_used() * 1000 + kit_voices_load() != voices_shown) dirty = 1;
+    if (song_page && song_sub == SUB_USB && kit_usb_audio_connected() != usb_shown) dirty = 1;   /* the cable (ST-98) */          /* everything let go: the panel plays again */
     if (!asleep && set.scr_off && !kit_seq_counting() && now_ms - last_input >= (uint32_t)SCR_MIN[set.scr_off] * 60000u) {
         asleep = 1;                             /* nothing played for a while: the screen goes dark, the lights stay */
         kit_clear(KIT_BLACK);

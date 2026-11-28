@@ -102,6 +102,7 @@ int kit__eng_nreleasing(int part);                 /* engines.c: voices releasin
 uint32_t kit__lock(void);
 void kit__unlock(uint32_t k);
 int kit__pot(void);
+uint32_t kit__usb_in_gain(void);                /* API 48: the computer's audio's gain now, Q12 (0: not heard) */
 
 /* the effects bus (fxbus.c, D-093) */
 int kit__fx_sends(int track);                   /* the track sends to the bus (or drives) */

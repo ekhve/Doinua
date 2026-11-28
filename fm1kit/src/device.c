@@ -72,6 +72,13 @@ static inline void kit__touch_top(int32_t k, uint32_t v, uint32_t pressed)
 #include "fm1_audio.h"
 #include "fm1_uart.h"
 #include "libc.c"
+/* USB audio (API 48, D-130, ST-98): felucca-bsp's class-compliant UAC1 at 44.1 kHz, as Felucca ships it: the FM-1's
+ * output to the computer (EP4 IN) and the computer's audio in (EP4 OUT). The update loader stays MIDI-only (its own
+ * build); the SysEx soft key and the installer's session go over the same USB-MIDI interface as before. */
+#define HALF_FRAMES 128u                       /* the audio's half buffer, frames (usb.c sizes its rings by it) */
+#define FELUCCA_UAC 1
+#define FELUCCA_UAC_48K 0
+#define FELUCCA_UAC_OUT 1
 #include "usb.c"
 #include "ota.c"
 #include "kit_internal.h"
@@ -91,6 +98,7 @@ volatile int kit__audio_rc = 1;                /* fm1_audio_init_checked's answe
 uint32_t kit__lock(void) { return irq_save(); }
 void kit__unlock(uint32_t k) { irq_restore(k); }
 int kit__pot(void) { return pot_value; }
+int kit_usb_audio_connected(void) { return usb.config && (uac.alt || uo.alt); }   /* API 48 */
 uint32_t kit_ms(void) { return ms; }
 
 /* ---- timer: 10 kHz key scan, ms, USB at 2 kHz ---- */
@@ -116,7 +124,6 @@ extern void isr_timer5(void);
 /* ---- audio: ALNK0 I2S, two halves of HALF_FRAMES stereo frames, 24-bit right-justified in int32.
  * Q15 << 7: a -6 dBFS ceiling, as Felucca (its audio.c OUT_SHIFT: the codec ran clean at -18 dBFS) ---- */
 #define OUT_SHIFT 7
-#define HALF_FRAMES 128u
 #define HALF_WORDS (HALF_FRAMES * 2u)
 static int32_t abuf[2u * HALF_WORDS];
 static int16_t mono[HALF_FRAMES];
@@ -128,9 +135,12 @@ void fm1_alnk0_irq(void)
     if (p & FM1_AUDIO_HALF) {
         uint32_t half = fm1_audio_free_half(), i;
         int32_t *o = &abuf[half * HALF_WORDS];
+        uac_render_start();                     /* USB audio (API 48): the computer's half of the exchange */
         kit__synth_render(mono, (int)HALF_FRAMES);
         for (i = 0; i < HALF_FRAMES; i++)
             o[2u * i] = o[2u * i + 1u] = (int32_t)mono[i] * (1 << OUT_SHIFT);
+        uac_tap(o, HALF_FRAMES);                /* the FM-1's output to the computer, before the input joins it */
+        uac_play(o, HALF_FRAMES, kit__usb_in_gain());   /* the computer's audio, heard at the input's level (0: not) */
         fm1_audio_ack_half();
     }
 }

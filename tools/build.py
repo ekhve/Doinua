@@ -28,7 +28,7 @@ CFLAGS = ["-Os", "-ffunction-sections", "-fno-builtin", "-Wall", "-Wno-unused-fu
 # The Juno and BS2 engines compute in single-precision float on the AC79 FPU.
 # (-mcpu=r3 -mfprev1, the SDK's flags; without them clang emits soft-float calls this link has no library for).
 # The FPU is used on the audio path alone, so no other code's float state can be disturbed.
-FPU_FLAGS = {src: ["-mcpu=r3", "-mfprev1", "-ffp-contract=off"] for src in ("juno.c", "bs2.c")}
+FPU_FLAGS = {src: ["-mcpu=r3", "-mfprev1", "-ffp-contract=off"] for src in ("juno.c", "bs2.c", "device.c")}   # device.c: usb.c's audio input resampler (D-130)
 PORTABLE = ["core.c", "gfx.c", "synth.c", "music.c", "engines.c", "store.c", "bank.c", "bs2.c", "obervave.c", "juno.c", "fxbus.c", "midi.c", "player.c", "image.c", "seq.c"]
 ENGINES = ROOT / "third_party" / "felucca-engines"
 APP_BASE = 0x02000120

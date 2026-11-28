@@ -601,6 +601,11 @@ implement all sounds".)
 | R-397 | The firmware shall run each of a drums track's four effects once, fed by the sends of its keys. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
 | R-398 | While an effect's amounts are 0 on FX, the companion app shall show that effect as off on EDIT PAD FX. | D-121, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
 | R-399 | While a drums track sends to its four effects with eight keys sounding, the firmware shall keep the audio work under 80 % of the CPU. | D-121, D-091, ST-97 | A | Approved (owner) | The kit's effects run once, and each pad sends to them |
+| R-400 | While the FM-1 is connected by USB, the firmware shall send the FM-1's stereo output to the USB host as audio. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-401 | While the FM-1 is connected by USB, the firmware shall receive the USB host's audio as the input. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-402 | While GLO USB AUDIO's MONITOR is when sampling, the firmware shall play the input through the FM-1 only while TAKE or CHOP shows. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-403 | While GLO USB AUDIO's MONITOR is on, the firmware shall play the input through the FM-1. | D-121, ST-98 | H | Approved (owner) | The FM-1 is a USB audio device both ways |
+| R-404 | While GLO USB AUDIO shows, when K3 turns, the companion app shall set the input level from -12 dB to +24 dB. | D-121, ST-98 | A | Approved (owner) | GLO USB AUDIO shows the input's monitor and level, and the FM-1 is recorded over USB |
 
 ## Glossary
 

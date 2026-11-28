@@ -52,13 +52,6 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
 
 
 
-  @ST-98 @UC-21 @manual @planned @approved:owner
-  Scenario: The FM-1 is a USB audio device both ways
-    Given the FM-1 connected to a phone by USB
-    When a beat plays
-    Then the phone records it in stereo
-    When the phone plays and GLO USB AUDIO's MONITOR is when sampling
-    Then the FM-1 plays the phone only on TAKE and CHOP, and K3 sets its level from -12 dB to +24 dB
 
   @ST-99 @UC-21 @planned @approved:owner
   Scenario: TAKE records from the input on sound and stops on REC
