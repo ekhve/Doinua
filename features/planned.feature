@@ -53,7 +53,7 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
 
 
 
-  @ST-99 @UC-21 @D-132 @planned @draft
+  @ST-99 @UC-21 @D-132 @planned @approved:owner
   Scenario: The take goes into SAMPLE, and CHOP cuts it as you choose
     Given the drums track, LFO tapped (TAKE), the input silent
     When REC is tapped and the input plays a kick 1 s later
@@ -75,7 +75,7 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
     Then it is joined to the slice before it
     And SELECT chooses the next slice and plays it
 
-  @ST-99 @UC-21 @D-132 @planned @draft
+  @ST-99 @UC-21 @D-132 @planned @approved:owner
   Scenario: A slice goes on a key of MY KIT 1 or 2 with two presses
     Given CHOP with one slice, K1 on MY KIT 2
     When REC is tapped and F3 is pressed
@@ -129,7 +129,7 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
     When FIT is slices and each slice is put on keys
     Then the FM-1 offers to write the first bar as notes at 90 BPM
 
-  @ST-99 @UC-14 @D-132 @planned @draft
+  @ST-99 @UC-14 @D-132 @planned @approved:owner
   Scenario: A kit is saved as MY KIT 1 or 2, and SAMPLE follows them
     Given Dusty with the snare's sound changed
     When SAVE is held on EDIT, K1 picks MY KIT 2 and SAVE is held again
