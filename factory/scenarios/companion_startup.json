@@ -1,0 +1,12 @@
+{
+  "scenario": "Startup shows the Doinua artwork and proceeds to the first page",
+  "name": "companion, issue #5: firmware startup artwork and version followed by the playing page",
+  "app": "companion",
+  "ms": 1300,
+  "keys": "",
+  "note": "The approved reference covers the artwork and wordmark. The changing Git revision is compared across the complete host and firmware frames.",
+  "checks": [
+    {"type": "screen", "at": 520, "volatile_rect": [45, 184, 150, 18]},
+    {"type": "screen", "at": 1160}
+  ]
+}
