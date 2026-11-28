@@ -21,6 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EMU = ROOT / "third_party" / "fm1-emu" / "target" / "release" / "fm1-live"
 BUDGET = 80                            # the owner, 2026-11-22: "the 75% is our limit. We could raise it ... like 85" (D-091)
+BUDGET_USB = 82                        # while a computer records the FM-1 over USB (the owner, 2026-11-28, D-131)
 app = sys.argv[1] if len(sys.argv) > 1 else "hello"
 out = ROOT / "build" / app
 sounds = [ln.split("\t") for ln in subprocess.run([str(out / "app-host"), "--list-sounds"], capture_output=True,
@@ -38,16 +39,17 @@ work = ROOT / "work" / "cpu"
 CLICK_MS = 8                           # an encoder click reaches the app every ~7 ms on the FM-1: the keys wait for them all
 
 
-def load(i, held=CHORD):
+def load(i, held=CHORD, usb=False):
     late = abs(i - START) * CLICK_MS    # the keys go down once the sound is chosen, the window as long after them (D-091)
     keys = ",".join(([f"900:e6:{i - START:+d}"] if i != START else [])
                     + [f"{int(t) + late}:{k}" for t, k in (e.split(":", 1) for e in held.split(","))])
     # --usb: a cable in, as when the FM-1 is played from a computer: USB's interrupts are counted, and the firmware does
     # not retry the USB once a second (a 25 ms wait the model skips, which made one window in 25 look busier: D-091);
-    # and the computer records the FM-1's USB audio as it plays (D-130), so the audio streaming's work is counted too
+    # with usb the computer also records the FM-1's USB audio as it plays (D-130): its own pass, under BUDGET_USB (D-131)
     r = subprocess.run([str(EMU), "--usb", "--fwsc", str(out / f"{app}.fwsc"), "--shot", str(2000 + late)], cwd=work,
-                       env=dict(os.environ, FM1_STRICT="1", FM1_BENCH_KEYS=keys, FM1_USB_WAV=str(work / f"usb{i}-{len(held)}.raw")),
-                       capture_output=True, text=True)   # a computer recording the FM-1 over USB (D-130): the worst case
+                       env=dict(os.environ, FM1_STRICT="1", FM1_BENCH_KEYS=keys,
+                                **({"FM1_USB_WAV": str(work / f"usb{i}-{len(held)}.raw")} if usb else {})),
+                       capture_output=True, text=True)   # usb: a computer recording the FM-1 over USB (D-130, D-131)
     (work / f"usb{i}-{len(held)}.raw").unlink(missing_ok=True)   # what the computer recorded: not kept
     m = re.search(r"(\d+)% of instructions in ISRs", r.stdout + r.stderr)
     return int(m.group(1)) if m else None
@@ -57,6 +59,7 @@ with ThreadPoolExecutor(max_workers=os.cpu_count() or 2) as pool:
     loads = list(pool.map(load, range(len(sounds))))
     mixes = list(pool.map(lambda i: load(i, MIX), range(len(sounds))))
     twelves = list(pool.map(lambda i: load(i, TWELVE), range(len(sounds))))
+    usbs = list(pool.map(lambda i: load(i, CHORD, True), range(len(sounds))))
 fails = 0
 if app == "companion":                 # R-399 (ST-97): a drums track's four effects, eight keys sending to them all
     KEYS8 = ["F3", "F#3", "G3", "G#3", "A3", "A#3", "B3", "C4"]
@@ -79,16 +82,18 @@ if app == "companion":                 # R-399 (ST-97): a drums track's four eff
     ok = kpct is not None and kpct < BUDGET
     fails += not ok
     print(f"  {'ok  ' if ok else 'FAIL'} DRUMS with PUNCH, COLOR, DELAY and REVERB, eight keys sending to all four: {kpct}% interrupt load")
-for what, got in (("8 voices", loads), ("four tracks", mixes), ("twelve voices", twelves)):
+for what, got, budget in (("8 voices", loads, BUDGET), ("four tracks", mixes, BUDGET), ("twelve voices", twelves, BUDGET),
+                          ("8 voices, recorded over USB", usbs, BUDGET_USB)):
     for (e, p, en, pn), pct in zip(sounds, got):
-        ok = pct is not None and pct < BUDGET
+        ok = pct is not None and pct < budget
         fails += not ok
-        if not ok or pct >= BUDGET - 15:
+        if not ok or pct >= budget - 15:
             print(f"  {'ok  ' if ok else 'FAIL'} {en}: {pn}: {pct}% interrupt load, {what}")
 worst = max((p for p in loads if p is not None), default=None)
 i = loads.index(worst) if worst is not None else 0
 mworst = max((p for p in mixes if p is not None), default=None)
 j = mixes.index(mworst) if mworst is not None else 0
 print(f"{'PASS' if not fails else 'FAIL'}: cpu, {len(sounds)} sounds under {BUDGET}%; heaviest {sounds[i][2]}: {sounds[i][3]} at {worst}%;"
-      f" four tracks: heaviest with {sounds[j][2]}: {sounds[j][3]} on track 0 at {mworst}%")
+      f" four tracks: heaviest with {sounds[j][2]}: {sounds[j][3]} on track 0 at {mworst}%;"
+      f" recorded over USB: heaviest at {max((p for p in usbs if p is not None), default=None)}% (under {BUDGET_USB}%)")
 sys.exit(1 if fails else 0)
