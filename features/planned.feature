@@ -53,14 +53,16 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
 
 
 
-  @ST-99 @UC-21 @planned @approved:owner
-  Scenario: TAKE records from the input on sound and stops on REC
-    Given MY KIT 2, LFO tapped, the input silent
+  @ST-99 @UC-21 @D-132 @planned @draft
+  Scenario: The take goes into SAMPLE, and CHOP cuts it as you choose
+    Given the drums track, LFO tapped (TAKE), the input silent
     When REC is tapped and the input plays a kick 1 s later
     Then the recording starts on the kick, and REC tapped stops it
-    And a take that reaches 11 s stops by itself
-    When REC is tapped again before the take was put on a key
-    Then the FM-1 asks before replacing it
+    And a take that reaches 9.6 s stops by itself
+    And the SAMPLE kit has the whole take on F3, and CHOP's SLICES is 1
+    When the SAMPLE kit has been played and REC is tapped on TAKE again
+    Then the FM-1 asks before replacing the take
+    And after power-off the SAMPLE kit still plays the take
 
   @ST-99 @UC-21 @planned @approved:owner
   Scenario: CHOP cuts the take, splits and joins slices, and the keys play them
@@ -73,16 +75,16 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
     Then it is joined to the slice before it
     And SELECT chooses the next slice and plays it
 
-  @ST-99 @UC-21 @planned @approved:owner
-  Scenario: A slice goes on a key with two presses, or every slice from a key up
-    Given CHOP on MY KIT 2 with one slice
+  @ST-99 @UC-21 @D-132 @planned @draft
+  Scenario: A slice goes on a key of MY KIT 1 or 2 with two presses
+    Given CHOP with one slice, K1 on MY KIT 2
     When REC is tapped and F3 is pressed
     Then nothing sounds and the screen says F3 · KICK: press again to store
     When F3 is pressed again
-    Then F3 plays the slice and the screen says Stored on F3
+    Then F3 of MY KIT 2 plays the slice and the screen says Stored on F3; the SAMPLE kit is unchanged
     When K4 PUT is on each and F4 is pressed twice
-    Then each slice is on the keys from F4 up
-    And on a built-in kit the FM-1 asks which MY KIT, and a kit past 7 s stays as it was and says it is full
+    Then each slice is on MY KIT 2's keys from F4 up
+    And a kit past 7 s stays as it was and says it is full
 
   @ST-99 @UC-21 @planned @approved:owner
   Scenario: TRIM shortens a sample and makes it as loud as it goes
@@ -126,3 +128,10 @@ Feature: The DRUMS track as a mini MPC (ST-95 to ST-101, approved by the owner 2
     Then it plays at the song's 90 BPM, lower
     When FIT is slices and each slice is put on keys
     Then the FM-1 offers to write the first bar as notes at 90 BPM
+
+  @ST-99 @UC-14 @D-132 @planned @draft
+  Scenario: A kit is saved as MY KIT 1 or 2, and SAMPLE follows them
+    Given Dusty with the snare's sound changed
+    When SAVE is held on EDIT, K1 picks MY KIT 2 and SAVE is held again
+    Then PRESETS reaches MY KIT 1, MY KIT 2 and SAMPLE after the built-in kits, MY KIT 2 with the changed snare
+    And after power-off MY KIT 2 still has it
